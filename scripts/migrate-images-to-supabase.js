@@ -5,9 +5,16 @@ const https = require('https');
 const http = require('http');
 const sharp = require('sharp');
 
-// Configuração Supabase
+// Configuração Supabase - usar variáveis de ambiente
+// SUPABASE_SERVICE_ROLE_KEY deve estar no .env.local (nunca commitar!)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ppgmtxzuaxqshipnvebl.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwZ210eHp1YXhxc2hpcG52ZWJsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2ODIwNzc4MSwiZXhwIjoyMDgzNzgzNzgxfQ.0GRU_wE0bIjzsWtk3sk4W9eBmA3yeHTAMSIyrKJ-2lw';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseKey) {
+  console.error('❌ Erro: SUPABASE_SERVICE_ROLE_KEY não definida');
+  console.error('Adicione ao .env.local: SUPABASE_SERVICE_ROLE_KEY=sua_chave_aqui');
+  process.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
