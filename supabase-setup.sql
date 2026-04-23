@@ -185,13 +185,19 @@ $$ LANGUAGE plpgsql;
 ALTER TABLE news ENABLE ROW LEVEL SECURITY;
 ALTER TABLE category_site_mapping ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "News are viewable by everyone" ON news
+-- Drop policies se existirem
+DROP POLICY IF EXISTS "News are viewable by everyone" ON news;
+DROP POLICY IF EXISTS "Authenticated users can insert news" ON news;
+DROP POLICY IF EXISTS "Category mapping is viewable by everyone" ON category_site_mapping;
+
+-- Criar policies
+CREATE POLICY "News are viewable by everyone" ON news
   FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Authenticated users can insert news" ON news
+CREATE POLICY "Authenticated users can insert news" ON news
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
-CREATE POLICY IF NOT EXISTS "Category mapping is viewable by everyone" ON category_site_mapping
+CREATE POLICY "Category mapping is viewable by everyone" ON category_site_mapping
   FOR SELECT USING (true);
 
 -- ============================================
