@@ -46,6 +46,14 @@ const Header: React.FC = () => {
       hasDropdown: false 
     },
     { 
+      name: "Admin", 
+      href: "#",
+      hasDropdown: true,
+      items: [
+        { name: "Galeria de Media", href: "/admin/media" },
+      ]
+    },
+    { 
       name: "Contactos", 
       href: "/pagina/contactos",
       hasDropdown: false 
