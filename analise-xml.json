@@ -1,0 +1,451 @@
+{
+  "site": {
+    "title": "EntreCAMPOS",
+    "link": "https://entrecampos.co.mz",
+    "exportDate": "2026-04-21"
+  },
+  "summary": {
+    "totalPosts": 80,
+    "totalPages": 9,
+    "totalImages": 153,
+    "totalCategories": 35
+  },
+  "categories": [
+    {
+      "id": "3",
+      "slug": "agricultura",
+      "parent": null,
+      "name": "Agricultura"
+    },
+    {
+      "id": "4",
+      "slug": "agro-negocio",
+      "parent": null,
+      "name": "Agro-negocio"
+    },
+    {
+      "id": "5",
+      "slug": "agropecuaria",
+      "parent": "agricultura",
+      "name": "Agro-pecuaria"
+    },
+    {
+      "id": "6",
+      "slug": "agro-processamento",
+      "parent": "agricultura",
+      "name": "Agro-processamento"
+    },
+    {
+      "id": "7",
+      "slug": "ambiente",
+      "parent": null,
+      "name": "Ambiente"
+    },
+    {
+      "id": "8",
+      "slug": "apicultura",
+      "parent": "agricultura",
+      "name": "Apicultura"
+    },
+    {
+      "id": "9",
+      "slug": "comunidade",
+      "parent": null,
+      "name": "Comunidade"
+    },
+    {
+      "id": "11",
+      "slug": "curiosidade",
+      "parent": null,
+      "name": "Curiosidade"
+    },
+    {
+      "id": "12",
+      "slug": "desafios",
+      "parent": null,
+      "name": "Desafios"
+    },
+    {
+      "id": "14",
+      "slug": "dicas-praticas",
+      "parent": null,
+      "name": "Dicas-praticas"
+    },
+    {
+      "id": "15",
+      "slug": "feiras-e-eventos",
+      "parent": null,
+      "name": "Feiras e eventos"
+    },
+    {
+      "id": "16",
+      "slug": "fruticultura",
+      "parent": null,
+      "name": "Fruticultura"
+    },
+    {
+      "id": "17",
+      "slug": "gestao-agricola",
+      "parent": null,
+      "name": "Gestão agrícola"
+    },
+    {
+      "id": "18",
+      "slug": "historia-de-sucesso",
+      "parent": "curiosidade",
+      "name": "Historia-de-sucesso"
+    },
+    {
+      "id": "117",
+      "slug": "historias-inspiradoras",
+      "parent": null,
+      "name": "Histórias inspiradoras"
+    },
+    {
+      "id": "19",
+      "slug": "inclusao-feminina",
+      "parent": null,
+      "name": "Inclusao feminina"
+    },
+    {
+      "id": "123",
+      "slug": "infra-estruturas",
+      "parent": null,
+      "name": "Infra-estruturas"
+    },
+    {
+      "id": "20",
+      "slug": "inovacao",
+      "parent": null,
+      "name": "Inovação"
+    },
+    {
+      "id": "22",
+      "slug": "meios-de-vida",
+      "parent": null,
+      "name": "Meios de vida"
+    },
+    {
+      "id": "23",
+      "slug": "mudancas-climaticas",
+      "parent": null,
+      "name": "Mudanças climáticas"
+    },
+    {
+      "id": "24",
+      "slug": "opiniao",
+      "parent": "curiosidade",
+      "name": "Opinião"
+    },
+    {
+      "id": "25",
+      "slug": "oportunidades",
+      "parent": null,
+      "name": "Oportunidades"
+    },
+    {
+      "id": "26",
+      "slug": "pesquisa-de-mercado",
+      "parent": null,
+      "name": "Pesquisa de Mercado"
+    },
+    {
+      "id": "27",
+      "slug": "receitas",
+      "parent": null,
+      "name": "Receitas"
+    },
+    {
+      "id": "28",
+      "slug": "recursos",
+      "parent": "curiosidade",
+      "name": "Recursos"
+    },
+    {
+      "id": "29",
+      "slug": "sector-agrario",
+      "parent": null,
+      "name": "Sector agrario"
+    },
+    {
+      "id": "30",
+      "slug": "seguranca-alimentar",
+      "parent": "agricultura",
+      "name": "Seguranca-alimentar"
+    },
+    {
+      "id": "1",
+      "slug": "sem-categoria",
+      "parent": null,
+      "name": "Sem categoria"
+    },
+    {
+      "id": "124",
+      "slug": "tecnologia",
+      "parent": null,
+      "name": "Tecnologia"
+    },
+    {
+      "id": "32",
+      "slug": "turismo",
+      "parent": null,
+      "name": "Turismo"
+    },
+    {
+      "id": "13",
+      "slug": "turismo-rural",
+      "parent": null,
+      "name": "Turismo rural"
+    },
+    {
+      "id": "120",
+      "slug": "uncategorized",
+      "parent": null,
+      "name": "Uncategorized"
+    },
+    {
+      "id": "34",
+      "slug": "voce-sabia",
+      "parent": "curiosidade",
+      "name": "Você-sabiaA?"
+    },
+    {
+      "id": "35",
+      "slug": "entrevsta",
+      "parent": "sector-agrario",
+      "name": "Entrevsta"
+    },
+    {
+      "id": "36",
+      "slug": "mercado",
+      "parent": "oportunidades",
+      "name": "Mercado"
+    }
+  ],
+  "posts": [
+    {
+      "title": "<![CDATA[ZONAS BAIXAS: propícias para boa produção agrícola]]>",
+      "link": "https://entrecampos.co.mz/zonas-baixas-propicias-para-boa-producao-agricola/",
+      "pubDate": "Sat, 05 Jun 2021 19:27:57 +0000",
+      "content": "<!-- wp:paragraph -->\n<p>Cultivar nas zonas baixas pode ser solução para a boa produção agrícola, como forma de aproveitar a humidade residual e privilegiar o uso de sementes de ciclo curto, perante u...",
+      "excerpt": "",
+      "slug": "zonas-baixas-propicias-para-boa-producao-agricola",
+      "author": "admin",
+      "category": "Agricultura",
+      "postId": "717",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    },
+    {
+      "title": "<![CDATA[Agricultores de Marracuene e Bobole trocam experiências]]>",
+      "link": "https://entrecampos.co.mz/agricultores-de-marracuene-e-bobole-trocam-experiencias/",
+      "pubDate": "Fri, 11 Jun 2021 06:32:27 +0000",
+      "content": "<!-- wp:paragraph -->\n<p>No âmbito da garantia da produção, produtividade e competitividade entre os produtores a nível do mercado, a Helpcod em parceria com os Serviços Distritais das Actividades Eco...",
+      "excerpt": "No âmbito da garantia da produção, produtividade e competitividade entre os produtores a nível do mercado, a Helpcod em parceria com os Serviços Distritais das Actividades Económicas (SDAE) de Marracuene, promoveu, na semana finda, um intercâmbio visando troca de experiência entre os produtores de Marracuene e Bobole, na província de Maputo.",
+      "slug": "agricultores-de-marracuene-e-bobole-trocam-experiencias",
+      "author": "admin",
+      "category": "Agricultura",
+      "postId": "757",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    },
+    {
+      "title": "<![CDATA[Alho como biopesticida para protecção de plantas]]>",
+      "link": "https://entrecampos.co.mz/alho-como-biopesticida-para-proteccao-de-plantas/",
+      "pubDate": "Sun, 06 Jun 2021 07:08:24 +0000",
+      "content": "<p><!-- wp:paragraph --></p>\n<p><strong>Não faz apenas bem à saúde humana. As potencialidades deste alimento no combate de pragas e doenças são maiores do que aquelas, à partida, poderia julgar. Descu...",
+      "excerpt": "Não faz apenas bem à saúde humana. As potencialidades deste alimento no combate de pragas e doenças são maiores do que aquelas, à partida, poderia julgar. Descubra quais são as melhores formas de o utilizar no jardim.",
+      "slug": "alho-como-biopesticida-para-proteccao-de-plantas",
+      "author": "admin",
+      "category": "Curiosidade",
+      "postId": "777",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    },
+    {
+      "title": "<![CDATA[Tomate – o “fruto do diabo”]]>",
+      "link": "https://entrecampos.co.mz/tomate-o-fruto-do-diabo/",
+      "pubDate": "Sun, 06 Jun 2021 07:15:26 +0000",
+      "content": "<!-- wp:paragraph -->\n<p>O tomate foi uma das novidades trazidas da América na época dos Descobrimentos. Originário do México, onde era chamado pelos povos locais de tomatl, o tomate chegou à Europa a...",
+      "excerpt": "",
+      "slug": "tomate-o-fruto-do-diabo",
+      "author": "admin",
+      "category": "Curiosidade",
+      "postId": "782",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    },
+    {
+      "title": "<![CDATA[Conheça as potencialidades do Alho]]>",
+      "link": "https://entrecampos.co.mz/conheca-as-potencialidades-do-alho/",
+      "pubDate": "Sun, 06 Jun 2021 07:17:34 +0000",
+      "content": "<!-- wp:paragraph -->\n<p>O alho é usado medicinalmente há mais de 5 mil anos, e era conhecido pelos gregos como \"rosa de mau cheiro\".</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>Para retirar ...",
+      "excerpt": "",
+      "slug": "conheca-as-potencialidades-do-alho",
+      "author": "admin",
+      "category": "Curiosidade",
+      "postId": "784",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    },
+    {
+      "title": "<![CDATA[Há um lugar no mundo onde a batata reno é homenageada]]>",
+      "link": "https://entrecampos.co.mz/ha-um-lugar-no-mundo-onde-a-batata-reno-e-homenageada/",
+      "pubDate": "Sun, 06 Jun 2021 07:24:44 +0000",
+      "content": "<!-- wp:paragraph -->\n<p>Os moradores do condado de Clark, em Dakota do Sul (um dos 50 Estados dos Estados Unidos da América), dedicam um dia todos os anos para homenagear a sua mais importante fonte ...",
+      "excerpt": "",
+      "slug": "ha-um-lugar-no-mundo-onde-a-batata-reno-e-homenageada",
+      "author": "admin",
+      "category": "Curiosidade",
+      "postId": "791",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    },
+    {
+      "title": "<![CDATA[Ressano Garcia: fronteira entre a vida e a morte]]>",
+      "link": "https://entrecampos.co.mz/tomate-o-fruto-do-diabo-2/",
+      "pubDate": "Sun, 06 Jun 2021 07:28:28 +0000",
+      "content": "<!-- wp:paragraph -->\n<p>O Posto Administrativo de Ressano Garcia, no Distrito da Moamba, Província de Maputo, tem sido, nos últimos dias, palco de vários crimes protagonizados por indivíduos desconhe...",
+      "excerpt": "",
+      "slug": "tomate-o-fruto-do-diabo-2",
+      "author": "admin",
+      "category": "Comunidade",
+      "postId": "794",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    },
+    {
+      "title": "<![CDATA[Fome no guava: \"sem água não há comida\"- Jaime Agostinho]]>",
+      "link": "https://entrecampos.co.mz/fome-no-guava-sem-agua-nao-ha-comida-jaime-agostinho/",
+      "pubDate": "Tue, 06 Jul 2021 10:23:49 +0000",
+      "content": "<!-- wp:paragraph -->\n<p>A falta de água contribui para a fraca produção agrícola e coloca as famílias cuja base de subsistência é a agricultura expostos à fome. Este é o cenário vivido pelos campones...",
+      "excerpt": "",
+      "slug": "fome-no-guava-sem-agua-nao-ha-comida-jaime-agostinho",
+      "author": "admin",
+      "category": "Agricultura",
+      "postId": "824",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    },
+    {
+      "title": "<![CDATA[“Somos reféns da EDM”– Moradores de Magoanine \"A\"]]>",
+      "link": "https://entrecampos.co.mz/moradores-de-magoanine-a-somos-refens-da-edm/",
+      "pubDate": "Sun, 06 Jun 2021 20:55:50 +0000",
+      "content": "<!-- wp:paragraph -->\n<p>Os moradores do bairro de Magoanine “A”, nos arredores da cidade de Maputo, passam noites às escuras quase todos os dias, das 17 às 6h do dia seguinte, segundo informações for...",
+      "excerpt": "",
+      "slug": "moradores-de-magoanine-a-somos-refens-da-edm",
+      "author": "admin",
+      "category": "Comunidade",
+      "postId": "827",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    },
+    {
+      "title": "<![CDATA[Moradores sentem-se seguros nas zonas baixas]]>",
+      "link": "https://entrecampos.co.mz/moradores-sentem-se-seguros-nas-zonas-baixas/",
+      "pubDate": "Sun, 06 Jun 2021 21:05:25 +0000",
+      "content": "<!-- wp:list -->\n<ul><li><strong>“Não temos nada a temer aqui”</strong></li></ul>\n<!-- /wp:list -->\n\n<!-- wp:paragraph -->\n<p>Os Moradores do bairro zona verde, próximo ao cruzamento do bairro Malhazi...",
+      "excerpt": "",
+      "slug": "moradores-sentem-se-seguros-nas-zonas-baixas",
+      "author": "admin",
+      "category": "Comunidade",
+      "postId": "830",
+      "images": [
+        "https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "title": "<![CDATA[Início]]>",
+      "link": "https://entrecampos.co.mz/",
+      "slug": "inicio",
+      "content": "<ul>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<svg aria-hidden=\"true\" viewBox=\"0 0 384 512\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 1..."
+    },
+    {
+      "title": "<![CDATA[Contactos]]>",
+      "link": "https://entrecampos.co.mz/contactos/",
+      "slug": "contactos",
+      "content": "<ul>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<svg aria-hidden=\"true\" viewBox=\"0 0 384 512\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 1..."
+    },
+    {
+      "title": "<![CDATA[Painel principal]]>",
+      "link": "https://entrecampos.co.mz/painel-principal/",
+      "slug": "painel-principal",
+      "content": "<img width=\"768\" height=\"136\" src=\"https://ecamposmz.com/wp-content/uploads/2024/07/Logo-768x136.png\" alt=\"\" srcset=\"https://ecamposmz.com/wp-content/uploads/2024/07/Logo-768x136.png 768w, https://eca..."
+    },
+    {
+      "title": "<![CDATA[Adicionar novo artigo]]>",
+      "link": "https://entrecampos.co.mz/adicionar-novo-artigo/",
+      "slug": "adicionar-novo-artigo",
+      "content": "<img width=\"768\" height=\"136\" src=\"https://entrecampos.co.mz/wp-content/uploads/2024/07/Logo-768x136.png\" alt=\"\" srcset=\"https://entrecampos.co.mz/wp-content/uploads/2024/07/Logo-768x136.png 768w, htt..."
+    },
+    {
+      "title": "<![CDATA[Revisão]]>",
+      "link": "https://entrecampos.co.mz/revisao-2/",
+      "slug": "revisao-2",
+      "content": "<img width=\"768\" height=\"136\" src=\"https://entrecampos.co.mz/wp-content/uploads/2024/07/Logo-768x136.png\" alt=\"\" srcset=\"https://entrecampos.co.mz/wp-content/uploads/2024/07/Logo-768x136.png 768w, htt..."
+    }
+  ],
+  "images": [
+    {
+      "title": "<![CDATA[eCAMPOS_Logo_whiteBG-01]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2024/11/eCAMPOS_Logo_whiteBG-01.png]]>",
+      "parentId": "0"
+    },
+    {
+      "title": "<![CDATA[Escroitorio]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2025/04/Escroitorio.webp]]>",
+      "parentId": "0"
+    },
+    {
+      "title": "<![CDATA[empresario]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2025/04/empresario.webp]]>",
+      "parentId": "0"
+    },
+    {
+      "title": "<![CDATA[empresarioII]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2025/04/empresarioII.webp]]>",
+      "parentId": "0"
+    },
+    {
+      "title": "<![CDATA[bgg-01]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2021/06/bgg-01.jpg]]>",
+      "parentId": "0"
+    },
+    {
+      "title": "<![CDATA[cropped-CIMBOLO-100.jpg]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2021/06/cropped-CIMBOLO-100.jpg]]>",
+      "parentId": "0"
+    },
+    {
+      "title": "<![CDATA[cropped-bgg-01.jpg]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2021/06/cropped-bgg-01.jpg]]>",
+      "parentId": "0"
+    },
+    {
+      "title": "<![CDATA[cropped-bgg-01-1.jpg]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2021/06/cropped-bgg-01-1.jpg]]>",
+      "parentId": "0"
+    },
+    {
+      "title": "<![CDATA[Z.Baixas]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2021/06/Z.Baixas.jpg]]>",
+      "parentId": "0"
+    },
+    {
+      "title": "<![CDATA[Incomáti Parque]]>",
+      "url": "<![CDATA[https://entrecampos.co.mz/wp-content/uploads/2021/06/Incomati-Parque.jpg]]>",
+      "parentId": "0"
+    }
+  ]
+}

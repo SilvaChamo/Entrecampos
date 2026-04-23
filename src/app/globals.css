@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --entrecampos-green: #2E7D32;
+  --entrecampos-brown: #795548;
+  --entrecampos-bg: #FAFAFA;
+  --entrecampos-text: #212121;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--entrecampos-bg);
+  color: var(--entrecampos-text);
+}
+
+.blog-details p,
+.blog-details hr {
+  margin-bottom: 2rem;
+}
+
+.blog-details hr {
+  border-color: #e0e0e0;
+}
+
+.blog-details strong {
+  font-weight: 700;
+}
+
+.blog-details ul {
+  margin-bottom: 2rem;
+  list-style-position: inside;
+  list-style-type: disc;
+}
+
+.blog-details ol {
+  margin-bottom: 2rem;
+  list-style-position: inside;
+  list-style-type: decimal;
+}
+
+.blog-details h1 {
+  margin-bottom: 2rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.blog-details h2 {
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.blog-details h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
