@@ -6,10 +6,15 @@ const http = require('http');
 const sharp = require('sharp');
 
 // Configuração Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bpbeveroicyhgezbmldf.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_tT_7Rv_M1mCYyYxEK7gUjw_5j_5PiJm';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ppgmtxzuaxqshipnvebl.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwZ210eHp1YXhxc2hpcG52ZWJsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2ODIwNzc4MSwiZXhwIjoyMDgzNzgzNzgxfQ.0GRU_wE0bIjzsWtk3sk4W9eBmA3yeHTAMSIyrKJ-2lw';
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 // Nome do bucket no Supabase Storage
 const BUCKET_NAME = 'news-images';
