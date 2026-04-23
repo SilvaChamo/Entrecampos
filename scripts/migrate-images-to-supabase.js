@@ -203,8 +203,14 @@ async function migrateImages() {
       }
     }
 
-    // Limpar diretório temporário
-    fs.rmdirSync(tempDir);
+    // Limpar diretório temporário e arquivos
+    if (fs.existsSync(tempDir)) {
+      const files = fs.readdirSync(tempDir);
+      for (const file of files) {
+        fs.unlinkSync(path.join(tempDir, file));
+      }
+      fs.rmdirSync(tempDir);
+    }
 
     console.log('\n📈 Resumo da migração de imagens:');
     console.log(`✅ Sucesso: ${successCount}`);
