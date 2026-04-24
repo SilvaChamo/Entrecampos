@@ -1,34 +1,35 @@
-import Link from "next/link";
+'use client';
+
+import Link from 'next/link';
 
 const Footer = () => {
   return (
-    <footer className="bg-entrecampos-green text-white py-8 mt-12">
-      <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-xl font-bold mb-4">EntreCAMPOS</h3>
-            <p className="text-green-100 text-sm">
-              Promovendo a agricultura sustentável e o desenvolvimento rural em Moçambique através de informação, capacitação e inovação.
-            </p>
-          </div>
-          <div>
-            <h4 className="font-bold mb-4">Links Rápidos</h4>
-            <ul className="space-y-2 text-green-100">
-              <li><Link href="/" className="hover:text-white">Início</Link></li>
-              <li><Link href="/categoria/agricultura" className="hover:text-white">Agricultura</Link></li>
-              <li><Link href="/categoria/agro-negocio" className="hover:text-white">Agro-negócio</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold mb-4">Contato</h4>
-            <p className="text-green-100 text-sm">
-              Moçambique<br />
-              Email: info@entrecampos.co.mz
-            </p>
+    <footer className="w-full">
+      {/* NEWSLETTER BAR */}
+      <div className="bg-[#1d2327] py-10 px-4">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-center gap-6">
+          <h3 className="text-white font-black text-xl uppercase tracking-tighter italic">
+            Subscrever para Newsletter
+          </h3>
+          <div className="w-full max-w-2xl flex">
+            <input 
+              type="email" 
+              placeholder="E-Mail"
+              className="flex-1 h-12 px-4 rounded-l-full outline-none text-gray-800"
+            />
+            <button className="bg-[#3e6611] text-white px-10 h-12 rounded-r-full font-bold uppercase text-sm hover:bg-green-700 transition-colors">
+              Subscrever
+            </button>
           </div>
         </div>
-        <div className="border-t border-green-600 mt-8 pt-8 text-center text-green-100 text-sm">
-          <p>© 2026 EntreCAMPOS - Agricultura Sustentável. Desenvolvido com Next.js.</p>
+      </div>
+
+      {/* COPYRIGHT BAR */}
+      <div className="bg-[#000000] py-6 px-4 border-t border-gray-800">
+        <div className="container mx-auto text-center">
+          <p className="text-gray-400 text-[11px] font-medium tracking-wide">
+            Copyright © 2026 <span className="text-white">EntreCAMPOS.com</span> | Powered by <span className="text-green-500 hover:underline cursor-pointer">VisualDESIGN</span> Services, Lda.
+          </p>
         </div>
       </div>
     </footer>

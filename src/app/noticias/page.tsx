@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, ChevronRight } from 'lucide-react';
 import Header from '@/components/Layout/Header';
@@ -18,35 +17,30 @@ interface Post {
   summary?: string;
 }
 
-export default function CategoryPage() {
-  const { slug } = useParams();
+export default function ArchivePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Mapeamento simples de slug para nome real da categoria (pode ser melhorado)
-  const categoryName = slug ? (slug as string).split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : '';
-
   useEffect(() => {
-    async function loadCategoryPosts() {
+    async function loadAllPosts() {
       setLoading(true);
       try {
         const { data, error } = await supabase
           .from('news')
           .select('*')
-          .ilike('category', `%${categoryName}%`)
           .order('date', { ascending: false });
 
         if (error) throw error;
         setPosts(data || []);
       } catch (err) {
-        console.error('Erro ao carregar categoria:', err);
+        console.error('Erro ao carregar arquivo:', err);
       } finally {
         setLoading(false);
       }
     }
 
-    if (slug) loadCategoryPosts();
-  }, [slug, categoryName]);
+    loadAllPosts();
+  }, []);
 
   return (
     <>
@@ -55,27 +49,21 @@ export default function CategoryPage() {
       <main className="bg-gray-50 min-h-screen py-10">
         <div className="container mx-auto px-4 max-w-7xl">
           
-          {/* Cabeçalho da Categoria */}
+          {/* Cabeçalho do Arquivo */}
           <div className="mb-10">
             <div className="flex items-center text-xs text-gray-500 font-medium mb-4 uppercase tracking-wider">
               <Link href="/" className="hover:text-green-700">INÍCIO</Link>
               <ChevronRight className="w-3 h-3 mx-1" />
-              <span className="text-gray-400">CATEGORIA</span>
-              <ChevronRight className="w-3 h-3 mx-1" />
-              <span className="text-green-700 font-bold">{categoryName}</span>
+              <span className="text-green-700 font-bold">ARQUIVO DE NOTÍCIAS</span>
             </div>
             <h1 className="text-4xl font-black text-[#1d2327] border-l-8 border-green-700 pl-6 uppercase tracking-tight">
-              {categoryName}
+              Arquivo Geral
             </h1>
           </div>
 
           {loading ? (
             <div className="flex justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
-            </div>
-          ) : posts.length === 0 ? (
-            <div className="bg-white p-10 text-center rounded-lg shadow-sm border border-gray-100">
-              <p className="text-gray-500">Nenhuma notícia encontrada nesta categoria.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -97,7 +85,7 @@ export default function CategoryPage() {
                         {post.title}
                       </h4>
                       <p className="text-gray-500 text-sm line-clamp-3 mb-6 flex-1">
-                        {post.summary || 'Clique para ler mais sobre esta notícia do EntreCAMPOS.'}
+                        {post.summary || 'Veja os detalhes desta notícia importante do setor agrário em Moçambique.'}
                       </p>
                       <div className="pt-4 border-t border-gray-50 flex justify-between items-center text-xs font-black text-green-700 uppercase tracking-widest">
                         <span>Ler mais</span>

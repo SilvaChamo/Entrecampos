@@ -1,6 +1,6 @@
 import "./globals.css";
 import HeaderWrapper from "@/components/Layout/HeaderWrapper";
-import Footer from "@/components/Layout/Footer";
+import FooterWrapper from "@/components/Layout/FooterWrapper";
 
 export default function RootLayout({
   children,
@@ -12,7 +12,7 @@ export default function RootLayout({
       <body style={{ fontFamily: 'Verdana, sans-serif' }}>
         <HeaderWrapper />
         {children}
-        <Footer />
+        <FooterWrapper />
       </body>
     </html>
   );
