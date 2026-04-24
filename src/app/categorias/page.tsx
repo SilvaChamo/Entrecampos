@@ -101,7 +101,7 @@ export default function CategoriasPage() {
 
         if (data) {
           const counts: { [key: string]: number } = {};
-          data.forEach((item) => {
+          data.forEach((item: { category: string }) => {
             const cat = item.category;
             counts[cat] = (counts[cat] || 0) + 1;
           });

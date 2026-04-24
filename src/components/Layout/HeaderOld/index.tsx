@@ -51,15 +51,11 @@ const HeaderOld: React.FC = () => {
   }, []);
 
   const navItems = [
-    { name: "INÍCIO", href: "/inicio" },
-    { name: "AGRICULTURA", href: "/categoria/agricultura" },
-    { name: "SECTOR AGRÁRIO", href: "/categoria/agro-negocio" },
-    { name: "COMUNIDADE", href: "/categoria/comunidade" },
-    { name: "AMBIENTE", href: "/categoria/ambiente" },
-    { name: "TURISMO RURAL", href: "/categoria/turismo-rural" },
-    { name: "MULHER AGRÁRIO", href: "/categoria/mulher-agrario" },
-    { name: "CURIOSIDADE", href: "/categoria/curiosidade" },
-    { name: "CONTACTOS", href: "/pagina/contactos" },
+    { name: 'Início', href: '/inicio' },
+    { name: 'Sobre nós', href: '/pagina/inicio' },
+    { name: 'Notícias', href: '#noticias' },
+    { name: 'Mercado', href: '/categoria/agro-negocio' },
+    { name: 'Acervo', href: '/pagina/acervo' },
   ];
 
   return (
@@ -130,7 +126,7 @@ const HeaderOld: React.FC = () => {
         <div className="container mx-auto px-4 relative z-10 flex justify-center">
           <Link href="/inicio">
             <Image
-              src="https://entrecampos.co.mz/wp-content/uploads/2024/07/Logo.png"
+              src="https://ppgmtxzuaxqshipnvebl.supabase.co/storage/v1/object/public/news-images/1777024602985-Apresentacao-1_edited.webp"
               alt="EntreCAMPOS"
               width={400}
               height={100}
@@ -500,6 +496,15 @@ const HeaderOld: React.FC = () => {
                   </div>
                 </nav>
 
+                {/* Contactos */}
+                <div className="bg-gray-50 p-4 py-3 text-[12px] text-gray-500 space-y-0 border-t border-gray-100">
+                  <p className="font-bold text-gray-700 mb-0.5">Contactos</p>
+                  <p>Av: Karlmarx nº 177</p>
+                  <p>Maputo - Moçambique</p>
+                  <p>Movel: 825288318/877575288</p>
+                  <p>E-mail: infor@entrecampos.co.mz</p>
+                </div>
+
                 {/* Rodapé */}
                 <div className="py-5 px-4 border-t border-green-600" style={{ backgroundColor: '#6b6b6b' }}>
                   <div className="flex items-center justify-between gap-3">
@@ -527,3 +532,4 @@ const HeaderOld: React.FC = () => {
 };
 
 export default HeaderOld;
+
