@@ -6,8 +6,8 @@ import Header from "./Header";
 export default function HeaderWrapper() {
   const pathname = usePathname();
   
-  // Não renderizar Header na página /inicio ou em qualquer página de /admin
-  if (pathname === "/inicio" || pathname.startsWith("/admin")) {
+  // Não renderizar Header na página /inicio, / (home) ou em qualquer página de /admin
+  if (pathname === "/inicio" || pathname === "/" || pathname.startsWith("/admin")) {
     return null;
   }
   

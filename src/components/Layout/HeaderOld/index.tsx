@@ -18,7 +18,20 @@ const HeaderOld: React.FC = () => {
   const mainNavItems = [
     { name: "Início", href: "/inicio", hasDropdown: false },
     { name: "Home", href: "/", hasDropdown: false },
-    { name: "Categorias", href: "/categorias", hasDropdown: false },
+    { 
+      name: "Categorias", 
+      href: "#", 
+      hasDropdown: true,
+      items: [
+        { name: "Agricultura", href: "/categoria/agricultura" },
+        { name: "Agro-negócio", href: "/categoria/agro-negocio" },
+        { name: "Comunidade", href: "/categoria/comunidade" },
+        { name: "Ambiente", href: "/categoria/ambiente" },
+        { name: "Turismo Rural", href: "/categoria/turismo-rural" },
+        { name: "Mulher Agrário", href: "/categoria/mulher-agrario" },
+        { name: "Curiosidade", href: "/categoria/curiosidade" },
+      ]
+    },
     { name: "Notícias", href: "#noticias", hasDropdown: false },
     { name: "Sobre", href: "/pagina/inicio", hasDropdown: false },
     { name: "Contactos", href: "/pagina/contactos", hasDropdown: false },

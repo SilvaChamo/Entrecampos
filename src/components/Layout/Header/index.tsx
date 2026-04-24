@@ -29,6 +29,11 @@ const Header = () => {
     { name: 'TURISMO RURAL', href: '/categoria/turismo-rural' },
     { name: 'MULHER AGRÁRIO', href: '/categoria/mulher-agrario' },
     { name: 'CURIOSIDADE', href: '/categoria/curiosidade' },
+    { name: 'GESTÃO', href: '#', hasDropdown: true, items: [
+      { name: 'Galeria de Media', href: '/admin/media' },
+      { name: 'Gerir Notícias', href: '/admin/noticias' },
+      { name: 'Nova Notícia', href: '/admin/noticias/nova' },
+    ]},
     { name: 'CONTACTOS', href: '/pagina/contactos' },
   ];
 
@@ -109,15 +114,34 @@ const Header = () => {
         <div className="container mx-auto px-4">
           <ul className="flex flex-wrap items-center justify-center">
             {categories.map((cat) => (
-              <li key={cat.name}>
-                <Link 
-                  href={cat.href}
-                  className={`block px-4 py-3 text-[12px] font-bold text-white hover:bg-black/10 transition-colors ${
-                    pathname === cat.href ? 'bg-black/20' : ''
-                  }`}
-                >
-                  {cat.name}
-                </Link>
+              <li key={cat.name} className="relative group">
+                {cat.hasDropdown ? (
+                  <>
+                    <button className="flex items-center gap-1 px-4 py-3 text-[12px] font-bold text-white hover:bg-black/10 transition-colors uppercase">
+                      {cat.name}
+                    </button>
+                    <div className="absolute top-full left-0 bg-[#3e6611] min-w-[180px] shadow-xl border-t border-white/10 hidden group-hover:block z-50">
+                      {cat.items?.map(sub => (
+                        <Link 
+                          key={sub.name} 
+                          href={sub.href}
+                          className="block px-4 py-3 text-[11px] font-bold text-white hover:bg-black/20 transition-colors border-b border-white/5"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <Link 
+                    href={cat.href}
+                    className={`block px-4 py-3 text-[12px] font-bold text-white hover:bg-black/10 transition-colors ${
+                      pathname === cat.href ? 'bg-black/20' : ''
+                    }`}
+                  >
+                    {cat.name}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

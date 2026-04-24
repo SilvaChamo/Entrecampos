@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { Sprout, Users, Zap, Briefcase, Wrench, FileText, Settings, Lightbulb, ThumbsUp, List } from 'lucide-react';
 import BannerWithSlider from '@/components/BannerWithSlider';
+import SimpleHeader from '@/components/Layout/SimpleHeader';
 
 async function getPosts() {
   const postsPath = path.join(process.cwd(), 'data', 'posts.json');
@@ -16,6 +17,9 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* HEADER SIMPLIFICADO - Fundo Branco */}
+      <SimpleHeader />
+
       {/* BANNER HERO - Slider à esquerda, Texto à direita */}
       <BannerWithSlider posts={posts.slice(0, 5)} />
 
