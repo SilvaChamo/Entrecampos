@@ -286,7 +286,7 @@ export default function MediaGallery() {
     <div className="min-h-screen bg-[#f0f0f1] text-[#2c3338]">
       <div className="max-w-[1280px] mx-auto px-4 md:px-6">
         {/* Header Estilo WP */}
-        <div className="py-4 md:py-8">
+        <div className="p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-normal">Biblioteca multimédia</h1>
@@ -538,7 +538,7 @@ export default function MediaGallery() {
             
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#f0f0f1]">
               {/* Image Preview Area */}
-              <div className="flex-1 p-8 flex flex-col items-center justify-center overflow-auto bg-checkerboard">
+              <div className="flex-1 p-4 flex flex-col items-center justify-center overflow-auto bg-checkerboard">
                 {!isEditingImage ? (
                   <>
                     <img 

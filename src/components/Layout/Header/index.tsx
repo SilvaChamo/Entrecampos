@@ -109,8 +109,8 @@ const Header = () => {
         </div>
       </div>
 
-      {/* CATEGORIES BAR (Verde) */}
-      <nav className="bg-[#3e6611] border-b-4 border-[#2c3338]">
+      {/* CATEGORIES BAR (Verde Escuro) */}
+      <nav className="bg-[#1a3d0c] border-b-4 border-[#2c3338]">
         <div className="container mx-auto px-4">
           <ul className="flex flex-wrap items-center justify-center">
             {categories.map((cat) => (
@@ -120,7 +120,7 @@ const Header = () => {
                     <button className="flex items-center gap-1 px-4 py-3 text-[12px] font-bold text-white hover:bg-black/10 transition-colors uppercase">
                       {cat.name}
                     </button>
-                    <div className="absolute top-full left-0 bg-[#3e6611] min-w-[180px] shadow-xl border-t border-white/10 hidden group-hover:block z-50">
+                    <div className="absolute top-full left-0 bg-[#1a3d0c] min-w-[180px] shadow-xl border-t border-white/10 hidden group-hover:block z-50">
                       {cat.items?.map(sub => (
                         <Link 
                           key={sub.name} 
@@ -135,8 +135,8 @@ const Header = () => {
                 ) : (
                   <Link 
                     href={cat.href}
-                    className={`block px-4 py-3 text-[12px] font-bold text-white hover:bg-black/10 transition-colors ${
-                      pathname === cat.href ? 'bg-black/20' : ''
+                    className={`block px-4 py-3 text-[12px] font-bold text-white hover:bg-red-600 transition-colors ${
+                      pathname === cat.href ? 'bg-red-600' : ''
                     }`}
                   >
                     {cat.name}

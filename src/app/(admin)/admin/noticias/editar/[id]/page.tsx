@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import MediaLibrary from '@/components/Admin/MediaLibrary';
+import ImageSelector from '@/components/Admin/ImageSelector';
 import { 
   X, 
   ImageIcon, 
@@ -17,7 +18,7 @@ export default function EditNewsPage() {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+  const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     id: '',
@@ -146,10 +147,16 @@ export default function EditNewsPage() {
               {formData.image_url ? (
                 <div className="space-y-3">
                   <img src={formData.image_url} className="w-full h-auto border border-[#ccd0d4]" alt="" />
-                  <button type="button" onClick={() => setIsMediaModalOpen(true)} className="text-[#2271b1] text-sm hover:underline">Substituir imagem</button>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsImageSelectorOpen(true)} 
+                    className="text-[#2271b1] text-sm hover:underline"
+                  >
+                    Substituir imagem
+                  </button>
                 </div>
               ) : (
-                <button type="button" onClick={() => setIsMediaModalOpen(true)} className="w-full aspect-video border-2 border-dashed border-[#ccd0d4] flex flex-col items-center justify-center text-[#2271b1] hover:bg-[#f6f7f7]">
+                <button type="button" onClick={() => setIsImageSelectorOpen(true)} className="w-full aspect-video border-2 border-dashed border-[#ccd0d4] flex flex-col items-center justify-center text-[#2271b1] hover:bg-[#f6f7f7]">
                   <ImageIcon className="w-8 h-8 mb-2" />
                   <span className="text-sm">Definir imagem</span>
                 </button>
@@ -159,15 +166,13 @@ export default function EditNewsPage() {
         </div>
       </form>
 
-      {isMediaModalOpen && (
-        <div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-6xl h-[90vh] rounded shadow-2xl flex flex-col relative">
-            <button onClick={() => setIsMediaModalOpen(false)} className="absolute top-4 right-4 z-[210] p-2 hover:bg-gray-100 rounded-full"><X className="w-6 h-6" /></button>
-            <div className="flex-1 overflow-hidden">
-              <MediaLibrary isModal onSelect={(url) => { setFormData({ ...formData, image_url: url }); setIsMediaModalOpen(false); }} />
-            </div>
-          </div>
-        </div>
+      {/* Image Selector Modal */}
+      {isImageSelectorOpen && (
+        <ImageSelector 
+          onClose={() => setIsImageSelectorOpen(false)}
+          onSelect={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+          currentImageUrl={formData.image_url}
+        />
       )}
     </div>
   );

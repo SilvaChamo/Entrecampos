@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { 
@@ -11,7 +11,9 @@ import {
   Trash2, 
   ExternalLink, 
   RefreshCw,
-  Plus
+  Plus,
+  AlertTriangle,
+  Wrench
 } from 'lucide-react';
 
 interface NewsItem {
@@ -40,6 +42,7 @@ export default function NewsAdminPage() {
   const [filterDate, setFilterDate] = useState('Todas as datas');
   const [quickEditId, setQuickEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<NewsItem>>({});
+  const [filterMissingImage, setFilterMissingImage] = useState(false);
 
   const loadNews = async () => {
     setLoading(true);
@@ -67,8 +70,8 @@ export default function NewsAdminPage() {
   const filteredNews = news.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory === 'Todas as categorias' || item.category === filterCategory;
-    // Filtro de data simplificado (mesma lógica pode ser expandida)
-    return matchesSearch && matchesCategory;
+    const matchesMissingImage = !filterMissingImage || !item.image_url;
+    return matchesSearch && matchesCategory && matchesMissingImage;
   });
 
   const deleteNews = async (id: string, title: string) => {
@@ -119,6 +122,13 @@ export default function NewsAdminPage() {
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-normal">Notícias</h1>
           <Link 
+            href="/admin/noticias/reparar"
+            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-[3px] text-sm font-bold hover:bg-amber-600 transition-colors"
+          >
+            <Wrench className="w-4 h-4" />
+            Reparar Imagens
+          </Link>
+          <Link 
             href="/admin/noticias/nova" 
             className="px-3 py-1 bg-white border border-[#2271b1] text-[#2271b1] rounded-[3px] text-sm font-semibold hover:bg-[#f6f7f7] transition-all"
           >
@@ -155,6 +165,17 @@ export default function NewsAdminPage() {
         </select>
         <button className="h-8 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-sm font-semibold hover:bg-[#f6f7f7]">Filtrar</button>
 
+        <button 
+          onClick={() => setFilterMissingImage(!filterMissingImage)}
+          className={`h-8 px-3 border rounded-[3px] text-sm font-semibold transition-all ${
+            filterMissingImage 
+              ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-inner' 
+              : 'bg-white border-[#ccd0d4] text-[#2c3338] hover:bg-[#f6f7f7]'
+          }`}
+        >
+          {filterMissingImage ? 'A mostrar sem imagem' : 'Filtrar sem imagem'}
+        </button>
+
         <div className="ml-auto flex items-center gap-1">
           <input 
             type="text" 
@@ -189,14 +210,18 @@ export default function NewsAdminPage() {
               <tr><td colSpan={6} className="p-10 text-center text-gray-500">Nenhum artigo encontrado.</td></tr>
             ) : (
               filteredNews.map((item, idx) => (
-                <>
-                <tr key={item.id} className={`group border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
+                <React.Fragment key={item.id}>
+                <tr className={`group border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
                   <td className="p-2 text-center align-top pt-4"><input type="checkbox" /></td>
                   <td className="p-3 align-top">
                     <div className="flex items-start gap-3">
-                      {item.image_url && (
+                      {item.image_url ? (
                         <div className="w-14 h-14 flex-shrink-0 border border-[#ccd0d4] bg-gray-50 overflow-hidden mt-1 shadow-sm">
                           <img src={item.image_url} className="w-full h-full object-cover" alt="" />
+                        </div>
+                      ) : (
+                        <div className="w-14 h-14 flex-shrink-0 border border-dashed border-amber-300 bg-amber-50 rounded flex items-center justify-center mt-1">
+                          <AlertTriangle className="w-6 h-6 text-amber-500" />
                         </div>
                       )}
                       <div className="flex flex-col gap-1 min-w-0">
@@ -371,7 +396,7 @@ export default function NewsAdminPage() {
                     </td>
                   </tr>
                 )}
-                </>
+                </React.Fragment>
               ))
             )}
           </tbody>

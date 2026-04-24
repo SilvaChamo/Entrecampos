@@ -85,10 +85,19 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       submenu: [
         { label: 'Todas as Notícias', href: '/admin/noticias' },
         { label: 'Adicionar Nova', href: '/admin/noticias/nova' },
+        { label: 'Reparar Imagens', href: '/admin/noticias/reparar' },
         { label: 'Categorias', href: '/admin/noticias/categorias' },
       ]
     },
-    { href: '/admin/media', icon: ImageIcon, label: 'Multimédia' },
+    { 
+      href: '/admin/media', 
+      icon: ImageIcon, 
+      label: 'Multimédia',
+      submenu: [
+        { label: 'Biblioteca', href: '/admin/media' },
+        { label: 'Limpeza de Media', href: '/admin/media/limpeza' },
+      ]
+    },
     { href: '/admin/paginas', icon: FileText, label: 'Páginas' },
     { href: '/admin/utilizadores', icon: Users, label: 'Utilizadores' },
     { href: '/admin/definicoes', icon: Settings, label: 'Definições' },
@@ -162,7 +171,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="p-4 md:p-8 max-w-[1400px]">
+          <div className="p-0 max-w-[1400px]">
             {children}
           </div>
         </main>

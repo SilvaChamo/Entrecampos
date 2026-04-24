@@ -185,7 +185,7 @@ const HeaderOld: React.FC = () => {
       </div>
 
       {/* LINHA 4: Navegação Principal */}
-      <nav className={`text-white transition-all duration-300 ${isScrolled ? 'fixed top-16 left-0 right-0 z-50 shadow-lg' : ''}`} style={{ backgroundColor: "#2d5016" }}>
+      <nav className={`text-white transition-all duration-300 ${isScrolled ? 'fixed top-16 left-0 right-0 z-50 shadow-lg' : ''}`} style={{ backgroundColor: "#1a3d0c" }}>
         <div className="h-[1px]" style={{ backgroundColor: "#32d932" }}></div>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">

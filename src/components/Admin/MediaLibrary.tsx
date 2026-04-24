@@ -15,7 +15,9 @@ import {
   Search,
   Filter,
   Check,
-  Plus
+  Plus,
+  AlertCircle,
+  FileDown
 } from 'lucide-react';
 
 interface MediaLibraryProps {
@@ -52,6 +54,8 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
   const [editFormat, setEditFormat] = useState<'original' | 'webp' | 'jpeg'>('original');
   const [processingImage, setProcessingImage] = useState(false);
   const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
+  const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
+  const [pendingBlob, setPendingBlob] = useState<{ blob: Blob; mimeType: string; extension: string } | null>(null);
   
   // Metadata States
   const [metadata, setMetadata] = useState({
@@ -174,7 +178,10 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = getPublicUrl(activeFile.name);
-      await new Promise((resolve) => { img.onload = resolve; });
+      await new Promise((resolve, reject) => { 
+        img.onload = resolve;
+        img.onerror = () => reject(new Error('Falha ao carregar imagem para edição.'));
+      });
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -184,22 +191,53 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
       canvas.height = finalHeight;
       if (ctx) ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
 
-      const mimeType = editFormat === 'webp' ? 'image/webp' : editFormat === 'jpeg' ? 'image/jpeg' : activeFile.metadata?.mimetype;
+      const mimeType = editFormat === 'webp' ? 'image/webp' : editFormat === 'jpeg' ? 'image/jpeg' : activeFile.metadata?.mimetype || 'image/jpeg';
       const extension = editFormat === 'webp' ? '.webp' : editFormat === 'jpeg' ? '.jpg' : '.' + activeFile.name.split('.').pop();
       const blob: Blob = await new Promise((resolve) => {
         canvas.toBlob((b) => resolve(b!), mimeType, 0.85);
       });
 
-      const newFileName = activeFile.name.replace(/\.[^/.]+$/, "") + `_edited_${Date.now()}${extension}`;
-      const { error: uploadError } = await supabase.storage.from(BUCKET_NAME).upload(newFileName, blob, { contentType: mimeType });
+      setPendingBlob({ blob, mimeType, extension });
+      setIsSaveConfirmOpen(true);
+    } catch (err: any) {
+      alert('Erro: ' + err.message);
+    } finally {
+      setProcessingImage(false);
+    }
+  };
+
+  const confirmSave = async (replace: boolean) => {
+    if (!activeFile || !pendingBlob) return;
+    setProcessingImage(true);
+    
+    try {
+      let fileName = activeFile.name;
+      
+      if (replace) {
+        // Just use original name. If extension changed, we might want to update name or just overwrite.
+        // For simplicity, if replace is chosen, we keep the original name even if format changed 
+        // (Supabase will handle the content type).
+      } else {
+        fileName = activeFile.name.replace(/\.[^/.]+$/, "") + `_edited_${Date.now()}${pendingBlob.extension}`;
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(fileName, pendingBlob.blob, { 
+          contentType: pendingBlob.mimeType,
+          upsert: true 
+        });
+
       if (uploadError) throw uploadError;
 
-      alert('Imagem editada e carregada como novo ficheiro!');
+      alert(replace ? 'Imagem original substituída com sucesso!' : 'Imagem guardada como novo ficheiro!');
+      setIsSaveConfirmOpen(false);
+      setPendingBlob(null);
       setIsEditingImage(false);
       setIsEditorOpen(false);
       loadImages();
     } catch (err: any) {
-      alert('Erro: ' + err.message);
+      alert('Erro ao guardar: ' + err.message);
     } finally {
       setProcessingImage(false);
     }
@@ -255,7 +293,7 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
 
       <div className="flex-1 flex overflow-hidden">
         {/* Grid Principal */}
-        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#f0f0f1]">
+        <div className="flex-1 overflow-y-auto p-0 custom-scrollbar bg-[#f0f0f1]">
           {loading && files.length === 0 ? (
             <div className="flex items-center justify-center h-full"><RefreshCw className="w-8 h-8 animate-spin text-[#2271b1]" /></div>
           ) : (
@@ -263,7 +301,16 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
               {paginatedFiles.map((file) => (
                 <div 
                   key={file.name}
-                  onClick={() => isBulkMode ? toggleSelect(file.name) : openDetails(file)}
+                  onClick={() => {
+                    if (isBulkMode) {
+                      toggleSelect(file.name);
+                    } else if (isModal && onSelect) {
+                      // Seleção direta em modal - fecha imediatamente
+                      onSelect(getPublicUrl(file.name));
+                    } else {
+                      openDetails(file);
+                    }
+                  }}
                   className={`aspect-square relative border cursor-pointer overflow-hidden bg-white shadow-sm transition-all ${
                     selectedIds.has(file.name) || activeFile?.name === file.name 
                       ? 'ring-4 ring-[#2271b1] ring-inset' 
@@ -273,6 +320,11 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                   <img src={getPublicUrl(file.name)} className="w-full h-full object-cover" alt="" loading="lazy" />
                   {selectedIds.has(file.name) && (
                     <div className="absolute top-1 right-1 bg-[#2271b1] text-white p-0.5 rounded-sm"><Check className="w-3 h-3" /></div>
+                  )}
+                  {isModal && onSelect && (
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
+                      <span className="bg-[#2271b1] text-white px-3 py-1 text-xs font-bold rounded">Selecionar</span>
+                    </div>
                   )}
                 </div>
               ))}
@@ -373,6 +425,60 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                 <button onClick={() => setIsEditorOpen(false)} className="w-full py-3 border border-[#ccd0d4] font-bold rounded-[3px] hover:bg-gray-50">Cancelar</button>
               </div>
             </aside>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM SAVE CONFIRMATION POPUP (ENTRECAMPOS STYLE) */}
+      {isSaveConfirmOpen && (
+        <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden border border-[#ccd0d4] animate-in fade-in zoom-in duration-200">
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-6 h-6 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-[#1d2327]">Como deseja guardar?</h3>
+                  <p className="text-sm text-[#50575e]">Escolha como aplicar as edições feitas na imagem.</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button 
+                  onClick={() => confirmSave(true)}
+                  disabled={processingImage}
+                  className="w-full flex items-center justify-between p-4 border border-[#ccd0d4] rounded-lg hover:border-[#2271b1] hover:bg-blue-50 transition-all group text-left"
+                >
+                  <div>
+                    <span className="block font-bold text-[#1d2327] group-hover:text-[#2271b1]">Substituir Original</span>
+                    <span className="text-xs text-[#50575e]">O ficheiro antigo será removido e substituído por este.</span>
+                  </div>
+                  <RefreshCw className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#2271b1]" />
+                </button>
+
+                <button 
+                  onClick={() => confirmSave(false)}
+                  disabled={processingImage}
+                  className="w-full flex items-center justify-between p-4 border border-[#ccd0d4] rounded-lg hover:border-[#2271b1] hover:bg-blue-50 transition-all group text-left"
+                >
+                  <div>
+                    <span className="block font-bold text-[#1d2327] group-hover:text-[#2271b1]">Guardar Como Novo</span>
+                    <span className="text-xs text-[#50575e]">Cria uma nova versão da imagem mantendo a original intacta.</span>
+                  </div>
+                  <FileDown className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#2271b1]" />
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-[#f6f7f7] p-4 flex justify-end gap-3 border-t border-[#ccd0d4]">
+              <button 
+                onClick={() => { setIsSaveConfirmOpen(false); setPendingBlob(null); }}
+                className="px-6 py-2 text-sm font-bold text-[#50575e] hover:text-[#1d2327]"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}
