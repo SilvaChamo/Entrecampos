@@ -1,5 +1,5 @@
 import "./globals.css";
-import Header from "@/components/Layout/Header";
+import HeaderWrapper from "@/components/Layout/HeaderWrapper";
 import Footer from "@/components/Layout/Footer";
 
 export default function RootLayout({
@@ -10,7 +10,7 @@ export default function RootLayout({
   return (
     <html lang="pt">
       <body style={{ fontFamily: 'Verdana, sans-serif' }}>
-        <Header />
+        <HeaderWrapper />
         {children}
         <Footer />
       </body>

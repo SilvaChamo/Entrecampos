@@ -1,49 +1,80 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Trash2, Copy, ExternalLink, RefreshCw, ImageIcon, Upload } from 'lucide-react';
+import { 
+  Trash2, 
+  Copy, 
+  ExternalLink, 
+  RefreshCw, 
+  ImageIcon, 
+  Upload, 
+  X,
+  LayoutGrid,
+  List as ListIcon,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  MoreVertical,
+  Check
+} from 'lucide-react';
 
 interface StorageFile {
   name: string;
   id: string;
   updated_at: string;
   created_at: string;
-  last_accessed_at: string;
   metadata: {
     size: number;
     mimetype: string;
-    cacheControl: string;
   };
 }
 
 export default function MediaGallery() {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFile, setSelectedFile] = useState<StorageFile | null>(null);
+  const [selectedFile, setSelectedFile] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  
+  // Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100;
+  
+  // Edição Avançada de Imagem
+  const [isEditingImage, setIsEditingImage] = useState(false);
+  const [editWidth, setEditWidth] = useState(0);
+  const [editHeight, setEditHeight] = useState(0);
+  const [editFormat, setEditFormat] = useState<'original' | 'webp' | 'jpeg'>('original');
+  const [processingImage, setProcessingImage] = useState(false);
+  const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
+  
+  // Metadados
+  const [metadata, setMetadata] = useState({
+    alt_text: '',
+    title: '',
+    caption: '',
+    description: ''
+  });
+  const [savingMetadata, setSavingMetadata] = useState(false);
 
   const BUCKET_NAME = 'news-images';
 
-  // Carregar imagens do Storage
   const loadImages = async () => {
     setLoading(true);
-    setError(null);
-    
     try {
-      const { data, error } = await supabase
-        .storage
-        .from(BUCKET_NAME)
-        .list();
-
-      if (error) {
-        throw error;
-      }
-
+      const { data, error } = await supabase.storage.from(BUCKET_NAME).list('', {
+        limit: 1000,
+        offset: 0,
+        sortBy: { column: 'created_at', order: 'desc' }
+      });
+      if (error) throw error;
       setFiles(data || []);
     } catch (err: any) {
-      setError(err.message);
       console.error('Erro ao carregar imagens:', err);
     } finally {
       setLoading(false);
@@ -54,305 +85,645 @@ export default function MediaGallery() {
     loadImages();
   }, []);
 
-  // Deletar imagem
-  const deleteImage = async (filename: string) => {
-    if (!confirm(`Tem certeza que deseja eliminar "${filename}"?`)) {
-      return;
+  // Lógica de Paginação e Filtragem
+  const filteredFiles = useMemo(() => {
+    return files.filter(f => 
+      f.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [files, searchQuery]);
+
+  const totalPages = Math.ceil(filteredFiles.length / itemsPerPage);
+  const paginatedFiles = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredFiles.slice(start, start + itemsPerPage);
+  }, [filteredFiles, currentPage]);
+
+  // Ações de Seleção
+  const toggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredFiles.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredFiles.map(f => f.name)));
     }
+  };
+
+  const deleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Deseja eliminar permanentemente os ${selectedIds.size} itens selecionados?`)) return;
 
     try {
-      const { error } = await supabase
-        .storage
-        .from(BUCKET_NAME)
-        .remove([filename]);
-
-      if (error) {
-        throw error;
-      }
-
-      setFiles(files.filter(f => f.name !== filename));
-      if (selectedFile?.name === filename) {
-        setSelectedFile(null);
-      }
+      setLoading(true);
+      const idsArray = Array.from(selectedIds);
+      const { error } = await supabase.storage.from(BUCKET_NAME).remove(idsArray);
+      if (error) throw error;
       
-      alert('Imagem eliminada com sucesso!');
+      // Limpar metadados se existirem
+      await supabase.from('media_details').delete().in('file_name', idsArray);
+
+      setSelectedIds(new Set());
+      setIsBulkMode(false);
+      loadImages();
+      alert('Itens eliminados com sucesso!');
     } catch (err: any) {
       alert('Erro ao eliminar: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Copiar URL para clipboard
-  const copyUrl = (filename: string) => {
-    const { data: { publicUrl } } = supabase
-      .storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(filename);
-    
-    navigator.clipboard.writeText(publicUrl);
-    alert('URL copiada para clipboard!');
+  const deleteSingle = async (filename: string) => {
+    if (!confirm(`Eliminar "${filename}"?`)) return;
+    try {
+      const { error } = await supabase.storage.from(BUCKET_NAME).remove([filename]);
+      if (error) throw error;
+      await supabase.from('media_details').delete().eq('file_name', filename);
+      setFiles(files.filter(f => f.name !== filename));
+      if (selectedFile?.name === filename) setSelectedFile(null);
+    } catch (err: any) {
+      alert('Erro: ' + err.message);
+    }
   };
 
-  // Upload de nova imagem
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const copyUrl = (filename: string) => {
+    const { data: { publicUrl } } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filename);
+    navigator.clipboard.writeText(publicUrl);
+    alert('URL copiada!');
+  };
 
-    setUploading(true);
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const getPublicUrl = (filename: string) => {
+    return supabase.storage.from(BUCKET_NAME).getPublicUrl(filename).data.publicUrl;
+  };
+
+  const openDetails = async (file: StorageFile) => {
+    setSelectedFile(file);
+    setIsEditingImage(false); // Reset edit mode
+    // Carregar metadados do DB
+    const { data } = await supabase.from('media_details').select('*').eq('file_name', file.name).single();
+    if (data) {
+      setMetadata({
+        alt_text: data.alt_text || '',
+        title: data.title || '',
+        caption: data.caption || '',
+        description: data.description || ''
+      });
+    } else {
+      setMetadata({
+        alt_text: '',
+        title: file.name.split('-').slice(0, -1).join('-') || file.name,
+        caption: '',
+        description: ''
+      });
+    }
+  };
+
+  // Função para estimar tamanho final
+  useEffect(() => {
+    if (isEditingImage && selectedFile) {
+      const timer = setTimeout(async () => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = getPublicUrl(selectedFile.name);
+        await new Promise(r => { img.onload = r; });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = editWidth || img.width;
+        canvas.height = editHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const mimeType = editFormat === 'webp' ? 'image/webp' : editFormat === 'jpeg' ? 'image/jpeg' : selectedFile.metadata?.mimetype;
+        canvas.toBlob((blob) => {
+          if (blob) setEstimatedSize(blob.size);
+        }, mimeType, 0.85);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [editWidth, editHeight, editFormat, isEditingImage]);
+
+  // Função para processar e guardar imagem editada
+  const applyImageEdits = async () => {
+    if (!selectedFile) return;
+    setProcessingImage(true);
     
     try {
-      const filename = `${Date.now()}-${file.name}`;
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = getPublicUrl(selectedFile.name);
       
-      const { error } = await supabase
-        .storage
-        .from(BUCKET_NAME)
-        .upload(filename, file);
+      await new Promise((resolve) => { img.onload = resolve; });
 
-      if (error) {
-        throw error;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const finalWidth = editWidth || img.width;
+      const finalHeight = editHeight || img.height;
+      
+      canvas.width = finalWidth;
+      canvas.height = finalHeight;
+      
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
       }
 
-      await loadImages();
-      alert('Imagem carregada com sucesso!');
+      const mimeType = editFormat === 'webp' ? 'image/webp' : editFormat === 'jpeg' ? 'image/jpeg' : selectedFile.metadata?.mimetype;
+      const extension = editFormat === 'webp' ? '.webp' : editFormat === 'jpeg' ? '.jpg' : '.' + selectedFile.name.split('.').pop();
+      
+      const blob: Blob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b!), mimeType, 0.85); // 0.85 qualidade otimizada
+      });
+
+      const newFileName = selectedFile.name.replace(/\.[^/.]+$/, "") + (editFormat !== 'original' ? `_edited${extension}` : extension);
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(newFileName, blob, { contentType: mimeType, upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      alert('Imagem processada e guardada com sucesso!');
+      setIsEditingImage(false);
+      loadImages();
     } catch (err: any) {
-      alert('Erro ao carregar: ' + err.message);
+      alert('Erro ao editar imagem: ' + err.message);
     } finally {
-      setUploading(false);
+      setProcessingImage(false);
     }
   };
 
-  // Formatar tamanho
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  // Obter URL pública
-  const getPublicUrl = (filename: string) => {
-    const { data: { publicUrl } } = supabase
-      .storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(filename);
-    return publicUrl;
+  const saveMetadata = async () => {
+    if (!selectedFile) return;
+    setSavingMetadata(true);
+    try {
+      await supabase.from('media_details').upsert({
+        file_name: selectedFile.name,
+        ...metadata,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'file_name' });
+      alert('Guardado!');
+    } catch (err: any) {
+      alert('Erro ao guardar');
+    } finally {
+      setSavingMetadata(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <ImageIcon className="w-8 h-8 text-green-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Galeria de Mídia</h1>
-                <p className="text-sm text-gray-500">Gerir imagens do Supabase Storage</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <button
-                onClick={loadImages}
-                disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Atualizar
-              </button>
-              
-              <label className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer">
-                <Upload className="w-4 h-4" />
-                {uploading ? 'A carregar...' : 'Carregar Imagem'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleUpload}
-                  disabled={uploading}
-                  className="hidden"
-                />
-              </label>
-            </div>
+    <div className="min-h-screen bg-[#f0f0f1] text-[#2c3338]">
+      <div className="max-w-[1280px] mx-auto px-4 md:px-6">
+        {/* Header Estilo WP */}
+        <div className="py-4 md:py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-normal">Biblioteca multimédia</h1>
+            <label className="px-3 py-1 bg-white border border-[#2271b1] text-[#2271b1] rounded-[3px] text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
+              {uploading ? 'A carregar...' : 'Adicionar ficheiros multimédia'}
+              <input 
+                type="file" 
+                className="hidden" 
+                accept="image/*" 
+                multiple
+                onChange={async (e) => {
+                  const filesToUpload = e.target.files;
+                  if (!filesToUpload || filesToUpload.length === 0) return;
+                  
+                  setUploading(true);
+                  let successCount = 0;
+                  
+                  for (let i = 0; i < filesToUpload.length; i++) {
+                    const file = filesToUpload[i];
+                    const cleanName = `${Date.now()}-${file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\.-]/g, '_')}`;
+                    const { error } = await supabase.storage.from(BUCKET_NAME).upload(cleanName, file);
+                    if (!error) successCount++;
+                  }
+                  
+                  if (successCount > 0) {
+                    alert(`${successCount} ficheiro(s) carregado(s) com sucesso!`);
+                    loadImages();
+                  }
+                  setUploading(false);
+                }} 
+              />
+            </label>
+          </div>
+
+          <div className="relative">
+            <input 
+              type="text" 
+              placeholder="Procurar itens multimédia..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 pr-2 border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] w-64"
+            />
+            <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-[#50575e]" />
           </div>
         </div>
       </div>
 
-      {/* Conteúdo */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            <strong>Erro:</strong> {error}
-          </div>
-        )}
+        {/* Toolbar de Filtros - AGORA FIXA */}
+        <div className="sticky top-0 z-40 bg-[#f0f0f1] pb-2">
+          <div className="flex flex-col md:flex-row items-center justify-between bg-white border border-[#ccd0d4] p-2 gap-2 shadow-sm">
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded-[3px] ${viewMode === 'list' ? 'bg-[#f0f0f1] text-[#2271b1]' : 'text-[#50575e] hover:text-[#2271b1]'}`}
+              >
+                <ListIcon className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-[3px] ${viewMode === 'grid' ? 'bg-[#f0f0f1] text-[#2271b1]' : 'text-[#50575e] hover:text-[#2271b1]'}`}
+              >
+                <LayoutGrid className="w-5 h-5" />
+              </button>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
-            <span className="ml-3 text-gray-600">A carregar imagens...</span>
+              <select className="ml-4 h-8 text-sm border-[#ccd0d4] rounded-[3px] bg-white px-2">
+                <option>Todos os ficheiros multimédia</option>
+              </select>
+              
+              <select className="h-8 text-sm border-[#ccd0d4] rounded-[3px] bg-white px-2">
+                <option>Todas as datas</option>
+              </select>
+
+              <button className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-[3px] bg-white hover:bg-[#f6f7f7]">
+                Filtrar
+              </button>
+
+              {!isBulkMode ? (
+                <button 
+                  onClick={() => setIsBulkMode(true)}
+                  className="ml-4 h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-[3px] bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
+                >
+                  Seleção em massa
+                </button>
+              ) : (
+                <div className="flex items-center gap-2 ml-4 flex-nowrap">
+                  <button 
+                    onClick={deleteSelected}
+                    disabled={selectedIds.size === 0}
+                    className="h-8 px-4 text-sm font-semibold bg-[#d63638] text-white rounded-[3px] hover:bg-[#b32d2e] disabled:opacity-50 whitespace-nowrap"
+                  >
+                    Eliminar permanentemente ({selectedIds.size})
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (selectedIds.size === paginatedFiles.length) {
+                        setSelectedIds(new Set());
+                      } else {
+                        setSelectedIds(new Set(paginatedFiles.map(f => f.name)));
+                      }
+                    }}
+                    className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-[3px] bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
+                  >
+                    {selectedIds.size === paginatedFiles.length ? 'Desmarcar tudo' : 'Selecionar tudo'}
+                  </button>
+                  <button 
+                    onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }}
+                    className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-[3px] bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
+                  >
+                    Cancelar seleção
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-4 flex-nowrap">
+              {/* Paginação Superior */}
+              <div className="flex items-center gap-2 text-[13px] text-[#50575e] whitespace-nowrap">
+                <span>{filteredFiles.length} itens</span>
+                <div className="flex items-center gap-1 ml-2">
+                  <button 
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    className="p-1 border border-[#ccd0d4] bg-white rounded-[3px] disabled:opacity-30"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="px-2 font-medium">
+                    {currentPage} <span className="font-normal text-gray-400">de</span> {totalPages || 1}
+                  </span>
+                  <button 
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    className="p-1 border border-[#ccd0d4] bg-white rounded-[3px] disabled:opacity-30"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        ) : files.length === 0 ? (
-          <div className="text-center py-12">
-            <ImageIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma imagem encontrada</h3>
-            <p className="text-gray-500 mb-4">O bucket está vazio. Carregue algumas imagens.</p>
-            <label className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer">
-              <Upload className="w-4 h-4" />
-              Carregar Imagem
-              <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
-            </label>
+        </div>
+
+        {/* Content */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20 bg-white border border-[#ccd0d4]">
+            <RefreshCw className="w-8 h-8 animate-spin text-[#2271b1]" />
+          </div>
+        ) : viewMode === 'grid' ? (
+          /* Grid View - 7 COLUNAS */
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
+            {paginatedFiles.map((file) => (
+              <div 
+                key={file.name}
+                onClick={() => isBulkMode ? toggleSelect(file.name) : openDetails(file)}
+                className={`aspect-square relative bg-white border cursor-pointer overflow-hidden group ${
+                  selectedIds.has(file.name) ? 'ring-[3px] ring-[#2271b1] ring-inset' : 'border-[#ccd0d4]'
+                }`}
+              >
+                <img 
+                  src={getPublicUrl(file.name)} 
+                  className="w-full h-full object-cover" 
+                  alt="" 
+                />
+                
+                {isBulkMode && (
+                  <div className={`absolute top-1 right-1 w-5 h-5 rounded-sm border flex items-center justify-center ${
+                    selectedIds.has(file.name) ? 'bg-[#2271b1] border-[#2271b1]' : 'bg-white border-[#ccd0d4]'
+                  }`}>
+                    {selectedIds.has(file.name) && <Check className="w-3.5 h-3.5 text-white" />}
+                  </div>
+                )}
+                
+                {!isBulkMode && (
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+              </div>
+            ))}
           </div>
         ) : (
-          <>
-            {/* Estatísticas */}
-            <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">
-                  Total de imagens: <strong className="text-gray-900">{files.length}</strong>
-                </span>
-                <span className="text-gray-600">
-                  Tamanho total: <strong className="text-gray-900">
-                    {formatSize(files.reduce((acc, f) => acc + (f.metadata?.size || 0), 0))}
-                  </strong>
-                </span>
-              </div>
-            </div>
-
-            {/* Grid de imagens */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {files.map((file) => (
-                <div
-                  key={file.name}
-                  className={`group relative bg-white rounded-lg shadow-sm border overflow-hidden cursor-pointer transition-all hover:shadow-md ${
-                    selectedFile?.name === file.name ? 'ring-2 ring-green-500' : ''
-                  }`}
-                  onClick={() => setSelectedFile(file)}
-                >
-                  {/* Preview */}
-                  <div className="aspect-square bg-gray-100 relative">
-                    <img
-                      src={getPublicUrl(file.name)}
-                      alt={file.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="1"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpolyline points="21 15 16 10 5 21"%3E%3C/polyline%3E%3C/svg%3E';
-                      }}
-                    />
-                    
-                    {/* Overlay com ações */}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          copyUrl(file.name);
-                        }}
-                        className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
-                        title="Copiar URL"
-                      >
-                        <Copy className="w-4 h-4 text-gray-700" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(getPublicUrl(file.name), '_blank');
-                        }}
-                        className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
-                        title="Ver imagem"
-                      >
-                        <ExternalLink className="w-4 h-4 text-gray-700" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteImage(file.name);
-                        }}
-                        className="p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
-                        title="Eliminar"
-                      >
-                        <Trash2 className="w-4 h-4 text-white" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Info */}
-                  <div className="p-3">
-                    <p className="text-sm font-medium text-gray-900 truncate" title={file.name}>
-                      {file.name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatSize(file.metadata?.size || 0)}
-                    </p>
-                    <p className="text-xs text-gray-400">
+          /* List View (Table) */
+          <div className="bg-white border border-[#ccd0d4] overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-white text-left text-[13px] font-bold border-b border-[#ccd0d4]">
+                  <th className="p-2 w-10">
+                    <input type="checkbox" checked={selectedIds.size === filteredFiles.length} onChange={toggleSelectAll} />
+                  </th>
+                  <th className="p-3">Ficheiro</th>
+                  <th className="p-3">Autor</th>
+                  <th className="p-3">Carregado em</th>
+                  <th className="p-3">Data</th>
+                  <th className="p-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedFiles.map((file) => (
+                  <tr key={file.name} className="border-b border-[#f0f0f1] hover:bg-[#f6f7f7] text-[13px]">
+                    <td className="p-2">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.has(file.name)} 
+                        onChange={() => toggleSelect(file.name)} 
+                      />
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-3 max-w-[400px]">
+                        <div className="w-16 h-16 border border-[#ccd0d4] bg-[#f0f0f1] flex-shrink-0">
+                          <img src={getPublicUrl(file.name)} className="w-full h-full object-cover" alt="" />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <button 
+                            onClick={() => openDetails(file)}
+                            className="text-[#2271b1] font-bold hover:text-[#135e96] text-left truncate whitespace-nowrap block w-full"
+                          >
+                            {file.name}
+                          </button>
+                          <span className="text-[#50575e] text-xs font-mono truncate">{file.metadata?.mimetype}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-3 text-[#50575e]">admin</td>
+                    <td className="p-3 text-[#50575e]">(Desanexado)</td>
+                    <td className="p-3 text-[#50575e]">
                       {new Date(file.created_at).toLocaleDateString('pt-PT')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
+                    </td>
+                    <td className="p-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => openDetails(file)} className="text-[#2271b1] hover:underline">Editar</button>
+                        <span className="text-[#ccd0d4]">|</span>
+                        <button onClick={() => deleteSingle(file.name)} className="text-[#d63638] hover:underline">Eliminar</button>
+                        <span className="text-[#ccd0d4]">|</span>
+                        <button onClick={() => copyUrl(file.name)} className="text-[#2271b1] hover:underline">Ver</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
-        {/* Preview da imagem selecionada */}
+        {/* Modal WP Style */}
         {selectedFile && (
-          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-4xl max-h-full overflow-auto">
-              <div className="p-4 border-b flex items-center justify-between">
-                <h3 className="font-semibold text-lg">{selectedFile.name}</h3>
-                <button
-                  onClick={() => setSelectedFile(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
+          <div className="fixed inset-0 bg-white z-[100] flex flex-col">
+            <div className="flex items-center justify-between px-4 h-12 border-b bg-[#f6f7f7]">
+              <h2 className="text-lg font-bold">Detalhes do anexo</h2>
+              <button onClick={() => setSelectedFile(null)} className="p-2 hover:bg-[#ccd0d4]"><X className="w-6 h-6" /></button>
+            </div>
+            
+            <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#f0f0f1]">
+              {/* Image Preview Area */}
+              <div className="flex-1 p-8 flex flex-col items-center justify-center overflow-auto bg-checkerboard">
+                {!isEditingImage ? (
+                  <>
+                    <img 
+                      src={getPublicUrl(selectedFile.name)} 
+                      className="max-w-full max-h-[70vh] shadow-lg border border-[#ccd0d4] bg-white"
+                      alt="" 
+                    />
+                    <div className="mt-4 flex gap-2">
+                      <button 
+                        onClick={() => {
+                          const img = new Image();
+                          img.src = getPublicUrl(selectedFile.name);
+                          img.onload = () => {
+                            setEditWidth(img.width);
+                            setEditHeight(img.height);
+                            setIsEditingImage(true);
+                          };
+                        }}
+                        className="px-4 py-1.5 bg-[#2271b1] text-white text-sm font-semibold rounded-[3px] hover:bg-[#135e96]"
+                      >
+                        Editar imagem
+                      </button>
+                      <button onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')} className="px-4 py-1.5 border border-[#2271b1] text-[#2271b1] bg-white text-sm font-semibold rounded-[3px] hover:bg-[#f6f7f7]">
+                        Ver ficheiro completo
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  /* Interface de Edição de Imagem */
+                  <div className="w-full max-w-4xl bg-white border border-[#ccd0d4] shadow-lg p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold">Ferramentas de Edição</h3>
+                      <button onClick={() => setIsEditingImage(false)} className="text-sm text-[#2271b1] hover:underline">Voltar aos detalhes</button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="flex flex-col items-center justify-center bg-[#f0f0f1] border p-4">
+                        <img 
+                          src={getPublicUrl(selectedFile.name)} 
+                          className="max-w-full max-h-[40vh] object-contain"
+                          alt="Preview" 
+                        />
+                      </div>
+
+                      <div className="space-y-6">
+                        {/* Redimensionar */}
+                        <div className="space-y-3">
+                          <h4 className="font-bold text-sm border-b pb-1">Redimensionar</h4>
+                          <div className="flex items-center gap-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs text-gray-500">Largura</label>
+                              <input 
+                                type="number" 
+                                value={editWidth}
+                                onChange={(e) => setEditWidth(parseInt(e.target.value))}
+                                className="w-24 h-8 border border-[#ccd0d4] text-sm px-2 outline-none focus:border-[#2271b1]"
+                              />
+                            </div>
+                            <span className="mt-4 text-gray-400">×</span>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs text-gray-500">Altura</label>
+                              <input 
+                                type="number" 
+                                value={editHeight}
+                                onChange={(e) => setEditHeight(parseInt(e.target.value))}
+                                className="w-24 h-8 border border-[#ccd0d4] text-sm px-2 outline-none focus:border-[#2271b1]"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => { setEditWidth(Math.round(editWidth*0.5)); setEditHeight(Math.round(editHeight*0.5)); }} className="text-[11px] text-[#2271b1] hover:underline">50%</button>
+                            <button onClick={() => { setEditWidth(Math.round(editWidth*0.75)); setEditHeight(Math.round(editHeight*0.75)); }} className="text-[11px] text-[#2271b1] hover:underline">75%</button>
+                          </div>
+                          
+                          <div className="bg-[#f6f7f7] p-2 border border-[#ccd0d4] rounded-[2px] mt-2">
+                            <p className="text-[11px] text-gray-600">Tamanho atual: <strong>{formatSize(selectedFile.metadata?.size || 0)}</strong></p>
+                            <p className="text-[11px] text-[#2271b1]">Tamanho final estimado: <strong>{estimatedSize ? formatSize(estimatedSize) : 'A calcular...'}</strong></p>
+                          </div>
+                        </div>
+
+                        {/* Conversão */}
+                        <div className="space-y-3">
+                          <h4 className="font-bold text-sm border-b pb-1">Formato e Otimização</h4>
+                          <div className="flex flex-col gap-2">
+                            <label className="flex items-center gap-2 text-sm cursor-pointer">
+                              <input type="radio" checked={editFormat === 'original'} onChange={() => setEditFormat('original')} />
+                              <span>Manter original ({selectedFile.metadata?.mimetype})</span>
+                            </label>
+                            <label className="flex items-center gap-2 text-sm cursor-pointer">
+                              <input type="radio" checked={editFormat === 'webp'} onChange={() => setEditFormat('webp')} />
+                              <span className="font-medium text-green-700">Converter para WebP (Otimizado para Web)</span>
+                            </label>
+                            <label className="flex items-center gap-2 text-sm cursor-pointer">
+                              <input type="radio" checked={editFormat === 'jpeg'} onChange={() => setEditFormat('jpeg')} />
+                              <span>Converter para JPEG</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="pt-6 border-t flex gap-3">
+                          <button 
+                            onClick={applyImageEdits}
+                            disabled={processingImage}
+                            className="px-6 py-2 bg-[#2271b1] text-white text-sm font-semibold rounded-[3px] hover:bg-[#135e96] disabled:opacity-50"
+                          >
+                            {processingImage ? 'A processar...' : 'Guardar Alterações'}
+                          </button>
+                          <button 
+                            onClick={() => setIsEditingImage(false)}
+                            className="px-6 py-2 border border-[#ccd0d4] text-sm font-semibold rounded-[3px] hover:bg-[#f6f7f7]"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="p-4">
-                <img
-                  src={getPublicUrl(selectedFile.name)}
-                  alt={selectedFile.name}
-                  className="max-w-full max-h-96 object-contain mx-auto"
-                />
-                <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-500">Nome:</span>
-                    <span className="ml-2 font-medium">{selectedFile.name}</span>
+
+              {/* Detail Sidebar */}
+              <div className="w-full md:w-[300px] bg-[#f6f7f7] border-l border-[#ccd0d4] overflow-y-auto p-4 space-y-4">
+                <div className="text-[12px] text-[#50575e] space-y-1">
+                  <p><strong>Carregado em:</strong> {new Date(selectedFile.created_at).toLocaleDateString('pt-PT')}</p>
+                  <p><strong>Nome:</strong> {selectedFile.name}</p>
+                  <p><strong>Tipo:</strong> {selectedFile.metadata?.mimetype}</p>
+                  <p><strong>Tamanho:</strong> {formatSize(selectedFile.metadata?.size || 0)}</p>
+                </div>
+
+                <hr className="border-[#ccd0d4]" />
+
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[12px] font-semibold text-[#50575e]">Texto alternativo</label>
+                    <textarea 
+                      value={metadata.alt_text}
+                      onChange={(e) => setMetadata({...metadata, alt_text: e.target.value})}
+                      className="w-full text-xs border border-[#ccd0d4] p-1.5 focus:border-[#2271b1] outline-none h-14 rounded-[3px]"
+                    />
                   </div>
-                  <div>
-                    <span className="text-gray-500">Tamanho:</span>
-                    <span className="ml-2 font-medium">{formatSize(selectedFile.metadata?.size || 0)}</span>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[12px] font-semibold text-[#50575e]">Título</label>
+                    <input 
+                      type="text"
+                      value={metadata.title}
+                      onChange={(e) => setMetadata({...metadata, title: e.target.value})}
+                      className="w-full text-xs border border-[#ccd0d4] p-1.5 focus:border-[#2271b1] outline-none rounded-[3px]"
+                    />
                   </div>
-                  <div>
-                    <span className="text-gray-500">Tipo:</span>
-                    <span className="ml-2 font-medium">{selectedFile.metadata?.mimetype}</span>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[12px] font-semibold text-[#50575e]">Legenda</label>
+                    <textarea 
+                      value={metadata.caption}
+                      onChange={(e) => setMetadata({...metadata, caption: e.target.value})}
+                      className="w-full text-xs border border-[#ccd0d4] p-1.5 focus:border-[#2271b1] outline-none h-14 rounded-[3px]"
+                    />
                   </div>
-                  <div>
-                    <span className="text-gray-500">Criado em:</span>
-                    <span className="ml-2 font-medium">
-                      {new Date(selectedFile.created_at).toLocaleString('pt-PT')}
-                    </span>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[12px] font-semibold text-[#50575e]">Descrição</label>
+                    <textarea 
+                      value={metadata.description}
+                      onChange={(e) => setMetadata({...metadata, description: e.target.value})}
+                      className="w-full text-xs border border-[#ccd0d4] p-1.5 focus:border-[#2271b1] outline-none h-20 rounded-[3px]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[12px] font-semibold text-[#50575e]">URL do ficheiro</label>
+                    <input 
+                      type="text"
+                      readOnly
+                      value={getPublicUrl(selectedFile.name)}
+                      className="w-full text-[11px] border border-[#ccd0d4] p-1.5 bg-[#f0f0f1] rounded-[3px]"
+                    />
+                    <button onClick={() => copyUrl(selectedFile.name)} className="text-[11px] text-[#2271b1] hover:underline text-left mt-1">Copiar URL</button>
                   </div>
                 </div>
-                <div className="mt-4 flex gap-3">
-                  <button
-                    onClick={() => copyUrl(selectedFile.name)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+
+                <div className="pt-4 border-t border-[#ccd0d4] flex justify-between items-center">
+                  <button onClick={() => deleteSingle(selectedFile.name)} className="text-[12px] text-[#d63638] hover:underline">Eliminar permanentemente</button>
+                  <button 
+                    onClick={saveMetadata}
+                    disabled={savingMetadata}
+                    className="px-4 py-1.5 bg-[#2271b1] text-white text-sm font-semibold rounded-[3px] hover:bg-[#135e96] disabled:opacity-50"
                   >
-                    <Copy className="w-4 h-4" />
-                    Copiar URL
-                  </button>
-                  <button
-                    onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Ver Original
-                  </button>
-                  <button
-                    onClick={() => deleteImage(selectedFile.name)}
-                    className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Eliminar
+                    {savingMetadata ? 'A guardar...' : 'Salvar'}
                   </button>
                 </div>
               </div>
@@ -360,6 +731,14 @@ export default function MediaGallery() {
           </div>
         )}
       </div>
+      
+      <style jsx global>{`
+        .bg-checkerboard {
+          background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+          background-size: 20px 20px;
+          background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+      `}</style>
     </div>
   );
 }

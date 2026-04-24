@@ -4,10 +4,11 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 const sharp = require('sharp');
+require('dotenv').config({ path: path.join(__dirname, '../.env.local') });
 
 // Configuração Supabase - usar variáveis de ambiente
 // SUPABASE_SERVICE_ROLE_KEY deve estar no .env.local (nunca commitar!)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ppgmtxzuaxqshipnvebl.supabase.co';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseKey) {
@@ -35,6 +36,12 @@ function downloadImage(url, filepath) {
   return new Promise((resolve, reject) => {
     const protocol = url.startsWith('https') ? https : http;
     const file = fs.createWriteStream(filepath);
+
+    file.on('error', (err) => {
+      file.close();
+      fs.unlink(filepath, () => {});
+      reject(err);
+    });
 
     protocol.get(url, (response) => {
       if (response.statusCode === 200) {
@@ -171,8 +178,15 @@ async function migrateImages() {
         continue;
       }
 
-      const imageUrl = post.images[0];
-      const filename = `${post.slug || 'image'}-${Date.now()}.jpg`;
+      let imageUrl = post.images[0];
+      
+      // Limpar CDATA se existir
+      if (imageUrl && imageUrl.includes('<![CDATA[')) {
+        imageUrl = imageUrl.replace('<![CDATA[', '').replace(']]>', '').trim();
+      }
+      
+      const cleanSlug = (post.slug || 'image').substring(0, 50);
+      const filename = `${cleanSlug}-${Date.now()}.jpg`;
       const filepath = path.join(tempDir, filename);
 
       try {

@@ -1,4 +1,5 @@
 import "../globals.css";
+import HeaderOld from "@/components/Layout/HeaderOld";
 import Footer from "@/components/Layout/Footer";
 
 export default function InicioLayout({
@@ -8,6 +9,7 @@ export default function InicioLayout({
 }>) {
   return (
     <>
+      <HeaderOld />
       {children}
       <Footer />
     </>
