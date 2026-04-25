@@ -38,44 +38,84 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
   const pathname = usePathname();
   const isChildActive = submenu?.some(item => pathname === item.href);
   const [isOpen, setIsOpen] = useState(isChildActive || false);
+  const [isHovered, setIsHovered] = useState(false);
+  const isDashboard = label === 'Dashboard';
+
+  // Expand if child becomes active (e.g. clicking from flyout)
+  React.useEffect(() => {
+    if (isChildActive) setIsOpen(true);
+  }, [pathname, isChildActive]);
   
   return (
-    <div className="w-full">
+    <div 
+      className="w-full relative group/item"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="relative">
-        <Link 
-          href={href}
-          className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors ${
-            active 
-              ? 'bg-[#00a651] text-white' 
-              : 'text-[#f0f0f1] hover:text-[#ff3333] hover:bg-[#2c3338]'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <Icon className="w-5 h-5" />
-            <span className="font-medium">{label}</span>
-          </div>
-        </Link>
-        {submenu && (
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              setIsOpen(!isOpen);
-            }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-black/20 rounded transition-all text-[#f0f0f1]"
+        {isDashboard ? (
+          <Link 
+            href={href}
+            className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors ${
+              active 
+                ? 'bg-[#00a651] text-white' 
+                : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338]'
+            }`}
           >
-            <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-          </button>
+            <div className="flex items-center gap-3">
+              <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
+              <span className="font-medium">{label}</span>
+            </div>
+          </Link>
+        ) : (
+          <div 
+            onClick={() => submenu && setIsOpen(!isOpen)}
+            className={`flex items-center justify-between px-4 py-2 text-[14px] cursor-pointer transition-colors ${
+              active 
+                ? 'bg-[#00a651] text-white' 
+                : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338]'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
+              <span className="font-medium">{label}</span>
+            </div>
+            {submenu && (
+              <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            )}
+          </div>
+        )}
+
+        {/* Hover Flyout Submenu (WordPress style) */}
+        {submenu && isHovered && !isOpen && (
+          <div className="absolute left-full top-0 w-48 bg-[#2c3338] shadow-xl z-[1000] border-l border-[#3c434a] py-2">
+            <div className="px-4 py-1 mb-1 text-[13px] font-bold text-[#f0f0f1] border-b border-[#3c434a] pb-2">
+              {label}
+            </div>
+            {submenu.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`block px-4 py-1.5 text-[13px] hover:text-[#72aee6] transition-colors ${
+                  pathname === item.href ? 'text-[#72aee6] font-bold' : 'text-[#f0f0f1]'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         )}
       </div>
       
+      {/* Inline Expanded Submenu */}
       {submenu && isOpen && (
         <div className="bg-[#1d2327]">
           {submenu.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`block pl-12 pr-4 py-1.5 text-[13px] hover:text-[#ff3333] transition-colors ${
-                pathname === item.href ? 'text-[#00a651] font-bold' : 'text-[#f0f0f1]'
+              className={`block pl-12 pr-4 py-1.5 text-[13px] hover:text-[#72aee6] transition-colors ${
+                pathname === item.href ? 'text-[#72aee6] font-bold' : 'text-[#f0f0f1]'
               }`}
             >
               {item.label}
@@ -240,7 +280,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         {/* Sidebar (Menu Lateral) */}
         <aside 
           className={`bg-[#1d2327] transition-all duration-200 flex-shrink-0 ${
-            isSidebarOpen ? 'w-48' : 'w-0 overflow-hidden'
+            isSidebarOpen ? 'w-56' : 'w-0 overflow-hidden'
           }`}
         >
           <nav className="mt-0">

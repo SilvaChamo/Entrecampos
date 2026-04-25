@@ -35,11 +35,29 @@ const EntrecamposSymbol = () => (
 );
 
 export default function UsersAdminPage() {
-  const [users, setUsers] = useState<UserItem[]>(MOCK_USERS);
-  const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/users/list');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setUsers(data.users || []);
+    } catch (err: any) {
+      console.error('Erro ao carregar utilizadores:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    loadUsers();
+  }, []);
 
   const filteredUsers = users.filter(user => {
     const matchesRole = filter === 'Todos' || user.role === filter;
@@ -56,15 +74,38 @@ export default function UsersAdminPage() {
   const handleDelete = async (user: UserItem) => {
     if (!confirm(`Tem a certeza que deseja eliminar o utilizador "${user.username}"? Esta ação não pode ser revertida.`)) return;
     setDeletingId(user.id);
-    // Simulação — em produção chamaria a API
-    await new Promise(r => setTimeout(r, 600));
-    setUsers(prev => prev.filter(u => u.id !== user.id));
-    setDeletingId(null);
+    try {
+      const res = await fetch('/api/admin/users/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: user.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error);
+      }
+      setUsers(prev => prev.filter(u => u.id !== user.id));
+    } catch (err: any) {
+      alert('Erro ao eliminar utilizador: ' + err.message);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
-  const handleResetPassword = (user: UserItem) => {
+  const handleResetPassword = async (user: UserItem) => {
     if (!confirm(`Enviar email de reposição de senha para "${user.email}"?`)) return;
-    alert(`Email de reposição enviado para ${user.email}`);
+    try {
+      const res = await fetch('/api/admin/users/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      alert(data.message);
+    } catch (err: any) {
+      alert('Erro: ' + err.message);
+    }
   };
 
   return (
@@ -149,25 +190,33 @@ export default function UsersAdminPage() {
                   <td className="p-3 text-center"><input type="checkbox" /></td>
                   <td className="p-3">
                     <div className="flex items-center gap-3">
-                      {user.isAdmin ? (
-                        <EntrecamposSymbol />
-                      ) : user.avatar ? (
-                        <img src={user.avatar} className="w-8 h-8 rounded shadow-sm border border-gray-100" alt="" />
-                      ) : (
-                        <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center border border-gray-200">
-                          <Shield className="w-4 h-4 text-gray-400" />
+                      {user.avatar ? (
+                        <img src={user.avatar} className="w-10 h-10 rounded-full shadow-sm border border-gray-100 object-cover" alt="" />
+                      ) : user.isAdmin ? (
+                        <div className="w-10 h-10 rounded-full shadow-sm border border-gray-200 flex items-center justify-center bg-[#1d2327] flex-shrink-0">
+                          <span className="text-[12px] font-black leading-none">
+                            <span className="text-[#00a651]">EC</span>
+                          </span>
                         </div>
+                      ) : (
+                        <img 
+                          src="https://secure.gravatar.com/avatar/ad516503a11cd5ca435acc9bb6523536?s=150&d=mm&r=g" 
+                          className="w-10 h-10 rounded-full shadow-sm border border-gray-200 object-cover" 
+                          alt="default" 
+                        />
                       )}
                       <div className="flex flex-col">
                         <Link href={`/admin/utilizadores/editar/${user.id}`} className="text-[#2271b1] font-bold text-[14px] hover:text-[#135e96]">
                           {user.username}
                         </Link>
-                        {/* Hover actions */}
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity text-[11px] font-medium mt-0.5">
+                        {/* Hover actions (visible on row hover) */}
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity text-[11px] font-medium mt-1">
                           <Link href={`/admin/utilizadores/editar/${user.id}`} className="text-[#2271b1] hover:text-[#135e96]">Editar</Link>
                           <span className="text-gray-300">|</span>
+                          <Link href={`/admin/utilizadores/ver/${user.id}`} className="text-[#2271b1] hover:text-[#135e96]">Ver</Link>
                           {!user.isAdmin && (
                             <>
+                              <span className="text-gray-300">|</span>
                               <button
                                 onClick={() => handleDelete(user)}
                                 disabled={deletingId === user.id}
@@ -175,10 +224,8 @@ export default function UsersAdminPage() {
                               >
                                 {deletingId === user.id ? 'A eliminar...' : 'Eliminar'}
                               </button>
-                              <span className="text-gray-300">|</span>
                             </>
                           )}
-                          <Link href={`/admin/utilizadores/ver/${user.id}`} className="text-[#2271b1] hover:text-[#135e96]">Ver</Link>
                           <span className="text-gray-300">|</span>
                           <button
                             onClick={() => handleResetPassword(user)}
