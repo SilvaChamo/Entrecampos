@@ -40,6 +40,8 @@ export default function MediaGallery() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkMode, setIsBulkMode] = useState(false);
+  const [fileTypeFilter, setFileTypeFilter] = useState('todos');
+  const [dateFilter, setDateFilter] = useState('todas');
   
   // Paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -85,12 +87,35 @@ export default function MediaGallery() {
     loadImages();
   }, []);
 
+  // Extrair anos únicos dos ficheiros
+  const years = useMemo(() => {
+    const uniqueYears = Array.from(new Set(
+      files.map(f => {
+        const date = f.created_at || f.updated_at;
+        return date ? new Date(date).getFullYear() : new Date().getFullYear();
+      })
+    )).sort((a, b) => b - a);
+    return uniqueYears;
+  }, [files]);
+
   // Lógica de Paginação e Filtragem
   const filteredFiles = useMemo(() => {
-    return files.filter(f => 
-      f.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [files, searchQuery]);
+    return files.filter(f => {
+      const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = fileTypeFilter === 'todos' || 
+        (fileTypeFilter === 'imagens' && /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(f.name)) ||
+        (fileTypeFilter === 'videos' && /\.(mp4|mov|avi|mkv|webm|flv|wmv)$/i.test(f.name)) ||
+        (fileTypeFilter === 'documentos' && /\.(doc|docx|xls|xlsx|ppt|pptx|txt|rtf|odt)$/i.test(f.name)) ||
+        (fileTypeFilter === 'pdf' && /\.pdf$/i.test(f.name)) ||
+        (fileTypeFilter === 'audio' && /\.(mp3|wav|aac|ogg|flac|m4a|wma)$/i.test(f.name));
+      const fileDateStr = f.created_at || f.updated_at;
+      const fileYear = fileDateStr 
+        ? new Date(fileDateStr).getFullYear()
+        : new Date().getFullYear();
+      const matchesDate = dateFilter === 'todas' || fileYear.toString() === dateFilter;
+      return matchesSearch && matchesType && matchesDate;
+    });
+  }, [files, searchQuery, fileTypeFilter, dateFilter]);
 
   const totalPages = Math.ceil(filteredFiles.length / itemsPerPage);
   const paginatedFiles = useMemo(() => {
@@ -284,10 +309,10 @@ export default function MediaGallery() {
 
   return (
     <div className="min-h-screen bg-[#f0f0f1] text-[#2c3338]">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6">
+      <div className="max-w-[1280px] mx-auto">
         {/* Header Estilo WP */}
-        <div className="p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="pt-0 pb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-normal">Biblioteca multimédia</h1>
             <label className="px-3 py-1 bg-white border border-[#2271b1] text-[#2271b1] rounded-[3px] text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
@@ -335,67 +360,81 @@ export default function MediaGallery() {
       </div>
 
         {/* Toolbar de Filtros - AGORA FIXA */}
-        <div className="sticky top-0 z-40 bg-[#f0f0f1] pb-2">
+        <div className="sticky top-0 z-40 bg-[#f0f0f1] pt-4 pb-4">
           <div className="flex flex-col md:flex-row items-center justify-between bg-white border border-[#ccd0d4] p-2 gap-2 shadow-sm">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              {isBulkMode && (
+                <input 
+                  type="checkbox" 
+                  checked={selectedIds.size === paginatedFiles.length && paginatedFiles.length > 0}
+                  onChange={() => {
+                    if (selectedIds.size === paginatedFiles.length) {
+                      setSelectedIds(new Set());
+                    } else {
+                      setSelectedIds(new Set(paginatedFiles.map(f => f.name)));
+                    }
+                  }}
+                  className="w-4 h-4 cursor-pointer"
+                />
+              )}
+              
               <button 
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-[3px] ${viewMode === 'list' ? 'bg-[#f0f0f1] text-[#2271b1]' : 'text-[#50575e] hover:text-[#2271b1]'}`}
+                className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-[#f0f0f1] text-[#2271b1]' : 'text-[#50575e] hover:text-[#2271b1]'}`}
               >
                 <ListIcon className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-[3px] ${viewMode === 'grid' ? 'bg-[#f0f0f1] text-[#2271b1]' : 'text-[#50575e] hover:text-[#2271b1]'}`}
+                className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-[#f0f0f1] text-[#2271b1]' : 'text-[#50575e] hover:text-[#2271b1]'}`}
               >
                 <LayoutGrid className="w-5 h-5" />
               </button>
 
-              <select className="ml-4 h-8 text-sm border-[#ccd0d4] rounded-[3px] bg-white px-2">
-                <option>Todos os ficheiros multimédia</option>
+              <select 
+                className="ml-2 h-8 text-sm border-[#ccd0d4] rounded-md bg-white px-2"
+                value={fileTypeFilter}
+                onChange={(e) => setFileTypeFilter(e.target.value)}
+              >
+                <option value="todos">Todos os ficheiros</option>
+                <option value="imagens">Imagens</option>
+                <option value="videos">Vídeos</option>
+                <option value="documentos">Documentos</option>
+                <option value="pdf">PDF</option>
+                <option value="audio">Áudio</option>
               </select>
               
-              <select className="h-8 text-sm border-[#ccd0d4] rounded-[3px] bg-white px-2">
-                <option>Todas as datas</option>
+              <select 
+                className="h-8 text-sm border-[#ccd0d4] rounded-md bg-white px-2"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+              >
+                <option value="todas">Todas as datas</option>
+                {years.map(year => (
+                  <option key={year} value={year.toString()}>{year}</option>
+                ))}
               </select>
-
-              <button className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-[3px] bg-white hover:bg-[#f6f7f7]">
-                Filtrar
-              </button>
 
               {!isBulkMode ? (
                 <button 
                   onClick={() => setIsBulkMode(true)}
-                  className="ml-4 h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-[3px] bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
+                  className="ml-2 h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
                 >
                   Seleção em massa
                 </button>
               ) : (
-                <div className="flex items-center gap-2 ml-4 flex-nowrap">
-                  <button 
-                    onClick={deleteSelected}
-                    disabled={selectedIds.size === 0}
-                    className="h-8 px-4 text-sm font-semibold bg-[#d63638] text-white rounded-[3px] hover:bg-[#b32d2e] disabled:opacity-50 whitespace-nowrap"
+                <div className="flex items-center gap-3 ml-2 flex-nowrap">
+                  <span 
+                    onClick={selectedIds.size > 0 ? deleteSelected : undefined}
+                    className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#d63638] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
                   >
-                    Eliminar permanentemente ({selectedIds.size})
-                  </button>
-                  <button 
-                    onClick={() => {
-                      if (selectedIds.size === paginatedFiles.length) {
-                        setSelectedIds(new Set());
-                      } else {
-                        setSelectedIds(new Set(paginatedFiles.map(f => f.name)));
-                      }
-                    }}
-                    className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-[3px] bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
-                  >
-                    {selectedIds.size === paginatedFiles.length ? 'Desmarcar tudo' : 'Selecionar tudo'}
-                  </button>
+                    Eliminar {selectedIds.size} de imagens selecionadas
+                  </span>
                   <button 
                     onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }}
-                    className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-[3px] bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
+                    className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
                   >
-                    Cancelar seleção
+                    Cancelar
                   </button>
                 </div>
               )}
@@ -409,7 +448,7 @@ export default function MediaGallery() {
                   <button 
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    className="p-1 border border-[#ccd0d4] bg-white rounded-[3px] disabled:opacity-30"
+                    className="p-1 border border-[#ccd0d4] bg-white rounded-md disabled:opacity-30"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -419,7 +458,7 @@ export default function MediaGallery() {
                   <button 
                     disabled={currentPage === totalPages || totalPages === 0}
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    className="p-1 border border-[#ccd0d4] bg-white rounded-[3px] disabled:opacity-30"
+                    className="p-1 border border-[#ccd0d4] bg-white rounded-md disabled:opacity-30"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>

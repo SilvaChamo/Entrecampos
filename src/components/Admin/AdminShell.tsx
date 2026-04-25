@@ -47,7 +47,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
           className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors ${
             active 
               ? 'bg-[#00a651] text-white' 
-              : 'text-[#f0f0f1] hover:text-[#ff6b6b] hover:bg-[#2c3338]'
+              : 'text-[#f0f0f1] hover:text-[#ff3333] hover:bg-[#2c3338]'
           }`}
         >
           <div className="flex items-center gap-3">
@@ -74,7 +74,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
             <Link
               key={item.href}
               href={item.href}
-              className={`block pl-12 pr-4 py-1.5 text-[13px] hover:text-[#ff6b6b] transition-colors ${
+              className={`block pl-12 pr-4 py-1.5 text-[13px] hover:text-[#ff3333] transition-colors ${
                 pathname === item.href ? 'text-[#00a651] font-bold' : 'text-[#f0f0f1]'
               }`}
             >
@@ -211,8 +211,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           <span className="capitalize">Olá, {user?.name || 'Visitante'} ({user?.role || 'guest'})</span>
           <UserIcon className="w-4 h-4 bg-[#2c3338] p-0.5 rounded-full" />
           
-          <div className="absolute right-0 top-8 w-48 bg-[#2c3338] shadow-lg border border-[#3c434a] hidden group-hover:block p-2 rounded-lg">
-            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff6b6b] text-[13px] rounded-md transition-colors">
+          <div className="absolute right-0 top-8 w-48 bg-[#2c3338] shadow-lg border border-[#3c434a] hidden group-hover:block p-2 rounded-md">
+            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[13px] rounded-md transition-colors">
               <UserIcon className="w-4 h-4" /> Ver Perfil
             </Link>
             {/* Quick role switch for testing */}
@@ -228,7 +228,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             ))}
             <button 
               onClick={logout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff6b6b] text-[13px] border-t border-[#3c434a] mt-2 rounded-md transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[13px] border-t border-[#3c434a] mt-2 rounded-md transition-colors"
             >
               <LogOut className="w-4 h-4" /> Sair
             </button>
@@ -267,7 +267,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="p-0 max-w-[1400px]">
+          <div className="p-[25px] max-w-[1400px]">
             {children}
           </div>
         </main>

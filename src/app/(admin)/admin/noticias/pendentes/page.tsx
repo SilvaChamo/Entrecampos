@@ -12,7 +12,8 @@ import {
   RefreshCw,
   AlertTriangle,
   Clock,
-  Eye
+  Eye,
+  Edit2
 } from 'lucide-react';
 
 interface NewsItem {
@@ -85,7 +86,7 @@ export default function PendingNewsPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-[#ccd0d4] rounded-[3px] overflow-hidden shadow-sm">
+      <div className="bg-white border border-[#ccd0d4] rounded-md overflow-hidden shadow-sm">
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr className="bg-white text-left font-bold border-b border-[#ccd0d4] text-[#2c3338]">
@@ -132,13 +133,13 @@ export default function PendingNewsPage() {
                   <td className="p-4 text-right space-x-2">
                     <button 
                       onClick={() => publishNews(item.id)}
-                      className="px-3 py-1.5 bg-green-600 text-white rounded-[3px] text-[12px] font-bold hover:bg-green-700 transition-colors inline-flex items-center gap-1.5"
+                      className="px-3 py-1.5 bg-green-600 text-white rounded-md text-[12px] font-bold hover:bg-green-700 transition-colors inline-flex items-center gap-1.5"
                     >
                       <CheckCircle className="w-4 h-4" /> Publicar
                     </button>
                     <Link 
                       href={`/admin/noticias/editar/${item.id}`}
-                      className="px-3 py-1.5 bg-white border border-[#ccd0d4] text-[#2c3338] rounded-[3px] text-[12px] font-bold hover:bg-[#f6f7f7] transition-colors inline-flex items-center gap-1.5"
+                      className="px-3 py-1.5 bg-white border border-[#ccd0d4] text-[#2c3338] rounded-md text-[12px] font-bold hover:bg-[#f6f7f7] transition-colors inline-flex items-center gap-1.5"
                     >
                       <Eye className="w-4 h-4" /> Rever
                     </Link>

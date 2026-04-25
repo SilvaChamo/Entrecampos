@@ -117,7 +117,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               </h3>
               <Link 
                 href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias/nova"} 
-                className="inline-block px-6 py-2.5 bg-[#00a651] text-white rounded-lg text-[14px] font-bold hover:bg-[#008f45] transition-all shadow-sm mb-4"
+                className="inline-block px-6 py-2.5 bg-[#00a651] text-white rounded-md text-[14px] font-bold hover:bg-[#008f45] transition-all shadow-sm mb-4"
               >
                 {role === 'editor' ? 'Revisar notícias pendentes' : 'Escreva o seu primeiro artigo'}
               </Link>
@@ -157,7 +157,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               </ul>
             </div>
 
-            <div className="space-y-3 bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="space-y-3 bg-gray-50 rounded-md p-4 border border-gray-200">
               <h3 className="text-[16px] font-bold flex items-center gap-2 text-[#1d2327]">
                 <Clock className="w-4 h-4 text-[#00a651]" />
                 {role === 'guest' ? 'Acesso Limitado' : 'Resumo do Site'}
@@ -167,7 +167,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                   <>
                     <div className="flex items-center justify-between py-1 border-b border-[#f9f9f9]">
                       <span className="text-[#50575e]">Para Revisar</span>
-                      <span className="font-bold text-[#d63638]">{stats.pending}</span>
+                      <span className="font-bold text-[#ff3333]">{stats.pending}</span>
                     </div>
                     <div className="flex items-center justify-between py-1 border-b border-[#f9f9f9]">
                       <span className="text-[#50575e]">Revistas</span>
@@ -212,9 +212,9 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
       </section>
 
       <div className="max-w-[1200px] mx-auto px-4 lg:px-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div className="space-y-5">
-            <div className="bg-white border border-[#ccd0d4] rounded-[10px] shadow-sm overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+          <div className="h-full">
+            <div className="bg-white border border-[#ccd0d4] rounded-md shadow-sm overflow-hidden h-full">
               <div className="p-3 border-b border-[#f0f0f1] bg-white flex items-center justify-between">
                 <h2 className="font-bold text-[14px] text-[#1d2327] flex items-center gap-2">
                   <Activity className="w-4 h-4 text-gray-400" />
@@ -227,10 +227,10 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                     {[1, 2, 3].map(i => <div key={i} className="h-4 bg-gray-100 rounded w-full"></div>)}
                   </div>
                 ) : recentActivities.length > 0 ? (
-                  <ul className="space-y-4">
+                  <ul className="space-y-3">
                     {recentActivities.map(activity => (
-                      <li key={activity.id} className="border-b border-[#f0f0f1] pb-3 last:border-0 last:pb-0">
-                        <p className="text-[13px] text-gray-400 mb-1">{new Date(activity.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
+                      <li key={activity.id} className="border-b border-[#f0f0f1] pb-2 last:border-0 last:pb-0">
+                        <p className="text-[13px] text-gray-400 mb-0.5">{new Date(activity.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
                         <Link href={`/admin/noticias/editar/${activity.id}`} className="text-[13px] text-[#2271b1] font-medium hover:underline">
                           {activity.title}
                         </Link>
@@ -244,59 +244,59 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
             </div>
           </div>
 
-          <div className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <Link href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias"} className="group">
-                <div className="bg-white border border-[#ccd0d4] p-5 rounded-[10px] shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-blue-50 text-[#2271b1] rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    {role === 'editor' ? <Clock className="w-6 h-6" /> : <Newspaper className="w-6 h-6" />}
+          <div className="flex flex-col h-full gap-4">
+            <div className="grid grid-cols-2 gap-4 flex-1">
+              <Link href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias"} className="group h-full">
+                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center justify-center text-center">
+                  <div className="w-11 h-11 bg-blue-50 text-[#2271b1] rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    {role === 'editor' ? <Clock className="w-5 h-5" /> : <Newspaper className="w-5 h-5" />}
                   </div>
-                  <span className="text-[24px] font-bold text-[#1d2327] mb-1">
+                  <span className="text-[22px] font-bold text-[#1d2327] mb-0.5">
                     {role === 'editor' ? stats.pending : stats.news}
                   </span>
-                  <span className="text-[13px] text-[#50575e] font-medium uppercase tracking-wider">
+                  <span className="text-[12px] text-[#50575e] font-medium uppercase tracking-wider">
                     {role === 'editor' ? 'Pendentes' : 'Ver Notícias'}
                   </span>
                 </div>
               </Link>
 
-              <Link href={role === 'editor' ? "/admin/noticias/revistas" : "/admin/noticias/nova"} className="group">
-                <div className="bg-white border border-[#ccd0d4] p-5 rounded-[10px] shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    {role === 'editor' ? <CheckSquare className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+              <Link href={role === 'editor' ? "/admin/noticias/revistas" : "/admin/noticias/nova"} className="group h-full">
+                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center justify-center text-center">
+                  <div className="w-11 h-11 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    {role === 'editor' ? <CheckSquare className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                   </div>
-                  <span className="text-[24px] font-bold text-[#1d2327] mb-1">
+                  <span className="text-[22px] font-bold text-[#1d2327] mb-0.5">
                     {role === 'editor' ? stats.reviewed : '+'}
                   </span>
-                  <span className="text-[13px] text-[#50575e] font-medium uppercase tracking-wider">
+                  <span className="text-[12px] text-[#50575e] font-medium uppercase tracking-wider">
                     {role === 'editor' ? 'Revistas' : 'Nova Notícia'}
                   </span>
                 </div>
               </Link>
 
-              <Link href="/admin/media" className="group">
-                <div className="bg-white border border-[#ccd0d4] p-5 rounded-[10px] shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    <ImageIcon className="w-6 h-6" />
+              <Link href="/admin/media" className="group h-full">
+                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center justify-center text-center">
+                  <div className="w-11 h-11 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <ImageIcon className="w-5 h-5" />
                   </div>
-                  <span className="text-[24px] font-bold text-[#1d2327] mb-1">
+                  <span className="text-[22px] font-bold text-[#1d2327] mb-0.5">
                     {role === 'contribuidor' ? stats.contributions : stats.media}
                   </span>
-                  <span className="text-[13px] text-[#50575e] font-medium uppercase tracking-wider">
+                  <span className="text-[12px] text-[#50575e] font-medium uppercase tracking-wider">
                     {role === 'contribuidor' ? 'Contribuições' : 'Galeria'}
                   </span>
                 </div>
               </Link>
 
-              <Link href={role === 'guest' ? "/admin/planos" : "/admin/media"} className="group">
-                <div className="bg-white border border-[#ccd0d4] p-5 rounded-[10px] shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    {role === 'guest' ? <CreditCard className="w-6 h-6" /> : <Video className="w-6 h-6" />}
+              <Link href={role === 'guest' ? "/admin/planos" : "/admin/media"} className="group h-full">
+                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center justify-center text-center">
+                  <div className="w-11 h-11 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    {role === 'guest' ? <CreditCard className="w-5 h-5" /> : <Video className="w-5 h-5" />}
                   </div>
-                  <span className="text-[24px] font-bold text-[#1d2327] mb-1">
+                  <span className="text-[22px] font-bold text-[#1d2327] mb-0.5">
                     {role === 'guest' ? '$' : stats.videos}
                   </span>
-                  <span className="text-[13px] text-[#50575e] font-medium uppercase tracking-wider">
+                  <span className="text-[12px] text-[#50575e] font-medium uppercase tracking-wider">
                     {role === 'guest' ? 'Planos' : 'Add Video'}
                   </span>
                 </div>
@@ -306,13 +306,13 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
             <Link 
               href="/" 
               target="_blank"
-              className="flex items-center justify-between p-4 bg-[#1d2327] text-white rounded-[10px] hover:bg-[#2c3338] transition-all group"
+              className="flex items-center justify-between p-3 bg-[#1a3d0c] text-white rounded-md hover:bg-[#2d5016] transition-all group w-full"
             >
               <div className="flex items-center gap-3">
-                <ExternalLink className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                <ExternalLink className="w-5 h-5 text-green-300 group-hover:text-white" />
                 <span className="text-[14px]">Ver site em directo</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-green-300 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>

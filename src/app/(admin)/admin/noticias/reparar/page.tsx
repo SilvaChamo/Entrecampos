@@ -57,11 +57,19 @@ export default function NewsRepairPage() {
       // 2. Fetch all storage files
       const { data: storageData } = await supabase.storage.from(BUCKET_NAME).list('', { limit: 1000 });
 
-      // 3. Filter news that need repair (image_url missing or not pointing to supabase)
+      // 3. Filter news that genuinely need repair:
+      // - No image_url at all
+      // - URL contains CDATA (malformed WordPress export artifact)
+      // - URL points to wp-content on an UNKNOWN host (not our live site or Supabase)
       const needsRepair = (newsData || []).filter((n: any) => {
         if (!n.image_url) return true;
-        // Se o link for do WordPress antigo, precisa de reparação
-        return n.image_url.includes('wp-content') || n.image_url.includes('CDATA');
+        if (n.image_url.includes('CDATA')) return true;
+        // URLs from the live site or Supabase are valid — do not flag
+        if (n.image_url.includes('entrecampos.co.mz')) return false;
+        if (n.image_url.includes('supabase')) return false;
+        // Any other wp-content URL from an unknown host still needs repair
+        if (n.image_url.includes('wp-content')) return true;
+        return false;
       });
 
       setNews(needsRepair);
