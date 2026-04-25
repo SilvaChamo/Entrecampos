@@ -35,32 +35,38 @@ interface SidebarItemProps {
 }
 
 const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+  const isChildActive = submenu?.some(item => pathname === item.href);
+  const [isOpen, setIsOpen] = useState(isChildActive || false);
   
   return (
     <div className="w-full">
-      <Link 
-        href={href}
-        onClick={(e) => {
-          if (submenu) {
-            e.preventDefault();
-            setIsOpen(!isOpen);
-          }
-        }}
-        className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors ${
-          active 
-            ? 'bg-[#2271b1] text-white' 
-            : 'text-[#f0f0f1] hover:text-[#72aee6] hover:bg-[#2c3338]'
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <Icon className="w-5 h-5" />
-          <span>{label}</span>
-        </div>
+      <div className="relative">
+        <Link 
+          href={href}
+          className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors ${
+            active 
+              ? 'bg-[#00a651] text-white' 
+              : 'text-[#f0f0f1] hover:text-[#ff6b6b] hover:bg-[#2c3338]'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <Icon className="w-5 h-5" />
+            <span className="font-medium">{label}</span>
+          </div>
+        </Link>
         {submenu && (
-          <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              setIsOpen(!isOpen);
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-black/20 rounded transition-all text-[#f0f0f1]"
+          >
+            <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </button>
         )}
-      </Link>
+      </div>
       
       {submenu && isOpen && (
         <div className="bg-[#1d2327]">
@@ -68,7 +74,9 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
             <Link
               key={item.href}
               href={item.href}
-              className="block pl-12 pr-4 py-1.5 text-[13px] text-[#f0f0f1] hover:text-[#72aee6]"
+              className={`block pl-12 pr-4 py-1.5 text-[13px] hover:text-[#ff6b6b] transition-colors ${
+                pathname === item.href ? 'text-[#00a651] font-bold' : 'text-[#f0f0f1]'
+              }`}
             >
               {item.label}
             </Link>
@@ -86,22 +94,20 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   const getMenuItems = (role: UserRole) => {
     const items: any[] = [
-      { href: '/admin', icon: LayoutDashboard, label: 'Painel' },
+      { 
+        href: role === 'admin' ? '/admin/dashboard' : (role === 'editor' ? '/admin/editor' : (role === 'contribuidor' ? '/admin/contribuidor' : '/admin/guest')), 
+        icon: LayoutDashboard, 
+        label: 'Dashboard',
+        submenu: role === 'admin' ? [
+          { label: 'Editor', href: '/admin/editor' },
+          { label: 'Contribuidor', href: '/admin/contribuidor' },
+          { label: 'Visitante', href: '/admin/guest' },
+        ] : undefined
+      },
     ];
 
     if (role === 'admin') {
       items.push(
-        {
-          href: '#',
-          icon: LayoutDashboard,
-          label: 'Painéis de Administração',
-          submenu: [
-            { label: 'Dashboard Geral', href: '/admin/dashboard' },
-            { label: 'Painel Editor', href: '/admin/editor' },
-            { label: 'Painel Contribuidor', href: '/admin/contribuidor' },
-            { label: 'Painel Visitante', href: '/admin/guest' },
-          ]
-        },
         { 
           href: '/admin/noticias', 
           icon: Newspaper, 
@@ -109,8 +115,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           submenu: [
             { label: 'Todas as Notícias', href: '/admin/noticias' },
             { label: 'Adicionar Nova', href: '/admin/noticias/nova' },
-            { label: 'Reparar Imagens', href: '/admin/noticias/reparar' },
+            { label: 'Notícias Pendentes', href: '/admin/noticias/pendentes' },
             { label: 'Categorias', href: '/admin/noticias/categorias' },
+            { label: 'Etiquetas', href: '/admin/noticias/etiquetas' },
+            { label: 'Reparar Imagens', href: '/admin/noticias/reparar' },
           ]
         },
         { 
@@ -122,12 +130,22 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Limpeza de Media', href: '/admin/media/limpeza' },
           ]
         },
-        { href: '/admin/utilizadores', icon: Users, label: 'Utilizadores' },
+        { 
+          href: '/admin/utilizadores', 
+          icon: Users, 
+          label: 'Utilizadores',
+          submenu: [
+            { label: 'Todos os utilizadores', href: '/admin/utilizadores' },
+            { label: 'Adicionar utilizador', href: '/admin/utilizadores/novo' },
+            { label: 'O seu perfil', href: '/admin/perfil' },
+          ]
+        },
         { href: '/admin/definicoes', icon: Settings, label: 'Definições' },
       );
     }
 
     if (role === 'editor') {
+      items[0].href = '/admin/editor';
       items.push(
         { href: '/admin/noticias/pendentes', icon: Clock, label: 'Notícias Pendentes' },
         { href: '/admin/noticias/revistas', icon: CheckSquare, label: 'Últimos Revistos' },
@@ -136,14 +154,24 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     }
 
     if (role === 'contribuidor') {
+      items[0].href = '/admin/contribuidor';
       items.push(
         { href: '/admin/noticias/nova', icon: Plus, label: 'Escrever Notícia' },
         { href: '/admin/contribuicoes', icon: FileUp, label: 'Minhas Contribuições' },
-        { href: '/admin/media', icon: ImageIcon, label: 'Multimédia' },
+        { 
+          href: '/admin/media', 
+          icon: ImageIcon, 
+          label: 'Multimédia',
+          submenu: [
+            { label: 'Biblioteca', href: '/admin/media' },
+            { label: 'Adicionar novo', href: '/admin/media/novo' },
+          ]
+        },
       );
     }
 
     if (role === 'guest') {
+      items[0].href = '/admin/guest';
       items.push(
         { href: '/admin/noticias', icon: Eye, label: 'Ver Notícias' },
         { href: '/admin/media', icon: Video, label: 'Ver Vídeos' },
@@ -183,8 +211,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           <span className="capitalize">Olá, {user?.name || 'Visitante'} ({user?.role || 'guest'})</span>
           <UserIcon className="w-4 h-4 bg-[#2c3338] p-0.5 rounded-full" />
           
-          <div className="absolute right-0 top-8 w-48 bg-[#2c3338] shadow-lg border border-[#3c434a] hidden group-hover:block p-2">
-            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#72aee6] text-[13px]">
+          <div className="absolute right-0 top-8 w-48 bg-[#2c3338] shadow-lg border border-[#3c434a] hidden group-hover:block p-2 rounded-lg">
+            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff6b6b] text-[13px] rounded-md transition-colors">
               <UserIcon className="w-4 h-4" /> Ver Perfil
             </Link>
             {/* Quick role switch for testing */}
@@ -200,7 +228,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             ))}
             <button 
               onClick={logout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#d63638] text-[13px] border-t border-[#3c434a] mt-2"
+              className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff6b6b] text-[13px] border-t border-[#3c434a] mt-2 rounded-md transition-colors"
             >
               <LogOut className="w-4 h-4" /> Sair
             </button>
@@ -215,7 +243,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             isSidebarOpen ? 'w-48' : 'w-0 overflow-hidden'
           }`}
         >
-          <nav className="mt-2">
+          <nav className="mt-0">
             {menuItems.map((item) => (
               <SidebarItem 
                 key={item.href}
