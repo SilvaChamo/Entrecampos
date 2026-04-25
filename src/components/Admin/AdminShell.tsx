@@ -37,7 +37,7 @@ interface SidebarItemProps {
 const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemProps) => {
   const pathname = usePathname();
   const isChildActive = submenu?.some(item => pathname === item.href);
-  const [isOpen, setIsOpen] = useState(isChildActive || false);
+  const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const isDashboard = label === 'Dashboard';
 
@@ -54,19 +54,28 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
     >
       <div className="relative">
         {isDashboard ? (
-          <Link 
-            href={href}
+          <div 
             className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors ${
               active 
                 ? 'bg-[#00a651] text-white' 
                 : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338]'
             }`}
           >
-            <div className="flex items-center gap-3">
+            <Link href={href} className="flex items-center gap-3 flex-1">
               <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
               <span className="font-medium">{label}</span>
-            </div>
-          </Link>
+            </Link>
+            {submenu && (
+              <ChevronDown 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsOpen(!isOpen);
+                }}
+                className={`w-4 h-4 cursor-pointer transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+              />
+            )}
+          </div>
         ) : (
           <div 
             onClick={() => submenu && setIsOpen(!isOpen)}
@@ -96,8 +105,8 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
               <Link
                 key={item.href}
                 href={item.href}
-                className={`block px-4 py-1.5 text-[13px] hover:text-[#72aee6] transition-colors ${
-                  pathname === item.href ? 'text-[#72aee6] font-bold' : 'text-[#f0f0f1]'
+                className={`block px-4 py-1.5 text-[13px] hover:text-red-500 transition-colors ${
+                  pathname === item.href ? 'text-red-600' : 'text-[#f0f0f1]'
                 }`}
               >
                 {item.label}
@@ -114,8 +123,8 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
             <Link
               key={item.href}
               href={item.href}
-              className={`block pl-12 pr-4 py-1.5 text-[13px] hover:text-[#72aee6] transition-colors ${
-                pathname === item.href ? 'text-[#72aee6] font-bold' : 'text-[#f0f0f1]'
+              className={`block pl-12 pr-4 py-1.5 text-[13px] hover:text-red-500 transition-colors ${
+                pathname === item.href ? 'text-red-600' : 'text-[#f0f0f1]'
               }`}
             >
               {item.label}

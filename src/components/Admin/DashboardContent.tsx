@@ -101,11 +101,11 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
     <div className="bg-[#f0f0f1] min-h-screen text-[#2c3338] font-sans pb-12">
       <section className="bg-white border border-[#ccd0d4] p-6 mb-5 shadow-sm rounded-none">
         <div className="max-w-[1200px] mx-auto">
-          <h1 className="text-[23px] font-normal text-[#1d2327] mb-2">
-            {role === 'guest' ? 'Bem-vindo ao EntreCAMPOS' : `Painel de Administração - ${role.toUpperCase()}`}
+          <h1 className="text-[23px] font-[800] text-[#1d2327] mb-2">
+            Bem-vindo ao painel de administração
           </h1>
           <p className="text-[14px] text-[#50575e] mb-4">
-            {role === 'guest' ? 'Junte-se a nós para partilhar as suas notícias e multimedia.' : `Bem-vindo, ${user?.name || 'Utilizador'}. Este é o seu painel de gestão.`}
+            {role === 'guest' ? 'Junte-se a nós para partilhar as suas notícias e multimedia.' : `Olá, ${user?.name || 'Utilizador'}. Este é o seu painel de gestão.`}
           </p>
           
           <hr className="border-[#f0f0f1] mb-6" />
@@ -115,15 +115,15 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               <h3 className="text-[16px] font-bold mb-3">
                 {role === 'editor' ? 'Revisão' : role === 'contribuidor' ? 'Produção' : 'Introdução'}
               </h3>
+              <p className="text-[13px] text-gray-500 mb-4">
+                Veja todas as notícias ou
+              </p>
               <Link 
                 href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias/nova"} 
-                className="inline-block px-6 py-2.5 bg-[#00a651] text-white rounded-md text-[14px] font-bold hover:bg-[#008f45] transition-all shadow-sm mb-4"
+                className="inline-block px-6 py-2.5 bg-[#00a651] text-white rounded-md text-[14px] font-bold hover:bg-[#008f45] transition-all shadow-sm"
               >
                 {role === 'editor' ? 'Revisar notícias pendentes' : 'Escreva o seu primeiro artigo'}
               </Link>
-              <p className="text-[13px] text-gray-500">
-                ou <Link href="/admin/noticias" className="text-[#2271b1] hover:underline">veja todas as notícias</Link>
-              </p>
             </div>
             
             <div className="space-y-3">

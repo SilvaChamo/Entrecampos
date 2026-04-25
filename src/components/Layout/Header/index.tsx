@@ -68,7 +68,7 @@ const Header = () => {
           {/* Logo */}
           <Link href="/inicio" className="mb-2">
             <img 
-              src="https://entrecampos.co.mz/wp-content/uploads/2024/07/Logo.png" 
+              src="https://ppgmtxzuaxqshipnvebl.supabase.co/storage/v1/object/public/news-images/eCAMPOS_Logo_whiteBG-01.png" 
               alt="EntreCAMPOS" 
               className="h-16 w-auto"
             />

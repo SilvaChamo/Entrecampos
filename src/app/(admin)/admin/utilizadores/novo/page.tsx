@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Camera, Trash2, Shield, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -8,10 +9,13 @@ import { supabase } from '@/lib/supabase';
 const ROLES = ['Administrador', 'Editor', 'Actor', 'Subscritor', 'Contribuidor'];
 
 export default function AddUserPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
     username: '',
     firstName: '',
     lastName: '',
+    alcunha: '',
+    displayNameType: 'full_name',
     email: '',
     website: '',
     bio: '',
@@ -120,7 +124,7 @@ export default function AddUserPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       
-      window.location.href = '/admin/utilizadores?added=true';
+      router.push('/admin/utilizadores?added=true');
     } catch (err: any) {
       setError(err.message);
       setSaving(false);
@@ -189,6 +193,22 @@ export default function AddUserPage() {
                 <input type="text" value={form.alcunha} onChange={e => setForm({...form, alcunha: e.target.value})}
                   className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
                 <p className="text-[12px] text-gray-500 mt-1">Opcional. Se preenchida, aparecerá como o nome do autor.</p>
+              </td>
+            </tr>
+
+            <tr className="border-b border-[#f0f0f1]">
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Exibir o nome publicamente como</th>
+              <td className="p-3">
+                <select 
+                  value={form.displayNameType} 
+                  onChange={e => setForm({...form, displayNameType: e.target.value})}
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1] bg-white"
+                >
+                  <option value="first_name">{form.firstName || 'Nome próprio'}</option>
+                  <option value="last_name">{form.lastName || 'Apelido'}</option>
+                  <option value="full_name">{`${form.firstName} ${form.lastName}`.trim() || 'Nome e Apelido'}</option>
+                  <option value="alcunha">{form.alcunha || 'Alcunha'}</option>
+                </select>
               </td>
             </tr>
 

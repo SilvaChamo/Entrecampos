@@ -168,14 +168,15 @@ export default function UsersAdminPage() {
 
       {/* Tabela */}
       <div className="bg-white border border-[#ccd0d4] rounded-[3px] overflow-hidden">
-        <table className="w-full border-collapse text-[13px]">
+        <table className="w-full border-collapse text-[13px] table-fixed">
           <thead>
             <tr className="bg-white text-left font-bold border-b border-[#ccd0d4] text-[#2c3338]">
               <th className="p-3 w-10 text-center"><input type="checkbox" /></th>
-              <th className="p-3">Nome de utilizador</th>
-              <th className="p-3">Nome</th>
-              <th className="p-3">E-mail</th>
-              <th className="p-3">Papel</th>
+              <th className="p-3 w-[18%]">Nome de utilizador</th>
+              <th className="p-3 w-[18%]">Nome</th>
+              <th className="p-3 w-[18%]">Alcunha</th>
+              <th className="p-3 w-[22%]">E-mail</th>
+              <th className="p-3 w-[15%]">Papel</th>
               <th className="p-3 w-20">Artigos</th>
             </tr>
           </thead>
@@ -238,6 +239,7 @@ export default function UsersAdminPage() {
                     </div>
                   </td>
                   <td className="p-3 text-[#50575e]">{user.name}</td>
+                  <td className="p-3 text-[#50575e]">{user.alcunha || '—'}</td>
                   <td className="p-3">
                     <a href={`mailto:${user.email}`} className="text-[#2271b1] hover:underline">{user.email}</a>
                   </td>

@@ -126,7 +126,7 @@ const HeaderOld: React.FC = () => {
         <div className="container mx-auto px-4 relative z-10 flex justify-center">
           <Link href="/inicio">
             <Image
-              src="https://ppgmtxzuaxqshipnvebl.supabase.co/storage/v1/object/public/news-images/1777024602985-Apresentacao-1_edited.webp"
+              src="https://ppgmtxzuaxqshipnvebl.supabase.co/storage/v1/object/public/news-images/eCAMPOS_Logo_whiteBG-01.png"
               alt="EntreCAMPOS"
               width={400}
               height={100}
@@ -138,7 +138,7 @@ const HeaderOld: React.FC = () => {
       </div>
 
       {/* LINHA 3: Botões, Busca e Login */}
-      <div className={`py-5 transition-all duration-300 ${isScrolled ? 'fixed top-0 left-0 right-0 z-50 shadow-lg' : ''}`} style={{ backgroundColor: "#1a3d0c" }}>
+      <div className={`py-5 transition-all duration-300 ${isScrolled ? 'fixed top-0 left-0 right-0 z-50 shadow-lg' : ''}`} style={{ backgroundColor: "#2c3338" }}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center gap-4">
             <Link href="#" className="border border-white text-white px-6 py-2 rounded-full text-sm hover:bg-white hover:text-gray-800 transition-colors">

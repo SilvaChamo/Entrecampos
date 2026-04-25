@@ -9,7 +9,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { id, firstName, lastName, alcunha, role, bio, website, avatarUrl, password } = await req.json();
+    const { id, firstName, lastName, alcunha, displayNameType, role, bio, website, avatarUrl, password } = await req.json();
 
     if (!id) {
       return NextResponse.json({ error: 'ID obrigatório' }, { status: 400 });
@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
         first_name: firstName,
         last_name: lastName,
         alcunha: alcunha || '',
+        displayNameType: displayNameType || 'full_name',
         app: 'entrecampos',
         role: role,
         bio: bio,

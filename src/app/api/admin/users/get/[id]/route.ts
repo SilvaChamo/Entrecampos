@@ -25,6 +25,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       email: user.email || '',
       role: user.user_metadata?.role || 'Subscritor',
       alcunha: user.user_metadata?.alcunha || '',
+      displayNameType: user.user_metadata?.displayNameType || 'full_name',
       bio: user.user_metadata?.bio || '',
       website: user.user_metadata?.website || '',
       avatar: user.user_metadata?.avatar_url || null,

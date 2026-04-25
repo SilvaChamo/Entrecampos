@@ -25,10 +25,13 @@ export async function GET() {
       .map(u => ({
         id: u.id,
         username: u.user_metadata?.username || u.email?.split('@')[0] || 'user',
-        name: u.user_metadata?.full_name || `${u.user_metadata?.first_name || ''} ${u.user_metadata?.last_name || ''}`.trim() || '—',
+        firstName: u.user_metadata?.first_name || '',
+        lastName: u.user_metadata?.last_name || '',
+        name: u.user_metadata?.first_name || '—',
         email: u.email || '',
         role: u.user_metadata?.role || 'Subscritor',
         alcunha: u.user_metadata?.alcunha || '',
+        displayNameType: u.user_metadata?.displayNameType || 'full_name',
         articles: 0,
         avatar: u.user_metadata?.avatar_url || null,
         isAdmin: u.user_metadata?.role === 'Administrador'
