@@ -22,7 +22,7 @@ const SimpleHeader = () => {
           {/* Logo */}
           <Link href="/inicio">
             <img 
-              src="https://ppgmtxzuaxqshipnvebl.supabase.co/storage/v1/object/public/news-images/eCAMPOS_Logo_whiteBG-01.png" 
+              src="https://entrecampos.co.mz/wp-content/uploads/2024/07/Logo.png" 
               alt="EntreCAMPOS" 
               className="h-14 w-auto"
             />

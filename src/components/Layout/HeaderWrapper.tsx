@@ -1,15 +1,19 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Header from "./Header";
+import HeaderOld from "./HeaderOld";
 
 export default function HeaderWrapper() {
   const pathname = usePathname();
   
-  // Não renderizar Header na página /inicio, / (home) ou em qualquer página de /admin
-  if (pathname === "/inicio" || pathname === "/" || pathname.startsWith("/admin")) {
+  // Não renderizar Header em páginas que já têm header próprio:
+  // / (home - tem SimpleHeader executivo)
+  // /inicio (tem HeaderOld no próprio layout)
+  // /admin (painel administrativo)
+  if (pathname === "/" || pathname === "/inicio" || pathname.startsWith("/admin")) {
     return null;
   }
   
-  return <Header />;
+  // Usar HeaderOld como header principal em todas as outras páginas
+  return <HeaderOld />;
 }

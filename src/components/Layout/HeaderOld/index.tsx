@@ -126,7 +126,7 @@ const HeaderOld: React.FC = () => {
         <div className="container mx-auto px-4 relative z-10 flex justify-center">
           <Link href="/inicio">
             <Image
-              src="https://ppgmtxzuaxqshipnvebl.supabase.co/storage/v1/object/public/news-images/eCAMPOS_Logo_whiteBG-01.png"
+              src="/images/logo.png"
               alt="EntreCAMPOS"
               width={400}
               height={100}
