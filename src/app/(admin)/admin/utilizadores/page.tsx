@@ -13,6 +13,12 @@ interface UserItem {
   articles: number;
   avatar?: string;
   isAdmin?: boolean;
+  displayNameType?: string;
+  alcunha?: string;
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  website?: string;
 }
 
 const MOCK_USERS: UserItem[] = [
@@ -168,16 +174,16 @@ export default function UsersAdminPage() {
 
       {/* Tabela */}
       <div className="bg-white border border-[#ccd0d4] rounded-[3px] overflow-hidden">
-        <table className="w-full border-collapse text-[13px] table-fixed">
+        <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr className="bg-white text-left font-bold border-b border-[#ccd0d4] text-[#2c3338]">
               <th className="p-3 w-10 text-center"><input type="checkbox" /></th>
-              <th className="p-3 w-[18%]">Nome de utilizador</th>
-              <th className="p-3 w-[18%]">Nome</th>
-              <th className="p-3 w-[18%]">Alcunha</th>
-              <th className="p-3 w-[22%]">E-mail</th>
-              <th className="p-3 w-[15%]">Papel</th>
-              <th className="p-3 w-20">Artigos</th>
+              <th className="p-3">Nome de utilizador</th>
+              <th className="p-3">Nome</th>
+              <th className="p-3">Alcunha</th>
+              <th className="p-3">E-mail</th>
+              <th className="p-3">Papel</th>
+              <th className="p-3 text-center">Artigos</th>
             </tr>
           </thead>
           <tbody>

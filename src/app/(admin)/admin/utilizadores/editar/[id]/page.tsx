@@ -20,6 +20,7 @@ export default function EditUserPage() {
     firstName: '',
     lastName: '',
     alcunha: '',
+    displayNameType: 'full_name',
     website: '',
     bio: '',
     role: 'Subscritor',

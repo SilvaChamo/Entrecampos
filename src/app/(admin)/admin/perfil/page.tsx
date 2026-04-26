@@ -1,76 +1,55 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import React from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { Edit2, Mail, Globe, FileText } from 'lucide-react';
 import Link from 'next/link';
-import { Mail, Globe, Shield, FileText, Edit2, Loader2 } from 'lucide-react';
 
-export default function ViewUserPage() {
-  const params = useParams();
-  const id = params?.id as string;
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export default function MeuPerfilPage() {
+  const { user: authUser } = useAuth();
 
-  const loadUser = async () => {
-    if (!id) {
-      console.log('ID não fornecido');
-      return;
-    }
-    console.log('Carregando utilizador ID:', id);
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/admin/users/get/${id}`);
-      const data = await res.json();
-      console.log('Resposta API:', data);
-      if (!res.ok) throw new Error(data.error);
-      setUser(data.user);
-    } catch (err: any) {
-      console.error('Erro ao carregar:', err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadUser();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="p-10 text-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#2271b1] mx-auto mb-2" />
-        <p className="text-sm text-gray-500">A carregar perfil...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
+  if (!authUser) {
     return (
       <div className="p-6 text-[#2c3338]">
-        <p className="text-red-500">Utilizador não encontrado.</p>
-        <Link href="/admin/utilizadores" className="text-[#2271b1] hover:underline mt-2 inline-block">← Voltar aos Utilizadores</Link>
+        <p>A carregar...</p>
       </div>
     );
   }
 
-  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || '—';
+  // Usar dados do AuthContext diretamente
+  const user = {
+    id: authUser.id,
+    name: authUser.name || '',
+    username: authUser.email?.split('@')[0] || 'user',
+    firstName: authUser.name?.split(' ')[0] || '',
+    lastName: authUser.name?.split(' ').slice(1).join(' ') || '',
+    email: authUser.email || '',
+    role: authUser.role || 'Administrador',
+    alcunha: '',
+    bio: '',
+    website: '',
+    avatar: null,
+    articles: 0
+  };
+
+  const fullName = user.name || user.firstName || user.username;
 
   return (
     <div className="p-4 text-[#2c3338] max-w-[900px]">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[23px] font-normal text-[#1d2327]">Perfil: <strong>{user.username}</strong></h1>
+          <h1 className="text-[23px] font-normal text-[#1d2327]">O seu perfil</h1>
           <p className="text-[13px] text-[#50575e] mt-1">
             <Link href="/admin/utilizadores" className="text-[#2271b1] hover:underline">Utilizadores</Link>
-            {' '}&rsaquo; Ver perfil
+            {' '}&rsaquo; O seu perfil
           </p>
         </div>
         <Link
-          href={`/admin/utilizadores/editar/${user.id}`}
+          href="/admin/utilizadores/editar/me"
           className="flex items-center gap-1.5 h-8 px-4 bg-[#2271b1] text-white text-[13px] font-semibold rounded-[3px] hover:bg-[#135e96] transition-all"
         >
-          <Edit2 className="w-3.5 h-3.5" /> Editar utilizador
+          <Edit2 className="w-3.5 h-3.5" /> Editar perfil
         </Link>
       </div>
 
@@ -79,18 +58,12 @@ export default function ViewUserPage() {
         <div className="p-6 border-b border-[#ccd0d4] flex items-center gap-5">
           {user.avatar ? (
             <img src={user.avatar} className="w-24 h-24 rounded-full border border-gray-200 object-cover" alt="" />
-          ) : user.isAdmin ? (
+          ) : (
             <div className="w-24 h-24 rounded-full border border-gray-200 flex items-center justify-center bg-[#1d2327] flex-shrink-0">
-              <span className="text-3xl font-black">
-                <span className="text-[#00a651]">EC</span>
+              <span className="text-3xl font-black text-[#00a651]">
+                {(user.username || 'U').charAt(0).toUpperCase()}
               </span>
             </div>
-          ) : (
-            <img 
-              src="https://secure.gravatar.com/avatar/ad516503a11cd5ca435acc9bb6523536?s=150&d=mm&r=g" 
-              className="w-24 h-24 rounded-full border border-gray-200 object-cover" 
-              alt="default" 
-            />
           )}
           <div>
             <h2 className="text-[18px] font-bold text-[#1d2327]">{fullName}</h2>
@@ -120,6 +93,10 @@ export default function ViewUserPage() {
                 </a>
               </td>
             </tr>
+            <tr className="border-b border-[#f0f0f1]">
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] bg-[#f9f9f9]">Alcunha</th>
+              <td className="p-3 text-[13px] text-[#50575e]">{user.alcunha || '—'}</td>
+            </tr>
             {user.website && (
               <tr className="border-b border-[#f0f0f1]">
                 <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] bg-[#f9f9f9]">Website</th>
@@ -144,7 +121,7 @@ export default function ViewUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] bg-[#f9f9f9]">Artigos publicados</th>
               <td className="p-3 text-[13px]">
                 <Link href={`/admin/noticias?autor=${user.username}`} className="text-[#2271b1] hover:underline flex items-center gap-1">
-                  <FileText className="w-3.5 h-3.5" /> {user.articles} artigos
+                  <FileText className="w-3.5 h-3.5" /> {user.articles || 0} artigos
                 </Link>
               </td>
             </tr>
@@ -154,14 +131,9 @@ export default function ViewUserPage() {
 
       {/* Ações */}
       <div className="mt-4 flex items-center gap-3">
-        <Link href={`/admin/utilizadores/editar/${user.id}`} className="h-8 px-4 flex items-center bg-[#2271b1] text-white text-[13px] font-semibold rounded-[3px] hover:bg-[#135e96] transition-all">
-          Editar utilizador
+        <Link href="/admin/utilizadores/editar/me" className="h-8 px-4 flex items-center bg-[#2271b1] text-white text-[13px] font-semibold rounded-[3px] hover:bg-[#135e96] transition-all">
+          Editar perfil
         </Link>
-        {!user.isAdmin && (
-          <button className="h-8 px-4 border border-[#d63638] text-[#d63638] text-[13px] rounded-[3px] hover:bg-red-50 transition-all">
-            Eliminar utilizador
-          </button>
-        )}
       </div>
     </div>
   );

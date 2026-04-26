@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Garantir que todas as rotas estáticas sejam geradas
+  trailingSlash: false,
 };
 
 export default nextConfig;

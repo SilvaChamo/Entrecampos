@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ImageIcon, Upload, RefreshCw, Check, AlertCircle } from 'lucide-react';
+import { X, ImageIcon, Upload, RefreshCw, Check, AlertCircle, Edit3 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import MediaLibrary from './MediaLibrary';
+import ImageEditor from './ImageEditor';
 
 interface ImageSelectorProps {
   onSelect: (url: string) => void;
@@ -16,6 +17,8 @@ export default function ImageSelector({ onSelect, onClose, currentImageUrl }: Im
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [duplicateCheck, setDuplicateCheck] = useState<{ exists: boolean; url?: string; name?: string } | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
+  const [editedBlob, setEditedBlob] = useState<Blob | null>(null);
 
   const BUCKET_NAME = 'news-images';
 
@@ -57,21 +60,36 @@ export default function ImageSelector({ onSelect, onClose, currentImageUrl }: Im
       return;
     }
 
-    if (!uploadFile) return;
+    if (!uploadFile && !editedBlob) return;
 
     setUploading(true);
     try {
-      let fileName = uploadFile.name;
-      if (!useExisting && duplicateCheck?.exists) {
-        // If it exists but user wants a new one, add timestamp
-        const ext = fileName.split('.').pop();
-        const baseName = fileName.replace(`.${ext}`, '');
-        fileName = `${baseName}_${Date.now()}.${ext}`;
+      let fileName: string;
+      let fileToUpload: Blob | File;
+
+      if (editedBlob) {
+        // Usar imagem editada (sempre PNG)
+        const baseName = uploadFile?.name.replace(/\.[^/.]+$/, '') || 'image';
+        fileName = `${baseName}_edited_${Date.now()}.png`;
+        fileToUpload = editedBlob;
+      } else if (uploadFile) {
+        // Usar arquivo original
+        fileName = uploadFile.name;
+        if (!useExisting && duplicateCheck?.exists) {
+          const ext = fileName.split('.').pop();
+          const baseName = fileName.replace(`.${ext}`, '');
+          fileName = `${baseName}_${Date.now()}.${ext}`;
+        }
+        fileToUpload = uploadFile;
+      } else {
+        return;
       }
 
       const { error } = await supabase.storage
         .from(BUCKET_NAME)
-        .upload(fileName, uploadFile);
+        .upload(fileName, fileToUpload, {
+          contentType: 'image/png',
+        });
       
       if (error) throw error;
       
@@ -86,6 +104,12 @@ export default function ImageSelector({ onSelect, onClose, currentImageUrl }: Im
     } finally {
       setUploading(false);
     }
+  };
+
+  // Handler para salvar do editor
+  const handleEditorSave = (blob: Blob, fileName: string) => {
+    setEditedBlob(blob);
+    setShowEditor(false);
   };
 
   return (
@@ -143,17 +167,38 @@ export default function ImageSelector({ onSelect, onClose, currentImageUrl }: Im
               <div className="max-w-2xl w-full bg-white border border-[#ccd0d4] rounded-lg shadow-lg overflow-hidden">
                 <div className="p-6">
                   <div className="flex gap-6">
-                    <div className="w-48 h-48 shrink-0 border border-[#ccd0d4] rounded bg-gray-50 overflow-hidden shadow-inner">
-                      <img 
-                        src={URL.createObjectURL(uploadFile)} 
-                        className="w-full h-full object-cover" 
-                        alt="Preview" 
-                      />
+                    <div className="w-48 h-48 shrink-0 border border-[#ccd0d4] rounded bg-gray-50 overflow-hidden shadow-inner relative">
+                      {editedBlob ? (
+                        <img 
+                          src={URL.createObjectURL(editedBlob)} 
+                          className="w-full h-full object-cover" 
+                          alt="Preview Editado" 
+                        />
+                      ) : (
+                        <img 
+                          src={URL.createObjectURL(uploadFile)} 
+                          className="w-full h-full object-cover" 
+                          alt="Preview" 
+                        />
+                      )}
+                      <button
+                        onClick={() => setShowEditor(true)}
+                        className="absolute bottom-2 right-2 p-2 bg-[#2271b1] text-white rounded-full shadow-lg hover:bg-[#135e96] transition-all"
+                        title="Editar imagem"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
                     </div>
                     <div className="flex-1 space-y-4">
                       <div>
                         <h3 className="font-bold text-[#1d2327] mb-1">{uploadFile.name}</h3>
                         <p className="text-xs text-[#50575e]">{(uploadFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                        {editedBlob && (
+                          <span className="inline-flex items-center gap-1 mt-2 px-2 py-1 bg-green-100 text-green-700 text-[11px] rounded font-medium">
+                            <Check className="w-3 h-3" />
+                            Editada (será gravada como PNG)
+                          </span>
+                        )}
                       </div>
 
                       {duplicateCheck?.exists && (
@@ -180,7 +225,7 @@ export default function ImageSelector({ onSelect, onClose, currentImageUrl }: Im
                               disabled={uploading}
                               className="px-4 py-2 bg-[#2271b1] text-white text-[13px] font-bold rounded hover:bg-[#135e96] transition-all disabled:opacity-50"
                             >
-                              {uploading ? 'A carregar...' : 'Carregar como novo'}
+                              {uploading ? 'A carregar...' : (editedBlob ? 'Gravar PNG novo' : 'Carregar como novo')}
                             </button>
                           </>
                         ) : (
@@ -190,11 +235,11 @@ export default function ImageSelector({ onSelect, onClose, currentImageUrl }: Im
                             className="px-6 py-2.5 bg-[#2271b1] text-white text-[13px] font-bold rounded hover:bg-[#135e96] transition-all disabled:opacity-50 flex items-center gap-2"
                           >
                             {uploading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                            {uploading ? 'A carregar...' : 'Carregar e definir'}
+                            {uploading ? 'A carregar...' : (editedBlob ? 'Gravar PNG e definir' : 'Carregar e definir')}
                           </button>
                         )}
                         <button
-                          onClick={() => { setUploadFile(null); setDuplicateCheck(null); }}
+                          onClick={() => { setUploadFile(null); setDuplicateCheck(null); setEditedBlob(null); }}
                           disabled={uploading}
                           className="px-4 py-2 border border-[#ccd0d4] text-[#50575e] text-[13px] font-bold rounded hover:bg-gray-50 transition-all"
                         >
@@ -232,6 +277,16 @@ export default function ImageSelector({ onSelect, onClose, currentImageUrl }: Im
           Fechar
         </button>
       </div>
+
+      {/* Image Editor Modal */}
+      {showEditor && uploadFile && (
+        <ImageEditor
+          imageUrl={URL.createObjectURL(uploadFile)}
+          onSave={handleEditorSave}
+          onClose={() => setShowEditor(false)}
+          originalFileName={uploadFile.name}
+        />
+      )}
     </div>
   );
 }

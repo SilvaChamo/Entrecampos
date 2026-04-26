@@ -55,10 +55,10 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
       <div className="relative">
         {isDashboard ? (
           <div 
-            className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors ${
+            className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
               active 
-                ? 'bg-[#00a651] text-white' 
-                : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338]'
+                ? 'bg-[#00a651] text-white border-[#00a651]' 
+                : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338] hover:border-[#00a651]'
             }`}
           >
             <Link href={href} className="flex items-center gap-3 flex-1">
@@ -79,10 +79,10 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
         ) : (
           <div 
             onClick={() => submenu && setIsOpen(!isOpen)}
-            className={`flex items-center justify-between px-4 py-2 text-[14px] cursor-pointer transition-colors ${
+            className={`flex items-center justify-between px-4 py-2 text-[14px] cursor-pointer transition-colors border-l-[3px] border-transparent ml-[10px] ${
               active 
-                ? 'bg-[#00a651] text-white' 
-                : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338]'
+                ? 'bg-[#00a651] text-white border-[#00a651]' 
+                : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338] hover:border-[#00a651]'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -105,8 +105,8 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
               <Link
                 key={item.href}
                 href={item.href}
-                className={`block px-4 py-1.5 text-[13px] hover:text-red-500 transition-colors ${
-                  pathname === item.href ? 'text-red-600' : 'text-[#f0f0f1]'
+                className={`block px-4 py-1.5 text-[13px] hover:text-[#00a651] transition-colors border-l-[3px] border-transparent ml-[10px] ${
+                  pathname === item.href ? 'text-[#00a651] border-[#00a651]' : 'text-[#f0f0f1] hover:border-[#00a651]'
                 }`}
               >
                 {item.label}
@@ -123,8 +123,8 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
             <Link
               key={item.href}
               href={item.href}
-              className={`block pl-12 pr-4 py-1.5 text-[13px] hover:text-red-500 transition-colors ${
-                pathname === item.href ? 'text-red-600' : 'text-[#f0f0f1]'
+              className={`block px-4 py-1.5 text-[13px] hover:text-[#00a651] transition-colors border-l-[3px] border-transparent ml-[10px] ${
+                pathname === item.href ? 'text-[#00a651] border-[#00a651]' : 'text-[#f0f0f1] hover:border-[#00a651]'
               }`}
             >
               {item.label}

@@ -131,7 +131,6 @@ const HeaderOld: React.FC = () => {
               width={400}
               height={100}
               className="h-16 w-auto"
-              priority
             />
           </Link>
         </div>
