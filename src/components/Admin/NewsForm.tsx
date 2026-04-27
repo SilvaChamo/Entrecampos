@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 import ImageSelector from '@/components/Admin/ImageSelector';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
@@ -29,6 +30,7 @@ interface NewsFormProps {
 
 export default function NewsForm({ initialData, isEdit = false }: NewsFormProps) {
   const router = useRouter();
+  const { user: authUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
   const [lockModifiedDate, setLockModifiedDate] = useState(false);
@@ -68,6 +70,9 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     setLoading(true);
 
     try {
+      // Buscar o usuário atual do Supabase para obter o ID real
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
       // Usar a nossa nova action server-side para contornar problemas de RLS na view/tabela
       const response = await fetch('/api/admin/news/save', {
         method: 'POST',
@@ -75,7 +80,8 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
         body: JSON.stringify({
           ...formData,
           isEdit,
-          site_id: 'entrecampos'
+          site_id: 'entrecampos',
+          author_id: currentUser?.id || authUser?.id || null
         }),
       });
 

@@ -9,7 +9,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { username, email, password, firstName, lastName, alcunha, displayNameType, role, website, avatarUrl } = await req.json();
+    const { username, email, password, firstName, lastName, alcunha, displayNameType, role, website, avatarUrl, telefone, profissao, cargo } = await req.json();
 
     if (!email || !password || !username) {
       return NextResponse.json({ error: 'Campos obrigatórios em falta' }, { status: 400 });
@@ -29,7 +29,10 @@ export async function POST(req: NextRequest) {
         displayNameType: displayNameType || 'full_name',
         role: role,
         website,
-        avatar_url: avatarUrl
+        avatar_url: avatarUrl,
+        telefone: telefone || '',
+        profissao: profissao || '',
+        cargo: cargo || ''
       }
     });
 

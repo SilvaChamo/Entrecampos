@@ -33,11 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     } else {
-      // Default mock user if none exists
+      // Default admin users - sincronizado com Supabase
       setUser({
         id: '1',
-        name: 'Admin',
-        email: 'admin@entrecampos.com',
+        name: 'Administrador',
+        email: 'admin@entrecampos.co.mz',
         role: 'admin'
       });
     }

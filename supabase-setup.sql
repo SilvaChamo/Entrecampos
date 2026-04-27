@@ -218,6 +218,38 @@ END $$;
 -- INSTRUÇÕES DE USO
 -- ============================================
 
+-- ============================================
+-- 8. ADICIONAR CAMPO DE AUTOR (AUTHOR)
+-- ============================================
+
+-- Adicionar coluna author_name SE NÃO EXISTIR
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'news' AND column_name = 'author_name'
+  ) THEN
+    ALTER TABLE news ADD COLUMN author_name VARCHAR(255) DEFAULT 'Administrador';
+  END IF;
+END $$;
+
+-- Adicionar coluna author_id SE NÃO EXISTIR (referência ao UUID do usuário)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'news' AND column_name = 'author_id'
+  ) THEN
+    ALTER TABLE news ADD COLUMN author_id UUID;
+  END IF;
+END $$;
+
+-- Atualizar todas as notícias existentes para ter o administrador como autor
+UPDATE news SET author_name = 'Administrador' WHERE author_name IS NULL OR author_name = '';
+
+-- Índice para busca por autor
+CREATE INDEX IF NOT EXISTS idx_news_author ON news(author_name);
+
 -- No entrecampos:
 -- SELECT * FROM get_entrecampos_news(10, 0);
 -- Ou: SELECT * FROM entrecampos_news ORDER BY date DESC LIMIT 10;
@@ -227,8 +259,8 @@ END $$;
 -- Ou: SELECT * FROM baseagrodata_news ORDER BY date DESC LIMIT 10;
 
 -- Para adicionar nova notícia:
--- INSERT INTO news (title, summary, content, category, image_url, site_id, slug)
--- VALUES ('Título', 'Resumo', 'Conteúdo', 'agricultura', 'url.jpg', 'entrecampos', 'slug-unico');
+-- INSERT INTO news (title, summary, content, category, image_url, site_id, slug, author_name)
+-- VALUES ('Título', 'Resumo', 'Conteúdo', 'agricultura', 'url.jpg', 'entrecampos', 'slug-unico', 'Administrador');
 
 -- ============================================
 -- FIM

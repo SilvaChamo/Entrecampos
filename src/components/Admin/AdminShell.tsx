@@ -23,7 +23,17 @@ import {
   FileUp,
   CreditCard,
   Eye,
-  Video
+  Video,
+  Zap,
+  Shield,
+  BarChart3,
+  FolderOpen,
+  FileImage,
+  FileVideo,
+  File,
+  LogIn,
+  Layers,
+  Boxes
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -77,20 +87,24 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
             )}
           </div>
         ) : (
-          <div 
-            onClick={() => submenu && setIsOpen(!isOpen)}
-            className={`flex items-center justify-between px-4 py-2 text-[14px] cursor-pointer transition-colors border-l-[3px] border-transparent ml-[10px] ${
-              active 
-                ? 'bg-[#00a651] text-white border-[#00a651]' 
-                : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338] hover:border-[#00a651]'
-            }`}
-          >
-            <div className="flex items-center gap-3">
+          <div className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
+            active 
+              ? 'bg-[#00a651] text-white border-[#00a651]' 
+              : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338] hover:border-[#00a651]'
+          }`}>
+            <Link href={href} className="flex items-center gap-3 flex-1">
               <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
               <span className="font-medium">{label}</span>
-            </div>
+            </Link>
             {submenu && (
-              <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsOpen(!isOpen);
+                }}
+                className={`w-4 h-4 cursor-pointer transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+              />
             )}
           </div>
         )}
@@ -189,7 +203,60 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'O seu perfil', href: '/admin/perfil' },
           ]
         },
-        { href: '/admin/definicoes', icon: Settings, label: 'Definições' },
+        { 
+          href: '/admin/litespeed', 
+          icon: Zap, 
+          label: 'LiteSpeed Cache',
+          submenu: [
+            { label: 'Otimização da página', href: '/admin/litespeed' },
+            { label: 'Limpeza de cache', href: '/admin/litespeed/limpeza' },
+            { label: 'Configurações', href: '/admin/litespeed/configuracoes' },
+          ]
+        },
+        { 
+          href: '/admin/capacidades', 
+          icon: Shield, 
+          label: 'Capacidades',
+          submenu: [
+            { label: 'Redirecionamentos', href: '/admin/capacidades/redirecionamentos' },
+            { label: 'Capacidades', href: '/admin/capacidades' },
+            { label: 'Recursos', href: '/admin/capacidades/recursos' },
+          ]
+        },
+        { 
+          href: '/admin/trafego', 
+          icon: BarChart3, 
+          label: 'Visitor Traffic',
+          submenu: [
+            { label: 'Estatísticas em tempo real', href: '/admin/trafego' },
+            { label: 'Relatórios detalhados', href: '/admin/trafego/relatorios' },
+            { label: 'Visitantes por país', href: '/admin/trafego/paises' },
+          ]
+        },
+        { 
+          href: '/admin/partilhado', 
+          icon: FolderOpen, 
+          label: 'Partilhado',
+          submenu: [
+            { label: 'Vídeos', href: '/admin/partilhado/videos' },
+            { label: 'Imagens', href: '/admin/partilhado/imagens' },
+            { label: 'Documentos', href: '/admin/partilhado/documentos' },
+          ]
+        },
+        { 
+          href: '/admin/definicoes', 
+          icon: Settings, 
+          label: 'Definições',
+          submenu: [
+            { label: 'Geral', href: '/admin/definicoes' },
+            { label: 'Notícias', href: '/admin/definicoes/noticias' },
+            { label: 'Utilizadores', href: '/admin/definicoes/utilizadores' },
+            { label: 'Media', href: '/admin/definicoes/media' },
+            { label: 'Segurança', href: '/admin/definicoes/seguranca' },
+            { label: 'Backup', href: '/admin/definicoes/backup' },
+            { label: 'API & Integrações', href: '/admin/definicoes/api' },
+          ]
+        },
       );
     }
 
@@ -316,7 +383,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="p-[25px] max-w-[1400px]">
+          <div className="p-[25px] w-full">
             {children}
           </div>
         </main>

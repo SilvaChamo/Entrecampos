@@ -29,7 +29,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       bio: user.user_metadata?.bio || '',
       website: user.user_metadata?.website || '',
       avatar: user.user_metadata?.avatar_url || null,
-      isAdmin: user.user_metadata?.role === 'Administrador'
+      isAdmin: user.user_metadata?.role === 'Administrador',
+      telefone: user.user_metadata?.telefone || '',
+      profissao: user.user_metadata?.profissao || '',
+      cargo: user.user_metadata?.cargo || ''
     };
 
     return NextResponse.json({ user: mappedUser });

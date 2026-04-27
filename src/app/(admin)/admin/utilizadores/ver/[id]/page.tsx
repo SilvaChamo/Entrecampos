@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Globe, Shield, FileText, Edit2, Loader2 } from 'lucide-react';
+import { Mail, Globe, Shield, FileText, Edit2, Loader2, Phone, Briefcase, User } from 'lucide-react';
 
 export default function ViewUserPage() {
   const params = useParams();
@@ -68,13 +68,13 @@ export default function ViewUserPage() {
         </div>
         <Link
           href={`/admin/utilizadores/editar/${user.id}`}
-          className="flex items-center gap-1.5 h-8 px-4 bg-[#2271b1] text-white text-[13px] font-semibold rounded-[3px] hover:bg-[#135e96] transition-all"
+          className="flex items-center gap-1.5 h-8 px-4 bg-[#2271b1] text-white text-[13px] font-semibold rounded-md hover:bg-[#135e96] transition-all"
         >
           <Edit2 className="w-3.5 h-3.5" /> Editar utilizador
         </Link>
       </div>
 
-      <div className="bg-white border border-[#ccd0d4] rounded-[3px] overflow-hidden">
+      <div className="bg-white border border-[#ccd0d4] rounded-md overflow-hidden">
         {/* Avatar e nome */}
         <div className="p-6 border-b border-[#ccd0d4] flex items-center gap-5">
           {user.avatar ? (
@@ -95,7 +95,7 @@ export default function ViewUserPage() {
           <div>
             <h2 className="text-[18px] font-bold text-[#1d2327]">{fullName}</h2>
             <p className="text-[13px] text-[#50575e]">@{user.username}</p>
-            <span className="inline-block mt-1 px-2 py-0.5 bg-[#f6f7f7] border border-[#ccd0d4] text-[11px] font-semibold rounded-[3px] text-[#50575e]">
+            <span className="inline-block mt-1 px-2 py-0.5 bg-[#f6f7f7] border border-[#ccd0d4] text-[11px] font-semibold rounded-md text-[#50575e]">
               {user.role}
             </span>
           </div>
@@ -119,6 +119,22 @@ export default function ViewUserPage() {
                   <Mail className="w-3.5 h-3.5" /> {user.email}
                 </a>
               </td>
+            </tr>
+            <tr className="border-b border-[#f0f0f1]">
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] bg-[#f9f9f9]">Alcunha</th>
+              <td className="p-3 text-[13px] text-[#50575e]">{user.alcunha || '—'}</td>
+            </tr>
+            <tr className="border-b border-[#f0f0f1]">
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] bg-[#f9f9f9]">Telefone</th>
+              <td className="p-3 text-[13px] text-[#50575e]">{user.telefone || '—'}</td>
+            </tr>
+            <tr className="border-b border-[#f0f0f1]">
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] bg-[#f9f9f9]">Profissão</th>
+              <td className="p-3 text-[13px] text-[#50575e]">{user.profissao || '—'}</td>
+            </tr>
+            <tr className="border-b border-[#f0f0f1]">
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] bg-[#f9f9f9]">Cargo</th>
+              <td className="p-3 text-[13px] text-[#50575e]">{user.cargo || '—'}</td>
             </tr>
             {user.website && (
               <tr className="border-b border-[#f0f0f1]">
@@ -154,11 +170,11 @@ export default function ViewUserPage() {
 
       {/* Ações */}
       <div className="mt-4 flex items-center gap-3">
-        <Link href={`/admin/utilizadores/editar/${user.id}`} className="h-8 px-4 flex items-center bg-[#2271b1] text-white text-[13px] font-semibold rounded-[3px] hover:bg-[#135e96] transition-all">
+        <Link href={`/admin/utilizadores/editar/${user.id}`} className="h-8 px-4 flex items-center bg-[#2271b1] text-white text-[13px] font-semibold rounded-md hover:bg-[#135e96] transition-all">
           Editar utilizador
         </Link>
         {!user.isAdmin && (
-          <button className="h-8 px-4 border border-[#d63638] text-[#d63638] text-[13px] rounded-[3px] hover:bg-red-50 transition-all">
+          <button className="h-8 px-4 border border-[#d63638] text-[#d63638] text-[13px] rounded-md hover:bg-red-50 transition-all">
             Eliminar utilizador
           </button>
         )}

@@ -19,6 +19,9 @@ export default function AddUserPage() {
     email: '',
     website: '',
     bio: '',
+    telefone: '',
+    profissao: '',
+    cargo: '',
     role: 'Subscritor'
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -141,7 +144,7 @@ export default function AddUserPage() {
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-2 bg-red-50 border border-red-200 text-[#d63638] text-sm rounded-[3px]">
+        <div className="mb-6 px-4 py-2 bg-red-50 border border-red-200 text-[#d63638] text-sm rounded-md">
           {error}
         </div>
       )}
@@ -159,7 +162,7 @@ export default function AddUserPage() {
               </th>
               <td className="p-3">
                 <input type="text" value={form.username} onChange={e => setForm({...form, username: e.target.value})} required
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
               </td>
             </tr>
 
@@ -167,23 +170,23 @@ export default function AddUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">E-mail (obrigatório)</th>
               <td className="p-3">
                 <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
               </td>
             </tr>
 
             <tr className="border-b border-[#f0f0f1]">
-              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Nome próprio</th>
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Nome próprio <span className="text-[#d63638]">*</span></th>
               <td className="p-3">
-                <input type="text" value={form.firstName} onChange={e => setForm({...form, firstName: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                <input type="text" value={form.firstName} onChange={e => setForm({...form, firstName: e.target.value})} required
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
               </td>
             </tr>
 
             <tr className="border-b border-[#f0f0f1]">
-              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Apelido</th>
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Apelido <span className="text-[#d63638]">*</span></th>
               <td className="p-3">
-                <input type="text" value={form.lastName} onChange={e => setForm({...form, lastName: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                <input type="text" value={form.lastName} onChange={e => setForm({...form, lastName: e.target.value})} required
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
               </td>
             </tr>
 
@@ -191,7 +194,7 @@ export default function AddUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Alcunha</th>
               <td className="p-3">
                 <input type="text" value={form.alcunha} onChange={e => setForm({...form, alcunha: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
                 <p className="text-[12px] text-gray-500 mt-1">Opcional. Se preenchida, aparecerá como o nome do autor.</p>
               </td>
             </tr>
@@ -202,7 +205,7 @@ export default function AddUserPage() {
                 <select 
                   value={form.displayNameType} 
                   onChange={e => setForm({...form, displayNameType: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1] bg-white"
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1] bg-white"
                 >
                   <option value="first_name">{form.firstName || 'Nome próprio'}</option>
                   <option value="last_name">{form.lastName || 'Apelido'}</option>
@@ -216,7 +219,34 @@ export default function AddUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Website</th>
               <td className="p-3">
                 <input type="url" value={form.website} onChange={e => setForm({...form, website: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+              </td>
+            </tr>
+
+            <tr className="border-b border-[#f0f0f1]">
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Telefone</th>
+              <td className="p-3">
+                <input type="tel" value={form.telefone || ''} onChange={e => setForm({...form, telefone: e.target.value})}
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]"
+                  placeholder="+258 84 123 4567" />
+              </td>
+            </tr>
+
+            <tr className="border-b border-[#f0f0f1]">
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Profissão</th>
+              <td className="p-3">
+                <input type="text" value={form.profissao || ''} onChange={e => setForm({...form, profissao: e.target.value})}
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]"
+                  placeholder="Ex: Jornalista, Engenheiro, etc." />
+              </td>
+            </tr>
+
+            <tr className="border-b border-[#f0f0f1]">
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Cargo</th>
+              <td className="p-3">
+                <input type="text" value={form.cargo || ''} onChange={e => setForm({...form, cargo: e.target.value})}
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]"
+                  placeholder="Ex: Editor Chefe, Repórter, etc." />
               </td>
             </tr>
 
@@ -240,11 +270,11 @@ export default function AddUserPage() {
                     </button>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="h-8 px-3 border border-[#ccd0d4] bg-white text-[13px] font-semibold rounded-[3px] hover:bg-[#f6f7f7] flex items-center gap-1.5">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="h-8 px-3 border border-[#ccd0d4] bg-white text-[13px] font-semibold rounded-md hover:bg-[#f6f7f7] flex items-center gap-1.5">
                       <Camera className="w-3.5 h-3.5" /> Selecionar foto
                     </button>
                     {avatarPreview && (
-                      <button type="button" onClick={() => { setAvatarPreview(null); setAvatarFile(null); }} className="h-8 px-3 border border-[#ccd0d4] bg-white text-[#d63638] text-[13px] font-semibold rounded-[3px] hover:bg-red-50 flex items-center gap-1.5">
+                      <button type="button" onClick={() => { setAvatarPreview(null); setAvatarFile(null); }} className="h-8 px-3 border border-[#ccd0d4] bg-white text-[#d63638] text-[13px] font-semibold rounded-md hover:bg-red-50 flex items-center gap-1.5">
                         <Trash2 className="w-3.5 h-3.5" /> Remover
                       </button>
                     )}
@@ -262,15 +292,15 @@ export default function AddUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Palavra-passe (obrigatório)</th>
               <td className="p-3">
                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
               </td>
             </tr>
 
             <tr className="border-b border-[#f0f0f1]">
-              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Confirmar palavra-passe</th>
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Confirmar palavra-passe <span className="text-[#d63638]">*</span></th>
               <td className="p-3">
                 <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
               </td>
             </tr>
 
@@ -282,7 +312,7 @@ export default function AddUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Papel</th>
               <td className="p-3">
                 <select value={form.role} onChange={e => setForm({...form, role: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[13px] bg-white outline-none focus:border-[#2271b1]">
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] bg-white outline-none focus:border-[#2271b1]">
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </td>
@@ -291,7 +321,7 @@ export default function AddUserPage() {
         </table>
 
         <div className="mt-6 flex items-center gap-3">
-          <button type="submit" disabled={saving} className="h-9 px-5 bg-[#2271b1] text-white text-[13px] font-semibold rounded-[3px] hover:bg-[#135e96] transition-all disabled:opacity-60 flex items-center gap-2">
+          <button type="submit" disabled={saving} className="h-9 px-5 bg-[#2271b1] text-white text-[13px] font-semibold rounded-md hover:bg-[#135e96] transition-all disabled:opacity-60 flex items-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Adicionar novo utilizador
           </button>
