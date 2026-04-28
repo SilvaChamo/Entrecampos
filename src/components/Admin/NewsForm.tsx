@@ -110,7 +110,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
   };
 
   return (
-    <div className="text-[#2c3338] max-w-[1200px] mx-auto pt-6 pb-20 px-4">
+    <div className="text-[#2c3338] max-w-[1200px] mx-auto p-6">
       <div className="flex items-center gap-2 mb-4">
         <h1 className="text-[23px] font-normal text-[#1d2327]">
           {isEdit ? 'Editar artigo' : 'Adicionar artigo'}

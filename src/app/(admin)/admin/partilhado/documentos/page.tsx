@@ -39,14 +39,9 @@ export default function DocumentosPage() {
 
   return (
     <div className="p-6 text-[#2c3338]">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1d2327]">Documentos Partilhados</h1>
-          <p className="text-[#50575e] mt-1">Gerenciar documentos enviados pelos contribuidores</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
-          <FileText className="w-4 h-4" /> Adicionar Documento
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#1d2327]">Documentos Partilhados</h1>
+        <p className="text-[#50575e] mt-1">Gerenciar documentos enviados pelos contribuidores</p>
       </div>
 
       {/* Search */}

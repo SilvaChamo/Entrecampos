@@ -29,15 +29,11 @@ export default function DefinicoesGeraisPage() {
   };
 
   return (
-    <div className="p-6 text-[#2c3338] w-full">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1d2327]">Definições Gerais</h1>
-          <p className="text-[#50575e] mt-1">Configure as informações básicas do site</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
-          <Save className="w-4 h-4" /> Guardar Alterações
-        </button>
+    <div className="min-h-screen text-[#2c3338] font-sans pb-12 p-6">
+      <section className="bg-white border border-[#ccd0d4] p-6 mb-5 shadow-sm rounded-none">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#1d2327]">Definições Gerais</h1>
+        <p className="text-[#50575e] mt-1">Configure as informações básicas do site</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -161,6 +157,7 @@ export default function DefinicoesGeraisPage() {
           </div>
         </div>
       </form>
+      </section>
     </div>
   );
 }

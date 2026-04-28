@@ -135,7 +135,7 @@ export default function AddUserPage() {
   };
 
   return (
-    <div className="p-4 text-[#2c3338] max-w-[900px]">
+    <div className="p-6 text-[#2c3338] max-w-[900px]">
       <div className="mb-6">
         <h1 className="text-[23px] font-normal text-[#1d2327]">Adicionar novo utilizador</h1>
         <p className="text-[13px] text-[#50575e] mt-1">

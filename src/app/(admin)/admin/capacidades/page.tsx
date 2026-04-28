@@ -122,7 +122,7 @@ const DEFAULT_CAPABILITIES: Record<string, string[]> = {
 export default function CapacidadesPage() {
   const [selectedRole, setSelectedRole] = useState('admin');
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['Artigos']);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['Artigos', 'Multimédia', 'Páginas', 'Utilizadores', 'Configurações', 'Estatísticas', 'Sistema']);
   const [capabilities, setCapabilities] = useState(DEFAULT_CAPABILITIES);
 
   const toggleGroup = (groupName: string) => {
@@ -154,8 +154,7 @@ export default function CapacidadesPage() {
   const currentRole = ROLES.find(r => r.id === selectedRole);
 
   return (
-    <div className="p-6 text-[#2c3338] max-w-7xl mx-auto">
-      {/* Header */}
+    <div className="p-6 text-[#2c3338]">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#1d2327] mb-2">Capacidades do Sistema</h1>
         <p className="text-[#50575e]">

@@ -209,7 +209,7 @@ export default function MeuPerfilPage() {
     : [form.firstName, form.lastName].filter(Boolean).join(' ') || form.email?.split('@')[0] || 'user';
 
   return (
-    <div className="p-4 text-[#2c3338]">
+    <div className="p-6 text-[#2c3338]">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

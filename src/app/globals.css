@@ -16,6 +16,11 @@ html {
 body {
   background-color: var(--entrecampos-bg);
   color: var(--entrecampos-text);
+  font-family: Verdana, sans-serif;
+}
+
+* {
+  font-family: Verdana, sans-serif;
 }
 
 .blog-details p,

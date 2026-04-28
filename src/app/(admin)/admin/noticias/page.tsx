@@ -17,6 +17,7 @@ import {
   Archive,
   Recycle
 } from 'lucide-react';
+import { SkeletonTableRow, SkeletonHeader } from '@/components/Admin/Skeleton';
 
 interface NewsItem {
   id: string;
@@ -199,7 +200,7 @@ export default function NewsAdminPage() {
   };
 
   return (
-    <div className="text-[#2c3338]">
+    <div className="p-6 text-[#2c3338]">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-normal">Notícias</h1>
@@ -338,7 +339,9 @@ export default function NewsAdminPage() {
           </thead>
           <tbody>
             {loading && news.length === 0 ? (
-              <tr><td colSpan={6} className="p-10 text-center"><RefreshCw className="w-8 h-8 animate-spin text-[#2271b1] mx-auto" /></td></tr>
+              Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonTableRow key={i} columns={6} />
+              ))
             ) : errorMsg ? (
               <tr><td colSpan={6} className="p-10 text-center text-red-600 bg-red-50 font-medium">{errorMsg}</td></tr>
             ) : filteredNews.length === 0 ? (

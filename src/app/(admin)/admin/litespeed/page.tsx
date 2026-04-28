@@ -8,10 +8,14 @@ import {
 } from 'lucide-react';
 
 export default function NextJsCachePage() {
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isClearing, setIsClearing] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  
+  useEffect(() => {
+    setLastUpdated(new Date());
+  }, []);
   
   const [stats, setStats] = useState({
     staticGenerated: 47,
@@ -62,7 +66,6 @@ export default function NextJsCachePage() {
 
   return (
     <div className="p-6 text-[#2c3338] min-h-screen">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#2271b1] rounded-lg flex items-center justify-center">
@@ -149,7 +152,7 @@ export default function NextJsCachePage() {
               <span className="text-2xl font-bold text-[#1d2327]">{stats.cacheHitRate}%</span>
             </div>
           </div>
-          <p className="text-center text-xs text-[#50575e]">{stats.totalRequests.toLocaleString()} requests</p>
+          <p className="text-center text-xs text-[#50575e]">{stats.totalRequests.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')} requests</p>
         </div>
 
         {/* Build Info */}
@@ -223,7 +226,7 @@ export default function NextJsCachePage() {
           </button>
         </div>
         <p className="text-xs text-[#50575e] mt-3">
-          Última atualização: {lastUpdated.toLocaleString('pt-PT')}
+          Última atualização: {lastUpdated ? lastUpdated.toLocaleString('pt-PT') : '-'}
         </p>
       </div>
     </div>

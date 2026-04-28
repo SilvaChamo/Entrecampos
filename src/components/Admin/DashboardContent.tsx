@@ -98,7 +98,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
   const role = forcedRole || user?.role || 'guest';
 
   return (
-    <div className="bg-[#f0f0f1] min-h-screen text-[#2c3338] font-sans pb-12">
+    <div className="min-h-screen text-[#2c3338] font-sans pb-12 p-6">
       <section className="bg-white border border-[#ccd0d4] p-6 mb-5 shadow-sm rounded-none">
         <div className="max-w-[1200px] mx-auto">
           <h1 className="text-[23px] font-[800] text-[#1d2327] mb-2">
@@ -120,7 +120,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               </p>
               <Link 
                 href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias/nova"} 
-                className="inline-block px-6 py-2.5 bg-[#00a651] text-white rounded-md text-[14px] font-bold hover:bg-[#008f45] transition-all shadow-sm"
+                className="inline-block px-4 py-2 bg-[#00a651] text-white rounded-md text-[14px] hover:bg-[#008f45] transition-all shadow-sm whitespace-nowrap"
               >
                 {role === 'editor' ? 'Revisar notícias pendentes' : 'Escreva o seu primeiro artigo'}
               </Link>
@@ -228,7 +228,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                   </div>
                 ) : recentActivities.length > 0 ? (
                   <ul className="space-y-3">
-                    {recentActivities.map(activity => (
+                    {recentActivities.slice(0, 4).map(activity => (
                       <li key={activity.id} className="border-b border-[#f0f0f1] pb-2 last:border-0 last:pb-0">
                         <p className="text-[13px] text-gray-400 mb-0.5">{new Date(activity.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
                         <Link href={`/admin/noticias/editar/${activity.id}`} className="text-[13px] text-[#2271b1] font-medium hover:underline">
@@ -303,17 +303,6 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               </Link>
             </div>
 
-            <Link 
-              href="/" 
-              target="_blank"
-              className="flex items-center justify-between p-3 bg-[#1a3d0c] text-white rounded-md hover:bg-[#2d5016] transition-all group w-full"
-            >
-              <div className="flex items-center gap-3">
-                <ExternalLink className="w-5 h-5 text-green-300 group-hover:text-white" />
-                <span className="text-[14px]">Ver site em directo</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-green-300 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </div>
         </div>
       </div>

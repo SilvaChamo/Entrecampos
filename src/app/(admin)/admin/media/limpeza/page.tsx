@@ -147,21 +147,12 @@ export default function MediaCleanupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f0f0f1] text-[#2c3338]">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6">
-        {/* Header Estilo WP */}
-        <div className="py-4 md:py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link href="/admin/media" className="p-2 hover:bg-white rounded-full transition-colors">
-              <ChevronLeft className="w-6 h-6" />
-            </Link>
-            <div>
-              <h1 className="text-2xl font-normal text-[#1d2327]">Auditoria de Media</h1>
-              <p className="text-[13px] text-[#50575e]">Identifique e remova imagens que não estão associadas a nenhuma notícia.</p>
-            </div>
-          </div>
+    <div className="p-6 text-[#2c3338]">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-normal text-[#1d2327]">Auditoria de Media</h1>
+          <p className="text-[13px] text-[#50575e]">Identifique e remova imagens que não estão associadas a nenhuma notícia.</p>
+        </div>
           <button 
             onClick={loadData}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-[#ccd0d4] rounded-[3px] text-sm font-semibold hover:bg-[#f6f7f7]"
@@ -384,9 +375,7 @@ export default function MediaCleanupPage() {
               </div>
             </div>
           </div>
-        )}
-      </div>
+      )}
     </div>
-  </div>
   );
 }

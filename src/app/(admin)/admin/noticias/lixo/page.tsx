@@ -82,7 +82,7 @@ export default function LixoPage() {
   };
 
   return (
-    <div className="p-4 text-[#2c3338]">
+    <div className="p-6 text-[#2c3338]">
       <div className="flex items-center gap-4 mb-6">
         <h1 className="text-[23px] font-normal text-[#1d2327] flex items-center gap-2">
           <Trash2 className="w-5 h-5 text-gray-500" /> Lixo

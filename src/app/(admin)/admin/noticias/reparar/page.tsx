@@ -240,20 +240,15 @@ export default function NewsRepairPage() {
   const suggestions = currentItem ? getSuggestions(currentItem.title) : [];
 
   return (
-    <div className="min-h-screen bg-[#f0f0f1] text-[#2c3338]">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6">
+    <div className="min-h-screen text-[#2c3338] p-6">
+      <div className="max-w-[1280px] mx-auto">
         <div className="py-4 md:py-8">
           
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <Link href="/admin/noticias" className="p-2 hover:bg-white rounded-full transition-colors">
-                <ChevronLeft className="w-6 h-6" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-normal text-[#1d2327]">Reparação de Imagens</h1>
-                <p className="text-[13px] text-[#50575e]">Associe as imagens corretas às notícias com links partidos.</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-normal text-[#1d2327]">Reparação de Imagens</h1>
+              <p className="text-[13px] text-[#50575e]">Associe as imagens corretas às notícias com links partidos.</p>
             </div>
             <div className="flex items-center gap-3">
               <button 

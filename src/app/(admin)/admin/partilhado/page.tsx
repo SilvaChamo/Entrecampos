@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   FolderOpen, FileVideo, FileImage, FileText, 
   Search, Download, Trash2, Eye, User, Mail, ArrowLeft,
-  Folder, ChevronDown, ChevronLeft, X, Calendar, FileType
+  Folder, ChevronDown, ChevronLeft, X, Calendar, FileType, Play
 } from 'lucide-react';
 
 interface SharedItem {
@@ -204,7 +204,7 @@ export default function PartilhadoPage() {
                       setFilterType(e.target.value as 'all' | 'users' | 'emails');
                       setCurrentPage(1);
                     }}
-                    className="h-10 pl-4 pr-10 border border-[#ccd0d4] rounded-lg focus:border-[#2271b1] focus:outline-none appearance-none bg-white text-[#1d2327] cursor-pointer text-sm"
+                    className="h-10 pl-4 pr-10 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none appearance-none bg-white text-[#1d2327] cursor-pointer text-sm"
                   >
                     <option value="all">Todas as Partilhas</option>
                     <option value="users">Apenas Utilizadores</option>
@@ -216,14 +216,14 @@ export default function PartilhadoPage() {
                 {/* Botão Ver por Utilizador */}
                 <button
                   onClick={() => setView('contributors')}
-                  className="flex items-center gap-2 h-10 px-4 bg-[#2271b1] text-white rounded-lg hover:bg-[#135e96] transition-colors text-sm"
+                  className="flex items-center gap-2 h-10 px-4 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96] transition-colors text-sm"
                 >
                   <User className="w-4 h-4" />
                   Ver por Utilizador
                 </button>
 
                 {/* Busca */}
-                <div className="relative w-64">
+                <div className="relative w-80">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#50575e]" />
                   <input
                     type="text"
@@ -233,7 +233,7 @@ export default function PartilhadoPage() {
                       setSearchTerm(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="w-full h-10 pl-9 pr-3 border border-[#ccd0d4] rounded-lg focus:border-[#2271b1] focus:outline-none text-sm"
+                    className="w-full h-10 pl-9 pr-3 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none text-sm"
                   />
                 </div>
               </div>
@@ -341,6 +341,15 @@ export default function PartilhadoPage() {
                       <span className="text-xs text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 px-2 py-0.5 rounded">{item.size}</span>
                     </div>
 
+                    {/* Centro - Play button (apenas vídeos) */}
+                    {item.type === 'video' && (
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-16 h-16 bg-black/40 rounded-full flex items-center justify-center">
+                          <Play className="w-8 h-8 text-white" />
+                        </div>
+                      </div>
+                    )}
+
                     {/* Baixo - Conteúdo completo oculto por padrão, visível no hover */}
                     <div className="flex items-end justify-between gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/70 to-transparent -mx-3 -mb-3 p-3 pt-8">
                       {/* Info - título e contribuidor à esquerda */}
@@ -355,7 +364,7 @@ export default function PartilhadoPage() {
                       <div className="flex items-center gap-1 flex-shrink-0">
                         <button 
                           className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"
-                          title={item.type === 'image' ? 'Ver Imagem' : 'Visualizar'}
+                          title={item.type === 'image' ? 'Ver Imagem' : item.type === 'video' ? 'Ver Vídeo' : 'Visualizar'}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (item.type === 'image' && item.imageUrl) {
@@ -365,7 +374,7 @@ export default function PartilhadoPage() {
                             }
                           }}
                         >
-                          <Eye className="w-3.5 h-3.5" />
+                          {item.type === 'video' ? <Play className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                         <button 
                           className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"
@@ -610,6 +619,15 @@ export default function PartilhadoPage() {
                     <span className="text-xs text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 px-2 py-0.5 rounded">{item.size}</span>
                   </div>
 
+                  {/* Centro - Play button (apenas vídeos) */}
+                  {item.type === 'video' && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="w-16 h-16 bg-black/40 rounded-full flex items-center justify-center">
+                        <Play className="w-8 h-8 text-white" />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Baixo - Conteúdo completo oculto por padrão, visível no hover */}
                   <div className="flex items-end justify-between gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/70 to-transparent -mx-3 -mb-3 p-3 pt-8">
                     {/* Info - título, tipo e data à esquerda */}
@@ -634,7 +652,7 @@ export default function PartilhadoPage() {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button 
                         className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"
-                        title={item.type === 'image' ? 'Ver Imagem' : 'Visualizar'}
+                        title={item.type === 'image' ? 'Ver Imagem' : item.type === 'video' ? 'Ver Vídeo' : 'Visualizar'}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (item.type === 'image' && item.imageUrl) {
@@ -644,7 +662,7 @@ export default function PartilhadoPage() {
                           }
                         }}
                       >
-                        <Eye className="w-3.5 h-3.5" />
+                        {item.type === 'video' ? <Play className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                       <button 
                         className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"

@@ -29,7 +29,7 @@ export default function RedirecionamentosPage() {
   };
 
   return (
-    <div className="p-6 text-[#2c3338] max-w-4xl mx-auto">
+    <div className="p-6 text-[#2c3338]">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#1d2327]">Redirecionamentos de Login</h1>

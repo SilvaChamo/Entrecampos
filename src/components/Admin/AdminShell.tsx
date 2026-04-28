@@ -42,19 +42,20 @@ interface SidebarItemProps {
   label: string;
   active?: boolean;
   submenu?: { label: string; href: string }[];
+  isOpen?: boolean;
+  onToggle?: () => void;
 }
 
-const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemProps) => {
+const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false, onToggle }: SidebarItemProps) => {
   const pathname = usePathname();
   const isChildActive = submenu?.some(item => pathname === item.href);
-  const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const isDashboard = label === 'Dashboard';
 
   // Expand if child becomes active (e.g. clicking from flyout)
   React.useEffect(() => {
-    if (isChildActive) setIsOpen(true);
-  }, [pathname, isChildActive]);
+    if (isChildActive && !isOpen && onToggle) onToggle();
+  }, [isChildActive]);
   
   return (
     <div 
@@ -80,7 +81,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  setIsOpen(!isOpen);
+                  if (onToggle) onToggle();
                 }}
                 className={`w-4 h-4 cursor-pointer transition-transform ${isOpen ? 'rotate-180' : ''}`} 
               />
@@ -101,7 +102,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  setIsOpen(!isOpen);
+                  if (onToggle) onToggle();
                 }}
                 className={`w-4 h-4 cursor-pointer transition-transform ${isOpen ? 'rotate-180' : ''}`} 
               />
@@ -132,7 +133,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
       
       {/* Inline Expanded Submenu */}
       {submenu && isOpen && (
-        <div className="bg-[#1d2327]">
+        <div className="bg-[#1d2327] py-1 border-b border-[#2c3338]">
           {submenu.map((item) => (
             <Link
               key={item.href}
@@ -153,7 +154,19 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu }: SidebarItemPr
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { user, logout, setRole } = useAuth();
+
+  const handleToggleSubmenu = (label: string) => {
+    setOpenSubmenu(prev => prev === label ? null : label);
+  };
+
+  // Fechar submenu quando navegar para página fora do multimídia
+  React.useEffect(() => {
+    if (openSubmenu === 'Multimédia' && !pathname.startsWith('/admin/media')) {
+      setOpenSubmenu(null);
+    }
+  }, [pathname, openSubmenu]);
 
   const getMenuItems = (role: UserRole) => {
     const items: any[] = [
@@ -219,7 +232,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           label: 'Capacidades',
           submenu: [
             { label: 'Redirecionamentos', href: '/admin/capacidades/redirecionamentos' },
-            { label: 'Capacidades', href: '/admin/capacidades' },
+            { label: 'Gerir capacidades', href: '/admin/capacidades' },
             { label: 'Recursos', href: '/admin/capacidades/recursos' },
           ]
         },
@@ -238,6 +251,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           icon: FolderOpen, 
           label: 'Partilhado',
           submenu: [
+            { label: 'Geral', href: '/admin/partilhado' },
             { label: 'Vídeos', href: '/admin/partilhado/videos' },
             { label: 'Imagens', href: '/admin/partilhado/imagens' },
             { label: 'Documentos', href: '/admin/partilhado/documentos' },
@@ -360,16 +374,25 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           }`}
         >
           <nav className="mt-0">
-            {menuItems.map((item) => (
-              <SidebarItem 
-                key={item.href}
-                href={item.href}
-                icon={item.icon}
-                label={item.label}
-                submenu={(item as any).submenu}
-                active={pathname === item.href}
-              />
-            ))}
+            {menuItems.map((item) => {
+              const isChildActive = (item as any).submenu?.some((sub: any) => pathname === sub.href);
+              const isParentActive = pathname === item.href;
+              const isActive = isParentActive || isChildActive;
+              const shouldBeOpen = openSubmenu === item.label || isChildActive;
+              
+              return (
+                <SidebarItem 
+                  key={item.href}
+                  href={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  submenu={(item as any).submenu}
+                  active={isActive}
+                  isOpen={shouldBeOpen}
+                  onToggle={() => handleToggleSubmenu(item.label)}
+                />
+              );
+            })}
           </nav>
         </aside>
 
@@ -383,7 +406,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="p-[25px] w-full">
+          <div className="w-full">
             {children}
           </div>
         </main>

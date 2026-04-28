@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Shield, Loader2 } from 'lucide-react';
+import { Shield } from 'lucide-react';
+import { SkeletonTableRow, SkeletonHeader } from '@/components/Admin/Skeleton';
 
 interface UserItem {
   id: string;
@@ -115,7 +116,7 @@ export default function UsersAdminPage() {
   };
 
   return (
-    <div className="p-4 text-[#2c3338]">
+    <div className="p-6 text-[#2c3338]">
       <div className="flex items-center gap-4 mb-6">
         <h1 className="text-[23px] font-normal text-[#1d2327]">Utilizadores</h1>
         <Link
@@ -188,7 +189,9 @@ export default function UsersAdminPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="p-10 text-center"><Loader2 className="w-8 h-8 animate-spin text-[#2271b1] mx-auto" /></td></tr>
+              Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonTableRow key={i} columns={6} />
+              ))
             ) : filteredUsers.length === 0 ? (
               <tr><td colSpan={6} className="p-10 text-center text-gray-500">Nenhum utilizador encontrado.</td></tr>
             ) : (
@@ -262,9 +265,26 @@ export default function UsersAdminPage() {
         </table>
       </div>
 
-      <div className="mt-4 text-[13px] text-[#50575e]">
-        {filteredUsers.length} itens
-      </div>
+      {loading ? (
+        <>
+          <SkeletonHeader />
+          <div className="bg-white border border-[#ccd0d4] rounded-lg overflow-hidden">
+            <table className="w-full">
+              <tbody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonTableRow key={i} columns={6} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="mt-4 text-[13px] text-[#50575e]">
+            {filteredUsers.length} itens
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -19,6 +19,7 @@ import {
   MoreVertical,
   Check
 } from 'lucide-react';
+import { SkeletonGrid, SkeletonHeader } from '@/components/Admin/Skeleton';
 
 interface StorageFile {
   name: string;
@@ -308,7 +309,7 @@ export default function MediaGallery() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f0f0f1] text-[#2c3338]">
+    <div className="min-h-screen text-[#2c3338] p-6">
       <div className="max-w-[1280px] mx-auto">
         {/* Header Estilo WP */}
         <div className="pt-0 pb-4">
@@ -470,9 +471,7 @@ export default function MediaGallery() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-20 bg-white border border-[#ccd0d4]">
-            <RefreshCw className="w-8 h-8 animate-spin text-[#2271b1]" />
-          </div>
+          <SkeletonGrid count={8} />
         ) : viewMode === 'grid' ? (
           /* Grid View - 7 COLUNAS */
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
