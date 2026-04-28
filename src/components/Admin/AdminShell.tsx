@@ -175,9 +175,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         icon: LayoutDashboard, 
         label: 'Dashboard',
         submenu: role === 'admin' ? [
-          { label: 'Editor', href: '/admin/editor' },
-          { label: 'Contribuidor', href: '/admin/contribuidor' },
-          { label: 'Visitante', href: '/admin/guest' },
+          { label: 'Dashboard Principal', href: '/admin/dashboard' },
+          { label: 'Painel Editor', href: '/admin/dashboard?role=editor' },
+          { label: 'Painel Contribuidor', href: '/admin/dashboard?role=contribuidor' },
+          { label: 'Painel Visitante', href: '/admin/dashboard?role=guest' },
         ] : undefined
       },
     ];
