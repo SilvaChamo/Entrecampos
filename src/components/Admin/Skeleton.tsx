@@ -70,3 +70,13 @@ export function SkeletonContent() {
     </div>
   );
 }
+
+export function SkeletonMediaGrid({ count = 8 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="aspect-square bg-gray-200 animate-pulse" />
+      ))}
+    </div>
+  );
+}

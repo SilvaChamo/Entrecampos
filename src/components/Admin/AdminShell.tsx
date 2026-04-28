@@ -133,7 +133,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
       
       {/* Inline Expanded Submenu */}
       {submenu && isOpen && (
-        <div className="bg-[#1d2327] py-1 border-b border-[#2c3338]">
+        <div className="bg-[#0d1214] py-1 border-b border-[#2c3338]">
           {submenu.map((item) => (
             <Link
               key={item.href}
