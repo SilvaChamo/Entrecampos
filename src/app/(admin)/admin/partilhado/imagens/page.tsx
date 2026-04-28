@@ -1,19 +1,39 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileImage, Download, Trash2, Search, Grid3X3, List, Eye } from 'lucide-react';
+import { FileImage, Download, Trash2, Search, Grid3X3, List, Eye, X } from 'lucide-react';
 
 export default function ImagensPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
+
+  // Navegar entre imagens
+  const navigateImage = (direction: 'prev' | 'next') => {
+    const currentIndex = images.findIndex(img => img.imageUrl === viewingImage);
+    if (currentIndex === -1) return;
+    
+    let newIndex;
+    if (direction === 'prev') {
+      newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+    } else {
+      newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
+    }
+    setViewingImage(images[newIndex].imageUrl);
+  };
+
+  // Obter imagem atual
+  const getCurrentImage = () => {
+    return images.find(img => img.imageUrl === viewingImage);
+  };
 
   const images = [
-    { id: 1, title: 'Colheita de Milho', contributor: 'Maria Santos', size: '2.3 MB', dimensions: '1920x1080', date: '2026-04-24' },
-    { id: 2, title: 'Plantio de Café', contributor: 'João Silva', size: '3.1 MB', dimensions: '2400x1600', date: '2026-04-21' },
-    { id: 3, title: 'Irrigação por Gotejamento', contributor: 'Carlos Mendes', size: '1.8 MB', dimensions: '1600x900', date: '2026-04-19' },
-    { id: 4, title: 'Festa da Agricultura', contributor: 'Ana Pereira', size: '4.2 MB', dimensions: '3000x2000', date: '2026-04-17' },
-    { id: 5, title: 'Trator no Campo', contributor: 'Pedro Costa', size: '2.8 MB', dimensions: '1920x1080', date: '2026-04-15' },
-    { id: 6, title: 'Produtos Agrícolas', contributor: 'Maria Santos', size: '1.5 MB', dimensions: '1500x1000', date: '2026-04-12' },
+    { id: 1, title: 'Colheita de Milho', contributor: 'Maria Santos', size: '2.3 MB', dimensions: '1920x1080', date: '2026-04-24', imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=400&h=300&fit=crop' },
+    { id: 2, title: 'Plantio de Café', contributor: 'João Silva', size: '3.1 MB', dimensions: '2400x1600', date: '2026-04-21', imageUrl: 'https://images.unsplash.com/photo-1511537632536-b7a575805d42?w=400&h=300&fit=crop' },
+    { id: 3, title: 'Irrigação por Gotejamento', contributor: 'Carlos Mendes', size: '1.8 MB', dimensions: '1600x900', date: '2026-04-19', imageUrl: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop' },
+    { id: 4, title: 'Festa da Agricultura', contributor: 'Ana Pereira', size: '4.2 MB', dimensions: '3000x2000', date: '2026-04-17', imageUrl: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop' },
+    { id: 5, title: 'Trator no Campo', contributor: 'Pedro Costa', size: '2.8 MB', dimensions: '1920x1080', date: '2026-04-15', imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop' },
+    { id: 6, title: 'Produtos Agrícolas', contributor: 'Maria Santos', size: '1.5 MB', dimensions: '1500x1000', date: '2026-04-12', imageUrl: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=400&h=300&fit=crop' },
   ];
 
   const filteredImages = images.filter(img => 
@@ -61,28 +81,75 @@ export default function ImagensPage() {
         </div>
       </div>
 
-      {/* Grid de Imagens */}
+      {/* Grid de Imagens - Estilo Partilhado */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
           {filteredImages.map(image => (
-            <div key={image.id} className="bg-white border border-[#ccd0d4] rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-              <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                <FileImage className="w-12 h-12 text-[#ccd0d4]" />
-              </div>
-              <div className="p-3">
-                <h3 className="font-medium text-[#1d2327] text-sm truncate">{image.title}</h3>
-                <p className="text-xs text-[#50575e]">{image.contributor}</p>
-                <p className="text-xs text-[#50575e]">{image.size} • {image.dimensions}</p>
-                <div className="flex items-center justify-end gap-1 mt-2">
-                  <button className="p-1.5 text-[#2271b1] hover:bg-blue-50 rounded" title="Visualizar">
-                    <Eye className="w-3.5 h-3.5" />
-                  </button>
-                  <button className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Download">
-                    <Download className="w-3.5 h-3.5" />
-                  </button>
-                  <button className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Eliminar">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+            <div 
+              key={image.id} 
+              className="relative group h-[200px] rounded-lg overflow-hidden cursor-pointer"
+              onClick={() => setViewingImage(image.imageUrl)}
+              style={{
+                backgroundImage: image.imageUrl
+                  ? `linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)), url(${image.imageUrl})` 
+                  : `linear-gradient(135deg, #16a34a, #15803d)`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
+              {/* Overlay com conteúdo */}
+              <div className="absolute inset-0 flex flex-col justify-between p-3">
+                {/* Topo - Badge */}
+                <div className="flex justify-between items-start">
+                  <span className="px-2 py-1 text-xs font-medium rounded shadow-sm bg-green-500/90 text-white">
+                    IMG
+                  </span>
+                  <span className="text-xs text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 px-2 py-0.5 rounded">
+                    {image.size}
+                  </span>
+                </div>
+
+                {/* Centro - Ícone de visualizar no hover */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-16 h-16 bg-black/40 rounded-full flex items-center justify-center">
+                    <Eye className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+
+                {/* Baixo - Conteúdo no hover */}
+                <div className="flex items-end justify-between gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/70 to-transparent -mx-3 -mb-3 p-3 pt-8">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-white font-semibold truncate text-sm" title={image.title}>
+                      {image.title}
+                    </h4>
+                    <p className="text-white/80 text-xs">{image.contributor}</p>
+                    <p className="text-white/60 text-xs">{image.dimensions} • {image.date}</p>
+                  </div>
+
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button 
+                      className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"
+                      title="Visualizar"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setViewingImage(image.imageUrl);
+                      }}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button 
+                      className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"
+                      title="Download"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                    <button 
+                      className="p-1.5 bg-red-500/70 hover:bg-red-500/90 backdrop-blur-sm rounded text-white transition-colors"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -138,6 +205,86 @@ export default function ImagensPage() {
         <div className="text-center py-12">
           <FileImage className="w-16 h-16 text-[#ccd0d4] mx-auto mb-4" />
           <p className="text-[#50575e]">Nenhuma imagem encontrada</p>
+        </div>
+      )}
+
+      {/* Modal de Visualização de Imagem */}
+      {viewingImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+          onClick={() => setViewingImage(null)}
+        >
+          <div className="relative flex items-center justify-center max-w-5xl w-full">
+            {/* Imagem - popup com crop para preencher */}
+            <div 
+              className="relative rounded-xl shadow-2xl overflow-hidden min-w-[800px] min-h-[500px] w-[85vw] h-[75vh] bg-black"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img 
+                src={viewingImage} 
+                alt="Visualização" 
+                className="w-full h-full object-cover"
+              />
+
+              {/* Seta anterior - dentro da imagem */}
+              {images.length > 1 && (
+                <button
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-black/60 hover:bg-black/80 text-white rounded-full transition-all border border-white/20 shadow-lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateImage('prev');
+                  }}
+                >
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+
+              {/* Seta próxima - dentro da imagem */}
+              {images.length > 1 && (
+                <button
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-black/60 hover:bg-black/80 text-white rounded-full transition-all border border-white/20 shadow-lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateImage('next');
+                  }}
+                >
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )}
+              
+              {/* Info sobre o contribuidor - canto inferior esquerdo */}
+              <div className="absolute bottom-4 left-4 z-10">
+                <p className="text-white/90 text-sm flex items-center gap-2">
+                  <span className="text-white/60">Imagem partilhada por:</span>
+                  <span className="font-medium">{getCurrentImage()?.contributor}</span>
+                </p>
+              </div>
+
+              {/* Botão fechar (X) */}
+              <button 
+                className="absolute top-4 right-4 z-10 p-3 bg-black/40 hover:bg-black/60 text-white rounded-full transition-all"
+                onClick={() => setViewingImage(null)}
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              {/* Botão download - canto inferior direito */}
+              <button 
+                className="absolute bottom-4 right-4 z-10 p-3 bg-white/90 hover:bg-white text-gray-700 rounded-full shadow-lg transition-all"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  alert('Download iniciado');
+                }}
+                title="Download"
+              >
+                <Download className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
