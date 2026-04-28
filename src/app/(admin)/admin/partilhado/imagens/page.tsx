@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileImage, Download, Trash2, Search, Grid3X3, List, Eye, X } from 'lucide-react';
+import { FileImage, Download, Trash2, Search, Grid3X3, List, X } from 'lucide-react';
 
 export default function ImagensPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,42 +43,72 @@ export default function ImagensPage() {
 
   return (
     <div className="p-6 text-[#2c3338]">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1d2327]">Imagens Partilhadas</h1>
-          <p className="text-[#50575e] mt-1">Gerenciar imagens enviadas pelos contribuidores</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
-          <FileImage className="w-4 h-4" /> Adicionar Imagem
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#1d2327]">Imagens Partilhadas</h1>
+        <p className="text-[#50575e] mt-1">Gerenciar imagens enviadas pelos contribuidores</p>
       </div>
 
-      {/* Search e View Toggle */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#50575e]" />
-          <input
-            type="text"
-            placeholder="Pesquisar imagens..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
-          />
+      {/* Search, View Toggle e Paginação */}
+      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#50575e]" />
+            <input
+              type="text"
+              placeholder="Pesquisar imagens..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+            />
+          </div>
+          <div className="flex border border-[#ccd0d4] rounded-md overflow-hidden">
+            <button 
+              onClick={() => setViewMode('grid')}
+              className={`p-2 ${viewMode === 'grid' ? 'bg-[#2271b1] text-white' : 'bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`p-2 ${viewMode === 'list' ? 'bg-[#2271b1] text-white' : 'bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-        <div className="flex border border-[#ccd0d4] rounded-md overflow-hidden">
-          <button 
-            onClick={() => setViewMode('grid')}
-            className={`p-2 ${viewMode === 'grid' ? 'bg-[#2271b1] text-white' : 'bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
-          >
-            <Grid3X3 className="w-4 h-4" />
-          </button>
-          <button 
-            onClick={() => setViewMode('list')}
-            className={`p-2 ${viewMode === 'list' ? 'bg-[#2271b1] text-white' : 'bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
-          >
-            <List className="w-4 h-4" />
-          </button>
-        </div>
+
+        {/* Paginação - sempre visível */}
+        {(() => {
+          const itemsPerPage = 12;
+          const totalPages = Math.ceil(filteredImages.length / itemsPerPage) || 1;
+          const [currentPage, setCurrentPage] = useState(1);
+          
+          return (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-2 text-[#50575e] hover:bg-gray-100 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="text-sm text-[#50575e] min-w-[60px] text-center">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="p-2 text-[#50575e] hover:bg-gray-100 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Grid de Imagens - Estilo Partilhado */}
@@ -109,13 +139,6 @@ export default function ImagensPage() {
                   </span>
                 </div>
 
-                {/* Centro - Ícone de visualizar no hover */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-16 h-16 bg-black/40 rounded-full flex items-center justify-center">
-                    <Eye className="w-8 h-8 text-white" />
-                  </div>
-                </div>
-
                 {/* Baixo - Conteúdo no hover */}
                 <div className="flex items-end justify-between gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/70 to-transparent -mx-3 -mb-3 p-3 pt-8">
                   <div className="flex-1 min-w-0">
@@ -127,16 +150,6 @@ export default function ImagensPage() {
                   </div>
 
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button 
-                      className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"
-                      title="Visualizar"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setViewingImage(image.imageUrl);
-                      }}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
                     <button 
                       className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"
                       title="Download"
@@ -183,9 +196,6 @@ export default function ImagensPage() {
                   <td className="px-4 py-3 text-[#50575e]">{image.size}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button className="p-1.5 text-[#2271b1] hover:bg-blue-50 rounded" title="Visualizar">
-                        <Eye className="w-4 h-4" />
-                      </button>
                       <button className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Download">
                         <Download className="w-4 h-4" />
                       </button>

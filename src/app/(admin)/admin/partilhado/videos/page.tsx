@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileVideo, Play, Download, Trash2, Search, Filter, Eye } from 'lucide-react';
+import { FileVideo, Play, Download, Trash2, Search, Filter } from 'lucide-react';
 
 export default function VideosPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   const videos = [
     { id: 1, title: 'Entrevista com Agricultor Local', contributor: 'João Silva', duration: '5:32', size: '45.2 MB', date: '2026-04-25', thumbnail: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=400&h=300&fit=crop' },
@@ -20,31 +22,59 @@ export default function VideosPage() {
 
   return (
     <div className="p-6 text-[#2c3338]">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1d2327]">Vídeos Partilhados</h1>
-          <p className="text-[#50575e] mt-1">Gerenciar vídeos enviados pelos contribuidores</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
-          <FileVideo className="w-4 h-4" /> Adicionar Vídeo
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#1d2327]">Vídeos Partilhados</h1>
+        <p className="text-[#50575e] mt-1">Gerenciar vídeos enviados pelos contribuidores</p>
       </div>
 
-      {/* Search e Filter */}
-      <div className="flex gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#50575e]" />
-          <input
-            type="text"
-            placeholder="Pesquisar vídeos..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
-          />
+      {/* Search, Filter e Paginação */}
+      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#50575e]" />
+            <input
+              type="text"
+              placeholder="Pesquisar vídeos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+            />
+          </div>
+          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7]">
+            <Filter className="w-4 h-4" /> Filtrar
+          </button>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7]">
-          <Filter className="w-4 h-4" /> Filtrar
-        </button>
+
+        {/* Paginação - sempre visível */}
+        {(() => {
+          const totalPages = Math.max(1, Math.ceil(filteredVideos.length / itemsPerPage));
+          
+          return (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-2 text-[#50575e] hover:bg-gray-100 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="text-sm text-[#50575e] min-w-[60px] text-center">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="p-2 text-[#50575e] hover:bg-gray-100 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Grid de Vídeos - Estilo Partilhado */}
@@ -91,16 +121,6 @@ export default function VideosPage() {
                 </div>
 
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button 
-                    className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"
-                    title="Visualizar"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      alert(`Visualizar: ${video.title}`);
-                    }}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
                   <button 
                     className="p-1.5 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded text-white transition-colors"
                     title="Download"

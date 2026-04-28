@@ -238,7 +238,7 @@ export default function PartilhadoPage() {
                 </div>
               </div>
 
-              {/* Paginação - Lado direito */}
+              {/* Paginação - sempre visível */}
               {(() => {
                 const filteredItems = [...sharedItems]
                   .filter(item => {
@@ -251,9 +251,7 @@ export default function PartilhadoPage() {
                     return item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            item.contributor.toLowerCase().includes(searchTerm.toLowerCase());
                   });
-                const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-                
-                if (totalPages <= 1) return null;
+                const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
                 
                 return (
                   <div className="flex items-center gap-2">
