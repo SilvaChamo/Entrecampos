@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import { 
   LayoutDashboard, 
@@ -20,7 +20,6 @@ import {
   FileText,
   Clock,
   CheckSquare,
-  FileUp,
   CreditCard,
   Eye,
   Video,
@@ -33,7 +32,8 @@ import {
   File,
   LogIn,
   Layers,
-  Boxes
+  Boxes,
+  Loader2
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -153,20 +153,43 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
-  const { user, logout, setRole } = useAuth();
+  const { user, loading, logout, setRole } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login');
+    }
+  }, [loading, user, router]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      router.replace('/login');
+    }
+  };
 
   const handleToggleSubmenu = (label: string) => {
     setOpenSubmenu(prev => prev === label ? null : label);
   };
 
   // Fechar submenu quando navegar para página fora do multimídia
-  React.useEffect(() => {
+  useEffect(() => {
     if (openSubmenu === 'Multimédia' && !pathname.startsWith('/admin/media')) {
       setOpenSubmenu(null);
     }
   }, [pathname, openSubmenu]);
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-[#f0f0f1] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#2271b1]" />
+      </div>
+    );
+  }
 
   const getMenuItems = (role: UserRole) => {
     const items: any[] = [
@@ -288,14 +311,22 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       items[0].href = '/admin/contribuidor';
       items.push(
         { href: '/admin/noticias/nova', icon: Plus, label: 'Escrever Notícia' },
-        { href: '/admin/contribuicoes', icon: FileUp, label: 'Minhas Contribuições' },
-        { 
-          href: '/admin/media', 
-          icon: ImageIcon, 
+        {
+          href: '/admin/noticias',
+          icon: Newspaper,
+          label: 'Notícias',
+          submenu: [
+            { label: 'Todas as Notícias', href: '/admin/noticias' },
+            { label: 'Categorias', href: '/admin/noticias/categorias' },
+          ]
+        },
+        {
+          href: '/admin/media',
+          icon: ImageIcon,
           label: 'Multimédia',
           submenu: [
             { label: 'Biblioteca', href: '/admin/media' },
-            { label: 'Adicionar novo', href: '/admin/media/novo' },
+            { label: 'Limpeza de Media', href: '/admin/media/limpeza' },
           ]
         },
       );
@@ -358,7 +389,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               </button>
             ))}
             <button 
-              onClick={logout}
+              onClick={handleLogout}
               className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[13px] border-t border-[#3c434a] mt-2 rounded-md transition-colors"
             >
               <LogOut className="w-4 h-4" /> Sair

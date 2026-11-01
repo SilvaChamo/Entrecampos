@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import HomesMenu from '@/components/Home/HomesMenu';
 
 const SimpleHeader = () => {
   const pathname = usePathname();
@@ -33,6 +34,13 @@ const SimpleHeader = () => {
             <ul className="flex items-center gap-1">
               {menuItems.map((item) => (
                 <li key={item.name}>
+                  {item.name === 'Início' ? (
+                    <HomesMenu
+                      label={item.name}
+                      href={item.href}
+                      triggerClassName="px-4 py-2 text-[15px] font-medium text-gray-700 transition-colors hover:text-red-600"
+                    />
+                  ) : (
                   <Link 
                     href={item.href}
                     className={`block px-4 py-2 text-[15px] font-medium transition-colors ${
@@ -43,6 +51,7 @@ const SimpleHeader = () => {
                   >
                     {item.name}
                   </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -50,7 +59,7 @@ const SimpleHeader = () => {
           
           {/* Botão Subscrever */}
           <Link 
-            href="/planos"
+            href="/pagina/contactos"
             className="bg-red-600 text-white px-6 py-2 rounded-[8px] text-sm font-medium hover:bg-red-700 transition-colors"
           >
             Subscrever

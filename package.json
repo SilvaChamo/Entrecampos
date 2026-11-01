@@ -3,15 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3003",
+    "dev": "next dev -p 3004",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ensure-admin": "node scripts/ensure-admin.js",
+    "setup:selfhosted": "node scripts/setup-selfhosted.js",
+    "setup:selfhosted:sql": "node scripts/setup-selfhosted.js --sql"
   },
   "dependencies": {
     "@iconify/react": "^4.1.1",
     "@imgly/background-removal": "^1.7.0",
     "@supabase/supabase-js": "^2.104.1",
+    "@types/sanitize-html": "^2.16.2",
     "aos": "^3.0.0-beta.6",
     "axios": "^1.15.2",
     "clsx": "^2.1.1",
@@ -32,6 +36,7 @@
     "react-quill-new": "^3.8.3",
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
+    "sanitize-html": "^2.18.1",
     "sharp": "^0.34.5",
     "tailwind-merge": "^2.3.0",
     "xml2js": "^0.6.2"
@@ -46,5 +51,10 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "protobufjs@7.6.5": true,
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.12.2": true
   }
 }

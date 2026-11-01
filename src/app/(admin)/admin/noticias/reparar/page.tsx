@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, STORAGE_BUCKET as BUCKET_NAME } from '@/lib/supabase';
 import { repairNewsImage } from '@/app/actions/news';
 import { 
   Trash2,
@@ -46,7 +46,6 @@ export default function NewsRepairPage() {
   const [viewingHistoryIndex, setViewingHistoryIndex] = useState<number | null>(null);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
 
-  const BUCKET_NAME = 'news-images';
 
   const loadData = async () => {
     setLoading(true);

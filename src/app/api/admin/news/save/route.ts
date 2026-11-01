@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
+import { SESSION_COOKIE, verifySession } from '@/lib/local-session';
+import { hasPermission } from '@/lib/permissions';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,29 +31,69 @@ function getDisplayName(user: any): string {
   }
 }
 
+const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos';
+
+/** Só estes campos vêm do formulário; o resto (site_id, autor, views, datas…) é decidido no servidor. */
+const WRITABLE_FIELDS = ['title', 'slug', 'content', 'summary', 'category', 'image_url', 'date'] as const;
+
+const FEATURED_WARNING =
+  'Notícia guardada, mas a coluna "featured" ainda não existe na base de dados: execute sql/add-featured.sql para activar o Destaque.';
+
+/** Tenta com o campo `featured`; se a coluna ainda não existir, repete sem ele e avisa. */
+async function saveWithFeaturedFallback(
+  run: (payload: Record<string, unknown>) => PromiseLike<{ data: any; error: any }>,
+  payload: Record<string, unknown>,
+) {
+  let result = await run(payload);
+  if (result.error && 'featured' in payload && /featured/i.test(result.error.message || '')) {
+    const { featured: _featured, ...withoutFeatured } = payload;
+    result = await run(withoutFeatured);
+    return { ...result, warning: result.error ? undefined : FEATURED_WARNING };
+  }
+  return { ...result, warning: undefined as string | undefined };
+}
+
+/** Faz a home, as categorias e a página de leitura mostrarem logo a notícia nova/editada. */
+function refreshPublicPages() {
+  revalidatePath('/', 'layout');
+}
+
 export async function POST(request: Request) {
   try {
-    const data = await request.json();
-    const { isEdit, id, author_id, author_name, ...payload } = data;
+    // 1) Autenticação: cookie de sessão assinado, criado no login.
+    const session = verifySession((await cookies()).get(SESSION_COOKIE)?.value);
+    if (!session) {
+      return NextResponse.json({ error: 'Sessão inválida ou expirada. Inicie sessão.' }, { status: 401 });
+    }
 
-    // Se author_id foi fornecido, buscar o usuário para determinar o nome de exibição
-    let finalAuthorName = author_name;
-    let finalAuthorId = author_id;
-    
-    if (author_id && !author_name) {
-      // Buscar usuário pelo ID para pegar preferências de exibição
-      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(author_id);
-      if (userData && userData.user) {
-        finalAuthorName = getDisplayName(userData.user);
-      } else {
-        finalAuthorName = 'Administrador';
-      }
+    const data = await request.json();
+    const { isEdit, id } = data as { isEdit?: boolean; id?: string };
+
+    // 2) Autorização pelo papel (mesmas regras de src/lib/permissions.ts).
+    const permission = isEdit ? 'editar_artigos' : 'criar_artigos';
+    if (!hasPermission(session.role, permission)) {
+      return NextResponse.json({ error: 'Não tem permissão para esta operação.' }, { status: 403 });
     }
-    
-    // Fallback se não tiver autor definido
-    if (!finalAuthorName) {
-      finalAuthorName = 'Administrador';
+    const canPublish = hasPermission(session.role, 'publicar_artigos');
+
+    // 3) Campos permitidos; site e autor vêm do servidor/sessão, nunca do pedido.
+    const payload: Record<string, unknown> = {};
+    for (const field of WRITABLE_FIELDS) {
+      if (data[field] !== undefined) payload[field] = data[field];
     }
+    payload.site_id = SITE_ID;
+    if (canPublish) {
+      if (data.featured !== undefined) payload.featured = !!data.featured;
+    } else {
+      // Contribuidores não publicam nem destacam: a notícia fica a aguardar revisão.
+      payload.status = 'pending';
+    }
+
+    // Nome de exibição do autor, segundo as preferências do utilizador autenticado.
+    const finalAuthorId = session.id;
+    let finalAuthorName = session.name || 'Administrador';
+    const { data: userData } = await supabaseAdmin.auth.admin.getUserById(session.id);
+    if (userData?.user) finalAuthorName = getDisplayName(userData.user);
 
     if (isEdit) {
       if (!id) {
@@ -64,14 +108,14 @@ export async function POST(request: Request) {
         updatePayload.author_id = finalAuthorId;
       }
       
-      const { data: updateData, error } = await supabaseAdmin
-        .from('entrecampos_news')
-        .update(updatePayload)
-        .eq('id', id)
-        .select();
+      const { data: updateData, error, warning } = await saveWithFeaturedFallback(
+        (body) => supabaseAdmin.from('entrecampos_news').update(body).eq('id', id).select(),
+        updatePayload,
+      );
 
       if (error) throw error;
-      return NextResponse.json({ success: true, data: updateData });
+      refreshPublicPages();
+      return NextResponse.json({ success: true, data: updateData, warning });
     } else {
       const insertPayload: any = { 
         ...payload, 
@@ -81,13 +125,14 @@ export async function POST(request: Request) {
         insertPayload.author_id = finalAuthorId;
       }
       
-      const { data: insertData, error } = await supabaseAdmin
-        .from('entrecampos_news')
-        .insert([insertPayload])
-        .select();
+      const { data: insertData, error, warning } = await saveWithFeaturedFallback(
+        (body) => supabaseAdmin.from('entrecampos_news').insert([body]).select(),
+        insertPayload,
+      );
 
       if (error) throw error;
-      return NextResponse.json({ success: true, data: insertData });
+      refreshPublicPages();
+      return NextResponse.json({ success: true, data: insertData, warning });
     }
   } catch (error: any) {
     console.error('Error saving news:', error);

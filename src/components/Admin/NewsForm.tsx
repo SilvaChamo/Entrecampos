@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase, SITE_ID } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import ImageSelector from '@/components/Admin/ImageSelector';
 import dynamic from 'next/dynamic';
@@ -20,7 +20,10 @@ const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 const CATEGORIES = [
   'Fruticultura', 'Gestão agrícola', 'Histórias inspiradoras',
-  'Inclusao feminina', 'Infra-estruturas', 'Inovação', 'Agricultura', 'Comunidade'
+  'Inclusao feminina', 'Infra-estruturas', 'Inovação', 'Agricultura', 'Comunidade',
+  // Categorias do site online (entrecamposblog.com)
+  'Sector agrário', 'Ambiente', 'Turismo rural', 'Mulher agrário', 'Curiosidade',
+  'Agro-negócio', 'Oportunidades', 'Receitas'
 ];
 
 interface NewsFormProps {
@@ -41,6 +44,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     content: '',
     summary: '',
     category: 'agricultura',
+    featured: false,
     image_url: '',
     date: new Date().toISOString()
   });
@@ -80,7 +84,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
         body: JSON.stringify({
           ...formData,
           isEdit,
-          site_id: 'entrecampos',
+          site_id: SITE_ID,
           author_id: currentUser?.id || authUser?.id || null
         }),
       });
@@ -90,7 +94,8 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
         throw new Error(errorData.error || 'Erro ao guardar a notícia');
       }
 
-      alert(`Notícia ${isEdit ? 'atualizada' : 'criada'} com sucesso!`);
+      const result = await response.json().catch(() => ({}));
+      alert(`Notícia ${isEdit ? 'atualizada' : 'criada'} com sucesso!${result.warning ? `\n\n${result.warning}` : ''}`);
       router.push('/admin/noticias');
     } catch (err: any) {
       alert('Erro ao guardar: ' + err.message);
@@ -265,6 +270,20 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
             </div>
 
             <div className="p-0 text-[13px]">
+              <label className="flex items-start gap-2 border-b border-[#ccd0d4] bg-[#fcf9e8] p-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 rounded border-[#8c8f94] text-[#d63638] focus:ring-[#d63638]"
+                  checked={!!formData.featured}
+                  onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                />
+                <span className="text-[#2c3338]">
+                  <strong>Destaque</strong>
+                  <span className="block text-[12px] text-[#646970]">
+                    Aparece no slide da página inicial (as 5 últimas). Quando entra uma nova, a mais antiga volta só à sua categoria.
+                  </span>
+                </span>
+              </label>
               <div className="flex border-b border-[#ccd0d4]">
                 <button type="button" className="px-3 py-1.5 font-medium border border-b-white bg-white -mb-px rounded-t">Todas as categorias</button>
               </div>

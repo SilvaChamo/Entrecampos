@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, STORAGE_BUCKET as BUCKET_NAME, SITE_ID } from '@/lib/supabase';
 import Link from 'next/link';
 import { 
   Newspaper, 
@@ -50,8 +50,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
         .from('news')
         .select('*', { count: 'exact', head: true });
 
-      const BUCKET_NAME = 'news-images';
-      const { data: mediaFiles } = await supabase.storage.from(BUCKET_NAME).list('', {
+          const { data: mediaFiles } = await supabase.storage.from(BUCKET_NAME).list('', {
         limit: 1000
       });
 
@@ -72,6 +71,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
       const { data: latestNews } = await supabase
         .from('news')
         .select('id, title, date')
+        .eq('site_id', SITE_ID)
         .order('date', { ascending: false })
         .limit(5);
 
@@ -98,19 +98,19 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
   const role = forcedRole || user?.role || 'guest';
 
   return (
-    <div className="min-h-screen text-[#2c3338] font-sans pb-12 p-6">
-      <section className="bg-white border border-[#ccd0d4] p-6 mb-5 shadow-sm rounded-none">
-        <div className="max-w-[1200px] mx-auto">
+    <div className="min-h-screen text-[#2c3338] font-sans pb-8 p-4">
+      <section className="bg-white border border-[#ccd0d4] p-4 mb-4 shadow-sm rounded-none">
+        <div className="w-full">
           <h1 className="text-[23px] font-[800] text-[#1d2327] mb-2">
             Bem-vindo ao painel de administração
           </h1>
-          <p className="text-[14px] text-[#50575e] mb-4">
+          <p className="text-[14px] text-[#50575e] mb-3">
             {role === 'guest' ? 'Junte-se a nós para partilhar as suas notícias e multimedia.' : `Olá, ${user?.name || 'Utilizador'}. Este é o seu painel de gestão.`}
           </p>
-          
-          <hr className="border-[#f0f0f1] mb-6" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+
+          <hr className="border-[#f0f0f1] mb-4" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <h3 className="text-[16px] font-bold mb-3">
                 {role === 'editor' ? 'Revisão' : role === 'contribuidor' ? 'Produção' : 'Introdução'}
@@ -211,8 +211,8 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
         </div>
       </section>
 
-      <div className="max-w-[1200px] mx-auto px-4 lg:px-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+      <div className="w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
           <div className="h-full">
             <div className="bg-white border border-[#ccd0d4] rounded-md shadow-sm overflow-hidden h-full">
               <div className="p-3 border-b border-[#f0f0f1] bg-white flex items-center justify-between">

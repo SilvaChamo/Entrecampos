@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, STORAGE_BUCKET as BUCKET_NAME } from '@/lib/supabase';
 import { 
   Trash2, 
   RefreshCw, 
@@ -36,7 +36,6 @@ export default function MediaCleanupPage() {
 
   const ITEMS_PER_PAGE = 48;
 
-  const BUCKET_NAME = 'news-images';
   const PROTECTED_KEYWORDS = ['logo', 'background', 'bg', 'banner', 'footer', 'header', 'branding', 'site', 'brand'];
 
   const loadData = async () => {

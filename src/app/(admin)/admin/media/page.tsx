@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, STORAGE_BUCKET as BUCKET_NAME } from '@/lib/supabase';
 import { 
   Trash2, 
   Copy, 
@@ -65,7 +65,6 @@ export default function MediaGallery() {
   });
   const [savingMetadata, setSavingMetadata] = useState(false);
 
-  const BUCKET_NAME = 'news-images';
 
   const loadImages = async () => {
     setLoading(true);

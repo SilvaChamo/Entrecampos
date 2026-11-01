@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, SITE_ID } from '@/lib/supabase';
 import Link from 'next/link';
 import {
   Search,
@@ -55,6 +55,7 @@ export default function NewsAdminPage() {
       const { data, error } = await supabase
         .from('news')
         .select('*')
+        .eq('site_id', SITE_ID)
         .order('date', { ascending: false });
 
       if (error) throw error;
