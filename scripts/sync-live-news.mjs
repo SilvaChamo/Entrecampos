@@ -14,10 +14,14 @@ async function fetchPage(page) {
   return { rows: await res.json(), pages: Number(res.headers.get('x-wp-totalpages') || 1) };
 }
 
+// Documentos da base de dados agro que o site online também publica: não são notícias (data/not-news.json).
+const NOT_NEWS = new Set(JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data', 'not-news.json'), 'utf-8')).slugs);
+
 const posts = [];
 for (let page = 1; ; page++) {
   const { rows, pages } = await fetchPage(page);
   for (const p of rows) {
+    if (NOT_NEWS.has(p.slug)) continue;
     const media = p._embedded?.['wp:featuredmedia']?.[0]?.source_url;
     const og = p.yoast_head_json?.og_image?.[0]?.url;
     const category = p._embedded?.['wp:term']?.[0]?.[0]?.name || 'Sem categoria';

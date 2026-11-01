@@ -4,7 +4,8 @@ import { headers } from 'next/headers';
 import { CalendarCheck, Mail, Share2, User } from 'lucide-react';
 import { getPost, getRelated, longDatePt } from '@/lib/news-data';
 import { shareNetworks } from '@/lib/share';
-import { CategoryTag, PostCard, SectionHeading, SiteSidebar } from '@/components/Site/parts';
+import { CategoryTag, SectionHeading, SiteSidebar } from '@/components/Site/parts';
+import { NewsCard } from '@/components/Expnews/blocks';
 import ExpShell from '@/components/Expnews/Shell';
 import PrintButton from '@/components/Site/PrintButton';
 import WeatherCard from '@/components/Expnews/WeatherCard';
@@ -39,7 +40,7 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
   return (
     <ExpShell backdrop={post.image}>
     <main className="mx-3 pb-6">
-    <div className="mx-auto max-w-[1240px]">
+    <div className="mx-auto max-w-[1280px]">
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <article className="min-w-0 bg-white">
           {post.image && (
@@ -54,7 +55,8 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
             <div className="mt-4 flex flex-wrap items-center gap-5 border-b border-gray-200 pb-3 text-[13px] text-gray-600">
               <span className="flex items-center gap-2">
                 <CalendarCheck className="h-4 w-4 text-red-600" />
-                {new Date(post.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {post.edited ? 'Editado a' : 'Publicado a'}{' '}
+                {new Date(post.edited || post.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
               <span className="flex items-center gap-2">
                 <User className="h-4 w-4 text-red-600" />
@@ -113,9 +115,9 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
             <SectionHeading>Também pode ler</SectionHeading>
             <span className="h-px flex-1 bg-white/70" />
           </div>
-          <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((p) => (
-              <PostCard key={p.slug} post={p} />
+              <NewsCard key={p.slug} post={p} />
             ))}
           </div>
         </section>

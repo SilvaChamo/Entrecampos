@@ -27,9 +27,9 @@ export async function repairNewsImage(newsId: string, newUrl: string) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
-  // Só se altera uma notícia deste site (tabela base `entrecampos_news`; `news` é uma vista).
+  // Só se altera uma notícia deste site.
   const { data, error } = await supabaseAdmin
-    .from('entrecampos_news')
+    .from('news')
     .update({ image_url: url || null })
     .eq('id', id)
     .eq('site_id', SITE_ID)

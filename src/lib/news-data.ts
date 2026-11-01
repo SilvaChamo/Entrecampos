@@ -17,6 +17,10 @@ export interface Post {
   author: string;
   /** Marcada como "Destaque" no dashboard: entra no slide da home. */
   featured: boolean;
+  /** Leituras registadas na base de dados (0 se ainda não houver contagem). */
+  views: number;
+  /** Data da última edição (ISO) se a notícia foi editada depois de criada; vazio se nunca foi editada. */
+  edited: string;
 }
 
 /** Nome mantido por compatibilidade com os componentes das homes anteriores. */
@@ -48,6 +52,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   comunidade: 'Comunidade',
   ambiente: 'Ambiente',
   'turismo-rural': 'Turismo rural',
+  'desenvolvimento-local': 'Desenvolvimento local',
+  'apoio-comunitario': 'Apoio comunitário',
   'mulher-agrario': 'Mulher agrário',
   curiosidade: 'Curiosidade',
   'agro-negocio': 'Agro-negócio',
@@ -124,6 +130,7 @@ function cleanContent(html: string) {
       th: ['colspan', 'rowspan'],
       td: ['colspan', 'rowspan'],
     },
+    allowedClasses: { div: ['ec-callout'] },
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     allowedSchemesByTag: { img: ['http', 'https'] },
     transformTags: {
@@ -131,8 +138,12 @@ function cleanContent(html: string) {
     },
   });
   return safe
-    // Parágrafos vazios (linhas em branco do editor): o espaço entre parágrafos já é automático.
-    .replace(/<p>(?:\s|&nbsp;| |<br\s*\/?>)*<\/p>/g, '')
+    // Parágrafos e títulos vazios (linhas em branco do editor): o espaço entre parágrafos já é automático.
+    .replace(/<(p|h[1-6])>(?:\s|&nbsp;| |<br\s*\/?>)*<\/\1>/g, '')
+    // Caixas e listas que ficaram vazias no editor.
+    .replace(/<li>\s*<\/li>/g, '')
+    .replace(/<(ul|ol)>\s*<\/\1>/g, '')
+    .replace(/<div class="ec-callout">\s*<\/div>/g, '')
     .replace(/https?:\/\/(www\.)?entrecampos\.co\.mz\//g, ONLINE_HOST)
     .trim();
 }
@@ -156,6 +167,8 @@ function toPost(raw: {
   date?: string;
   author?: string;
   featured?: boolean;
+  views?: number;
+  edited?: string;
 }): Post | null {
   const slug = raw.slug?.trim();
   const title = stripTags(raw.title || '');
@@ -175,6 +188,8 @@ function toPost(raw: {
     date: raw.date || '',
     author: raw.author?.trim() || 'admin',
     featured: !!raw.featured,
+    views: Number(raw.views) || 0,
+    edited: raw.edited || '',
   };
 }
 
@@ -213,6 +228,12 @@ async function fromSupabase(): Promise<{ published: Post[]; known: Set<string> }
         date: r.date as string,
         author: r.author_name as string,
         featured: r.featured === true,
+        views: Number(r.views) || 0,
+        // Editada = alterada depois de criada (mais de 1 minuto de diferença); as importadas não contam.
+        edited:
+          r.updated_at && r.created_at && Date.parse(String(r.updated_at)) - Date.parse(String(r.created_at)) > 60_000
+            ? String(r.updated_at)
+            : '',
       }),
     )
     .filter((p): p is Post => p !== null);
@@ -255,9 +276,21 @@ function fromLocalData(): Post[] {
   }
 }
 
+/** Documentos da base de dados agro que o site online também publica, mas que não são notícias (data/not-news.json). */
+function notNewsSlugs(): Set<string> {
+  try {
+    const file = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data', 'not-news.json'), 'utf-8')) as { slugs?: string[] };
+    return new Set(file.slugs ?? []);
+  } catch {
+    return new Set();
+  }
+}
+
 export const getAllPosts = cache(async (): Promise<{ posts: Post[]; source: 'supabase' | 'local' }> => {
   const remote = await fromSupabase();
-  const local = fromLocalData();
+  const excluded = notNewsSlugs();
+  const local = fromLocalData().filter((p) => !excluded.has(p.slug));
+  if (remote) remote.published = remote.published.filter((p) => !excluded.has(p.slug));
   if (!remote || remote.published.length === 0) {
     local.sort((a, b) => b.date.localeCompare(a.date));
     return { posts: local, source: 'local' };

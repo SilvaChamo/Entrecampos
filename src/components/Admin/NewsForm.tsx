@@ -6,7 +6,6 @@ import { supabase, SITE_ID } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import ImageSelector from '@/components/Admin/ImageSelector';
 import dynamic from 'next/dynamic';
-import 'react-quill-new/dist/quill.snow.css';
 import {
   ImageIcon,
   Key,
@@ -15,14 +14,14 @@ import {
   ChevronUp
 } from 'lucide-react';
 
-// Require react-quill dynamically to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+// O editor só corre no navegador
+const RichEditor = dynamic(() => import('@/components/Admin/RichEditor'), { ssr: false });
 
 const CATEGORIES = [
   'Fruticultura', 'Gestão agrícola', 'Histórias inspiradoras',
   'Inclusao feminina', 'Infra-estruturas', 'Inovação', 'Agricultura', 'Comunidade',
   // Categorias do site online (entrecamposblog.com)
-  'Sector agrário', 'Ambiente', 'Turismo rural', 'Mulher agrário', 'Curiosidade',
+  'Sector agrário', 'Ambiente', 'Turismo rural', 'Desenvolvimento local', 'Apoio comunitário', 'Mulher agrário', 'Curiosidade',
   'Agro-negócio', 'Oportunidades', 'Receitas'
 ];
 
@@ -104,16 +103,6 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     }
   };
 
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['link', 'image'],
-      ['clean']
-    ],
-  };
-
   return (
     <div className="text-[#2c3338] max-w-[1200px] mx-auto p-6">
       <div className="flex items-center gap-2 mb-4">
@@ -135,12 +124,9 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
           />
 
           <div className="bg-white border border-[#ccd0d4] rounded-[8px] overflow-hidden">
-            <ReactQuill
-              theme="snow"
+            <RichEditor
               value={formData.content}
-              onChange={(val) => setFormData({ ...formData, content: val })}
-              modules={modules}
-              className="bg-white min-h-[400px]"
+              onChange={(val) => setFormData((prev) => ({ ...prev, content: val }))}
             />
           </div>
 

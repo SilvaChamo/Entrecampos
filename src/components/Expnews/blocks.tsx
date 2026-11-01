@@ -25,12 +25,12 @@ export function Tag({ label, slug, className = '' }: { label: string; slug?: str
   );
 }
 
-export function Meta({ post, share = true, light = false }: { post: Post; share?: boolean; light?: boolean }) {
+export function Meta({ post, share = true, light = false, spread = false }: { post: Post; share?: boolean; light?: boolean; spread?: boolean }) {
   return (
-    <div className={`flex items-center gap-3 text-[10px] italic ${light ? 'text-white/80' : 'text-[#d6101c]'}`}>
+    <div className={`flex text-[10px] italic ${spread ? 'items-center justify-between gap-3' : 'items-center gap-3'} ${light ? 'text-white/80' : 'text-[#d6101c]'}`}>
       <span className="flex items-center gap-1">
         <Clock className="h-3 w-3" />
-        Publicado a {longDate(post.date)}
+        {longDate(post.date)}
       </span>
       {share && <ShareLink path={`/noticias/${post.slug}`} title={post.title} className={light ? 'text-white/80' : 'text-gray-500'} />}
     </div>
@@ -41,6 +41,30 @@ export function Thumb({ src, className = '' }: { src: string; className?: string
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt="" loading="lazy" className={`absolute inset-0 h-full w-full object-cover ${className}`} />
+  );
+}
+
+/** Card de notícia da secção Agricultura: foto, etiqueta da categoria fora da foto, título e data. */
+export function NewsCard({ post }: { post: Post }) {
+  const href = `/noticias/${post.slug}`;
+  return (
+    <article className="flex h-full flex-col bg-white shadow-sm">
+      <Link href={href} className="relative block h-[170px] shrink-0 overflow-hidden bg-gray-200">
+        {post.image && <Thumb src={post.image} />}
+      </Link>
+      <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
+        <Tag label={post.category} slug={post.categorySlug} className="self-start" />
+        <Link href={href}>
+          <h4 className="mt-2 line-clamp-3 text-[14px] font-bold leading-snug hover:text-[#d6101c]">{post.title}</h4>
+        </Link>
+        {/* A linha e a data ficam sempre no fundo do card, qualquer que seja o tamanho do título. */}
+        <div className="mt-auto pt-3">
+          <div className="-mx-4 border-t border-gray-300 px-4 pt-2.5">
+            <Meta post={post} spread />
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }
 

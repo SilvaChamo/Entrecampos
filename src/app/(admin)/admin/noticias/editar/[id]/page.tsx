@@ -14,9 +14,9 @@ export default function EditNewsPage() {
 
   useEffect(() => {
     const fetchNews = async () => {
-      // Procurar primeiro em entrecampos_news, fallback para baseagrodata_news
+      // Procurar primeiro em news, fallback para baseagrodata_news
       const { data: ecData, error: ecError } = await supabase
-        .from('entrecampos_news')
+        .from('news')
         .select('*')
         .eq('id', id)
         .single();

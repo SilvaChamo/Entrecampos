@@ -33,7 +33,7 @@ const ICONS: Record<string, LucideIcon> = {
  * em várias tonalidades, alternados para categorias vizinhas se distinguirem.
  */
 const CATEGORY_COLORS: Record<string, string> = {
-  agricultura: '#1A4A00', // verde principal do site
+  agricultura: '#3F9B1E', // verde claro
   comunidade: '#D6101C', // vermelho da marca
   'agro-negocio': '#037E02',
   curiosidade: '#B00D17',

@@ -39,7 +39,7 @@ const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos';
 const WRITABLE_FIELDS = ['title', 'slug', 'content', 'summary', 'category', 'image_url', 'date'] as const;
 
 const COLUMN_HELP =
-  'Algumas colunas ainda não existem na tabela entrecampos_news (ver sql/entrecampos-colunas.sql); a notícia foi guardada sem: ';
+  'Algumas colunas ainda não existem na tabela news (ver sql/entrecampos-colunas.sql); a notícia foi guardada sem: ';
 
 /**
  * Grava; se a tabela não tiver alguma coluna (ex.: featured, author_name, status), repete sem ela
@@ -68,7 +68,7 @@ async function saveWithColumnFallback(
     delete body[column];
     dropped.push(column);
   }
-  return { data: null, error: { message: 'Demasiadas colunas em falta na tabela entrecampos_news.' }, warning: undefined as string | undefined };
+  return { data: null, error: { message: 'Demasiadas colunas em falta na tabela news.' }, warning: undefined as string | undefined };
 }
 
 /** Faz a home, as categorias e a página de leitura mostrarem logo a notícia nova/editada. */
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
       }
       
       const { data: updateData, error, warning } = await saveWithColumnFallback(
-        (body) => supabaseAdmin.from('entrecampos_news').update(body).eq('id', id).eq('site_id', SITE_ID).select(),
+        (body) => supabaseAdmin.from('news').update(body).eq('id', id).eq('site_id', SITE_ID).select(),
         updatePayload,
         canPublish ? [] : ['status'],
       );
@@ -150,7 +150,7 @@ export async function POST(request: Request) {
       }
       
       const { data: insertData, error, warning } = await saveWithColumnFallback(
-        (body) => supabaseAdmin.from('entrecampos_news').insert([body]).select(),
+        (body) => supabaseAdmin.from('news').insert([body]).select(),
         insertPayload,
         canPublish ? [] : ['status'],
       );

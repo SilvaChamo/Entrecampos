@@ -23,13 +23,13 @@ export async function GET() {
     // Tabela base (mais rápida que a vista `news`). Se ainda não tiver a coluna `status`, todas contam como publicadas.
     const base = 'id,title,slug,category,date,image_url,summary,views';
     let { data, error } = await supabaseAdmin
-      .from('entrecampos_news')
+      .from('news')
       .select(`${base},status`)
       .eq('site_id', SITE_ID)
       .order('date', { ascending: false });
     if (error && /status/i.test(error.message)) {
       ({ data, error } = (await supabaseAdmin
-        .from('entrecampos_news')
+        .from('news')
         .select(base)
         .eq('site_id', SITE_ID)
         .order('date', { ascending: false })) as any);

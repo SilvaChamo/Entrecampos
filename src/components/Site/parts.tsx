@@ -1,7 +1,7 @@
 import CategoryBadge from '@/components/Expnews/CategoryBadge';
 import Link from 'next/link';
 import { CalendarCheck, Facebook } from 'lucide-react';
-import { getAllPosts, longDatePt, type Post } from '@/lib/news-data';
+import { getAllPosts, longDatePt } from '@/lib/news-data';
 
 export const FACEBOOK_URL = 'https://www.facebook.com/entrecampos.co.mz/';
 const AD_IMAGE = 'https://entrecamposblog.com/wp-content/uploads/2023/08/FRETINEGOCIOS-scaled-1.jpg';
@@ -26,32 +26,6 @@ export function SectionHeading({ children }: { children: React.ReactNode }) {
 /** Etiqueta de categoria clicável (não usar dentro de outra ligação). */
 export function CategoryTag({ label, slug, className = '' }: { label: string; slug?: string; className?: string }) {
   return <CategoryBadge label={label} slug={slug} className={`text-[13px] ${className}`} />;
-}
-
-/** Cartão da grelha de categorias / arquivo / "Também pode ler". */
-export function PostCard({ post }: { post: Post }) {
-  return (
-    <article className="flex flex-col border border-gray-200 bg-white">
-      <div className="relative h-[150px] overflow-hidden bg-white">
-        <Link href={`/noticias/${post.slug}`} aria-label={post.title} className="block h-full w-full">
-          {post.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={post.image} alt={post.title} loading="lazy" className="h-full w-full object-cover" />
-          )}
-        </Link>
-        <CategoryTag label={post.category} slug={post.categorySlug} className="absolute bottom-0 left-3" />
-      </div>
-      <div className="flex-1 px-3 pb-5 pt-6">
-        <Link href={`/noticias/${post.slug}`}>
-          <h4 className="line-clamp-4 text-[15px] font-bold leading-[1.55] text-gray-700 hover:text-[#008000]">{post.title}</h4>
-        </Link>
-      </div>
-      <div className="flex items-center gap-2 border-t border-gray-200 bg-gray-50 px-3 py-3 text-[13px] text-gray-600">
-        <CalendarCheck className="h-4 w-4 text-[#008000]" />
-        {longDatePt(post.date)}
-      </div>
-    </article>
-  );
 }
 
 export function Pagination({ page, pages, hrefFor }: { page: number; pages: number; hrefFor: (n: number) => string }) {

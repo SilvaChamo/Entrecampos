@@ -11,17 +11,16 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-/** Janela principal da home: slide das últimas notícias em destaque. */
+const SLIDE_MS = 6000; // tempo de cada notícia
+
+/** Janela principal da home: slide das últimas notícias em destaque (as notícias dissolvem-se umas nas outras). */
 export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] lg:h-[500px]' }: { posts: Post[]; className?: string }) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  // O enchimento só começa depois de a página estar pronta; antes disso o fim do tempo não seria detectado.
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
   const total = posts.length;
-
-  useEffect(() => {
-    if (total < 2 || paused) return;
-    const timer = setInterval(() => setActive((i) => (i + 1) % total), 6000);
-    return () => clearInterval(timer);
-  }, [total, paused, active]);
 
   if (total === 0) return null;
   const go = (n: number) => setActive((n + total) % total);
@@ -43,7 +42,7 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={p.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 px-6 pb-14 text-white sm:px-10 sm:pb-14 lg:px-14">
+          <div className="absolute inset-x-0 bottom-0 px-6 pb-4 text-white sm:px-10 lg:px-14">
             <CategoryBadge label={p.category} slug={p.categorySlug} tabIndex={i === active ? 0 : -1} className="text-[13px]" />
             <Link href={`/noticias/${p.slug}`} tabIndex={i === active ? 0 : -1} className="block max-w-4xl">
               <h2 className="mt-3 line-clamp-3 text-[22px] font-bold leading-tight hover:underline sm:text-[24px] lg:text-[30px]">
@@ -51,8 +50,8 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
               </h2>
             </Link>
             {p.excerpt && <p className="mt-3 line-clamp-2 max-w-3xl text-[13px] leading-relaxed text-white/85">{p.excerpt}</p>}
-            <span className="mt-3 flex items-center gap-2 text-[11px] italic text-white/80">
-              <CalendarCheck className="h-3.5 w-3.5" />
+            <span className="mt-2 flex h-7 items-center gap-2 text-[13px] font-normal text-[#39ff14] [text-shadow:0_1px_3px_rgba(0,0,0,0.7)]">
+              <CalendarCheck className="h-4 w-4" />
               Publicado a {formatDate(p.date)}
             </span>
           </div>
@@ -60,8 +59,8 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
       ))}
 
       {total > 1 && (
-        // Controlo: seta, pontos (o activo alonga-se) e seta, por baixo da data de publicação
-        <div className="absolute bottom-4 left-6 flex items-center gap-2.5 sm:left-10 lg:left-14">
+        // Controlo: seta, pontos (o activo alonga-se) e seta, no canto direito, na linha da data de publicação
+        <div className="absolute bottom-4 right-6 flex items-center gap-2.5 sm:right-10 lg:right-14">
           <button
             type="button"
             onClick={() => go(active - 1)}
@@ -78,10 +77,21 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
                 onClick={() => setActive(i)}
                 aria-label={`Ir para a notícia ${i + 1}`}
                 aria-current={i === active}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === active ? 'w-6 bg-[#d6101c]' : 'w-2 bg-white/55 hover:bg-white'
+                className={`relative overflow-hidden rounded-full transition-all duration-300 ${
+                  i === active ? 'h-1.5 w-12 bg-white/40' : 'h-2 w-2 bg-white/55 hover:bg-white'
                 }`}
-              />
+              >
+                {/* O ponto activo enche durante o tempo do slide; quando enche, passa para a notícia seguinte */}
+                {i === active && total > 1 && ready && (
+                  <span
+                    key={active}
+                    className="ec-dot-fill absolute inset-y-0 left-0 w-full origin-left bg-[#d6101c]"
+                    style={{ animationDuration: `${SLIDE_MS}ms`, animationPlayState: paused ? 'paused' : 'running' }}
+                    onAnimationEnd={() => go(active + 1)}
+                  />
+                )}
+                {i === active && total <= 1 && <span className="absolute inset-0 bg-[#d6101c]" />}
+              </button>
             ))}
           </div>
           <button

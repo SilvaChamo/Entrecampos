@@ -10,7 +10,7 @@ export default function HeaderWrapper() {
   // / (home - tem SimpleHeader executivo)
   // /inicio (tem HeaderOld no próprio layout)
   // /admin (painel administrativo)
-  if (pathname === "/" || pathname.startsWith("/noticias/") || pathname === "/iniciar" || pathname === "/executiva" || pathname === "/inicio" || pathname.startsWith("/admin") || pathname.startsWith("/login") || pathname.startsWith("/register")) {
+  if (pathname === "/" || pathname === "/noticias" || pathname.startsWith("/noticias/") || pathname.startsWith("/categoria/") || pathname.startsWith("/pagina/") || pathname === "/iniciar" || pathname === "/executiva" || pathname === "/inicio" || pathname.startsWith("/admin") || pathname.startsWith("/login") || pathname.startsWith("/register")) {
     return null;
   }
   

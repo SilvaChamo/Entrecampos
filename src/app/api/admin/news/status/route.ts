@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { error } = await supabaseAdmin
-      .from('entrecampos_news')
+      .from('news')
       .update({ status })
       .eq('site_id', process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos') // só notícias deste site
       .in('id', targetIds);
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       console.error('Supabase error:', error);
       const missing = /Could not find the 'status' column/i.test(error.message);
       return NextResponse.json(
-        { error: missing ? 'A tabela entrecampos_news ainda não tem a coluna status: corra sql/entrecampos-colunas.sql no Supabase.' : error.message },
+        { error: missing ? 'A tabela news ainda não tem a coluna status: corra sql/entrecampos-colunas.sql no Supabase.' : error.message },
         { status: 500 }
       );
     }

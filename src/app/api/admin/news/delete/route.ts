@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { error } = await supabaseAdmin
-      .from('entrecampos_news')
+      .from('news')
       .delete()
       .eq('site_id', process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos') // só notícias deste site
       .in('id', targetIds);

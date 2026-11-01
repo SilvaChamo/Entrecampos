@@ -71,3 +71,152 @@ body {
   font-weight: 700;
   line-height: 1.4;
 }
+
+/* Blocos do texto da notícia: iguais na página de leitura e no editor. */
+.blog-details li p,
+.ec-editor .ProseMirror li p {
+  margin: 0;
+}
+
+.blog-details figure,
+.ec-editor .ProseMirror figure {
+  margin: 1.5rem 0;
+}
+
+.blog-details figure img,
+.ec-editor .ProseMirror figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+}
+
+.blog-details figcaption,
+.ec-editor .ProseMirror figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: center;
+  color: #6b7280;
+}
+
+.blog-details figcaption:empty {
+  display: none;
+}
+
+.blog-details .ec-callout,
+.ec-editor .ProseMirror .ec-callout {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  background: #f7f7f7;
+  border-left: 4px solid #d8a93a;
+}
+
+.blog-details .ec-callout > :last-child,
+.ec-editor .ProseMirror .ec-callout > :last-child {
+  margin-bottom: 0;
+}
+
+.blog-details .ec-callout h1,
+.blog-details .ec-callout h2,
+.blog-details .ec-callout h3,
+.ec-editor .ProseMirror .ec-callout h1,
+.ec-editor .ProseMirror .ec-callout h2,
+.ec-editor .ProseMirror .ec-callout h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+}
+
+.blog-details .ec-callout ul,
+.blog-details .ec-callout ol,
+.ec-editor .ProseMirror .ec-callout ul,
+.ec-editor .ProseMirror .ec-callout ol {
+  margin-bottom: 0;
+  padding-left: 1.25rem;
+  list-style-position: outside;
+}
+
+.blog-details .ec-callout li,
+.ec-editor .ProseMirror .ec-callout li {
+  margin-bottom: 0.5rem;
+}
+
+.blog-details .ec-callout li:last-child,
+.ec-editor .ProseMirror .ec-callout li:last-child {
+  margin-bottom: 0;
+}
+
+/* Editor de notícias. */
+.ec-editor .ProseMirror {
+  min-height: 400px;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: #1d2327;
+  background: #fff;
+  outline: none;
+}
+
+.ec-editor .ProseMirror p {
+  margin-bottom: 0.5rem;
+}
+
+.ec-editor .ProseMirror h1 { margin: 1rem 0 0.5rem; font-size: 1.875rem; font-weight: 700; line-height: 1.2; }
+.ec-editor .ProseMirror h2 { margin: 1rem 0 0.5rem; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.ec-editor .ProseMirror h3 { margin: 1rem 0 0.5rem; font-size: 1.25rem; font-weight: 700; line-height: 1.4; }
+
+.ec-editor .ProseMirror ul { margin-bottom: 0.5rem; padding-left: 1.5rem; list-style: disc; }
+.ec-editor .ProseMirror ol { margin-bottom: 0.5rem; padding-left: 1.5rem; list-style: decimal; }
+
+.ec-editor .ProseMirror blockquote {
+  margin: 0.75rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid #ccd0d4;
+  color: #50575e;
+}
+
+.ec-editor .ProseMirror a { color: #008000; text-decoration: underline; }
+.ec-editor .ProseMirror img { max-width: 100%; height: auto; }
+.ec-editor .ProseMirror figure img { pointer-events: none; user-select: none; }
+
+.ec-editor .ProseMirror .ProseMirror-selectednode { outline: 2px solid #2271b1; }
+
+.ec-editor .ProseMirror figcaption:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: 'Escreva a legenda da foto…';
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.ec-editor .ProseMirror .ec-callout h3:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: 'Título da caixa';
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+/* Deslize dos slides (SlideStage): o novo conteúdo entra e o antigo sai, lado a lado. */
+@keyframes ec-in-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes ec-in-left { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes ec-out-left { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes ec-out-right { from { transform: translateX(0); } to { transform: translateX(100%); } }
+.ec-in-right { animation: ec-in-right 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.ec-in-left { animation: ec-in-left 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.ec-out-left { animation: ec-out-left 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.ec-out-right { animation: ec-out-right 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ec-in-right, .ec-in-left, .ec-out-left, .ec-out-right { animation-duration: 0.01ms; }
+}
+
+/* Ponto activo do slide principal: enche durante o tempo da notícia. */
+@keyframes ec-dot-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ec-dot-fill { animation-name: ec-dot-fill; animation-timing-function: linear; animation-fill-mode: forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ec-dot-fill { animation: none; }
+}

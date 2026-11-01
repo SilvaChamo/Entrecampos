@@ -4,8 +4,11 @@ import ExpShell from '@/components/Expnews/Shell';
 import ExpSlider from '@/components/Expnews/ExpSlider';
 import ShareLink from '@/components/Expnews/ShareLink';
 import CardCarousel from '@/components/Expnews/CardCarousel';
-import { CardTitle, ListItem, Meta, Tag, Thumb } from '@/components/Expnews/blocks';
-import CommunitySection, { type CommunityGroup } from '@/components/Expnews/CommunitySection';
+import { CardTitle, ListItem, Meta, NewsCard, Tag, Thumb, longDate } from '@/components/Expnews/blocks';
+import CategorySection, { type CategoryGroup } from '@/components/Expnews/CategorySection';
+import CategorySlide from '@/components/Expnews/CategorySlide';
+import NewsTicker from '@/components/Expnews/NewsTicker';
+import StickyColumn from '@/components/Expnews/StickyColumn';
 import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
@@ -115,65 +118,54 @@ export default async function HomePrincipal() {
   // As notícias do slide não se repetem nas secções abaixo.
   const inSlides = new Set(slides.map((p) => p.slug));
   const pool = makePool(posts.filter((p) => !inSlides.has(p.slug)));
-  const heroSide = pool.take(2);
-  const lifestyle = pool.take(6, ['comunidade']);
-  const world = pool.take(9, ['agricultura']);
-  const hot = pool.take(4, ['agro-negocio']);
+  const hot = pool.take(4);
   const watch = pool.take(5);
-  const food = pool.take(5, ['receitas', 'fruticultura', 'curiosidade']);
+  const food = pool.take(5, ['receitas', 'curiosidade']);
   const entertainment = pool.take(3, ['curiosidade', 'oportunidades']);
   const recent = pool.take(3);
-  // Selector da primeira secção: Comunidade (a de origem, sem repetições) + as restantes categorias, em português.
+  // Últimas notícias publicadas (carrossel), sem as do slide principal.
+  const latest = posts.filter((p) => !inSlides.has(p.slug)).slice(0, 9);
+  // Mais lidas: pelas leituras registadas; sem contagem (tudo a 0) ficam as mais recentes.
+  const popular = [...posts].sort((a, b) => b.views - a.views || b.date.localeCompare(a.date)).slice(0, 4);
+  const tickerPosts = posts.slice(0, 12).map((p) => ({ slug: p.slug, title: p.title }));
+
   const slim = (p: Post) => ({ slug: p.slug, title: p.title, excerpt: p.excerpt.slice(0, 220), category: p.category, categorySlug: p.categorySlug, image: p.image, date: p.date });
-  const ORDER = ['agricultura', 'comunidade', 'sector-agrario', 'agro-negocio', 'curiosidade', 'ambiente', 'turismo-rural', 'mulher-agrario', 'fruticultura', 'oportunidades', 'receitas'];
-  const bySlug = new Map<string, Post[]>();
-  for (const p of posts) if (p.image) bySlug.set(p.categorySlug, [...(bySlug.get(p.categorySlug) ?? []), p]);
-  const communityGroups: CommunityGroup[] = [
-    { slug: 'todas', label: 'Todas', posts: posts.filter((p) => p.image).slice(0, 6).map(slim) },
-    ...ORDER.filter((slug) => slug === 'comunidade' || (bySlug.get(slug)?.length ?? 0) >= 6).map((slug) => {
-      const list = slug === 'comunidade' ? lifestyle : (bySlug.get(slug) as Post[]).slice(0, 6);
-      return { slug, label: categoryLabel(slug, list[0]?.category), posts: list.map(slim) };
-    }),
-  ];
+  // Cada categoria vive numa só secção: as famílias abaixo não se repetem entre si.
+  const family = (slugs: string[]): CategoryGroup[] =>
+    slugs.map((slug) => ({ slug, label: categoryLabel(slug), posts: posts.filter((p) => p.categorySlug === slug).map(slim) }));
+  const communityGroups = family(['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida']);
+  const agroGroups = family(['agricultura', 'fruticultura', 'agro-negocio', 'mulher-agrario', 'sector-agrario']);
+  // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Agricultura que não estão no slide.
+  const heroLatest = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 5).map(slim);
   const newsletterBg = (slides[1] ?? slides[0] ?? posts[0]).image;
 
   return (
     <ExpShell backdrop={newsletterBg}>
         <main className="mx-3 space-y-3 pb-3">
-          <div className="mx-auto max-w-[1240px] space-y-3">
-            {/* Cabeçalho: slide das últimas notícias em destaque + 2 cards verticais à direita */}
+          <div className="mx-auto max-w-[1280px] space-y-3">
+            <NewsTicker posts={tickerPosts} />
+
+            {/* Cabeçalho: slide das últimas notícias em destaque + 2 cards à direita (Comunidade e Agricultura) */}
             <div className="grid gap-3 md:auto-rows-[215px] md:grid-cols-[2fr_1fr]">
               <ExpSlider posts={slides} className="h-[280px] md:row-span-2 md:h-full" />
-              {heroSide.map((p) => (
-                <Overlay key={p.slug} post={p} className="h-[215px]" titleClass="text-[14px]" share />
-              ))}
+              <CategorySlide posts={heroLatest('comunidade')} label="Comunidade" className="h-[215px]" />
+              <CategorySlide posts={heroLatest('agricultura')} label="Agricultura" className="h-[215px]" />
             </div>
 
             <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
               {/* Coluna principal */}
               <div className="min-w-0 space-y-3">
-                <CommunitySection groups={communityGroups} initial="comunidade" />
+                <CategorySection groups={communityGroups} />
 
-                <Card title="Agricultura" plain>
+                <Card title="Últimas notícias" plain>
                   <CardCarousel>
-                    {world.map((p) => (
-                      <article key={p.slug} className="h-full bg-white p-4 shadow-sm">
-                        <Link href={`/noticias/${p.slug}`} className="relative block h-[150px] overflow-hidden bg-gray-200">
-                          <Thumb src={p.image} />
-                        </Link>
-                        <div className="pt-3">
-                          <Tag label={p.category} slug={p.categorySlug} />
-                          <Link href={`/noticias/${p.slug}`}>
-                            <h4 className="mt-2 line-clamp-3 text-[12px] font-bold leading-snug hover:text-[#d6101c]">{p.title}</h4>
-                          </Link>
-                          <div className="mt-2">
-                            <Meta post={p} />
-                          </div>
-                        </div>
-                      </article>
+                    {latest.map((p) => (
+                      <NewsCard key={p.slug} post={p} />
                     ))}
                   </CardCarousel>
                 </Card>
+
+                <CategorySection groups={agroGroups} layout="grelha" />
 
                 <AdBand />
 
@@ -234,7 +226,7 @@ export default async function HomePrincipal() {
               </div>
 
               {/* Coluna secundária */}
-              <div className="min-w-0 space-y-3">
+              <StickyColumn className="min-w-0 space-y-3">
                 <Card title="Mais quente">
                   <Overlay post={hot[0]} className="h-[200px]" titleClass="text-[13px]" />
                   <ul className="divide-y divide-gray-100">
@@ -253,9 +245,9 @@ export default async function HomePrincipal() {
 
                 <Card title="Sabores e receitas">
                   <Overlay post={food[0]} className="h-[170px]" titleClass="text-[12px]" />
-                  <div className="grid grid-cols-2 gap-x-3">
+                  <div className="mt-3 grid grid-cols-2 gap-3">
                     {food.slice(1).map((p) => (
-                      <Link key={p.slug} href={`/noticias/${p.slug}`} className="group block bg-white py-3 pr-2">
+                      <Link key={p.slug} href={`/noticias/${p.slug}`} className="group block bg-white">
                         <span className="relative block h-[80px] overflow-hidden bg-gray-200">
                           <Thumb src={p.image} className="transition-transform group-hover:scale-105" />
                         </span>
@@ -275,7 +267,28 @@ export default async function HomePrincipal() {
                     ))}
                   </ul>
                 </Card>
-              </div>
+
+                <Card title="Mais lidas">
+                  <ul className="space-y-3">
+                    {popular.map((p) => (
+                      <li key={p.slug} className="flex gap-3">
+                        <Link href={`/noticias/${p.slug}`} className="relative block h-[75px] w-[100px] shrink-0 overflow-hidden bg-gray-200">
+                          <Thumb src={p.image} />
+                        </Link>
+                        <div className="min-w-0">
+                          <Link href={`/noticias/${p.slug}`} className="line-clamp-3 text-[12px] font-bold leading-snug hover:text-[#d6101c]">
+                            {p.title}
+                          </Link>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <Tag label={p.category} slug={p.categorySlug} className="!text-[9px]" />
+                            <span className="text-[10px] italic text-[#d6101c]">{longDate(p.date)}</span>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              </StickyColumn>
             </div>
 
             <AdBand />

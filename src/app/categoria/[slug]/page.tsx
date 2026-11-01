@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { PAGE_SIZE, categoryLabel, getCategories, getCategoryPosts, isKnownCategory, slugify } from '@/lib/news-data';
-import { Pagination, PostCard, SiteMain, SiteSidebar } from '@/components/Site/parts';
+import { Pagination } from '@/components/Site/parts';
+import InnerPage, { InnerSidebar } from '@/components/Expnews/InnerPage';
+import { CardTitle, NewsCard } from '@/components/Expnews/blocks';
 
 export const revalidate = 60;
 
@@ -28,23 +30,26 @@ export default async function PaginaDeCategoria({
   const visible = posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <SiteMain>
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        <section className="min-w-0 bg-white p-6">
+    <InnerPage backdrop={visible.find((p) => p.image)?.image}>
+      <div className="grid gap-3 lg:grid-cols-[1fr_300px]">
+        <section className="min-w-0">
           <h1 className="sr-only">Arquivo de {categoryLabel(slug)}</h1>
+          <div className="mb-3" aria-hidden="true">
+            <CardTitle>{categoryLabel(slug)}</CardTitle>
+          </div>
           {visible.length === 0 ? (
-            <p className="py-16 text-center text-gray-500">Ainda não há notícias nesta categoria.</p>
+            <p className="bg-white py-16 text-center text-gray-500 shadow-sm">Ainda não há notícias nesta categoria.</p>
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {visible.map((p) => (
-                <PostCard key={p.slug} post={p} />
+                <NewsCard key={p.slug} post={p} />
               ))}
             </div>
           )}
           <Pagination page={page} pages={pages} hrefFor={(n) => (n === 1 ? `/categoria/${slug}` : `/categoria/${slug}?pagina=${n}`)} />
         </section>
-        <SiteSidebar />
+        <InnerSidebar />
       </div>
-    </SiteMain>
+    </InnerPage>
   );
 }

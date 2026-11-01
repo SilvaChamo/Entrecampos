@@ -20,6 +20,7 @@ import {
 import HomesMenu from "@/components/Home/HomesMenu";
 import ShareLink from "@/components/Expnews/ShareLink";
 import ExpFrame, { MenuToggle } from "@/components/Expnews/ExpFrame";
+import GreenBar from "@/components/Expnews/GreenBar";
 import styles from "@/components/Expnews/expnews.module.css";
 import { FACEBOOK_URL } from "@/components/Site/parts";
 
@@ -125,10 +126,13 @@ export default function ExpShell({
   return (
     <div className={`${saira.variable} ${styles.root} min-h-screen`}>
       <ExpFrame sidebar={sidebar}>
+        {/* Barra verde do site online: botões de acção e Facebook */}
+        <GreenBar />
+
         {/* Cabeçalho: menu, logotipo, redes e pesquisa */}
-        <header className="mb-3 border-b-2 border-[#d6101c] bg-white shadow-sm">
+        <header className="sticky top-0 z-30 mb-3 border-b-2 border-[#d6101c] bg-white shadow-sm">
           <div className="mx-3">
-            <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-4">
+            <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3 py-3">
                 <MenuToggle />
                 <span className="h-9 w-px bg-gray-200" />
@@ -138,9 +142,6 @@ export default function ExpShell({
                 </Link>
               </div>
               <div className="flex shrink-0 items-center gap-4 pr-3 text-gray-700">
-                <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-[#d6101c]">
-                  <Facebook className="h-4 w-4" />
-                </a>
                 <Link href="/login" aria-label="Entrar" className="hover:text-[#d6101c]">
                   <Lock className="h-4 w-4" />
                 </Link>
@@ -237,7 +238,7 @@ export default function ExpShell({
               Facebook
             </a>
           </div>
-          <div className="mx-auto mt-10 flex max-w-[1240px] flex-wrap items-center justify-between gap-3 text-[9px] text-gray-500">
+          <div className="mx-auto mt-10 flex max-w-[1280px] flex-wrap items-center justify-between gap-3 text-[9px] text-gray-500">
             <span>
               © {new Date().getFullYear()} EntreCAMPOS. Agricultura Sustentável
               em Moçambique.

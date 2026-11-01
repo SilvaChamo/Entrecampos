@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { SiteMain } from '@/components/Site/parts';
+import InnerPage from '@/components/Expnews/InnerPage';
 import { getStaticPage } from '@/lib/news-data';
 
 export const revalidate = 3600;
@@ -9,7 +9,7 @@ export default async function PaginaPage({ params }: { params: Promise<{ slug: s
   if (!page) notFound();
 
   return (
-    <SiteMain>
+    <InnerPage>
       <article className="mx-auto max-w-3xl bg-white p-6 shadow-sm sm:p-10">
         <h1 className="mb-6 border-l-[3px] border-red-600 pl-3 text-[24px] font-bold uppercase text-gray-800">{page.title}</h1>
         <div
@@ -17,6 +17,6 @@ export default async function PaginaPage({ params }: { params: Promise<{ slug: s
           dangerouslySetInnerHTML={{ __html: page.content }}
         />
       </article>
-    </SiteMain>
+    </InnerPage>
   );
 }

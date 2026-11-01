@@ -290,6 +290,20 @@ export default function NewsAdminPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-8 pl-3 pr-3 border border-[#ccd0d4] rounded-md text-sm outline-none focus:border-[#2271b1] w-64"
           />
+          <Link
+            href="/admin/noticias/arquivadas"
+            className="p-2 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7] text-[#50575e] inline-flex"
+            title="Arquivadas"
+          >
+            <Archive className="w-4 h-4" />
+          </Link>
+          <Link
+            href="/admin/noticias/lixo"
+            className="p-2 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7] text-[#50575e] inline-flex"
+            title="Lixo"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Link>
         </div>
       </div>
 
@@ -363,22 +377,8 @@ export default function NewsAdminPage() {
           {filterMissingImage ? 'A mostrar sem imagem' : 'Filtrar sem imagem'}
         </button>
 
-        <div className="ml-auto flex items-center gap-2">
-          <Link
-            href="/admin/noticias/arquivadas"
-            className="p-2 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7] text-[#50575e] inline-flex"
-            title="Arquivadas"
-          >
-            <Archive className="w-4 h-4" />
-          </Link>
-          <Link
-            href="/admin/noticias/lixo"
-            className="p-2 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7] text-[#50575e] inline-flex"
-            title="Lixo"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Link>
-        </div>
+        {/* Paginação, na mesma linha dos botões de acção */}
+        <div className="ml-auto">{pager}</div>
       </div>
 
       {localCopy && (
@@ -390,9 +390,6 @@ export default function NewsAdminPage() {
           </span>
         </div>
       )}
-
-      {/* Paginação (em cima) */}
-      <div className="mb-2">{pager}</div>
 
       {/* Tabela de Artigos */}
       <div className="bg-white border border-[#ccd0d4] rounded-md overflow-hidden">
