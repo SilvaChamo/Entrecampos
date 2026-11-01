@@ -50,6 +50,8 @@ export default function NewsAdminPage() {
   const [bulkAction, setBulkAction] = useState('');
 
   const [localCopy, setLocalCopy] = useState(false);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 40;
 
   const loadNews = async () => {
     setLoading(true);
@@ -84,6 +86,41 @@ export default function NewsAdminPage() {
     const matchesMissingImage = !filterMissingImage || !item.image_url;
     return matchesSearch && matchesCategory && matchesDate && matchesMissingImage;
   });
+
+  // 40 notícias por página; as restantes ficam na paginação.
+  const totalPages = Math.max(1, Math.ceil(filteredNews.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const visibleNews = filteredNews.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // Voltar à primeira página quando os filtros mudam.
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, filterCategory, filterDate, filterMissingImage]);
+
+  const pager = (
+    <div className="flex items-center justify-end gap-1 text-[13px] text-[#50575e]">
+      <span className="mr-2">{filteredNews.length} itens</span>
+      {[
+        { label: '«', title: 'Primeira página', to: 1, off: currentPage === 1 },
+        { label: '‹', title: 'Anterior', to: currentPage - 1, off: currentPage === 1 },
+      ].map((b) => (
+        <button key={b.title} type="button" title={b.title} disabled={b.off} onClick={() => setPage(b.to)}
+          className="h-7 min-w-7 border border-[#ccd0d4] bg-white px-2 hover:border-[#2271b1] hover:text-[#2271b1] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
+          {b.label}
+        </button>
+      ))}
+      <span className="mx-1">Página {currentPage} de {totalPages}</span>
+      {[
+        { label: '›', title: 'Seguinte', to: currentPage + 1, off: currentPage >= totalPages },
+        { label: '»', title: 'Última página', to: totalPages, off: currentPage >= totalPages },
+      ].map((b) => (
+        <button key={b.title} type="button" title={b.title} disabled={b.off} onClick={() => setPage(b.to)}
+          className="h-7 min-w-7 border border-[#ccd0d4] bg-white px-2 hover:border-[#2271b1] hover:text-[#2271b1] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
+          {b.label}
+        </button>
+      ))}
+    </div>
+  );
 
   const deleteNews = async (id: string, title: string) => {
     if (!confirm(`Tem a certeza que deseja mover "${title}" para o lixo?`)) return;
@@ -124,10 +161,10 @@ export default function NewsAdminPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === filteredNews.length) {
+    if (visibleNews.every((n) => selectedIds.has(n.id))) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredNews.map(n => n.id)));
+      setSelectedIds(new Set(visibleNews.map(n => n.id)));
     }
   };
 
@@ -329,6 +366,9 @@ export default function NewsAdminPage() {
         </div>
       )}
 
+      {/* Paginação (em cima) */}
+      <div className="mb-2">{pager}</div>
+
       {/* Tabela de Artigos */}
       <div className="bg-white border border-[#ccd0d4] rounded-md overflow-hidden">
         <table className="w-full border-collapse text-[13px]">
@@ -337,7 +377,7 @@ export default function NewsAdminPage() {
               <th className="p-2 w-10 text-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.size === filteredNews.length && filteredNews.length > 0}
+                  checked={visibleNews.length > 0 && visibleNews.every((n) => selectedIds.has(n.id))}
                   onChange={toggleSelectAll}
                 />
               </th>
@@ -358,7 +398,7 @@ export default function NewsAdminPage() {
             ) : filteredNews.length === 0 ? (
               <tr><td colSpan={6} className="p-10 text-center text-gray-500">Nenhum artigo encontrado.</td></tr>
             ) : (
-              filteredNews.map((item, idx) => (
+              visibleNews.map((item, idx) => (
                 <React.Fragment key={item.id}>
                   <tr className={`group border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'} ${selectedIds.has(item.id) ? 'bg-blue-50' : ''}`}>
                     <td className="p-2 text-center align-top pt-4">
@@ -561,9 +601,8 @@ export default function NewsAdminPage() {
         </table>
       </div>
 
-      <div className="mt-4 text-[13px] text-[#50575e]">
-        {filteredNews.length} itens
-      </div>
+      {/* Paginação (em baixo) */}
+      <div className="mt-3">{pager}</div>
     </div>
   );
 }
