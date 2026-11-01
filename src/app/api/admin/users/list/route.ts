@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/api-guard';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,8 @@ const supabaseAdmin = createClient(
 );
 
 export async function GET() {
+  const guard = await requireAuth('listar_utilizadores');
+  if ('error' in guard) return guard.error;
   try {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers();
     
@@ -29,12 +32,13 @@ export async function GET() {
         lastName: u.user_metadata?.last_name || '',
         name: u.user_metadata?.first_name || '—',
         email: u.email || '',
-        role: u.user_metadata?.role || 'Subscritor',
+        role: u.app_metadata?.role || 'Subscritor',
+        approved: u.app_metadata?.approved === true,
         alcunha: u.user_metadata?.alcunha || '',
         displayNameType: u.user_metadata?.displayNameType || 'full_name',
         articles: 0,
         avatar: u.user_metadata?.avatar_url || null,
-        isAdmin: u.user_metadata?.role === 'Administrador'
+        isAdmin: u.app_metadata?.role === 'Administrador'
       }));
 
     return NextResponse.json({ users });

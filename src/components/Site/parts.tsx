@@ -25,7 +25,7 @@ export function SectionHeading({ children }: { children: React.ReactNode }) {
 
 /** Etiqueta de categoria clicável (não usar dentro de outra ligação). */
 export function CategoryTag({ label, slug, className = '' }: { label: string; slug?: string; className?: string }) {
-  return <CategoryBadge label={label} slug={slug} tone="green" className={`text-[13px] ${className}`} />;
+  return <CategoryBadge label={label} slug={slug} className={`text-[13px] ${className}`} />;
 }
 
 /** Cartão da grelha de categorias / arquivo / "Também pode ler". */

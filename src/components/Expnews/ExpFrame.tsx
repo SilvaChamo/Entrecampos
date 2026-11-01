@@ -5,6 +5,9 @@ import { Menu } from 'lucide-react';
 
 const STORAGE_KEY = 'ec-side-collapsed';
 
+/** Lê o estado guardado e marca a barra e o conteúdo antes do primeiro desenho. */
+const INIT_SCRIPT = `try{if(localStorage.getItem('${STORAGE_KEY}')==='1'){document.querySelectorAll('[data-ec-side]').forEach(function(e){e.setAttribute('data-collapsed','true')})}}catch(e){}`;
+
 const SidebarContext = createContext<{ toggle: () => void }>({ toggle: () => {} });
 
 /**
@@ -44,10 +47,12 @@ export default function ExpFrame({ sidebar, children }: { sidebar: React.ReactNo
   return (
     <SidebarContext.Provider value={{ toggle }}>
       <aside
+        data-ec-side
         data-collapsed={iconsOnly}
+        suppressHydrationWarning
         className={`group/side fixed left-0 top-0 z-40 h-screen flex-col overflow-visible bg-[#0b0b0b] text-white transition-[width] duration-200 ${
           mobileOpen ? 'flex w-[220px]' : 'hidden lg:flex'
-        } ${iconsOnly ? 'lg:w-[64px]' : 'lg:w-[220px]'}`}
+        } lg:w-[220px] lg:data-[collapsed=true]:w-[64px]`}
       >
         {sidebar}
       </aside>
@@ -59,7 +64,16 @@ export default function ExpFrame({ sidebar, children }: { sidebar: React.ReactNo
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"
         />
       )}
-      <div className={`transition-[margin] duration-200 ${collapsed ? 'lg:ml-[64px]' : 'lg:ml-[220px]'}`}>{children}</div>
+      <div
+        data-ec-side
+        data-collapsed={collapsed}
+        suppressHydrationWarning
+        className="transition-[margin] duration-200 lg:ml-[220px] lg:data-[collapsed=true]:ml-[64px]"
+      >
+        {/* Corre antes de pintar: aplica já o estado guardado, sem a barra "piscar" expandida ao abrir a página. */}
+        <script dangerouslySetInnerHTML={{ __html: INIT_SCRIPT }} />
+        {children}
+      </div>
     </SidebarContext.Provider>
   );
 }

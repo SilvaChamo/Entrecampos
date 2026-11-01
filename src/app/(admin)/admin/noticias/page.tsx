@@ -49,21 +49,21 @@ export default function NewsAdminPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState('');
 
+  const [localCopy, setLocalCopy] = useState(false);
+
   const loadNews = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('news')
-        .select('*')
-        .eq('site_id', SITE_ID)
-        .order('date', { ascending: false });
-
-      if (error) throw error;
-      setNews(data || []);
+      // O servidor decide quem pode ver (sessão + permissão) e lê do Supabase; sem Supabase usa a cópia local.
+      const res = await fetch('/api/admin/news/list', { credentials: 'include' });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Erro ${res.status} ao carregar notícias.`);
+      setNews(body.items || []);
+      setLocalCopy(body.source === 'local');
       setErrorMsg(null);
     } catch (err: any) {
-      console.error('Erro ao carregar notícias:', err);
-      setErrorMsg(err.message || 'Erro desconhecido ao carregar notícias.');
+      console.error('Erro ao carregar notícias:', err?.message || err);
+      setErrorMsg(err?.message || 'Erro desconhecido ao carregar notícias.');
     } finally {
       setLoading(false);
     }
@@ -318,6 +318,16 @@ export default function NewsAdminPage() {
           </Link>
         </div>
       </div>
+
+      {localCopy && (
+        <div className="mb-3 flex items-start gap-2 rounded-md border border-[#dba617] bg-[#fcf9e8] px-4 py-3 text-[13px] text-[#50575e]">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#dba617]" />
+          <span>
+            A mostrar a <strong>cópia local</strong> das notícias do site: o Supabase recusou o acesso (verifique as chaves em .env.local).
+            Editar, arquivar ou apagar só funciona quando o Supabase responder.
+          </span>
+        </div>
+      )}
 
       {/* Tabela de Artigos */}
       <div className="bg-white border border-[#ccd0d4] rounded-md overflow-hidden">

@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
+import { requireAuth } from '@/lib/api-guard';
 
 const execAsync = promisify(exec);
 
@@ -47,6 +48,8 @@ async function countFiles(dirPath: string): Promise<number> {
 }
 
 export async function GET(req: NextRequest) {
+  const guard = await requireAuth('ver_definicoes');
+  if ('error' in guard) return guard.error;
   try {
     // Verificar cache do Next.js
     const nextDir = path.join(process.cwd(), '.next');

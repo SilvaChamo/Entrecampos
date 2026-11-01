@@ -20,7 +20,7 @@ interface StorageFile {
   metadata?: {
     size: number;
     mimetype: string;
-  };
+  } | null;
 }
 
 export default function MediaCleanupPage() {

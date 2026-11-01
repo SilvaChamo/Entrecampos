@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth, isUuid } from '@/lib/api-guard';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,65 +8,64 @@ const supabaseAdmin = createClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
-export async function GET(req: NextRequest) {
+/** Perfil do utilizador autenticado. O utilizador vem sempre da sessão (cookie), nunca de parâmetros do pedido. */
+export async function GET() {
+  const guard = await requireAuth();
+  if ('error' in guard) return guard.error;
+  const { session } = guard;
+
   try {
-    // Get user ID or email from query params
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('id');
-    const email = searchParams.get('email');
-    
-    let user = null;
-    let error = null;
-    
-    if (userId && userId.includes('-')) {
-      // Valid UUID - get by ID
-      const result = await supabaseAdmin.auth.admin.getUserById(userId);
-      user = result.data.user;
-      error = result.error;
-    } else if (email) {
-      // Get by email - fetch all and filter
-      console.log('[API /users/me] Buscando usuário por email:', email);
-      const { data: { users: allUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-      if (listError) {
-        console.error('[API /users/me] Erro ao listar usuários:', listError);
-        error = listError;
-      } else if (allUsers) {
-        console.log('[API /users/me] Total de usuários no sistema:', allUsers.length);
-        user = allUsers.find(u => u.email?.toLowerCase() === email.toLowerCase()) || null;
-        if (user) {
-          console.log('[API /users/me] Usuário encontrado:', user.email, 'ID:', user.id);
-          console.log('[API /users/me] Avatar URL:', user.user_metadata?.avatar_url);
-        } else {
-          console.log('[API /users/me] Usuário não encontrado. Emails disponíveis:', allUsers.map(u => u.email));
-        }
-      }
+    // Acesso de emergência (sem conta no Supabase): perfil mínimo.
+    if (!isUuid(session.id)) {
+      return NextResponse.json({
+        user: {
+          id: session.id,
+          username: session.email.split('@')[0],
+          firstName: session.name,
+          lastName: '',
+          email: session.email,
+          role: 'Administrador',
+          alcunha: '',
+          displayNameType: 'full_name',
+          bio: '',
+          website: '',
+          avatar: null,
+          isAdmin: true,
+          articles: 0,
+          telefone: '',
+          profissao: '',
+          cargo: '',
+        },
+      });
     }
-    
+
+    const { data, error } = await supabaseAdmin.auth.admin.getUserById(session.id);
+    const user = data?.user;
     if (error || !user) {
       return NextResponse.json({ error: 'Utilizador não encontrado' }, { status: 404 });
     }
 
-    const mappedUser = {
-      id: user.id,
-      username: user.email?.split('@')[0] || 'user',
-      firstName: user.user_metadata?.first_name || '',
-      lastName: user.user_metadata?.last_name || '',
-      email: user.email || '',
-      role: user.user_metadata?.role || 'Subscritor',
-      alcunha: user.user_metadata?.alcunha || '',
-      displayNameType: user.user_metadata?.displayNameType || 'full_name',
-      bio: user.user_metadata?.bio || '',
-      website: user.user_metadata?.website || '',
-      avatar: user.user_metadata?.avatar_url || null,
-      isAdmin: user.user_metadata?.role === 'Administrador',
-      articles: 0,
-      telefone: user.user_metadata?.telefone || '',
-      profissao: user.user_metadata?.profissao || '',
-      cargo: user.user_metadata?.cargo || ''
-    };
-
-    return NextResponse.json({ user: mappedUser });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        username: user.email?.split('@')[0] || 'user',
+        firstName: user.user_metadata?.first_name || '',
+        lastName: user.user_metadata?.last_name || '',
+        email: user.email || '',
+        role: user.app_metadata?.role || 'Subscritor',
+        alcunha: user.user_metadata?.alcunha || '',
+        displayNameType: user.user_metadata?.displayNameType || 'full_name',
+        bio: user.user_metadata?.bio || '',
+        website: user.user_metadata?.website || '',
+        avatar: user.user_metadata?.avatar_url || null,
+        isAdmin: user.app_metadata?.role === 'Administrador',
+        articles: 0,
+        telefone: user.user_metadata?.telefone || '',
+        profissao: user.user_metadata?.profissao || '',
+        cargo: user.user_metadata?.cargo || '',
+      },
+    });
+  } catch {
+    return NextResponse.json({ error: 'Erro ao obter o perfil' }, { status: 500 });
   }
 }

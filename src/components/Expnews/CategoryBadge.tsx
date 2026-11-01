@@ -28,6 +28,25 @@ const ICONS: Record<string, LucideIcon> = {
   receitas: Utensils,
 };
 
+/**
+ * Cores das etiquetas: verdes do site EntreCAMPOS (Elementor/tema) e vermelhos da marca,
+ * em várias tonalidades, alternados para categorias vizinhas se distinguirem.
+ */
+const CATEGORY_COLORS: Record<string, string> = {
+  agricultura: '#1A4A00', // verde principal do site
+  comunidade: '#D6101C', // vermelho da marca
+  'agro-negocio': '#037E02',
+  curiosidade: '#B00D17',
+  'sector-agrario': '#2E7C04',
+  ambiente: '#E53935',
+  'turismo-rural': '#589442',
+  'mulher-agrario': '#8E0B13',
+  fruticultura: '#225E3B',
+  oportunidades: '#C62828',
+  receitas: '#A50F1A',
+};
+const DEFAULT_COLOR = '#D6101C';
+
 function toSlug(value: string) {
   return value
     .normalize('NFD')
@@ -44,25 +63,24 @@ function toSlug(value: string) {
 export default function CategoryBadge({
   label,
   slug,
-  tone = 'red',
   className = '',
   tabIndex,
 }: {
   label: string;
   slug?: string;
-  tone?: 'red' | 'green';
   className?: string;
   tabIndex?: number;
 }) {
   const key = slug || toSlug(label);
   const Icon = ICONS[key] ?? Tag;
-  const bg = tone === 'green' ? 'bg-[#008000]' : 'bg-[#d6101c]';
+  const color = CATEGORY_COLORS[key] ?? DEFAULT_COLOR;
   return (
     // Clicável: abre a categoria. Não colocar dentro de outro <a>.
     <Link
       href={`/categoria/${key}`}
       tabIndex={tabIndex}
-      className={`inline-flex items-stretch overflow-hidden rounded-[4px] align-middle text-white transition hover:brightness-110 ${bg} ${className}`}
+      className={`inline-flex items-stretch overflow-hidden rounded-[4px] align-middle text-white transition hover:brightness-110 ${className}`}
+      style={{ backgroundColor: color }}
     >
       <span className="flex items-center justify-center bg-black/25 px-2.5">
         <Icon className="h-[1.1em] w-[1.1em]" strokeWidth={2.5} />

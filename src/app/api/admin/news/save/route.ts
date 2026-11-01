@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { SESSION_COOKIE, verifySession } from '@/lib/local-session';
 import { hasPermission } from '@/lib/permissions';
+import { isUuid } from '@/lib/api-guard';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -90,10 +91,13 @@ export async function POST(request: Request) {
     }
 
     // Nome de exibição do autor, segundo as preferências do utilizador autenticado.
-    const finalAuthorId = session.id;
+    // O acesso de emergência não tem conta no Supabase (id sem formato UUID): fica sem author_id.
+    const finalAuthorId = isUuid(session.id) ? session.id : null;
     let finalAuthorName = session.name || 'Administrador';
-    const { data: userData } = await supabaseAdmin.auth.admin.getUserById(session.id);
-    if (userData?.user) finalAuthorName = getDisplayName(userData.user);
+    if (finalAuthorId) {
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(finalAuthorId);
+      if (userData?.user) finalAuthorName = getDisplayName(userData.user);
+    }
 
     if (isEdit) {
       if (!id) {

@@ -16,7 +16,7 @@ export default function CardCarousel({ children, interval = 5000 }: { children: 
     const el = track.current;
     if (!el) return;
     const card = el.firstElementChild as HTMLElement | null;
-    const step = card ? card.offsetWidth + 16 : el.clientWidth;
+    const step = card ? card.offsetWidth + 12 : el.clientWidth;
     const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
     if (dir === 1 && atEnd) el.scrollTo({ left: 0, behavior: 'smooth' });
     else if (dir === -1 && el.scrollLeft <= 4) el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
@@ -31,9 +31,9 @@ export default function CardCarousel({ children, interval = 5000 }: { children: 
 
   return (
     <div className="relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-      <div ref={track} className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div ref={track} className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map((item, i) => (
-          <div key={i} className="w-[85%] shrink-0 snap-start sm:w-[calc((100%-16px)/2)] lg:w-[calc((100%-32px)/3)]">
+          <div key={i} className="w-[85%] shrink-0 snap-start sm:w-[calc((100%-12px)/2)] lg:w-[calc((100%-24px)/3)]">
             {item}
           </div>
         ))}

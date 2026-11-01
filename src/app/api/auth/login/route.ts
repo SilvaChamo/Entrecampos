@@ -1,86 +1,89 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  cookieOptions,
-  SESSION_COOKIE,
-  signSession,
-} from '@/lib/local-session';
-import { translateAuthError } from '@/lib/auth';
+import { cookieOptions, SESSION_COOKIE, signSession } from '@/lib/local-session';
+import { mapRole, translateAuthError } from '@/lib/auth';
+import { verifyBootstrapAdmin } from '@/lib/bootstrap-admin';
+import { clearAttempts, tooManyAttempts } from '@/lib/rate-limit';
+
+function startSession(user: { id: string; email: string; name: string; role: 'admin' | 'editor' | 'contribuidor' | 'guest' }, extra: object = {}) {
+  const res = NextResponse.json({ user, ...extra });
+  res.cookies.set(SESSION_COOKIE, signSession(user), cookieOptions());
+  return res;
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const email = String(body.email || '').trim().toLowerCase();
+    // Aceita e-mail ou nome de utilizador (ex.: "admin").
+    const login = String(body.email ?? body.login ?? '').trim().toLowerCase();
     const password = String(body.password || '');
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'E-mail e palavra-passe são obrigatórios.' }, { status: 400 });
+    if (!login || !password) {
+      return NextResponse.json({ error: 'Utilizador e palavra-passe são obrigatórios.' }, { status: 400 });
+    }
+
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
+    const throttleKey = `${ip}|${login}`;
+    if (tooManyAttempts(throttleKey)) {
+      return NextResponse.json({ error: 'Demasiadas tentativas. Aguarde alguns minutos e tente de novo.' }, { status: 429 });
+    }
+
+    // 1) Acesso de emergência do administrador (definido só por variáveis de ambiente).
+    const bootstrap = verifyBootstrapAdmin(login, password);
+    if (bootstrap) {
+      clearAttempts(throttleKey);
+      return startSession({ ...bootstrap, role: 'admin' });
+    }
+
+    // 2) Utilizadores do painel (Supabase Auth). Têm de ser e-mails.
+    if (!login.includes('@')) {
+      return NextResponse.json({ error: 'Utilizador ou palavra-passe incorrectos.' }, { status: 401 });
     }
 
     const mode = process.env.AUTH_MODE || process.env.NEXT_PUBLIC_AUTH_MODE || 'supabase';
-
     if (mode === 'local') {
-      return NextResponse.json(
-        { error: 'Modo local desactivado. Configure AUTH_MODE=supabase e as chaves do self-hosted.' },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: 'Utilizador ou palavra-passe incorrectos.' }, { status: 401 });
     }
 
-    // mode === supabase — autenticação via Supabase Auth (self-hosted / cloud)
     const { createClient } = await import('@supabase/supabase-js');
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key =
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
     if (!url || !key) {
       return NextResponse.json({ error: 'Supabase não configurado.' }, { status: 500 });
     }
 
-    const supabase = createClient(url, key, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const supabase = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: login, password });
     if (error || !data.user) {
+      return NextResponse.json({ error: translateAuthError(error?.message || 'Credenciais inválidas') }, { status: 401 });
+    }
+
+    // Papel e aceitação vêm de app_metadata: só o painel/servidor (chave de serviço) os pode escrever.
+    // user_metadata é editável pelo próprio utilizador e NUNCA decide permissões.
+    const app = data.user.app_metadata || {};
+    const meta = data.user.user_metadata || {};
+    if (app.approved !== true) {
       return NextResponse.json(
-        { error: translateAuthError(error?.message || 'Credenciais inválidas') },
-        { status: 401 }
+        { error: 'A sua conta ainda não foi aceite pelo administrador. Aguarde a aprovação para entrar no painel.' },
+        { status: 403 }
       );
     }
 
-    const meta = data.user.user_metadata || {};
-    const roleRaw = String(meta.role || 'guest').toLowerCase();
-    const role =
-      roleRaw === 'administrador' || roleRaw === 'admin'
-        ? 'admin'
-        : roleRaw === 'editor'
-          ? 'editor'
-          : roleRaw === 'contribuidor' || roleRaw === 'actor'
-            ? 'contribuidor'
-            : 'guest';
-
+    const role = mapRole(String(app.role || ''));
     const name =
       meta.full_name ||
       [meta.first_name, meta.last_name].filter(Boolean).join(' ').trim() ||
       meta.username ||
-      email.split('@')[0];
+      login.split('@')[0];
 
-    const token = signSession({
-      id: data.user.id,
-      email: data.user.email || email,
-      name,
-      role,
-    });
-
-    const res = NextResponse.json({
-      user: { id: data.user.id, email: data.user.email || email, name, role },
-      access_token: data.session?.access_token,
-    });
-    res.cookies.set(SESSION_COOKIE, token, cookieOptions());
-    return res;
+    clearAttempts(throttleKey);
+    return startSession(
+      { id: data.user.id, email: data.user.email || login, name, role },
+      { access_token: data.session?.access_token }
+    );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro ao autenticar';
     return NextResponse.json(
-      { error: message.includes('fetch') ? 'Servidor de autenticação inacessível.' : message },
+      { error: message.includes('fetch') ? 'Servidor de autenticação inacessível.' : 'Erro ao autenticar.' },
       { status: 503 }
     );
   }

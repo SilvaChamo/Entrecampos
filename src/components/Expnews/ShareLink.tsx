@@ -11,8 +11,8 @@ import { shareNetworks } from '@/lib/share';
  * não ser cortado pelos cards (overflow-hidden).
  */
 const POPUP_W = 176;
-const ROW_H = 32;
-const POPUP_H = 8 * ROW_H + 12; // 8 linhas + padding
+const ROW_H = 26;
+const POPUP_H = 8 * ROW_H + 8; // 8 linhas + padding
 
 export default function ShareLink({ path, title, className = '' }: { path: string; title: string; className?: string }) {
   const button = useRef<HTMLButtonElement>(null);
@@ -56,7 +56,7 @@ export default function ShareLink({ path, title, className = '' }: { path: strin
     }
   }
 
-  const row = `flex w-full items-center gap-3 rounded-md px-2.5 text-left text-[12px] font-medium text-gray-800 hover:bg-black/5`;
+  const row = `flex w-full items-center gap-2.5 px-2 text-left text-[11px] font-medium text-gray-800 hover:bg-black/5`;
   const rowStyle = { height: ROW_H };
 
   return (
@@ -79,7 +79,7 @@ export default function ShareLink({ path, title, className = '' }: { path: strin
             <div
               role="menu"
               style={{ top: pos.top, left: pos.left, width: POPUP_W, height: POPUP_H }}
-              className="fixed z-[100] flex flex-col justify-between rounded-xl bg-white/80 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.25)] ring-1 ring-black/10 backdrop-blur-xl backdrop-saturate-150"
+              className="fixed z-[100] flex flex-col justify-between bg-white/80 p-1 shadow-[0_10px_30px_rgba(0,0,0,0.25)] ring-1 ring-black/10 backdrop-blur-xl backdrop-saturate-150"
             >
               {/* seta do popup, como nos menus do macOS */}
               <span
@@ -101,18 +101,18 @@ export default function ShareLink({ path, title, className = '' }: { path: strin
                   style={rowStyle}
                 >
                   {/* só o ícone, na cor da rede (sem fundo) */}
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 fill-current" style={{ color: n.bg.match(/#[0-9a-fA-F]{3,6}/)?.[0] }} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" className={`shrink-0 fill-current text-gray-500 ${n.label === 'WhatsApp' ? 'h-[15px] w-[15px] -mx-[1.5px]' : 'h-3 w-3'}`} aria-hidden="true">
                     <path d={n.icon} />
                   </svg>
                   {n.label}
                 </a>
               ))}
               <a href={`mailto:?subject=${text}&body=${enc}`} aria-label="Partilhar por email" className={row} style={rowStyle}>
-                <Mail className="h-4 w-4 shrink-0 text-[#ea4335]" />
+                <Mail className="h-3 w-3 shrink-0 text-gray-500" />
                 Email
               </a>
               <button type="button" onClick={copy} aria-label="Copiar ligação" className={row} style={rowStyle}>
-                <Link2 className={`h-4 w-4 shrink-0 ${copied ? 'text-green-600' : 'text-gray-600'}`} />
+                <Link2 className="h-3 w-3 shrink-0 text-gray-500" />
                 {copied ? 'Ligação copiada' : 'Copiar ligação'}
               </button>
             </div>

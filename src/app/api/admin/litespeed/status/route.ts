@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/api-guard';
 
 export async function GET(req: NextRequest) {
+  const guard = await requireAuth('ver_definicoes');
+  if ('error' in guard) return guard.error;
   try {
     // Verificar se LiteSpeed está instalado no servidor
     // Em ambiente real, verificaria headers ou configuração do servidor

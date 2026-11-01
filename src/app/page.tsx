@@ -1,11 +1,12 @@
 import Link from 'next/link';
-import { Clock, Play } from 'lucide-react';
+import { Play } from 'lucide-react';
 import ExpShell from '@/components/Expnews/Shell';
 import ExpSlider from '@/components/Expnews/ExpSlider';
 import ShareLink from '@/components/Expnews/ShareLink';
-import CategoryBadge from '@/components/Expnews/CategoryBadge';
 import CardCarousel from '@/components/Expnews/CardCarousel';
-import { getFeatured, getHomePosts, type Post } from '@/lib/news-data';
+import { CardTitle, ListItem, Meta, Tag, Thumb } from '@/components/Expnews/blocks';
+import CommunitySection, { type CommunityGroup } from '@/components/Expnews/CommunitySection';
+import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
   title: 'EntreCAMPOS — Jornal',
@@ -36,21 +37,6 @@ function makePool(posts: Post[]) {
   };
 }
 
-function longDate(iso: string) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-function CardTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="flex items-center gap-3 text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#222]">
-      <span className="h-[18px] w-[5px] bg-[#d6101c]" />
-      {children}
-      <span className="h-px flex-1 bg-gray-300" />
-    </h3>
-  );
-}
-
 /** Cartão de secção com padding interior. Com `plain`, só o título fica no fundo da página e os itens são cards soltos. */
 function Card({ title, children, className = '', plain = false }: { title: string; children: React.ReactNode; className?: string; plain?: boolean }) {
   if (plain) {
@@ -64,37 +50,12 @@ function Card({ title, children, className = '', plain = false }: { title: strin
     );
   }
   return (
-    <section className={`overflow-hidden bg-white p-5 border border-gray-300 shadow-md ${className}`}>
+    <section className={`overflow-hidden bg-white p-5 shadow-sm ${className}`}>
       <div className="mb-4">
         <CardTitle>{title}</CardTitle>
       </div>
       {children}
     </section>
-  );
-}
-
-function Tag({ label, slug, className = '' }: { label: string; slug?: string; className?: string }) {
-  return (
-    <CategoryBadge label={label} slug={slug} className={`text-[11px] ${className}`} />
-  );
-}
-
-function Meta({ post, share = true, light = false }: { post: Post; share?: boolean; light?: boolean }) {
-  return (
-    <div className={`flex items-center gap-3 text-[10px] italic ${light ? 'text-white/80' : 'text-[#d6101c]'}`}>
-      <span className="flex items-center gap-1">
-        <Clock className="h-3 w-3" />
-        Publicado a {longDate(post.date)}
-      </span>
-      {share && <ShareLink path={`/noticias/${post.slug}`} title={post.title} className={light ? 'text-white/80' : 'text-gray-500'} />}
-    </div>
-  );
-}
-
-function Thumb({ src, className = '' }: { src: string; className?: string }) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" loading="lazy" className={`absolute inset-0 h-full w-full object-cover ${className}`} />
   );
 }
 
@@ -132,58 +93,9 @@ function Overlay({
   );
 }
 
-function ListItem({
-  post,
-  thumb = 'h-[62px] w-[90px]',
-  card = false,
-  bleed = false,
-  as: Tag2 = 'li',
-}: {
-  post: Post;
-  thumb?: string;
-  card?: boolean;
-  /** Card com a imagem encostada aos bordos (sem padding à volta da imagem). */
-  bleed?: boolean;
-  as?: 'li' | 'div';
-}) {
-  const href = `/noticias/${post.slug}`;
-  if (bleed) {
-    return (
-      <Tag2 className="flex h-full overflow-hidden bg-white border border-gray-300 shadow-md">
-        <Link href={href} className="relative w-[110px] shrink-0 self-stretch overflow-hidden bg-gray-200">
-          <Thumb src={post.image} />
-        </Link>
-        <div className="flex min-w-0 flex-col justify-center p-3">
-          <Link href={href} className="line-clamp-2 text-[12px] font-bold leading-snug hover:text-[#d6101c]">
-            {post.title}
-          </Link>
-          <div className="mt-1">
-            <Meta post={post} />
-          </div>
-        </div>
-      </Tag2>
-    );
-  }
-  return (
-    <Tag2 className={`flex gap-3 ${card ? 'h-full items-center bg-white p-3 border border-gray-300 shadow-md' : 'py-3'}`}>
-      <Link href={href} className={`relative shrink-0 overflow-hidden bg-gray-200 ${thumb}`}>
-        <Thumb src={post.image} />
-      </Link>
-      <div className="min-w-0">
-        <Link href={href} className="line-clamp-2 text-[12px] font-bold leading-snug hover:text-[#d6101c]">
-          {post.title}
-        </Link>
-        <div className="mt-1">
-          <Meta post={post} />
-        </div>
-      </div>
-    </Tag2>
-  );
-}
-
 function AdBand() {
   return (
-    <div className="flex h-[88px] items-center justify-center border border-dashed border-gray-500 bg-[#c9cdd1] text-[15px] font-bold uppercase italic tracking-[0.25em] text-gray-500">
+    <div className="flex h-[88px] items-center justify-center bg-[#dcdcdc] text-[15px] font-bold uppercase italic tracking-[0.25em] text-gray-400">
       Espaço publicitário
     </div>
   );
@@ -211,59 +123,41 @@ export default async function HomePrincipal() {
   const food = pool.take(5, ['receitas', 'fruticultura', 'curiosidade']);
   const entertainment = pool.take(3, ['curiosidade', 'oportunidades']);
   const recent = pool.take(3);
+  // Selector da primeira secção: Comunidade (a de origem, sem repetições) + as restantes categorias, em português.
+  const slim = (p: Post) => ({ slug: p.slug, title: p.title, excerpt: p.excerpt.slice(0, 220), category: p.category, categorySlug: p.categorySlug, image: p.image, date: p.date });
+  const ORDER = ['agricultura', 'comunidade', 'sector-agrario', 'agro-negocio', 'curiosidade', 'ambiente', 'turismo-rural', 'mulher-agrario', 'fruticultura', 'oportunidades', 'receitas'];
+  const bySlug = new Map<string, Post[]>();
+  for (const p of posts) if (p.image) bySlug.set(p.categorySlug, [...(bySlug.get(p.categorySlug) ?? []), p]);
+  const communityGroups: CommunityGroup[] = [
+    { slug: 'todas', label: 'Todas', posts: posts.filter((p) => p.image).slice(0, 6).map(slim) },
+    ...ORDER.filter((slug) => slug === 'comunidade' || (bySlug.get(slug)?.length ?? 0) >= 6).map((slug) => {
+      const list = slug === 'comunidade' ? lifestyle : (bySlug.get(slug) as Post[]).slice(0, 6);
+      return { slug, label: categoryLabel(slug, list[0]?.category), posts: list.map(slim) };
+    }),
+  ];
   const newsletterBg = (slides[1] ?? slides[0] ?? posts[0]).image;
 
   return (
     <ExpShell backdrop={newsletterBg}>
         <main className="mx-3 space-y-3 pb-3">
-          <div className="mx-auto max-w-[1240px] space-y-4">
+          <div className="mx-auto max-w-[1240px] space-y-3">
             {/* Cabeçalho: slide das últimas notícias em destaque + 2 cards verticais à direita */}
-            <div className="grid gap-4 md:auto-rows-[215px] md:grid-cols-[2fr_1fr]">
+            <div className="grid gap-3 md:auto-rows-[215px] md:grid-cols-[2fr_1fr]">
               <ExpSlider posts={slides} className="h-[280px] md:row-span-2 md:h-full" />
               {heroSide.map((p) => (
                 <Overlay key={p.slug} post={p} className="h-[215px]" titleClass="text-[14px]" share />
               ))}
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+            <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
               {/* Coluna principal */}
-              <div className="min-w-0 space-y-4">
-                <Card title="Comunidade" plain>
-                  <div className="grid gap-4 md:grid-cols-[1.05fr_1fr]">
-                    <article className="bg-white p-4 border border-gray-300 shadow-md">
-                      <Link href={`/noticias/${lifestyle[0].slug}`} className="relative block h-[240px] overflow-hidden bg-gray-200">
-                        <Thumb src={lifestyle[0].image} />
-                      </Link>
-                      <div className="pt-4">
-                        <Tag label={lifestyle[0].category} slug={lifestyle[0].categorySlug} />
-                        <Link href={`/noticias/${lifestyle[0].slug}`}>
-                          <h4 className="mt-2 text-[16px] font-bold leading-snug hover:text-[#d6101c]">{lifestyle[0].title}</h4>
-                        </Link>
-                        <div className="mt-2">
-                          <Meta post={lifestyle[0]} />
-                        </div>
-                        {lifestyle[0].excerpt && (
-                          <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-gray-500">{lifestyle[0].excerpt}</p>
-                        )}
-                      </div>
-                    </article>
-                    {/* Mesma altura do card principal, independente do conteúdo */}
-                    <div className="relative h-[540px] md:h-auto">
-                      <div className="absolute inset-0 flex flex-col gap-4">
-                        {lifestyle.slice(1).map((p) => (
-                          <div key={p.slug} className="min-h-0 flex-1">
-                            <ListItem as="div" post={p} bleed />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
+              <div className="min-w-0 space-y-3">
+                <CommunitySection groups={communityGroups} initial="comunidade" />
 
                 <Card title="Agricultura" plain>
                   <CardCarousel>
                     {world.map((p) => (
-                      <article key={p.slug} className="h-full bg-white p-4 border border-gray-300 shadow-md">
+                      <article key={p.slug} className="h-full bg-white p-4 shadow-sm">
                         <Link href={`/noticias/${p.slug}`} className="relative block h-[150px] overflow-hidden bg-gray-200">
                           <Thumb src={p.image} />
                         </Link>
@@ -317,9 +211,9 @@ export default async function HomePrincipal() {
                 </Card>
 
                 <Card title="Curiosidades" plain>
-                  <ul className="space-y-4">
+                  <ul className="space-y-3">
                     {entertainment.map((p) => (
-                      <li key={p.slug} className="grid gap-4 bg-white p-4 border border-gray-300 shadow-md sm:grid-cols-[210px_1fr]">
+                      <li key={p.slug} className="grid gap-4 bg-white p-4 shadow-sm sm:grid-cols-[210px_1fr]">
                         <Link href={`/noticias/${p.slug}`} className="relative block h-[150px] overflow-hidden bg-gray-200 sm:h-auto sm:min-h-[140px]">
                           <Thumb src={p.image} />
                         </Link>
@@ -340,7 +234,7 @@ export default async function HomePrincipal() {
               </div>
 
               {/* Coluna secundária */}
-              <div className="min-w-0 space-y-4">
+              <div className="min-w-0 space-y-3">
                 <Card title="Mais quente">
                   <Overlay post={hot[0]} className="h-[200px]" titleClass="text-[13px]" />
                   <ul className="divide-y divide-gray-100">
@@ -359,7 +253,7 @@ export default async function HomePrincipal() {
 
                 <Card title="Sabores e receitas">
                   <Overlay post={food[0]} className="h-[170px]" titleClass="text-[12px]" />
-                  <div className="grid grid-cols-2 gap-px bg-gray-200">
+                  <div className="grid grid-cols-2 gap-x-3">
                     {food.slice(1).map((p) => (
                       <Link key={p.slug} href={`/noticias/${p.slug}`} className="group block bg-white py-3 pr-2">
                         <span className="relative block h-[80px] overflow-hidden bg-gray-200">

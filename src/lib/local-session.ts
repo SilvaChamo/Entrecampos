@@ -13,11 +13,11 @@ export type LocalSessionPayload = {
 };
 
 function secret() {
-  return (
-    process.env.AUTH_SECRET ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    'entrecampos-dev-secret-change-me'
-  );
+  const value = process.env.AUTH_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (value) return value;
+  // Sem segredo configurado qualquer pessoa poderia forjar uma sessão: só se aceita em desenvolvimento.
+  if (process.env.NODE_ENV === 'production') throw new Error('AUTH_SECRET não está definido.');
+  return 'entrecampos-dev-secret-change-me';
 }
 
 export function signSession(payload: Omit<LocalSessionPayload, 'exp'>): string {
@@ -70,13 +70,5 @@ export function cookieOptions(maxAge = MAX_AGE_SEC) {
     sameSite: 'lax' as const,
     path: '/',
     maxAge,
-  };
-}
-
-export function getLocalAdminCredentials() {
-  return {
-    email: (process.env.ADMIN_EMAIL || 'admin@entrecampos.co.mz').trim().toLowerCase(),
-    password: process.env.ADMIN_PASSWORD || 'EntreCampos2026Admin',
-    name: process.env.ADMIN_NAME || 'Administrador',
   };
 }
