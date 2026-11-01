@@ -132,6 +132,15 @@ function cleanContent(html: string) {
   return safe.replace(/https?:\/\/(www\.)?entrecampos\.co\.mz\//g, ONLINE_HOST).trim();
 }
 
+function normTitle(value: string) {
+  return stripTags(value)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
 function toPost(raw: {
   slug?: string;
   title?: string;
@@ -169,7 +178,7 @@ async function querySupabase(table: string, filter: string): Promise<Array<Recor
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&${filter}&order=date.desc&limit=1000`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(15000), // a lista completa (com texto) demora uns 6 s neste servidor
       next: { revalidate: 60, tags: ['news'] },
     });
     if (!res.ok) return null;
@@ -179,13 +188,15 @@ async function querySupabase(table: string, filter: string): Promise<Array<Recor
   }
 }
 
-async function fromSupabase(): Promise<Post[]> {
-  // A tabela onde o dashboard grava; se falhar, a view `news` do site.
-  const rows =
-    (await querySupabase('entrecampos_news', 'status=eq.published')) ??
-    (await querySupabase('news', `site_id=eq.${encodeURIComponent(SITE_ID)}`));
-  if (!rows) return [];
-  return rows
+/** Notícias do site na tabela `news` (partilhada por vários sites): as publicadas e todos os slugs conhecidos (qualquer estado). */
+async function fromSupabase(): Promise<{ published: Post[]; known: Set<string> } | null> {
+  const rows = await querySupabase('news', `site_id=eq.${encodeURIComponent(SITE_ID)}`);
+  if (!rows) return null;
+  // Chaves de identificação (slug e título normalizado): o site online e o Supabase nem sempre usam o mesmo slug.
+  const known = new Set(rows.flatMap((r) => [String(r.slug || ''), `t:${normTitle(String(r.title || ''))}`]).filter((k) => k && k !== 't:'));
+  const published = rows
+    // O estado vem ora "published" ora "Published".
+    .filter((r) => String(r.status || '').toLowerCase() === 'published')
     .map((r) =>
       toPost({
         slug: r.slug as string,
@@ -200,6 +211,7 @@ async function fromSupabase(): Promise<Post[]> {
       }),
     )
     .filter((p): p is Post => p !== null);
+  return { published, known };
 }
 
 /**
@@ -240,9 +252,23 @@ function fromLocalData(): Post[] {
 
 export const getAllPosts = cache(async (): Promise<{ posts: Post[]; source: 'supabase' | 'local' }> => {
   const remote = await fromSupabase();
-  const posts = remote.length > 0 ? remote : fromLocalData();
+  const local = fromLocalData();
+  if (!remote || remote.published.length === 0) {
+    local.sort((a, b) => b.date.localeCompare(a.date));
+    return { posts: local, source: 'local' };
+  }
+
+  // O que está no Supabase manda (é o que o dashboard edita). Notícias antigas sem imagem recebem a do site online
+  // (mesmo slug) e as que só existem no site online continuam visíveis, excepto as que o dashboard já tem em
+  // qualquer estado (ex.: lixo/arquivadas).
+  const localKey = (p: Post) => [p.slug, `t:${normTitle(p.title)}`];
+  const localByKey = new Map(local.flatMap((p) => localKey(p).map((k) => [k, p] as const)));
+  const posts = [
+    ...remote.published.map((p) => ({ ...p, image: p.image || localKey(p).map((k) => localByKey.get(k)?.image).find(Boolean) || '' })),
+    ...local.filter((p) => !localKey(p).some((k) => remote.known.has(k))),
+  ];
   posts.sort((a, b) => b.date.localeCompare(a.date));
-  return { posts, source: remote.length > 0 ? 'supabase' : 'local' };
+  return { posts, source: 'supabase' };
 });
 
 /** Uma notícia por imagem e só com imagem: usado nas homes, onde a foto manda. */

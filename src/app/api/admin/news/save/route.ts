@@ -37,21 +37,37 @@ const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos';
 /** Só estes campos vêm do formulário; o resto (site_id, autor, views, datas…) é decidido no servidor. */
 const WRITABLE_FIELDS = ['title', 'slug', 'content', 'summary', 'category', 'image_url', 'date'] as const;
 
-const FEATURED_WARNING =
-  'Notícia guardada, mas a coluna "featured" ainda não existe na base de dados: execute sql/add-featured.sql para activar o Destaque.';
+const COLUMN_HELP =
+  'Algumas colunas ainda não existem na tabela entrecampos_news (ver sql/entrecampos-colunas.sql); a notícia foi guardada sem: ';
 
-/** Tenta com o campo `featured`; se a coluna ainda não existir, repete sem ele e avisa. */
-async function saveWithFeaturedFallback(
+/**
+ * Grava; se a tabela não tiver alguma coluna (ex.: featured, author_name, status), repete sem ela
+ * e devolve um aviso com as colunas que ficaram de fora.
+ */
+async function saveWithColumnFallback(
   run: (payload: Record<string, unknown>) => PromiseLike<{ data: any; error: any }>,
   payload: Record<string, unknown>,
+  required: string[] = [],
 ) {
-  let result = await run(payload);
-  if (result.error && 'featured' in payload && /featured/i.test(result.error.message || '')) {
-    const { featured: _featured, ...withoutFeatured } = payload;
-    result = await run(withoutFeatured);
-    return { ...result, warning: result.error ? undefined : FEATURED_WARNING };
+  const body = { ...payload };
+  const dropped: string[] = [];
+  for (let i = 0; i < 6; i++) {
+    const result = await run(body);
+    const column = /Could not find the '([^']+)' column/i.exec(result.error?.message || '')?.[1];
+    if (!result.error || !column || !(column in body)) {
+      return { ...result, warning: !result.error && dropped.length ? COLUMN_HELP + dropped.join(', ') : undefined };
+    }
+    if (required.includes(column)) {
+      return {
+        data: null,
+        error: { message: `A tabela não tem a coluna ${column}: sem ela este utilizador não pode gravar (corra sql/entrecampos-colunas.sql).` },
+        warning: undefined as string | undefined,
+      };
+    }
+    delete body[column];
+    dropped.push(column);
   }
-  return { ...result, warning: undefined as string | undefined };
+  return { data: null, error: { message: 'Demasiadas colunas em falta na tabela entrecampos_news.' }, warning: undefined as string | undefined };
 }
 
 /** Faz a home, as categorias e a página de leitura mostrarem logo a notícia nova/editada. */
@@ -112,9 +128,10 @@ export async function POST(request: Request) {
         updatePayload.author_id = finalAuthorId;
       }
       
-      const { data: updateData, error, warning } = await saveWithFeaturedFallback(
-        (body) => supabaseAdmin.from('entrecampos_news').update(body).eq('id', id).select(),
+      const { data: updateData, error, warning } = await saveWithColumnFallback(
+        (body) => supabaseAdmin.from('entrecampos_news').update(body).eq('id', id).eq('site_id', SITE_ID).select(),
         updatePayload,
+        canPublish ? [] : ['status'],
       );
 
       if (error) throw error;
@@ -129,9 +146,10 @@ export async function POST(request: Request) {
         insertPayload.author_id = finalAuthorId;
       }
       
-      const { data: insertData, error, warning } = await saveWithFeaturedFallback(
+      const { data: insertData, error, warning } = await saveWithColumnFallback(
         (body) => supabaseAdmin.from('entrecampos_news').insert([body]).select(),
         insertPayload,
+        canPublish ? [] : ['status'],
       );
 
       if (error) throw error;

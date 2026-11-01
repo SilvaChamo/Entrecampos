@@ -32,13 +32,18 @@ export async function POST(req: NextRequest) {
     }
 
     const { error } = await supabaseAdmin
-      .from('news')
+      .from('entrecampos_news')
       .update({ status })
+      .eq('site_id', process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos') // só notícias deste site
       .in('id', targetIds);
 
     if (error) {
       console.error('Supabase error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      const missing = /Could not find the 'status' column/i.test(error.message);
+      return NextResponse.json(
+        { error: missing ? 'A tabela entrecampos_news ainda não tem a coluna status: corra sql/entrecampos-colunas.sql no Supabase.' : error.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, updated: targetIds.length });
