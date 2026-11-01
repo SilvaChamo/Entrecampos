@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { SESSION_COOKIE, verifySession } from '@/lib/local-session';
 import { hasPermission } from '@/lib/permissions';
 import { isUuid } from '@/lib/api-guard';
+import { normalizeSpaces } from '@/lib/normalize-spaces';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -98,6 +99,8 @@ export async function POST(request: Request) {
     for (const field of WRITABLE_FIELDS) {
       if (data[field] !== undefined) payload[field] = data[field];
     }
+    // O editor grava os espaços como &nbsp;, o que impede o texto de quebrar linha na leitura.
+    if (typeof payload.content === 'string') payload.content = normalizeSpaces(payload.content);
     payload.site_id = SITE_ID;
     if (canPublish) {
       if (data.featured !== undefined) payload.featured = !!data.featured;

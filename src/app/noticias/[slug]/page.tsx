@@ -63,7 +63,7 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
             </div>
 
             <div
-              className="blog-details mt-6 text-[15px] leading-7 text-gray-500 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-4"
+              className="blog-details mt-6 text-[15px] leading-7 text-gray-500 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-2"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 

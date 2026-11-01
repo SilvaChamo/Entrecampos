@@ -23,7 +23,10 @@ body {
   font-family: Verdana, sans-serif;
 }
 
-.blog-details p,
+.blog-details p {
+  margin-bottom: 0.5rem;
+}
+
 .blog-details hr {
   margin-bottom: 2rem;
 }

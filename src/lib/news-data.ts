@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { cache } from 'react';
 import sanitizeHtml from 'sanitize-html';
+import { normalizeSpaces } from '@/lib/normalize-spaces';
 
 export interface Post {
   slug: string;
@@ -111,7 +112,7 @@ function cleanImageUrl(value?: string) {
 
 /** HTML do artigo: sanitizado (conteúdo vindo do editor/contribuidores) e com imagens apontadas ao site online. */
 function cleanContent(html: string) {
-  const safe = sanitizeHtml((html || '').replace(/<!\[CDATA\[|\]\]>/g, ''), {
+  const safe = sanitizeHtml(normalizeSpaces(html || '').replace(/<!\[CDATA\[|\]\]>/g, ''), {
     allowedTags: [
       'p', 'br', 'hr', 'strong', 'b', 'em', 'i', 'u', 's', 'sub', 'sup', 'blockquote', 'pre', 'code',
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'img', 'figure', 'figcaption',
@@ -129,7 +130,11 @@ function cleanContent(html: string) {
       a: sanitizeHtml.simpleTransform('a', { rel: 'noopener noreferrer', target: '_blank' }, true),
     },
   });
-  return safe.replace(/https?:\/\/(www\.)?entrecampos\.co\.mz\//g, ONLINE_HOST).trim();
+  return safe
+    // Parágrafos vazios (linhas em branco do editor): o espaço entre parágrafos já é automático.
+    .replace(/<p>(?:\s|&nbsp;| |<br\s*\/?>)*<\/p>/g, '')
+    .replace(/https?:\/\/(www\.)?entrecampos\.co\.mz\//g, ONLINE_HOST)
+    .trim();
 }
 
 function normTitle(value: string) {

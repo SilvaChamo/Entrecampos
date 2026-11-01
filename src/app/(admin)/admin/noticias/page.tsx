@@ -51,7 +51,14 @@ export default function NewsAdminPage() {
 
   const [localCopy, setLocalCopy] = useState(false);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 40;
+  // Notícias por página: 30 (por defeito), 50, 100, 200 ou todas; a escolha fica guardada neste browser.
+  const PER_PAGE_OPTIONS = [30, 50, 100, 200, 0]; // 0 = todas numa única página
+  const [perPage, setPerPage] = useState(30);
+  useEffect(() => {
+    const raw = localStorage.getItem('ec-admin-news-perpage');
+    if (raw !== null && PER_PAGE_OPTIONS.includes(Number(raw))) setPerPage(Number(raw));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadNews = async () => {
     setLoading(true);
@@ -87,18 +94,36 @@ export default function NewsAdminPage() {
     return matchesSearch && matchesCategory && matchesDate && matchesMissingImage;
   });
 
-  // 40 notícias por página; as restantes ficam na paginação.
-  const totalPages = Math.max(1, Math.ceil(filteredNews.length / PAGE_SIZE));
+  const pageSize = perPage === 0 ? Math.max(filteredNews.length, 1) : perPage;
+  const totalPages = Math.max(1, Math.ceil(filteredNews.length / pageSize));
   const currentPage = Math.min(page, totalPages);
-  const visibleNews = filteredNews.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const visibleNews = filteredNews.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Voltar à primeira página quando os filtros mudam.
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, filterCategory, filterDate, filterMissingImage]);
+  }, [searchQuery, filterCategory, filterDate, filterMissingImage, perPage]);
 
   const pager = (
     <div className="flex items-center justify-end gap-1 text-[13px] text-[#50575e]">
+      <label className="mr-3 flex items-center gap-1.5">
+        Por página:
+        <select
+          value={perPage}
+          onChange={(e) => {
+            const value = Number(e.target.value);
+            setPerPage(value);
+            localStorage.setItem('ec-admin-news-perpage', String(value));
+          }}
+          className="h-7 border border-[#ccd0d4] bg-white px-1.5 text-[13px] text-[#2c3338]"
+        >
+          {PER_PAGE_OPTIONS.map((n) => (
+            <option key={n} value={n}>
+              {n === 0 ? 'Todas' : n}
+            </option>
+          ))}
+        </select>
+      </label>
       <span className="mr-2">{filteredNews.length} itens</span>
       {[
         { label: '«', title: 'Primeira página', to: 1, off: currentPage === 1 },
