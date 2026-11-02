@@ -116,8 +116,8 @@ export default function UsersAdminPage() {
   };
 
   return (
-    <div className="p-6 text-[#2c3338]">
-      <div className="flex items-center gap-4 mb-6">
+    <div className="p-4 sm:p-6 text-[#2c3338]">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-6">
         <h1 className="text-[23px] font-normal text-[#1d2327]">Utilizadores</h1>
         <Link
           href="/admin/utilizadores/novo"
@@ -146,7 +146,7 @@ export default function UsersAdminPage() {
 
       {/* Barra de ferramentas */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 max-md:w-full">
           <select className="h-8 border-[#ccd0d4] rounded-[3px] text-sm bg-white px-2 outline-none focus:border-[#2271b1]">
             <option>Ações por lotes</option>
             <option>Eliminar</option>
@@ -159,16 +159,16 @@ export default function UsersAdminPage() {
           </select>
           <button className="h-8 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-sm font-semibold hover:bg-[#f6f7f7]">Alterar</button>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 max-md:w-full">
           <input
             type="text"
             placeholder="Pesquisar utilizadores"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 pl-3 pr-2 border border-[#ccd0d4] rounded-l-[3px] text-sm outline-none focus:border-[#2271b1] w-48"
+            className="h-8 pl-3 pr-2 border border-[#ccd0d4] rounded-l-[3px] text-sm outline-none focus:border-[#2271b1] w-48 max-md:w-full max-md:min-w-0 max-md:flex-1"
           />
-          <button className="h-8 px-3 border border-[#ccd0d4] border-l-0 bg-white text-[#2271b1] hover:bg-[#f6f7f7] rounded-r-[3px] text-sm font-semibold">
-            Pesquisar utilizadores
+          <button className="h-8 px-3 border border-[#ccd0d4] border-l-0 bg-white text-[#2271b1] hover:bg-[#f6f7f7] rounded-r-[3px] text-sm font-semibold max-md:shrink-0 max-md:px-2">
+            Pesquisar
           </button>
         </div>
       </div>

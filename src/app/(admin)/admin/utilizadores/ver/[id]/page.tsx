@@ -92,8 +92,8 @@ export default function ViewUserPage() {
               alt="default" 
             />
           )}
-          <div>
-            <h2 className="text-[18px] font-bold text-[#1d2327]">{fullName}</h2>
+          <div className="min-w-0">
+            <h2 className="text-[18px] font-bold text-[#1d2327] break-words">{fullName}</h2>
             <p className="text-[13px] text-[#50575e]">@{user.username}</p>
             <span className="inline-block mt-1 px-2 py-0.5 bg-[#f6f7f7] border border-[#ccd0d4] text-[11px] font-semibold rounded-md text-[#50575e]">
               {user.role}

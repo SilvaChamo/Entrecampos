@@ -318,6 +318,9 @@ body {
     color: #646970;
   }
   .ec-admin table:not(.ec-cards) td .flex { flex-wrap: wrap; }
+  /* Nenhuma página do painel fica mais larga que o ecrã (aguenta 320px). */
+  .ec-admin main { overflow-x: hidden; }
+  .ec-admin main img, .ec-admin main video, .ec-admin main select { max-width: 100%; }
   .ec-admin input[class*="max-w-"],
   .ec-admin select[class*="max-w-"],
   .ec-admin textarea[class*="max-w-"] { max-width: 100% !important; }
