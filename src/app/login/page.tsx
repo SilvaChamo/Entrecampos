@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase';
 import { Mail, Lock, ChevronRight, Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import Spinner from '@/components/Common/Spinner';
 
 export default function LoginPage() {
   const { login, user, loading: authLoading } = useAuth();
@@ -43,7 +44,7 @@ export default function LoginPage() {
   if (user) {
     return (
       <div className="min-h-screen bg-[#f0f0f1] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#2271b1]" />
+        <Spinner size={32} className="" />
       </div>
     );
   }

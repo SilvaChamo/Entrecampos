@@ -217,7 +217,7 @@ export default async function HomePrincipal() {
                         <div>
                           <Tag label={p.category} slug={p.categorySlug} />
                           <Link href={`/noticias/${p.slug}`}>
-                            <h4 className="mt-2 text-[15px] font-bold leading-snug hover:text-[#d6101c]">{p.title}</h4>
+                            <h4 className="mt-2 text-[19px] font-bold leading-snug hover:text-[#d6101c]">{p.title}</h4>
                           </Link>
                           <div className="mt-2">
                             <Meta post={p} />
@@ -285,7 +285,7 @@ export default async function HomePrincipal() {
                             {p.title}
                           </Link>
                           <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span className="text-[10px] italic text-[#d6101c]">{longDate(p.date)}</span>
+                            <span className="text-[10px] text-[#d6101c]">{longDate(p.date)}</span>
                           </div>
                         </div>
                       </li>

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import Spinner from '@/components/Common/Spinner';
 
 export default function AdminPageRedirect() {
   const { user, loading } = useAuth();
@@ -37,7 +38,7 @@ export default function AdminPageRedirect() {
 
   return (
     <div className="min-h-screen bg-[#f0f0f1] flex items-center justify-center">
-      <div className="animate-pulse text-gray-400">A redirecionar para o seu painel...</div>
+      <Spinner size={48} />
     </div>
   );
 }

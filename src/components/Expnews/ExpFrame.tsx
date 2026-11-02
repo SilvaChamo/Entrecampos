@@ -13,8 +13,28 @@ const SidebarContext = createContext<{ open: boolean; toggle: () => void }>({ op
 const STORAGE_KEY = 'ec-sidebar';
 const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
 
+/** Estado inicial da barra: expandida em ecrã grande, a não ser que o utilizador a tenha recolhido. */
+function wantedOpen() {
+  let saved: string | null = null;
+  try {
+    saved = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    /* sem armazenamento */
+  }
+  return isDesktop() && saved !== 'closed';
+}
+
+// Na primeira carga da página o HTML do servidor não sabe qual é a preferência. Este script corre antes de a página
+// ser pintada e põe a barra já no estado certo (sem a ver abrir ou fechar). Nas navegações dentro do site
+// o estado já nasce certo (ver `booted`).
+const INIT_SCRIPT = `(function(s){try{var a=s.previousElementSibling,f=a&&a.closest('[data-ec-frame]');
+var o=window.matchMedia('(min-width: 1024px)').matches&&localStorage.getItem('${STORAGE_KEY}')!=='closed';
+if(a)a.setAttribute('data-open',o);if(f)f.setAttribute('data-open',o)}catch(e){}})(document.currentScript)`;
+let booted = false;
+
 export default function ExpFrame({ sidebar, topBar, children }: { sidebar: React.ReactNode; topBar?: React.ReactNode; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
+  // 1.ª carga: começa fechada para coincidir com o HTML do servidor (o script acima acerta o aspecto). Depois: já certa.
+  const [open, setOpen] = useState(() => booted && wantedOpen());
 
   // Escolha do utilizador (só em ecrã grande, onde a barra é fixa): guarda-se para as páginas seguintes.
   const choose = useCallback((value: boolean) => {
@@ -34,16 +54,9 @@ export default function ExpFrame({ sidebar, topBar, children }: { sidebar: React
   // (abre por cima do conteúdo). Acompanha também o redimensionamento da janela.
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
-    const apply = () => {
-      let saved: string | null = null;
-      try {
-        saved = localStorage.getItem(STORAGE_KEY);
-      } catch {
-        /* sem armazenamento */
-      }
-      setOpen(mq.matches && saved !== 'closed');
-    };
+    const apply = () => setOpen(wantedOpen());
     apply();
+    booted = true;
     mq.addEventListener('change', apply);
     return () => mq.removeEventListener('change', apply);
   }, []);
@@ -60,19 +73,21 @@ export default function ExpFrame({ sidebar, topBar, children }: { sidebar: React
 
   return (
     <SidebarContext.Provider value={{ open, toggle }}>
-      <div data-open={open} className="group/frame">
+      <div data-open={open} data-ec-frame suppressHydrationWarning className="group/frame">
         {/* Barra verde: atravessa toda a largura, por cima da barra lateral */}
         {topBar}
         <div className="flex">
           {/* Em ecrã grande a barra fica colada ao topo (sticky) logo abaixo da barra verde; no telemóvel abre por cima. */}
           <aside
             data-open={open}
+            suppressHydrationWarning
             className={`group/side z-40 flex-col bg-[#0c1f08] text-white border-r-2 border-[#39ff14] transition-[width] ${ease} ${
               open ? 'flex w-[220px] max-lg:fixed max-lg:inset-y-0 max-lg:left-0' : 'hidden'
             } lg:sticky lg:top-0 lg:flex lg:h-screen lg:pb-9 lg:w-16 lg:shrink-0 lg:self-start lg:data-[open=true]:w-[220px]`}
           >
             {sidebar}
           </aside>
+          {!booted && <script dangerouslySetInnerHTML={{ __html: INIT_SCRIPT }} />}
           {/* No telemóvel a barra abre por cima, por isso há um fundo para fechar. */}
           {open && (
             <button

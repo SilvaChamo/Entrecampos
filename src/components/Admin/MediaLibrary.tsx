@@ -19,6 +19,7 @@ import {
   AlertCircle,
   FileDown
 } from 'lucide-react';
+import Spinner from '@/components/Common/Spinner';
 
 interface MediaLibraryProps {
   onSelect?: (url: string) => void;
@@ -294,7 +295,7 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
         {/* Grid Principal */}
         <div className="flex-1 overflow-y-auto p-0 custom-scrollbar bg-[#f0f0f1]">
           {loading && files.length === 0 ? (
-            <div className="flex items-center justify-center h-full"><RefreshCw className="w-8 h-8 animate-spin text-[#2271b1]" /></div>
+            <div className="flex items-center justify-center h-full"><Spinner size={32} className="" /></div>
           ) : (
             <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 ${activeFile && !isBulkMode ? 'lg:grid-cols-4 xl:grid-cols-6' : 'lg:grid-cols-6 xl:grid-cols-8'} gap-3 transition-all`}>
               {paginatedFiles.map((file) => (

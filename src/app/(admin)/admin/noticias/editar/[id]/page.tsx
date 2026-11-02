@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { supabase, SITE_ID } from '@/lib/supabase';
 import NewsForm from '@/components/Admin/NewsForm';
 import { RefreshCw } from 'lucide-react';
+import Spinner from '@/components/Common/Spinner';
 
 export default function EditNewsPage() {
   const { id } = useParams();
@@ -38,7 +39,7 @@ export default function EditNewsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <RefreshCw className="w-10 h-10 animate-spin text-[#2271b1]" />
+        <Spinner size={40} className="" />
       </div>
     );
   }

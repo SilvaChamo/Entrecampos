@@ -40,7 +40,7 @@ export function Tag({ label, slug, className = '' }: { label: string; slug?: str
  */
 export function Meta({ post, share = true, light = false, spread = false }: { post: Post; share?: boolean; light?: boolean; spread?: boolean }) {
   return (
-    <div className={`ec-meta flex flex-wrap text-[10px] italic ${spread ? 'items-center justify-between gap-x-3 gap-y-1' : 'items-center gap-x-3 gap-y-1'} ${light ? 'text-white/80' : 'text-[#d6101c]'}`}>
+    <div className={`ec-meta flex flex-wrap text-[10px] ${spread ? 'items-center justify-between gap-x-3 gap-y-1' : 'items-center gap-x-3 gap-y-1'} ${light ? 'text-white/80' : 'text-[#d6101c]'}`}>
       <span className="flex items-center gap-1 whitespace-nowrap">
         <Clock className="h-3 w-3 shrink-0" />
         <span className="ec-date-long">{longDate(post.date)}</span>

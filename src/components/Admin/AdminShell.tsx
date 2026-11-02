@@ -36,6 +36,7 @@ import {
   Loader2,
   MessageSquare
 } from 'lucide-react';
+import Spinner from '@/components/Common/Spinner';
 
 interface SidebarItemProps {
   href: string;
@@ -159,13 +160,27 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // telemóvel: gaveta, sempre fechada ao entrar
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
-  const { user, loading, logout, setRole } = useAuth();
+  const { user, loading, logout, setRole, realRole, viewAs, setViewAs } = useAuth();
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace('/login');
     }
   }, [loading, user, router]);
+
+  // O visitante (guest) não tem acesso à galeria de fotos: se abrir o endereço à mão, volta ao seu painel.
+  useEffect(() => {
+    if (user?.role === 'guest' && pathname.startsWith('/admin/media')) router.replace('/admin/guest');
+  }, [user?.role, pathname, router]);
+
+  // O administrador que abre o painel de outro papel passa a vê-lo "como" esse papel (páginas e menu reais).
+  useEffect(() => {
+    if (realRole !== 'admin') return;
+    if (pathname.startsWith('/admin/editor')) setViewAs('editor');
+    else if (pathname.startsWith('/admin/contribuidor')) setViewAs('contribuidor');
+    else if (pathname.startsWith('/admin/guest')) setViewAs('guest');
+    else if (pathname.startsWith('/admin/dashboard')) setViewAs(null);
+  }, [pathname, realRole, setViewAs]);
 
   // No telemóvel o menu fecha ao mudar de página; Esc fecha menu e gaveta.
   useEffect(() => {
@@ -205,7 +220,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-[#f0f0f1] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#2271b1]" />
+        <Spinner size={32} className="" />
       </div>
     );
   }
@@ -218,9 +233,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         label: 'Dashboard',
         submenu: role === 'admin' ? [
           { label: 'Dashboard Principal', href: '/admin/dashboard' },
-          { label: 'Painel Editor', href: '/admin/dashboard?role=editor' },
-          { label: 'Painel Contribuidor', href: '/admin/dashboard?role=contribuidor' },
-          { label: 'Painel Visitante', href: '/admin/dashboard?role=guest' },
+          { label: 'Painel Editor', href: '/admin/editor' },
+          { label: 'Painel Contribuidor', href: '/admin/contribuidor' },
+          { label: 'Painel Visitante', href: '/admin/guest' },
         ] : undefined
       },
     ];
@@ -325,6 +340,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
         { href: '/admin/noticias/revistas', icon: CheckSquare, label: 'Últimos Revistos' },
         { href: '/admin/noticias', icon: Newspaper, label: 'Todas as Notícias' },
+        { href: '/admin/media', icon: ImageIcon, label: 'Multimédia' },
       );
     }
 
@@ -356,10 +372,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     if (role === 'guest') {
       items[0].href = '/admin/guest';
       items.push(
-        { href: '/admin/noticias', icon: Eye, label: 'Ver Notícias' },
-        { href: '/admin/media', icon: Video, label: 'Ver Vídeos' },
-        { href: '/admin/noticias/nova', icon: Plus, label: 'Escrever Notícia' },
-        { href: '/admin/planos', icon: CreditCard, label: 'Planos e Preços' },
+        { href: '/admin/noticias/nova', icon: Plus, label: 'Adicionar Notícia' },
       );
     }
 
@@ -438,6 +451,25 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </header>
+
+      {/* Administrador a ver o painel de outro papel: avisa e permite voltar sem sair do painel */}
+      {viewAs && (
+        <div className="sticky top-12 z-[99] flex flex-wrap items-center justify-between gap-2 bg-[#d63638] px-4 py-1.5 text-[12px] text-white lg:top-8">
+          <span>
+            A ver o painel como <strong className="capitalize">{viewAs === 'guest' ? 'visitante' : viewAs}</strong>. Só muda o que vê no ecrã: o que gravar continua a ser feito com a sua conta de Administrador.
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setViewAs(null);
+              router.push('/admin/dashboard');
+            }}
+            className="bg-[#1d2327] px-3 py-1 font-semibold text-white hover:bg-black"
+          >
+            Voltar a Administrador
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Telemóvel: fundo que fecha a gaveta ao tocar fora */}

@@ -79,7 +79,7 @@ export default function CategoryBadge({
     <Link
       href={`/categoria/${key}`}
       tabIndex={tabIndex}
-      className={`inline-flex items-stretch overflow-hidden rounded-[4px] align-middle text-white transition hover:brightness-110 ${className}`}
+      className={`inline-flex items-stretch overflow-hidden align-middle text-white transition hover:brightness-110 ${className}`}
       style={{ backgroundColor: color }}
     >
       <span className="flex items-center justify-center bg-black/25 px-2.5">

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import HeaderOld from '@/components/Layout/HeaderOld';
 import Footer from '@/components/Layout/Footer';
+import Spinner from '@/components/Common/Spinner';
 
 interface Category {
   name: string;
@@ -252,7 +253,7 @@ function UltimasNoticias() {
   }, []);
 
   if (posts.length === 0) {
-    return <p className="text-sm text-gray-500">Carregando...</p>;
+    return <div className="py-6 text-center"><Spinner size={32} className="mx-auto" /></div>;
   }
 
   return (

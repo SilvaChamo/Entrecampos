@@ -60,8 +60,10 @@ export const DEFAULT_ROLE_PERMISSIONS = {
   contribuidor: [
     'ler_artigos', 'criar_artigos', 'usar_media'
   ],
+  // Visitante: só propõe notícias (criar_artigos). Sem publicar_artigos, o servidor grava-as sempre como "pending"
+  // (ver api/admin/news/save) e é o editor ou o admin quem as publica.
   guest: [
-    'ler_artigos'
+    'ler_artigos', 'criar_artigos'
   ],
 };
 

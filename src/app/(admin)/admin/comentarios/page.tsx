@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Check, ExternalLink, MessageSquare, RefreshCw, RotateCcw, ShieldAlert, Trash2, X } from 'lucide-react';
+import Spinner from '@/components/Common/Spinner';
 
 type Status = 'pending' | 'approved' | 'spam' | 'trash';
 interface Comment {
@@ -85,7 +86,7 @@ export default function ComentariosPage() {
         </button>
       </div>
 
-      <ul className="mb-4 flex flex-wrap gap-1 border-b border-[#ccd0d4] text-[13px]">
+      <ul className="flex flex-wrap gap-1 border-b border-[#ccd0d4] text-[13px]">
         {TABS.map((t) => (
           <li key={t.key}>
             <button
@@ -100,9 +101,9 @@ export default function ComentariosPage() {
 
       {error && <p className="mb-4 border-l-4 border-[#d63638] bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
 
-      <div className="border border-[#ccd0d4] bg-white">
+      <div className="border border-t-0 border-[#ccd0d4] bg-white">
         {loading && items.length === 0 ? (
-          <p className="p-6 text-sm text-gray-500">A carregar…</p>
+          <div className="p-10 text-center"><Spinner size={40} className="mx-auto" /></div>
         ) : items.length === 0 ? (
           <p className="p-6 text-sm text-gray-500">Nenhum comentário aqui.</p>
         ) : (

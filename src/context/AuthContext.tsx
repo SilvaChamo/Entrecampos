@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import {
   roleToMetadata,
   translateAuthError,
@@ -19,12 +19,20 @@ interface AuthContextType {
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
   setRole: (role: UserRole) => void;
+  /** Papel real da sessão (o `user.role` é o papel que está a ser visto, se o admin estiver a "ver como" outro). */
+  realRole: UserRole | null;
+  /** Papel que o administrador está a ver (null = o seu). Só no ecrã: o servidor continua a usar a sessão real. */
+  viewAs: UserRole | null;
+  setViewAs: (role: UserRole | null) => void;
 }
+
+const VIEW_AS_KEY = 'ec-view-as';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [realUser, setUser] = useState<User | null>(null);
+  const [viewAs, setViewAsState] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
 
   const applyUser = useCallback((next: AppUser | null) => {
@@ -38,7 +46,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetch('/api/auth/me', { credentials: 'include' })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (mounted) applyUser(data?.user ?? null);
+        if (!mounted) return;
+        applyUser(data?.user ?? null);
+        // Mantém o "ver como" ao recarregar a página (só vale para administradores).
+        try {
+          const saved = sessionStorage.getItem(VIEW_AS_KEY) as UserRole | null;
+          if (data?.user?.role === 'admin' && (saved === 'editor' || saved === 'contribuidor' || saved === 'guest')) setViewAsState(saved);
+        } catch {
+          /* sem armazenamento */
+        }
       })
       .catch(() => {
         if (mounted) applyUser(null);
@@ -88,6 +104,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       /* ignore */
     }
     applyUser(null);
+    setViewAsState(null);
+    try {
+      sessionStorage.removeItem(VIEW_AS_KEY);
+    } catch {
+      /* sem armazenamento */
+    }
     localStorage.removeItem('entrecampos_user');
   };
 
@@ -123,12 +145,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     throw new Error('Conta criada. O administrador tem de a aceitar antes de poder entrar no painel.');
   };
 
-  const setRole = (role: UserRole) => {
-    if (user) setUser({ ...user, role });
-  };
+  // "Ver como": só o administrador pode, e só muda o que vê no ecrã.
+  const setViewAs = useCallback(
+    (role: UserRole | null) => {
+      if (realUser?.role !== 'admin') return;
+      const next = role === 'admin' ? null : role;
+      setViewAsState(next);
+      try {
+        if (next) sessionStorage.setItem(VIEW_AS_KEY, next);
+        else sessionStorage.removeItem(VIEW_AS_KEY);
+      } catch {
+        /* sem armazenamento */
+      }
+    },
+    [realUser],
+  );
+
+  const user = useMemo<User | null>(() => (realUser && viewAs ? { ...realUser, role: viewAs } : realUser), [realUser, viewAs]);
+  const setRole = (role: UserRole) => setViewAs(role);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, setRole }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, setRole, realRole: realUser?.role ?? null, viewAs, setViewAs }}>
       {children}
     </AuthContext.Provider>
   );

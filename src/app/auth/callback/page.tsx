@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
+import Spinner from '@/components/Common/Spinner';
 
 /** Regresso do Google: o Supabase troca o código pela sessão e o servidor abre a sessão do EntreCAMPOS. */
 export default function AuthCallbackPage() {
@@ -42,7 +43,7 @@ export default function AuthCallbackPage() {
           </>
         ) : (
           <>
-            <Loader2 className="w-8 h-8 animate-spin text-[#2271b1] mx-auto" />
+            <Spinner size={32} className=" mx-auto" />
             <p className="text-sm text-gray-500">A concluir a entrada…</p>
           </>
         )}

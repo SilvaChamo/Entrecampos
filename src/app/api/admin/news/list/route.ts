@@ -20,19 +20,16 @@ export async function GET() {
   if ('error' in guard) return guard.error;
 
   try {
-    // Tabela base (mais rápida que a vista `news`). Se ainda não tiver a coluna `status`, todas contam como publicadas.
+    // Tabela base (mais rápida que a vista `news`). Colunas opcionais que ainda possam não existir na tabela
+    // (autor, estado) vão caindo uma a uma; sem `status`, todas contam como publicadas.
     const base = 'id,title,slug,category,date,image_url,summary,views';
-    let { data, error } = await supabaseAdmin
-      .from('news')
-      .select(`${base},status`)
-      .eq('site_id', SITE_ID)
-      .order('date', { ascending: false });
-    if (error && /status/i.test(error.message)) {
-      ({ data, error } = (await supabaseAdmin
-        .from('news')
-        .select(base)
-        .eq('site_id', SITE_ID)
-        .order('date', { ascending: false })) as any);
+    let data: any[] | null = null;
+    let error: { message: string } | null = null;
+    for (const extra of [',status,author_name', ',status', '']) {
+      const res = await supabaseAdmin.from('news').select(`${base}${extra}`).eq('site_id', SITE_ID).order('date', { ascending: false });
+      data = res.data as any[] | null;
+      error = res.error;
+      if (!error || !/status|author_name/i.test(error.message)) break;
     }
     if (!error && data) {
       const items = (data as any[]).map((r) => ({ ...r, status: r.status || 'Published' }));

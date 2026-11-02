@@ -23,7 +23,7 @@ function BigCard({ post, imageHeight, reveal = false }: { post: SlimPost; imageH
       <div className="p-4">
         <Tag label={post.category} slug={post.categorySlug} />
         <Link href={`/noticias/${post.slug}`}>
-          <h4 className="mt-2 text-[16px] font-bold leading-snug hover:text-[#d6101c]">{post.title}</h4>
+          <h4 className="mt-2 text-[18px] font-bold leading-snug hover:text-[#d6101c]">{post.title}</h4>
         </Link>
         <div className="mt-2">
           <Meta post={post as Post} />

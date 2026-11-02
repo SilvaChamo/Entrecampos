@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, Mail, Lock, ChevronRight, Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import AntiSpamFields, { resetAntiSpam } from '@/components/Antispam/AntiSpamFields';
+import Spinner from '@/components/Common/Spinner';
 
 export default function RegisterPage() {
   const { user, loading: authLoading, login } = useAuth();
@@ -60,7 +61,7 @@ export default function RegisterPage() {
   if (authLoading || user) {
     return (
       <div className="min-h-screen bg-[#f0f0f1] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#2271b1]" />
+        <Spinner size={32} className="" />
       </div>
     );
   }

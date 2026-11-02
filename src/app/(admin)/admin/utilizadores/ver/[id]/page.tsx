@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Globe, Shield, FileText, Edit2, Loader2, Phone, Briefcase, User } from 'lucide-react';
+import Spinner from '@/components/Common/Spinner';
 
 export default function ViewUserPage() {
   const params = useParams();
@@ -38,8 +39,7 @@ export default function ViewUserPage() {
   if (loading) {
     return (
       <div className="p-10 text-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#2271b1] mx-auto mb-2" />
-        <p className="text-sm text-gray-500">A carregar perfil...</p>
+        <Spinner size={32} className=" mx-auto mb-2" />
       </div>
     );
   }

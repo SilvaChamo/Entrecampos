@@ -14,6 +14,7 @@ import {
   FileText
 } from 'lucide-react';
 import Link from 'next/link';
+import Spinner from '@/components/Common/Spinner';
 
 interface StorageFile {
   name: string;
@@ -219,7 +220,7 @@ export default function MediaCleanupPage() {
         <div className="bg-white border-x border-b border-[#ccd0d4] p-6 rounded-b-lg min-h-[400px]">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <RefreshCw className="w-12 h-12 text-[#2271b1] animate-spin mb-4" />
+              <Spinner size={48} className=" mb-4" />
               <p className="text-[#50575e]">A analisar a biblioteca e base de dados...</p>
             </div>
           ) : orphans.length > 0 ? (

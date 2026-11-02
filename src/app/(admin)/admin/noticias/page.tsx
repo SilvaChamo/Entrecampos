@@ -421,9 +421,7 @@ export default function NewsAdminPage() {
           </thead>
           <tbody className="max-md:block">
             {loading && news.length === 0 ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <SkeletonTableRow key={i} columns={6} />
-              ))
+              <SkeletonTableRow columns={6} />
             ) : errorMsg ? (
               <tr><td colSpan={6} className="p-10 text-center text-red-600 bg-red-50 font-medium">{errorMsg}</td></tr>
             ) : filteredNews.length === 0 ? (

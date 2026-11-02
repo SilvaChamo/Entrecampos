@@ -116,6 +116,8 @@ export async function POST(request: Request) {
     payload.site_id = SITE_ID;
     if (canPublish) {
       if (data.featured !== undefined) payload.featured = !!data.featured;
+      // Editor e admin publicam: o que gravam vai logo ao site público, nunca para revisão.
+      payload.status = 'published';
     } else {
       // Contribuidores não publicam nem destacam: a notícia fica a aguardar revisão.
       payload.status = 'pending';
@@ -136,6 +138,11 @@ export async function POST(request: Request) {
       }
       
       const updatePayload: any = { ...payload };
+      // Editar não "desarquiva" nem tira do lixo/rascunho: nesses casos mantém-se o estado actual.
+      if (canPublish) {
+        const { data: current } = await supabaseAdmin.from('news').select('status').eq('id', id).eq('site_id', SITE_ID).maybeSingle();
+        if (['trash', 'archived', 'draft'].includes(String(current?.status ?? '').toLowerCase())) delete updatePayload.status;
+      }
       if (finalAuthorName) {
         updatePayload.author_name = finalAuthorName;
       }

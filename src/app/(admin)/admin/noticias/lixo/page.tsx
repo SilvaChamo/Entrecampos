@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase, SITE_ID } from '@/lib/supabase';
 import Link from 'next/link';
 import { RefreshCw, RotateCcw, Trash2, AlertTriangle } from 'lucide-react';
+import Spinner from '@/components/Common/Spinner';
 
 interface NewsItem {
   id: string;
@@ -131,7 +132,7 @@ export default function LixoPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="p-10 text-center"><RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#2271b1]" /></td></tr>
+              <tr><td colSpan={5} className="p-10 text-center"><Spinner size={24} className="mx-auto" /></td></tr>
             ) : news.length === 0 ? (
               <tr><td colSpan={5} className="p-10 text-center text-gray-400">O lixo está vazio.</td></tr>
             ) : news.map((item, idx) => (

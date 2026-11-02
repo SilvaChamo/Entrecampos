@@ -189,9 +189,7 @@ export default function UsersAdminPage() {
           </thead>
           <tbody>
             {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <SkeletonTableRow key={i} columns={6} />
-              ))
+              <SkeletonTableRow columns={6} />
             ) : filteredUsers.length === 0 ? (
               <tr><td colSpan={6} className="p-10 text-center text-gray-500">Nenhum utilizador encontrado.</td></tr>
             ) : (
@@ -271,9 +269,7 @@ export default function UsersAdminPage() {
           <div className="bg-white border border-[#ccd0d4] rounded-lg overflow-hidden">
             <table className="w-full">
               <tbody>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <SkeletonTableRow key={i} columns={6} />
-                ))}
+                <SkeletonTableRow columns={6} />
               </tbody>
             </table>
           </div>

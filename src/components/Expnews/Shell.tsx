@@ -121,7 +121,7 @@ export default function ExpShell({
                 </form>
                 <span className="h-9 w-px bg-gray-200" />
                 <Link
-                  href="/admin/noticias/nova"
+                  href="/admin/guest"
                   aria-label="Adicionar notícia"
                   className="flex items-center gap-1.5 bg-[#d6101c] px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-[#a30c15]"
                 >

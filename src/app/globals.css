@@ -292,3 +292,34 @@ body {
     min-width: 640px;
   }
 }
+
+/* Spinner único do site (components/Common/Spinner.tsx): dois arcos em sentidos opostos + ponto que pulsa. */
+.ec-spinner { position: relative; color: #2E7C04; flex-shrink: 0; }
+.ec-spinner > span { position: absolute; border-radius: 9999px; }
+.ec-spinner-outer {
+  inset: 0;
+  border: max(2px, 0.09em) solid transparent;
+  border-top-color: currentColor;
+  border-right-color: currentColor;
+  box-sizing: border-box;
+  animation: ec-spin 0.9s cubic-bezier(0.55, 0.1, 0.45, 0.9) infinite;
+}
+.ec-spinner-inner {
+  inset: 22%;
+  border: max(2px, 0.07em) solid transparent;
+  border-bottom-color: #d6101c;
+  border-left-color: #d6101c;
+  box-sizing: border-box;
+  animation: ec-spin 0.65s linear infinite reverse;
+}
+.ec-spinner-dot {
+  inset: 42%;
+  background: currentColor;
+  animation: ec-pulse 0.9s ease-in-out infinite;
+}
+@keyframes ec-spin { to { transform: rotate(360deg); } }
+@keyframes ec-pulse { 0%, 100% { transform: scale(0.5); opacity: 0.4; } 50% { transform: scale(1.15); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .ec-spinner-outer, .ec-spinner-inner { animation-duration: 3s; }
+  .ec-spinner-dot { animation: none; }
+}

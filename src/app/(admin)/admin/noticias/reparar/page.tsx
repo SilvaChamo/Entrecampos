@@ -20,6 +20,7 @@ import {
   History
 } from 'lucide-react';
 import Link from 'next/link';
+import Spinner from '@/components/Common/Spinner';
 
 interface NewsItem {
   id: string;
@@ -267,7 +268,7 @@ export default function NewsRepairPage() {
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 bg-white border border-[#ccd0d4] rounded-lg">
-              <RefreshCw className="w-12 h-12 text-[#2271b1] animate-spin mb-4" />
+              <Spinner size={48} className=" mb-4" />
               <p>A analisar notícias e biblioteca...</p>
             </div>
           ) : currentItem ? (

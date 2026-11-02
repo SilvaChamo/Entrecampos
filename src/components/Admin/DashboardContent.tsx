@@ -20,6 +20,7 @@ import {
   Eye
 } from 'lucide-react';
 import { useAuth, UserRole } from '@/context/AuthContext';
+import Spinner from '@/components/Common/Spinner';
 
 interface Stats {
   news: number;
@@ -121,7 +122,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               </p>
               <Link 
                 href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias/nova"} 
-                className="inline-block px-4 py-2 bg-[#00a651] text-white rounded-md text-[14px] hover:bg-[#008f45] transition-all shadow-sm whitespace-nowrap"
+                className="inline-block px-4 py-2 bg-[#00a651] text-white rounded-md text-[14px] hover:bg-[#008f45] transition-all shadow-sm whitespace-nowrap max-md:py-3"
               >
                 {role === 'editor' ? 'Revisar notícias pendentes' : 'Escreva o seu primeiro artigo'}
               </Link>
@@ -224,9 +225,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               </div>
               <div className="p-4">
                 {loading ? (
-                  <div className="animate-pulse space-y-4">
-                    {[1, 2, 3].map(i => <div key={i} className="h-4 bg-gray-100 rounded w-full"></div>)}
-                  </div>
+                  <div className="py-4 text-center"><Spinner size={32} className="mx-auto" /></div>
                 ) : recentActivities.length > 0 ? (
                   <ul className="space-y-3">
                     {recentActivities.slice(0, 4).map(activity => (

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Camera, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import Spinner from '@/components/Common/Spinner';
 
 const ROLES = ['Administrador', 'Editor', 'Actor', 'Subscritor', 'Contribuidor'];
 
@@ -190,8 +191,7 @@ export default function MeuPerfilPage() {
   if (loading) {
     return (
       <div className="p-10 text-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#2271b1] mx-auto mb-2" />
-        <p className="text-sm text-gray-500">A carregar perfil...</p>
+        <Spinner size={32} className=" mx-auto mb-2" />
       </div>
     );
   }
