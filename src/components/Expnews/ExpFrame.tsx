@@ -7,21 +7,54 @@ const SidebarContext = createContext<{ open: boolean; toggle: () => void }>({ op
 
 /**
  * Estrutura da home: barra lateral escura + conteúdo.
- * Por defeito a barra está recolhida (só ícones, 64px). Abre só com um clique em "Menu" (220px) e o conteúdo
- * acompanha-a, sem nunca ficar tapado.
+ * Em ecrã grande a barra entra expandida (220px). Se o utilizador a recolher (só ícones, 64px), a escolha fica
+ * guardada e ela só volta a expandir quando ele a expandir. No telemóvel abre só com um clique em "Menu".
  */
+const STORAGE_KEY = 'ec-sidebar';
+const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
+
 export default function ExpFrame({ sidebar, topBar, children }: { sidebar: React.ReactNode; topBar?: React.ReactNode; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
-  const toggle = useCallback(() => setOpen((o) => !o), []);
+  // Escolha do utilizador (só em ecrã grande, onde a barra é fixa): guarda-se para as páginas seguintes.
+  const choose = useCallback((value: boolean) => {
+    setOpen(value);
+    if (isDesktop()) {
+      try {
+        localStorage.setItem(STORAGE_KEY, value ? 'open' : 'closed');
+      } catch {
+        /* sem armazenamento */
+      }
+    }
+  }, []);
+
+  const toggle = useCallback(() => choose(!open), [choose, open]);
+
+  // Ecrã grande: expandida, a não ser que o utilizador a tenha recolhido. Ecrã pequeno: sempre fechada
+  // (abre por cima do conteúdo). Acompanha também o redimensionamento da janela.
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const apply = () => {
+      let saved: string | null = null;
+      try {
+        saved = localStorage.getItem(STORAGE_KEY);
+      } catch {
+        /* sem armazenamento */
+      }
+      setOpen(mq.matches && saved !== 'closed');
+    };
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
 
   // Esc fecha.
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && choose(false);
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  }, [open, choose]);
 
   const ease = 'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]';
 
@@ -45,7 +78,7 @@ export default function ExpFrame({ sidebar, topBar, children }: { sidebar: React
             <button
               type="button"
               aria-label="Fechar menu"
-              onClick={() => setOpen(false)}
+              onClick={() => choose(false)}
               className="fixed inset-0 z-30 bg-black/50 lg:hidden"
             />
           )}

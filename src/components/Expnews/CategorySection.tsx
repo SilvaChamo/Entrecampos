@@ -14,9 +14,9 @@ export type CategoryGroup = { slug: string; label: string; posts: SlimPost[] };
 // Quantas notícias por vista: destaque = 1 grande + 4 ao lado; grelha = 2 grandes + 4 pequenas.
 const pageSizeFor = (layout: 'destaque' | 'grelha') => (layout === 'grelha' ? 6 : 5);
 
-function BigCard({ post, imageHeight }: { post: SlimPost; imageHeight: string }) {
+function BigCard({ post, imageHeight, reveal = false }: { post: SlimPost; imageHeight: string; reveal?: boolean }) {
   return (
-    <article className="bg-white shadow-sm">
+    <article className={`${reveal ? 'ec-reveal ' : ''}bg-white shadow-sm`}>
       <Link href={`/noticias/${post.slug}`} className={`relative block overflow-hidden bg-gray-200 ${imageHeight}`}>
         <Thumb src={post.image} />
       </Link>
@@ -57,6 +57,8 @@ export default function CategorySection({
   const [page, setPage] = useState(0);
   const [dir, setDir] = useState<1 | -1>(1);
   const [open, setOpen] = useState(false);
+  // Entrada dos cards (slide up, um a seguir ao outro): só na primeira vez; ao mexer nas setas ou no selector deixa de correr.
+  const [revealing, setRevealing] = useState(reveal);
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,6 +82,7 @@ export default function CategorySection({
   const pages = Math.max(1, Math.ceil(group.posts.length / PAGE));
   const go = (direction: 1 | -1) => {
     setDir(direction);
+    setRevealing(false);
     setPage((p) => (p + direction + pages) % pages);
   };
 
@@ -95,13 +98,13 @@ export default function CategorySection({
         <div className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
             {visible.slice(0, 2).map((p) => (
-              <BigCard key={p.slug} post={p} imageHeight="h-[195px]" />
+              <BigCard key={p.slug} post={p} imageHeight="h-[195px]" reveal={revealing} />
             ))}
           </div>
           {visible.length > 2 && (
             <div className="grid gap-3 sm:grid-cols-2">
               {visible.slice(2).map((p) => (
-                <div key={p.slug} className="h-[96px]">
+                <div key={p.slug} className={`${revealing ? 'ec-reveal ' : ''}h-[96px]`}>
                   <ListItem as="div" post={p as Post} bleed />
                 </div>
               ))}
@@ -126,7 +129,7 @@ export default function CategorySection({
   };
 
   return (
-    <section className={reveal ? 'ec-reveal' : undefined}>
+    <section>
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <CardTitle>{group.label}</CardTitle>
@@ -152,6 +155,7 @@ export default function CategorySection({
                     type="button"
                     onClick={() => {
                       setDir(1);
+                      setRevealing(false);
                       setSelected(g.slug);
                       setPage(0);
                       setOpen(false);
