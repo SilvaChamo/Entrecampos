@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, STORAGE_BUCKET as BUCKET_NAME } from '@/lib/supabase';
 import { 
   Trash2, 
   Copy, 
@@ -65,7 +65,6 @@ export default function MediaGallery() {
   });
   const [savingMetadata, setSavingMetadata] = useState(false);
 
-  const BUCKET_NAME = 'news-images';
 
   const loadImages = async () => {
     setLoading(true);
@@ -310,7 +309,7 @@ export default function MediaGallery() {
 
   return (
     <div className="min-h-screen text-[#2c3338] p-6">
-      <div className="max-w-[1280px] mx-auto">
+      <div className="w-full">
         {/* Header Estilo WP */}
         <div className="pt-0 pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

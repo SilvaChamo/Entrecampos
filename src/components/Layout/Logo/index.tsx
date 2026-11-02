@@ -37,7 +37,7 @@ export const Logo = ({
     <div
       className="relative py-4 w-full"
       style={{
-        backgroundImage: "url(https://entrecampos.co.mz/wp-content/uploads/2021/06/bgg-01.jpg)",
+        backgroundImage: "url(/images/clima-bg.jpeg)",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}

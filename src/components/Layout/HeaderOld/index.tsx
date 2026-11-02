@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
+import HomesMenu from "@/components/Home/HomesMenu";
+import { HOME_PAGES } from "@/lib/home-pages";
 
 const HeaderOld: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,12 +52,17 @@ const HeaderOld: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Menu igual ao do site online (entrecamposblog.com).
   const navItems = [
-    { name: 'Início', href: '/inicio' },
-    { name: 'Sobre nós', href: '/pagina/inicio' },
-    { name: 'Notícias', href: '#noticias' },
-    { name: 'Mercado', href: '/categoria/agro-negocio' },
-    { name: 'Acervo', href: '/pagina/acervo' },
+    { name: 'Início', href: '/' },
+    { name: 'Agricultura', href: '/categoria/agricultura' },
+    { name: 'Sector agrário', href: '/categoria/sector-agrario' },
+    { name: 'Comunidade', href: '/categoria/comunidade' },
+    { name: 'Ambiente', href: '/categoria/ambiente' },
+    { name: 'Turismo rural', href: '/categoria/turismo-rural' },
+    { name: 'Mulher agrário', href: '/categoria/mulher-agrario' },
+    { name: 'Curiosidade', href: '/categoria/curiosidade' },
+    { name: 'Contactos', href: '/pagina/contactos' },
   ];
 
   return (
@@ -75,7 +82,7 @@ const HeaderOld: React.FC = () => {
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
               </svg>
-              geral@entrecampos.co.mz
+              geral@entrecamposblog.com
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -117,14 +124,14 @@ const HeaderOld: React.FC = () => {
       <div
         className="relative py-4"
         style={{
-          backgroundImage: "url(https://entrecampos.co.mz/wp-content/uploads/2021/06/bgg-01.jpg)",
+          backgroundImage: "url(https://entrecamposblog.com/wp-content/uploads/2021/06/bgg-01.jpg)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
         <div className="absolute inset-0 bg-black/30"></div>
         <div className="container mx-auto px-4 relative z-10 flex justify-center">
-          <Link href="/inicio">
+          <Link href="/">
             <Image
               src="/images/logo.png"
               alt="EntreCAMPOS"
@@ -140,22 +147,23 @@ const HeaderOld: React.FC = () => {
       <div className={`py-5 transition-all duration-300 ${isScrolled ? 'fixed top-0 left-0 right-0 z-50 shadow-lg' : ''}`} style={{ backgroundColor: "#2c3338" }}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center gap-4">
-            <Link href="#" className="border border-white text-white px-6 py-2 rounded-full text-sm hover:bg-white hover:text-gray-800 transition-colors">
-              Escrever artigo
+            <Link href="/admin/noticias/nova" className="border border-white text-white px-6 py-2 rounded-full text-sm hover:bg-white hover:text-gray-800 transition-colors">
+              Publicar artigo
             </Link>
 
-            <div className="flex" style={{ width: '550px', height: '40px' }}>
+            <form action="/noticias" method="get" className="flex" style={{ width: '550px', height: '40px' }}>
               <input
                 type="text"
+                name="q"
                 placeholder="Pesquisar..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 px-4 text-gray-800 focus:outline-none rounded-l-full text-sm"
               />
-              <button className="bg-red-600 text-white px-6 rounded-r-full font-semibold hover:bg-red-700 transition-colors text-sm">
-                Search
+              <button type="submit" className="bg-red-600 text-white px-6 rounded-r-full font-semibold hover:bg-red-700 transition-colors text-sm">
+                Pesquisar
               </button>
-            </div>
+            </form>
 
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
@@ -191,6 +199,18 @@ const HeaderOld: React.FC = () => {
             <div className="hidden md:flex items-center space-x-1">
               {navItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+                if (item.name === 'Início') {
+                  return (
+                    <HomesMenu
+                      key={item.name}
+                      label={item.name}
+                      href={item.href}
+                      triggerClassName={`px-4 py-3 text-sm font-medium transition-colors ${
+                        HOME_PAGES.some((h) => h.href === pathname) ? 'bg-red-600 text-white font-bold' : 'text-green-100 hover:text-white'
+                      }`}
+                    />
+                  );
+                }
                 return (
                   <Link
                     key={item.name}
@@ -222,6 +242,23 @@ const HeaderOld: React.FC = () => {
             <div className="lg:hidden py-4 space-y-2">
               {navItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+                if (item.name === 'Início') {
+                  return (
+                    <div key={item.name}>
+                      <span className="block px-4 py-2 text-sm font-semibold uppercase text-green-100">{item.name}</span>
+                      {HOME_PAGES.map((h) => (
+                        <Link
+                          key={h.href}
+                          href={h.href}
+                          className="block px-8 py-2 text-xs font-medium hover:bg-green-600"
+                          onClick={() => setNavbarOpen(false)}
+                        >
+                          {h.label}
+                        </Link>
+                      ))}
+                    </div>
+                  );
+                }
                 return (
                   <Link
                     key={item.name}
@@ -449,7 +486,11 @@ const HeaderOld: React.FC = () => {
               /* Modo Menu - Menu Normal + Contacto */
               <div className="flex flex-col min-h-full">
                 <nav className="p-4 space-y-0 flex-1">
-                  {mainNavItems.map((item, index) => (
+                  {mainNavItems.flatMap((item) =>
+                    item.name === 'Início'
+                      ? HOME_PAGES.map((h) => ({ name: h.label, href: h.href, hasDropdown: false }))
+                      : [item],
+                  ).map((item, index) => (
                     <div key={item.name} className={`${index > 0 ? 'border-t border-gray-100' : ''}`}>
                       <Link
                         href={item.href}
@@ -501,7 +542,7 @@ const HeaderOld: React.FC = () => {
                   <p>Av: Karlmarx nº 177</p>
                   <p>Maputo - Moçambique</p>
                   <p>Movel: 825288318/877575288</p>
-                  <p>E-mail: infor@entrecampos.co.mz</p>
+                  <p>E-mail: geral@entrecamposblog.com</p>
                 </div>
 
                 {/* Rodapé */}

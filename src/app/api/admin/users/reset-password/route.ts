@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/api-guard';
+import { findSiteUserByEmail } from '@/lib/site-accounts';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +10,8 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(req: NextRequest) {
+  const guard = await requireAuth('editar_utilizadores');
+  if ('error' in guard) return guard.error;
   try {
     const { email } = await req.json();
 
@@ -15,21 +19,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email obrigatório' }, { status: 400 });
     }
 
-    const { error } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-    });
-
-    if (error) {
-      console.error('Erro ao gerar link de recuperação:', error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    // Só contas deste site; para as outras não se faz nada (e a resposta é a mesma).
+    const target = await findSiteUserByEmail(supabaseAdmin, String(email));
+    if (target) {
+      const { error } = await supabaseAdmin.auth.admin.generateLink({ type: 'recovery', email: target.email! });
+      if (error) console.error('Erro ao gerar link de recuperação:', error.message);
     }
 
-    // Nota: Em produção, o Supabase enviaria o email automaticamente se configurado.
-    // Aqui usamos generateLink para validar que o utilizador existe e a chave funciona.
-    
-    return NextResponse.json({ success: true, message: `Email de recuperação enviado para ${email}` });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    // Resposta genérica: não revela se o e-mail existe.
+    return NextResponse.json({ success: true, message: `Se o e-mail existir, foi enviada a recuperação para ${email}` });
+  } catch {
+    return NextResponse.json({ error: 'Erro ao processar o pedido' }, { status: 500 });
   }
 }

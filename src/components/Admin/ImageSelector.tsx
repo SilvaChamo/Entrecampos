@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { X, ImageIcon, Upload, RefreshCw, Check, AlertCircle, Edit3 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase, STORAGE_BUCKET as BUCKET_NAME } from '@/lib/supabase';
 import MediaLibrary from './MediaLibrary';
 import ImageEditor from './ImageEditor';
 
@@ -20,7 +20,6 @@ export default function ImageSelector({ onSelect, onClose, currentImageUrl }: Im
   const [showEditor, setShowEditor] = useState(false);
   const [editedBlob, setEditedBlob] = useState<Blob | null>(null);
 
-  const BUCKET_NAME = 'news-images';
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

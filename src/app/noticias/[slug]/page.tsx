@@ -1,232 +1,142 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  Calendar, 
-  User, 
-  Share2, 
-  Facebook, 
-  Twitter, 
-  Linkedin, 
-  Printer, 
-  Mail,
-  ChevronRight
-} from 'lucide-react';
-import Header from '@/components/Layout/Header';
-import Footer from '@/components/Layout/Footer';
+import { notFound } from 'next/navigation';
+import { CalendarCheck, Mail, Share2, User } from 'lucide-react';
+import { getAllPosts, getPost, getRelated, longDatePt } from '@/lib/news-data';
+import { shareNetworks } from '@/lib/share';
+import { CategoryTag, SectionHeading, SiteSidebar } from '@/components/Site/parts';
+import { NewsCard } from '@/components/Expnews/blocks';
+import ExpShell from '@/components/Expnews/Shell';
+import PageHeaderCard from '@/components/Expnews/PageHeaderCard';
+import PrintButton from '@/components/Site/PrintButton';
+import CommentsSection from '@/components/Comments/CommentsSection';
+import { InnerSidebar } from '@/components/Expnews/InnerPage';
 
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  date: string;
-  image_url: string;
-  author?: string;
-  slug: string;
+export const revalidate = 60;
+
+/** Origem usada nos links de partilha. Fixa (sem ler os cabeçalhos do pedido) para a página poder ficar em cache. */
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://entrecamposblog.com').replace(/\/$/, '');
+
+/** As notícias mais recentes ficam geradas no deploy; as restantes geram-se no primeiro acesso e ficam em cache. */
+export async function generateStaticParams() {
+  const { posts } = await getAllPosts();
+  return posts.slice(0, 20).map((p) => ({ slug: p.slug }));
 }
 
-export default function SinglePostPage() {
-  const { slug } = useParams();
-  const [post, setPost] = useState<Post | null>(null);
-  const [relatedPosts, setRelatedPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const post = await getPost((await params).slug);
+  if (!post) return { title: 'Notícia não encontrada — EntreCAMPOS' };
+  return {
+    title: `${post.title} — EntreCAMPOS`,
+    description: post.excerpt,
+    openGraph: { title: post.title, description: post.excerpt, images: post.image ? [post.image] : [] },
+  };
+}
 
-  useEffect(() => {
-    async function loadPost() {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('news')
-          .select('*')
-          .eq('slug', slug)
-          .single();
+/** Modelo único de leitura: serve todas as notícias (/noticias/<slug>). */
+export default async function PaginaDeLeitura({ params }: { params: Promise<{ slug: string }> }) {
+  const post = await getPost((await params).slug);
+  if (!post) notFound();
 
-        if (error) throw error;
-        setPost(data);
+  const related = await getRelated(post, 4);
+  const url = encodeURIComponent(`${SITE_URL}/noticias/${post.slug}`);
+  const text = encodeURIComponent(post.title);
 
-        // Carregar relacionados
-        if (data) {
-          const { data: related } = await supabase
-            .from('news')
-            .select('*')
-            .eq('category', data.category)
-            .neq('id', data.id)
-            .limit(4);
-          setRelatedPosts(related || []);
-        }
-      } catch (err) {
-        console.error('Erro ao carregar post:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (slug) loadPost();
-  }, [slug]);
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
-  if (!post) return <div className="min-h-screen flex items-center justify-center">Notícia não encontrada.</div>;
+  const shares = shareNetworks(url, text);
 
   return (
-    <>
-      <Header />
-      
-      <main className="bg-white py-10">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="flex flex-col lg:flex-row gap-10">
-            
-            {/* Conteúdo Principal */}
-            <div className="flex-1">
-              {/* Categorias e Breadcrumb */}
-              <div className="flex items-center gap-2 mb-6">
-                <span className="bg-green-700 text-white px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                  {post.category}
-                </span>
-                <span className="text-gray-300">/</span>
-                <div className="flex items-center text-xs text-gray-500 font-medium">
-                  <Link href="/" className="hover:text-green-700">INÍCIO</Link>
-                  <ChevronRight className="w-3 h-3 mx-1" />
-                  <span className="text-gray-400">{post.title}</span>
-                </div>
-              </div>
-
-              {/* Título */}
-              <h1 className="text-3xl md:text-4xl font-bold text-[#1d2327] mb-6 leading-tight">
-                {post.title}
-              </h1>
-
-              {/* Meta Info */}
-              <div className="flex items-center gap-6 text-sm text-gray-400 mb-8 pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-red-600" />
-                  <span>{new Date(post.date).toLocaleDateString('pt-PT', { day:'numeric', month:'long', year:'numeric' })}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-red-600" />
-                  <span>{post.author || 'admin'}</span>
-                </div>
-              </div>
-
-              {/* Imagem de Destaque */}
-              {post.image_url && (
-                <div className="mb-10 rounded-lg overflow-hidden shadow-lg border border-gray-100">
-                  <img src={post.image_url} alt={post.title} className="w-full object-cover" />
-                </div>
-              )}
-
-              {/* Corpo da Notícia */}
-              <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed mb-12">
-                <div dangerouslySetInnerHTML={{ __html: post.content }} />
-              </div>
-
-              {/* Partilhar */}
-              <div className="mt-12 pt-8 border-t border-gray-100">
-                <h4 className="text-lg font-bold text-green-700 mb-6 uppercase tracking-widest border-l-4 border-green-700 pl-4">Partilhar</h4>
-                <div className="flex flex-wrap gap-3">
-                  <button className="w-10 h-10 rounded-full bg-[#25d366] text-white flex items-center justify-center hover:opacity-90 transition-all"><Share2 className="w-5 h-5" /></button>
-                  <button className="w-10 h-10 rounded-full bg-[#1877f2] text-white flex items-center justify-center hover:opacity-90 transition-all"><Facebook className="w-5 h-5" /></button>
-                  <button className="w-10 h-10 rounded-full bg-[#0077b5] text-white flex items-center justify-center hover:opacity-90 transition-all"><Linkedin className="w-5 h-5" /></button>
-                  <button className="w-10 h-10 rounded-full bg-[#1da1f2] text-white flex items-center justify-center hover:opacity-90 transition-all"><Twitter className="w-5 h-5" /></button>
-                  <button className="w-10 h-10 rounded-full bg-[#bd081c] text-white flex items-center justify-center hover:opacity-90 transition-all"><Mail className="w-5 h-5" /></button>
-                  <button className="w-10 h-10 rounded-full bg-gray-400 text-white flex items-center justify-center hover:opacity-90 transition-all"><Printer className="w-5 h-5" /></button>
-                </div>
-              </div>
-
-              {/* Comentários Mockup */}
-              <div className="mt-16 bg-gray-50 p-8 rounded-lg border border-gray-100">
-                <h3 className="text-2xl font-bold mb-6">Deixe um comentário</h3>
-                <p className="text-sm text-gray-500 mb-6">Sessão iniciada como admin. <span className="text-green-600">Editar perfil. Sair?</span> Campos obrigatórios marcados com *</p>
-                <textarea className="w-full h-40 p-4 border border-gray-300 rounded mb-4 outline-none focus:border-green-700" placeholder="Comentário *"></textarea>
-                <button className="px-6 py-3 border-2 border-pink-500 text-pink-500 font-bold rounded hover:bg-pink-500 hover:text-white transition-all uppercase text-sm">Publicar comentário</button>
-              </div>
+    <ExpShell backdrop={post.image}>
+    <main className="mx-3 pb-6">
+    <div className="mx-auto max-w-[1280px]">
+      <PageHeaderCard
+        title={post.category}
+        trail={[{ label: 'Notícias', href: '/noticias' }, { label: post.category, href: `/categoria/${post.categorySlug}` }, { label: post.title }]}
+      />
+      <div className="grid gap-3 lg:grid-cols-[1fr_300px]">
+        <article className="min-w-0 bg-white">
+          {post.image && (
+            <div className="border-b-[6px] border-red-600">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={post.image} alt={post.title} className="max-h-[420px] w-full object-cover" />
             </div>
-
-            {/* BARRA LATERAL (Sidebar) */}
-            <aside className="w-full lg:w-80 flex flex-shrink-0 flex-col gap-10">
-              
-              {/* Widget Receitas */}
-              <div className="bg-white border border-gray-100 shadow-sm rounded-lg overflow-hidden">
-                <div className="bg-white border-l-4 border-red-600 p-4">
-                  <h4 className="text-red-600 font-bold uppercase text-sm tracking-widest">Receitas</h4>
-                </div>
-                <div className="p-4">
-                  <div className="relative h-48 rounded overflow-hidden group">
-                    <img src="https://entrecampos.co.mz/wp-content/uploads/2023/02/WRAP-300x200.jpg" className="w-full h-full object-cover group-hover:scale-105 transition-transform" alt="Wrap" />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <span className="bg-green-600 text-white px-2 py-0.5 text-[10px] font-bold uppercase mb-2 inline-block">Receitas</span>
-                      <h5 className="text-white font-bold text-sm leading-tight">Wrap de vegetais com polpa de mafpilwa</h5>
-                      <span className="text-white/80 text-[10px] mt-1 block">Fevereiro 2, 2023</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Widget Facebook */}
-              <div className="bg-white border border-gray-100 shadow-sm rounded-lg overflow-hidden">
-                <div className="bg-white border-l-4 border-red-600 p-4">
-                  <h4 className="text-red-600 font-bold uppercase text-sm tracking-widest">Facebook</h4>
-                </div>
-                <div className="p-4 bg-gray-50 h-64 flex items-center justify-center border-t border-gray-100">
-                  <div className="text-center">
-                    <Facebook className="w-12 h-12 text-blue-600 mx-auto mb-2 opacity-20" />
-                    <span className="text-xs text-gray-400">Facebook Page Plugin</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Widget Publicidade */}
-              <div className="bg-white border border-gray-100 shadow-sm rounded-lg overflow-hidden">
-                <div className="bg-white border-l-4 border-red-600 p-4">
-                  <h4 className="text-red-600 font-bold uppercase text-sm tracking-widest">Publicidade</h4>
-                </div>
-                <div className="p-4 flex justify-center">
-                  <img src="https://entrecampos.co.mz/wp-content/uploads/2023/04/AD-BANNER.jpg" className="w-full h-auto rounded" alt="Ad" />
-                </div>
-              </div>
-
-            </aside>
-          </div>
-
-          {/* TAMBÉM PODE LER */}
-          <section className="mt-20">
-            <h3 className="text-xl font-bold text-green-700 uppercase tracking-widest mb-10 flex items-center gap-4">
-              <span className="w-1 h-8 bg-red-600"></span>
-              TAMBÉM PODE LER
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {relatedPosts.map(rel => (
-                <Link key={rel.id} href={`/noticias/${rel.slug}`} className="group">
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all border border-gray-100 h-full flex flex-col">
-                    <div className="h-40 overflow-hidden relative">
-                      <img src={rel.image_url} alt={rel.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                      <span className="absolute bottom-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 uppercase">
-                        {rel.category}
-                      </span>
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <h4 className="text-sm font-bold text-gray-800 mb-3 group-hover:text-green-600 transition-colors line-clamp-2">
-                        {rel.title}
-                      </h4>
-                      <div className="mt-auto flex items-center gap-2 text-[10px] text-gray-400">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(rel.date).toLocaleDateString('pt-PT', { month:'long', day:'numeric', year:'numeric' })}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
+          )}
+          <div className="px-5 pb-8 pt-6 sm:px-7">
+            <div className="flex flex-wrap items-center gap-2">
+              <CategoryTag label={post.category} slug={post.categorySlug} className="text-[13px]" />
+              {post.extraCategories.map((c) => (
+                <CategoryTag key={c.slug} label={c.label} slug={c.slug} className="text-[13px]" />
               ))}
             </div>
-          </section>
+            <h1 className="mt-3 text-[28px] font-bold leading-tight text-gray-800 sm:text-[34px]">{post.title}</h1>
+            <div className="mt-4 flex flex-wrap items-center gap-5 border-b border-gray-200 pb-3 text-[13px] text-gray-600">
+              <span className="flex items-center gap-2">
+                <CalendarCheck className="h-4 w-4 text-red-600" />
+                {post.edited ? 'Editado a' : 'Publicado a'}{' '}
+                {new Date(post.edited || post.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </span>
+              <span className="flex items-center gap-2">
+                <User className="h-4 w-4 text-red-600" />
+                {post.author}
+              </span>
+            </div>
 
-        </div>
-      </main>
+            <div
+              className="blog-details mt-6 text-[15px] leading-7 text-gray-500 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-2"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
 
-      <Footer />
-    </>
+            <div className="mt-8">
+              <h3 className="flex items-center gap-2 border-b border-gray-200 pb-3 text-[18px] font-bold uppercase text-[#1a3d0c]">
+                <Share2 className="h-5 w-5" />
+                Partilhar
+              </h3>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {shares.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Partilhar no ${s.label}`}
+                    className={`flex h-9 w-9 items-center justify-center rounded-full ${s.bg} text-white hover:opacity-90`}
+                  >
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
+                      <path d={s.icon} />
+                    </svg>
+                  </a>
+                ))}
+                <a
+                  href={`mailto:?subject=${text}&body=${url}`}
+                  aria-label="Partilhar por email"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ea4335] text-white hover:opacity-90"
+                >
+                  <Mail className="h-4 w-4" />
+                </a>
+                <PrintButton />
+              </div>
+            </div>
+
+            <CommentsSection slug={post.slug} title={post.title} />
+          </div>
+        </article>
+
+        <InnerSidebar />
+      </div>
+
+      {related.length > 0 && (
+        <section className="mt-10">
+          <div className="flex items-center gap-4">
+            <SectionHeading>Também pode ler</SectionHeading>
+            <span className="h-px flex-1 bg-white/70" />
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {related.map((p) => (
+              <NewsCard key={p.slug} post={p} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+    </main>
+    </ExpShell>
   );
 }

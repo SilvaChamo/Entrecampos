@@ -23,7 +23,10 @@ body {
   font-family: Verdana, sans-serif;
 }
 
-.blog-details p,
+.blog-details p {
+  margin-bottom: 0.5rem;
+}
+
 .blog-details hr {
   margin-bottom: 2rem;
 }
@@ -67,4 +70,225 @@ body {
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.4;
+}
+
+/* Blocos do texto da notícia: iguais na página de leitura e no editor. */
+.blog-details li p,
+.ec-editor .ProseMirror li p {
+  margin: 0;
+}
+
+.blog-details figure,
+.ec-editor .ProseMirror figure {
+  margin: 1.5rem 0;
+}
+
+.blog-details figure img,
+.ec-editor .ProseMirror figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+}
+
+.blog-details figcaption,
+.ec-editor .ProseMirror figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: center;
+  color: #6b7280;
+}
+
+.blog-details figcaption:empty {
+  display: none;
+}
+
+.blog-details .ec-callout,
+.ec-editor .ProseMirror .ec-callout {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  background: #f7f7f7;
+  border-left: 4px solid #d8a93a;
+}
+
+.blog-details .ec-callout > :last-child,
+.ec-editor .ProseMirror .ec-callout > :last-child {
+  margin-bottom: 0;
+}
+
+.blog-details .ec-callout h1,
+.blog-details .ec-callout h2,
+.blog-details .ec-callout h3,
+.ec-editor .ProseMirror .ec-callout h1,
+.ec-editor .ProseMirror .ec-callout h2,
+.ec-editor .ProseMirror .ec-callout h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+}
+
+.blog-details .ec-callout ul,
+.blog-details .ec-callout ol,
+.ec-editor .ProseMirror .ec-callout ul,
+.ec-editor .ProseMirror .ec-callout ol {
+  margin-bottom: 0;
+  padding-left: 1.25rem;
+  list-style-position: outside;
+}
+
+.blog-details .ec-callout li,
+.ec-editor .ProseMirror .ec-callout li {
+  margin-bottom: 0.5rem;
+}
+
+.blog-details .ec-callout li:last-child,
+.ec-editor .ProseMirror .ec-callout li:last-child {
+  margin-bottom: 0;
+}
+
+/* Editor de notícias. */
+.ec-editor .ProseMirror {
+  min-height: 400px;
+  padding: 1rem 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #1d2327;
+  background: #fff;
+  outline: none;
+}
+
+.ec-editor .ProseMirror p {
+  margin-bottom: 0.5rem;
+}
+
+.ec-editor .ProseMirror h1 { margin: 1rem 0 0.5rem; font-size: 1.875rem; font-weight: 700; line-height: 1.2; }
+.ec-editor .ProseMirror h2 { margin: 1rem 0 0.5rem; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.ec-editor .ProseMirror h3 { margin: 1rem 0 0.5rem; font-size: 1.25rem; font-weight: 700; line-height: 1.4; }
+
+.ec-editor .ProseMirror ul { margin-bottom: 0.5rem; padding-left: 1.5rem; list-style: disc; }
+.ec-editor .ProseMirror ol { margin-bottom: 0.5rem; padding-left: 1.5rem; list-style: decimal; }
+
+.ec-editor .ProseMirror blockquote {
+  margin: 0.75rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid #ccd0d4;
+  color: #50575e;
+}
+
+.ec-editor .ProseMirror a { color: #008000; text-decoration: underline; }
+.ec-editor .ProseMirror img { max-width: 100%; height: auto; }
+.ec-editor .ProseMirror figure img { pointer-events: none; user-select: none; }
+
+.ec-editor .ProseMirror .ProseMirror-selectednode { outline: 2px solid #2271b1; }
+
+.ec-editor .ProseMirror figcaption:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: 'Escreva a legenda da foto…';
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.ec-editor .ProseMirror .ec-callout h3:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: 'Título da caixa';
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+/* Deslize dos slides (SlideStage): o novo conteúdo entra e o antigo sai, lado a lado. */
+@keyframes ec-in-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes ec-in-left { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes ec-out-left { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes ec-out-right { from { transform: translateX(0); } to { transform: translateX(100%); } }
+.ec-in-right { animation: ec-in-right 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.ec-in-left { animation: ec-in-left 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.ec-out-left { animation: ec-out-left 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.ec-out-right { animation: ec-out-right 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ec-in-right, .ec-in-left, .ec-out-left, .ec-out-right { animation-duration: 0.01ms; }
+}
+
+/* Ponto activo do slide principal: enche durante o tempo da notícia. */
+@keyframes ec-dot-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ec-dot-fill { animation-name: ec-dot-fill; animation-timing-function: linear; animation-fill-mode: forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ec-dot-fill { animation: none; }
+}
+
+/* Entrada dos cards em slide up (RevealOnView): cada card arranca quando chega ao ecrã e sobe até ao fim de uma só vez,
+   a velocidade normal, sem parar a meio. Numa linha de 3 colunas entram em sequência (--ec-col = 0, 1, 2).
+   Sem JavaScript ou com "reduzir movimento" os cards ficam sempre visíveis. */
+@keyframes ec-rise {
+  from { opacity: 0; transform: translate3d(0, 150px, 0); }
+  to { opacity: 1; transform: none; }
+}
+.ec-reveal { --ec-col: 0; }
+.ec-reveal:nth-child(3n + 2) { --ec-col: 1; }
+.ec-reveal:nth-child(3n) { --ec-col: 2; }
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  /* Antes de o script os apanhar ficam escondidos (evita o "piscar" de os ver e depois sumirem). */
+  .ec-reveal:not(.ec-load):not(.ec-done) {
+    opacity: 0;
+  }
+  .ec-reveal.ec-load {
+    animation: ec-rise 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards;
+    animation-delay: calc(var(--ec-col) * 160ms);
+  }
+}
+
+/* Painel de administração: cantos rectos em botões, cards, campos e caixas.
+   Ficam redondos só os elementos "rounded-full" que não são botões (avatares, pontos, interruptores). */
+.ec-admin [class*="rounded"]:not([class*="rounded-full"]),
+.ec-admin button[class*="rounded-full"] {
+  border-radius: 0 !important;
+}
+
+/* Filtros (selects): seta própria, afastada do canto do campo. */
+.ec-admin select:not([multiple]):not(.appearance-none) {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 2.25rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23646970' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 14px;
+}
+
+/* Data + "Partilhar" dos cartões (Meta): a data usa a forma abreviada quando o cartão é estreito. */
+.ec-meta { container-type: inline-size; width: 100%; }
+.ec-meta .ec-date-short { display: none; }
+@container (max-width: 135px) {
+  .ec-meta .ec-date-long { display: none; }
+  .ec-meta .ec-date-short { display: inline; }
+}
+/* Cartões mesmo muito estreitos: sem o ícone do relógio, a data abreviada cabe sempre. */
+@container (max-width: 90px) {
+  .ec-meta > span:first-child > svg { display: none; }
+}
+
+/* Card de título das páginas interiores: ao entrar desliza para baixo, saindo de debaixo da barra de menu (que fica por cima, z-30). */
+@keyframes ec-drop {
+  from { transform: translate3d(0, -110%, 0); }
+  to { transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ec-drop { animation: ec-drop 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+}
+
+/* Painel no telemóvel: as listas (tabelas) deslizam na horizontal em vez de ficarem esmagadas ou cortadas.
+   A lista de notícias (.ec-cards) não precisa: vira uma coluna de cartões. */
+@media (max-width: 767px) {
+  .ec-admin div:has(> table) {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ec-admin div:has(> table) > table:not(.ec-cards) {
+    min-width: 640px;
+  }
 }

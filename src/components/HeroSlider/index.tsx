@@ -47,7 +47,7 @@ export default function HeroSlider({ posts }: HeroSliderProps) {
       <div
         className="absolute inset-0 bg-cover bg-center transition-all duration-700"
         style={{
-          backgroundImage: `url(${currentPost.images?.[0] || 'https://entrecampos.co.mz/wp-content/uploads/2021/06/CAMPANHAAGRICOLA.jpg'})`,
+          backgroundImage: `url(${currentPost.images?.[0] || '/images/clima-bg.jpeg'})`,
         }}
       >
         {/* Gradient Overlay - de preto para transparente no canto inferior esquerdo */}

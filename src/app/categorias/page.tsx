@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, SITE_ID } from '@/lib/supabase';
 import { 
   ChevronRight, 
   Newspaper,
@@ -95,7 +95,8 @@ export default function CategoriasPage() {
       try {
         const { data, error } = await supabase
           .from('news')
-          .select('category');
+          .select('category')
+          .eq('site_id', SITE_ID);
 
         if (error) throw error;
 
@@ -236,6 +237,7 @@ function UltimasNoticias() {
         const { data, error } = await supabase
           .from('news')
           .select('*')
+          .eq('site_id', SITE_ID)
           .order('date', { ascending: false })
           .limit(5);
 

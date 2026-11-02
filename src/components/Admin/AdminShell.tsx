@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import { 
   LayoutDashboard, 
@@ -20,7 +20,6 @@ import {
   FileText,
   Clock,
   CheckSquare,
-  FileUp,
   CreditCard,
   Eye,
   Video,
@@ -33,7 +32,9 @@ import {
   File,
   LogIn,
   Layers,
-  Boxes
+  Boxes,
+  Loader2,
+  MessageSquare
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -153,20 +154,61 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // ecrã grande: barra aberta/recolhida
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // telemóvel: gaveta, sempre fechada ao entrar
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
-  const { user, logout, setRole } = useAuth();
+  const { user, loading, logout, setRole } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login');
+    }
+  }, [loading, user, router]);
+
+  // No telemóvel o menu fecha ao mudar de página; Esc fecha menu e gaveta.
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setUserMenuOpen(false);
+  }, [pathname]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+        setUserMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      router.replace('/login');
+    }
+  };
 
   const handleToggleSubmenu = (label: string) => {
     setOpenSubmenu(prev => prev === label ? null : label);
   };
 
   // Fechar submenu quando navegar para página fora do multimídia
-  React.useEffect(() => {
+  useEffect(() => {
     if (openSubmenu === 'Multimédia' && !pathname.startsWith('/admin/media')) {
       setOpenSubmenu(null);
     }
   }, [pathname, openSubmenu]);
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-[#f0f0f1] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#2271b1]" />
+      </div>
+    );
+  }
 
   const getMenuItems = (role: UserRole) => {
     const items: any[] = [
@@ -198,6 +240,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Reparar Imagens', href: '/admin/noticias/reparar' },
           ]
         },
+        { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
         { 
           href: '/admin/media', 
           icon: ImageIcon, 
@@ -279,6 +322,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       items[0].href = '/admin/editor';
       items.push(
         { href: '/admin/noticias/pendentes', icon: Clock, label: 'Notícias Pendentes' },
+        { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
         { href: '/admin/noticias/revistas', icon: CheckSquare, label: 'Últimos Revistos' },
         { href: '/admin/noticias', icon: Newspaper, label: 'Todas as Notícias' },
       );
@@ -288,14 +332,22 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       items[0].href = '/admin/contribuidor';
       items.push(
         { href: '/admin/noticias/nova', icon: Plus, label: 'Escrever Notícia' },
-        { href: '/admin/contribuicoes', icon: FileUp, label: 'Minhas Contribuições' },
-        { 
-          href: '/admin/media', 
-          icon: ImageIcon, 
+        {
+          href: '/admin/noticias',
+          icon: Newspaper,
+          label: 'Notícias',
+          submenu: [
+            { label: 'Todas as Notícias', href: '/admin/noticias' },
+            { label: 'Categorias', href: '/admin/noticias/categorias' },
+          ]
+        },
+        {
+          href: '/admin/media',
+          icon: ImageIcon,
           label: 'Multimédia',
           submenu: [
             { label: 'Biblioteca', href: '/admin/media' },
-            { label: 'Adicionar novo', href: '/admin/media/novo' },
+            { label: 'Limpeza de Media', href: '/admin/media/limpeza' },
           ]
         },
       );
@@ -317,33 +369,53 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const menuItems = getMenuItems(user?.role || 'guest');
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f0f0f1]">
+    <div className="ec-admin flex flex-col min-h-screen bg-[#f0f0f1]">
       {/* Admin Bar (Barra Superior Preta) */}
-      <header className="sticky top-0 z-[100] h-8 bg-[#1d2327] text-[#f0f0f1] flex items-center justify-between px-4 text-[13px]">
-        <div className="flex items-center gap-6">
+      <header className="sticky top-0 z-[100] h-12 lg:h-8 bg-[#1d2327] text-[#f0f0f1] flex items-center justify-between gap-2 px-3 lg:px-4 text-[13px]">
+        <div className="flex min-w-0 items-center gap-3 lg:gap-6">
+          {/* Telemóvel: botão do menu lateral (gaveta) */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((o) => !o)}
+            aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={mobileMenuOpen}
+            className="lg:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded hover:bg-[#2c3338]"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
           <Link href="/" className="flex items-center gap-2 hover:text-[#72aee6]">
-            <Settings className="w-4 h-4" />
+            <Settings className="w-4 h-4 max-sm:hidden" />
             <span className="font-bold">EntreCampos</span>
           </Link>
           
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/admin/noticias/nova" className="flex items-center gap-1.5 hover:text-[#72aee6]">
+          <div className="flex items-center gap-3 lg:gap-4">
+            {/* "Novo" sempre à vista (também no telemóvel): escrever e publicar uma notícia */}
+            <Link href="/admin/noticias/nova" className="flex items-center gap-1.5 hover:text-[#72aee6] max-lg:bg-[#2271b1] max-lg:px-3 max-lg:py-2 max-lg:rounded max-lg:text-white">
               <Plus className="w-4 h-4" />
               <span>Novo</span>
             </Link>
-            <Link href="/" target="_blank" className="flex items-center gap-1.5 hover:text-[#72aee6]">
+            <Link href="/" target="_blank" className="hidden md:flex items-center gap-1.5 hover:text-[#72aee6]">
               <ExternalLink className="w-4 h-4" />
               <span>Ver Site</span>
             </Link>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 group cursor-pointer relative">
-          <span className="capitalize">Olá, {user?.name || 'Visitante'} ({user?.role || 'guest'})</span>
-          <UserIcon className="w-4 h-4 bg-[#2c3338] p-0.5 rounded-full" />
-          
-          <div className="absolute right-0 top-8 w-48 bg-[#2c3338] shadow-lg border border-[#3c434a] hidden group-hover:block p-2 rounded-md">
-            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[13px] rounded-md transition-colors">
+        <div className="flex shrink-0 items-center group relative">
+          <button
+            type="button"
+            onClick={() => setUserMenuOpen((o) => !o)}
+            aria-expanded={userMenuOpen}
+            aria-label="Menu do utilizador"
+            className="flex h-10 items-center gap-2 px-1 lg:h-8"
+          >
+            <span className="capitalize max-sm:hidden">Olá, {user?.name || 'Visitante'} ({user?.role || 'guest'})</span>
+            <UserIcon className="w-7 h-7 lg:w-4 lg:h-4 bg-[#2c3338] p-1 lg:p-0.5 rounded-full" />
+          </button>
+
+          <div className={`absolute right-0 top-full w-56 bg-[#2c3338] shadow-lg border border-[#3c434a] p-2 rounded-md lg:group-hover:block ${userMenuOpen ? 'block' : 'hidden'}`}>
+            <div className="sm:hidden px-3 py-2 text-[12px] text-gray-300 border-b border-[#3c434a] mb-1 capitalize break-words">{user?.name || 'Visitante'} · {user?.role || 'guest'}</div>
+            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-3 lg:py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[13px] rounded-md transition-colors">
               <UserIcon className="w-4 h-4" /> Ver Perfil
             </Link>
             {/* Quick role switch for testing */}
@@ -358,7 +430,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               </button>
             ))}
             <button 
-              onClick={logout}
+              onClick={handleLogout}
               className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[13px] border-t border-[#3c434a] mt-2 rounded-md transition-colors"
             >
               <LogOut className="w-4 h-4" /> Sair
@@ -368,11 +440,15 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar (Menu Lateral) */}
-        <aside 
-          className={`bg-[#1d2327] transition-all duration-200 flex-shrink-0 ${
-            isSidebarOpen ? 'w-56' : 'w-0 overflow-hidden'
-          }`}
+        {/* Telemóvel: fundo que fecha a gaveta ao tocar fora */}
+        {mobileMenuOpen && (
+          <button type="button" aria-label="Fechar menu" onClick={() => setMobileMenuOpen(false)} className="lg:hidden fixed inset-x-0 bottom-0 top-12 z-[90] bg-black/50" />
+        )}
+        {/* Sidebar (Menu Lateral): no telemóvel é uma gaveta (fechada ao entrar); no ecrã grande, a barra de sempre */}
+        <aside
+          className={`bg-[#1d2327] flex-shrink-0 transition-transform duration-200 max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-12 max-lg:z-[95] max-lg:w-72 max-lg:max-w-[85vw] max-lg:overflow-y-auto ${
+            mobileMenuOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'
+          } lg:transition-all ${isSidebarOpen ? 'lg:w-56' : 'lg:w-0 lg:overflow-hidden'}`}
         >
           <nav className="mt-0">
             {menuItems.map((item) => {
@@ -398,11 +474,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="min-w-0 flex-1 overflow-y-auto">
           {/* Toggle Sidebar Button */}
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="fixed bottom-4 left-4 z-50 p-2 bg-[#1d2327] text-[#f0f0f1] rounded-full shadow-lg hover:bg-[#2c3338]"
+            className="max-lg:hidden fixed bottom-4 left-4 z-50 p-2 bg-[#1d2327] text-[#f0f0f1] rounded-full shadow-lg hover:bg-[#2c3338]"
           >
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase, SITE_ID } from '@/lib/supabase';
 import NewsForm from '@/components/Admin/NewsForm';
 import { RefreshCw } from 'lucide-react';
 
@@ -14,27 +14,16 @@ export default function EditNewsPage() {
 
   useEffect(() => {
     const fetchNews = async () => {
-      // Procurar primeiro em entrecampos_news, fallback para baseagrodata_news
-      const { data: ecData, error: ecError } = await supabase
-        .from('entrecampos_news')
+      // Só notícias deste site (a tabela news é partilhada por vários sites).
+      const { data: ecData } = await supabase
+        .from('news')
         .select('*')
         .eq('id', id)
+        .eq('site_id', SITE_ID)
         .single();
-      
+
       if (ecData) {
         setNewsData(ecData);
-        setLoading(false);
-        return;
-      }
-
-      const { data: baData, error: baError } = await supabase
-        .from('baseagrodata_news')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (baData) {
-        setNewsData(baData);
         setLoading(false);
         return;
       }

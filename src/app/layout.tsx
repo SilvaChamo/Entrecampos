@@ -1,15 +1,11 @@
 import "./globals.css";
-import HeaderWrapper from "@/components/Layout/HeaderWrapper";
-import FooterWrapper from "@/components/Layout/FooterWrapper";
+import RevealOnView from "@/components/Expnews/RevealOnView";
 
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata = {
-  icons: {
-    icon: 'https://ppgmtxzuaxqshipnvebl.supabase.co/storage/v1/object/public/news-images/1777138425814-cropped-CIMBOLO-100.jpg',
-    shortcut: 'https://ppgmtxzuaxqshipnvebl.supabase.co/storage/v1/object/public/news-images/1777138425814-cropped-CIMBOLO-100.jpg',
-    apple: 'https://ppgmtxzuaxqshipnvebl.supabase.co/storage/v1/object/public/news-images/1777138425814-cropped-CIMBOLO-100.jpg',
-  },
+  title: 'EntreCAMPOS',
+  description: 'Jornal EntreCAMPOS',
 };
 
 export default function RootLayout({
@@ -19,11 +15,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt" data-scroll-behavior="smooth">
+      <head>
+        {/* Abre já a ligação ao Supabase (imagens das notícias e dados) e ao serviço do clima */}
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="" />}
+        <link rel="dns-prefetch" href="https://api.open-meteo.com" />
+      </head>
       <body style={{ fontFamily: 'Verdana, sans-serif' }}>
         <AuthProvider>
-          <HeaderWrapper />
+          <RevealOnView />
           {children}
-          <FooterWrapper />
         </AuthProvider>
       </body>
     </html>

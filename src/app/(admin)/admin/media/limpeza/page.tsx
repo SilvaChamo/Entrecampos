@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, STORAGE_BUCKET as BUCKET_NAME, SITE_ID } from '@/lib/supabase';
 import { 
   Trash2, 
   RefreshCw, 
@@ -20,7 +20,7 @@ interface StorageFile {
   metadata?: {
     size: number;
     mimetype: string;
-  };
+  } | null;
 }
 
 export default function MediaCleanupPage() {
@@ -36,7 +36,6 @@ export default function MediaCleanupPage() {
 
   const ITEMS_PER_PAGE = 48;
 
-  const BUCKET_NAME = 'news-images';
   const PROTECTED_KEYWORDS = ['logo', 'background', 'bg', 'banner', 'footer', 'header', 'branding', 'site', 'brand'];
 
   const loadData = async () => {
@@ -49,7 +48,7 @@ export default function MediaCleanupPage() {
       if (storageError) throw storageError;
 
       // 2. Fetch all used URLs in news
-      const { data: newsData, error: newsError } = await supabase.from('news').select('image_url');
+      const { data: newsData, error: newsError } = await supabase.from('news').select('image_url').eq('site_id', SITE_ID);
       if (newsError) throw newsError;
 
       const urls = newsData?.map((n: any) => n.image_url).filter(Boolean) as string[];
@@ -103,6 +102,7 @@ export default function MediaCleanupPage() {
       const { data } = await supabase
         .from('news')
         .select('id, title, image_url')
+        .eq('site_id', SITE_ID)
         .or(`image_url.ilike.%${fileName}%,content.ilike.%${fileName}%`)
         .limit(5);
       

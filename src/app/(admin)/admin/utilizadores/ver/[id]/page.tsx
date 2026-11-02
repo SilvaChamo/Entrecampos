@@ -56,7 +56,7 @@ export default function ViewUserPage() {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || '—';
 
   return (
-    <div className="p-6 text-[#2c3338] max-w-[900px]">
+    <div className="p-6 text-[#2c3338] w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -140,9 +140,25 @@ export default function ViewUserPage() {
               <tr className="border-b border-[#f0f0f1]">
                 <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] bg-[#f9f9f9]">Website</th>
                 <td className="p-3 text-[13px]">
-                  <a href={user.website} target="_blank" rel="noreferrer" className="text-[#2271b1] hover:underline flex items-center gap-1">
-                    <Globe className="w-3.5 h-3.5" /> {user.website}
-                  </a>
+                  {/* Só ligações http(s) viram link: "javascript:" e semelhantes ficam como texto. */}
+                  {(() => {
+                    let safe: string | null = null;
+                    try {
+                      const u = new URL(user.website);
+                      safe = u.protocol === 'http:' || u.protocol === 'https:' ? u.href : null;
+                    } catch {
+                      /* não é um URL válido */
+                    }
+                    return safe ? (
+                      <a href={safe} target="_blank" rel="noopener noreferrer" className="text-[#2271b1] hover:underline flex items-center gap-1">
+                        <Globe className="w-3.5 h-3.5" /> {user.website}
+                      </a>
+                    ) : (
+                      <span className="flex items-center gap-1 text-[#50575e]">
+                        <Globe className="w-3.5 h-3.5" /> {user.website}
+                      </span>
+                    );
+                  })()}
                 </td>
               </tr>
             )}

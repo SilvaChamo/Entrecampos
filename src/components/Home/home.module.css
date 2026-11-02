@@ -1,0 +1,10 @@
+/* A home usa Montserrat; o globals.css força Verdana em todos os elementos. */
+.root,
+.root * {
+  font-family: var(--font-home), Verdana, sans-serif !important;
+}
+
+.root {
+  background: #fff;
+  color: #111;
+}

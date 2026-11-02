@@ -108,7 +108,7 @@ export default function DefinicoesAPIPage() {
             <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
               <p className="text-[#50575e] mb-1">// Exemplo: Listar notícias</p>
               <p className="text-[#2271b1]">GET</p>
-              <p className="text-[#1d2327]">https://api.entrecampos.co.mz/v1/news</p>
+              <p className="text-[#1d2327]">https://entrecamposblog.com/api/v1/news</p>
               <p className="text-[#50575e] mt-2">Headers:</p>
               <p className="text-[#1d2327]">Authorization: Bearer {apiKey}</p>
             </div>
@@ -116,7 +116,7 @@ export default function DefinicoesAPIPage() {
             <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
               <p className="text-[#50575e] mb-1">// Exemplo: Criar notícia</p>
               <p className="text-[#2271b1]">POST</p>
-              <p className="text-[#1d2327]">https://api.entrecampos.co.mz/v1/news</p>
+              <p className="text-[#1d2327]">https://entrecamposblog.com/api/v1/news</p>
               <p className="text-[#50575e] mt-2">Body:</p>
               <p className="text-[#1d2327]">{`{"title": "Nova Notícia", "content": "..."}`}</p>
             </div>

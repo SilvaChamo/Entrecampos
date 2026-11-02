@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { repairNewsImage } from '@/app/actions/news';
+import { supabase, STORAGE_BUCKET as BUCKET_NAME, SITE_ID } from '@/lib/supabase';
+import { repairNewsImage, listLibraryImages } from '@/app/actions/news';
 import { 
   Trash2,
   Wrench, 
@@ -46,16 +46,15 @@ export default function NewsRepairPage() {
   const [viewingHistoryIndex, setViewingHistoryIndex] = useState<number | null>(null);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
 
-  const BUCKET_NAME = 'news-images';
 
   const loadData = async () => {
     setLoading(true);
     try {
       // 1. Fetch all news
-      const { data: newsData } = await supabase.from('news').select('id, title, image_url, category').order('date', { ascending: false });
+      const { data: newsData } = await supabase.from('news').select('id, title, image_url, category').eq('site_id', SITE_ID).order('date', { ascending: false });
       
-      // 2. Fetch all storage files
-      const { data: storageData } = await supabase.storage.from(BUCKET_NAME).list('', { limit: 1000 });
+      // 2. Imagens do servidor (lidas no servidor: o browser não pode listar o armazenamento)
+      const storageData = await listLibraryImages().catch(() => []);
 
       // 3. Filter news that genuinely need repair:
       // - No image_url at all
@@ -241,7 +240,7 @@ export default function NewsRepairPage() {
 
   return (
     <div className="min-h-screen text-[#2c3338] p-6">
-      <div className="max-w-[1280px] mx-auto">
+      <div className="w-full">
         <div className="py-4 md:py-8">
           
           {/* Header */}

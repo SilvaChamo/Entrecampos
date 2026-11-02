@@ -1,0 +1,1 @@
+-- Substituído por sql/entrecampos-colunas.sql (cria também status e autor).

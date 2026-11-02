@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/api-guard';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,9 +8,11 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(req: NextRequest) {
+  const guard = await requireAuth('eliminar_artigos');
+  if ('error' in guard) return guard.error;
   try {
     const { id, ids } = await req.json();
-    const targetIds: string[] = ids ? ids : id ? [id] : [];
+    const targetIds: string[] = ((ids ? ids : id ? [id] : []) as unknown[]).map(String);
 
     if (targetIds.length === 0) {
       return NextResponse.json({ error: 'ID(s) obrigatório(s)' }, { status: 400 });
@@ -18,6 +21,7 @@ export async function POST(req: NextRequest) {
     const { error } = await supabaseAdmin
       .from('news')
       .delete()
+      .eq('site_id', process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos') // só notícias deste site
       .in('id', targetIds);
 
     if (error) {

@@ -183,7 +183,7 @@ export default function EditUserPage() {
   }
 
   return (
-    <div className="p-6 text-[#2c3338] max-w-[900px]">
+    <div className="p-6 text-[#2c3338] w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

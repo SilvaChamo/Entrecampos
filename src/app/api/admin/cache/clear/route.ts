@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { requireAuth } from '@/lib/api-guard';
 
 // Esta API simula a limpeza de cache do Next.js
 // Em produção real, pode precisar de acesso ao servidor para reiniciar/rebuild
 
 export async function POST(req: NextRequest) {
+  const guard = await requireAuth('acesso_total');
+  if ('error' in guard) return guard.error;
   try {
     const body = await req.json();
     const { type } = body;

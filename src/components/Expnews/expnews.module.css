@@ -1,0 +1,10 @@
+/* O globals.css força Verdana em todos os elementos; esta home usa Saira. */
+.root,
+.root * {
+  font-family: var(--font-expnews), Arial, sans-serif !important;
+}
+
+.root {
+  background: #ebebeb;
+  color: #222;
+}

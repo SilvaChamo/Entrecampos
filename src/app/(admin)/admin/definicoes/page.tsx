@@ -16,7 +16,7 @@ export default function DefinicoesGeraisPage() {
     siteDescription: 'Portal de notícias agrícolas de Moçambique',
     logoUrl: '',
     faviconUrl: '',
-    contactEmail: 'admin@entrecampos.co.mz',
+    contactEmail: 'admin@entrecamposblog.com',
     contactPhone: '',
     address: '',
     googleAnalyticsId: '',

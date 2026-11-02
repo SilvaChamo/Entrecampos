@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, SITE_ID } from '@/lib/supabase';
 import Link from 'next/link';
 import { RefreshCw, RotateCcw, Trash2, Archive, AlertTriangle } from 'lucide-react';
 
@@ -25,6 +25,7 @@ export default function ArquivadasPage() {
     const { data, error } = await supabase
       .from('news')
       .select('*')
+      .eq('site_id', SITE_ID)
       .eq('status', 'Archived')
       .order('date', { ascending: false });
     if (!error) setNews(data || []);
