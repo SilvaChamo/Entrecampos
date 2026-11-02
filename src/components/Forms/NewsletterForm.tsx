@@ -48,7 +48,7 @@ export default function NewsletterForm() {
           <Send className="h-4 w-4" />
         </button>
       </div>
-      <div className="mt-3 flex justify-center">
+      <div className="mb-[30px] mt-3 flex justify-center">
         <AntiSpamFields theme="dark" />
       </div>
       {state.kind === 'ok' && <p className="mt-3 text-[11px] text-[#39ff14]">{state.text}</p>}

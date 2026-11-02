@@ -150,9 +150,11 @@ export default function ExpShell({
             <img
               src={backdrop}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover opacity-10 grayscale"
+              className="absolute inset-0 h-full w-full object-cover opacity-25 grayscale"
             />
           )}
+          {/* Camada escura por cima da foto */}
+          <div aria-hidden="true" className="absolute inset-0 bg-black/50" />
           <div className="relative mx-auto grid max-w-[1280px] gap-x-12 gap-y-10 px-3 pb-0 pt-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_0.8fr_0.9fr_1.3fr]">
             <div>
               <h4 className={footTitle}>Sobre a empresa</h4>
@@ -201,7 +203,7 @@ export default function ExpShell({
               <p className="text-[13px] leading-6">
                 Receba as melhores notícias do sector agrário em Moçambique diretamente no seu email. Deixe o seu endereço e entraremos em contacto.
               </p>
-              <div className="[&_form]:mx-0 [&_form]:mt-3 [&_form]:max-w-none [&_form>div:nth-child(2)]:-mb-3 [&_form>div:nth-child(2)]:mt-1 [&_input]:py-2 [&_input]:text-[13px] [&_button]:px-6 [&_p]:mt-1 [&_p]:leading-5">
+              <div className="[&_form]:mx-0 [&_form]:mt-3 [&_form]:max-w-none [&_form>div:nth-child(2)]:mb-[30px] [&_form>div:nth-child(2)]:mt-1 [&_input]:py-2 [&_input]:text-[13px] [&_button]:px-6 [&_p]:mt-1 [&_p]:leading-5">
                 <NewsletterForm />
               </div>
             </div>
