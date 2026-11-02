@@ -257,7 +257,7 @@ export default function NewsRepairPage() {
                 className="flex items-center gap-2 px-3 py-2 bg-white border border-[#ccd0d4] rounded text-sm font-medium hover:bg-[#f6f7f7] transition-all disabled:opacity-50"
                 title="Recarregar dados"
               >
-                <RefreshCw className={`w-4 h-4 text-[#2271b1] ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 text-[#008f45] ${loading ? 'animate-spin' : ''}`} />
                 Atualizar
               </button>
               <div className="bg-white px-4 py-2 border border-[#ccd0d4] rounded text-sm font-bold">
@@ -303,7 +303,7 @@ export default function NewsRepairPage() {
                         disabled={history.length === 0 || viewingHistoryIndex === 0}
                         className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-white border border-[#ccd0d4] rounded-full shadow-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#f6f7f7] disabled:hover:bg-white transition-all"
                       >
-                        <ChevronLeft className="w-5 h-5 text-[#2271b1]" />
+                        <ChevronLeft className="w-5 h-5 text-[#008f45]" />
                       </button>
 
                       {viewingHistoryIndex !== null ? (
@@ -333,7 +333,7 @@ export default function NewsRepairPage() {
                         disabled={viewingHistoryIndex === null}
                         className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-white border border-[#ccd0d4] rounded-full shadow-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#f6f7f7] disabled:hover:bg-white transition-all"
                       >
-                        <ChevronRight className="w-5 h-5 text-[#2271b1]" />
+                        <ChevronRight className="w-5 h-5 text-[#008f45]" />
                       </button>
                     </div>
 
@@ -345,7 +345,7 @@ export default function NewsRepairPage() {
                             const word = extractWordFromUrl(currentItem.image_url);
                             setManualFilter(word);
                           }}
-                          className="flex-[2] min-w-[150px] py-2.5 bg-[#2271b1] text-white text-sm font-bold rounded hover:bg-[#135e96] flex items-center justify-center gap-2 transition-all"
+                          className="flex-[2] min-w-[150px] py-2.5 bg-[#00a651] text-white text-sm font-bold rounded hover:bg-[#008f45] flex items-center justify-center gap-2 transition-all"
                         >
                           <Search className="w-4 h-4" />
                           Procurar por Link
@@ -381,7 +381,7 @@ export default function NewsRepairPage() {
               <div className="lg:col-span-7">
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                   <h3 className="text-sm font-bold text-[#1d2327] flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-[#2271b1]" />
+                    <ImageIcon className="w-4 h-4 text-[#008f45]" />
                     {manualFilter ? `Resultados para "${manualFilter}"` : 'Sugestões (baseado no título)'}
                   </h3>
                   <div className="flex items-center gap-3">
@@ -397,7 +397,7 @@ export default function NewsRepairPage() {
                     {manualFilter && (
                       <button 
                         onClick={() => setManualFilter(null)}
-                        className="text-xs text-[#2271b1] hover:underline"
+                        className="text-xs text-[#008f45] hover:underline"
                       >
                         Limpar filtro
                       </button>
@@ -413,7 +413,7 @@ export default function NewsRepairPage() {
                         className={`group relative aspect-square bg-white border rounded-lg overflow-hidden transition-all ${
                           selectedImageToApply === file.name 
                             ? 'ring-4 ring-green-500 border-green-500 scale-[0.98]' 
-                            : 'border-[#ccd0d4] hover:ring-4 hover:ring-[#2271b1]'
+                            : 'border-[#ccd0d4] hover:ring-4 hover:ring-[#00a651]'
                         }`}
                       >
                         {/* Imagem Principal (Botão de Selecionar) */}
@@ -440,7 +440,7 @@ export default function NewsRepairPage() {
                               e.stopPropagation();
                               toggleSelectImage(file.name);
                             }}
-                            className="w-4 h-4 rounded border-[#ccd0d4] text-[#2271b1] focus:ring-[#2271b1] cursor-pointer"
+                            className="w-4 h-4 rounded border-[#ccd0d4] text-[#008f45] focus:ring-[#00a651] cursor-pointer"
                           />
                           <button 
                             onClick={async (e) => {
@@ -470,7 +470,7 @@ export default function NewsRepairPage() {
                 ) : (
                   <div className="bg-white border border-[#ccd0d4] p-12 rounded-lg text-center">
                     <p className="text-[#50575e] mb-4">Nenhuma sugestão automática encontrada para este título.</p>
-                    <Link href="/admin/media" className="text-[#2271b1] hover:underline text-sm font-bold">
+                    <Link href="/admin/media" className="text-[#008f45] hover:underline text-sm font-bold">
                       Procurar manualmente na Biblioteca
                     </Link>
                   </div>
@@ -488,7 +488,7 @@ export default function NewsRepairPage() {
                         placeholder="Pesquisa manual..."
                         value={globalSearchQuery}
                         onChange={(e) => setGlobalSearchQuery(e.target.value)}
-                        className="w-full md:w-64 pl-8 pr-3 py-1.5 border border-[#ccd0d4] rounded text-sm outline-none focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1]"
+                        className="w-full md:w-64 pl-8 pr-3 py-1.5 border border-[#ccd0d4] rounded text-sm outline-none focus:border-[#00a651] focus:ring-1 focus:ring-[#00a651]"
                       />
                       <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-[#50575e]" />
                     </div>
@@ -501,7 +501,7 @@ export default function NewsRepairPage() {
                         className={`relative aspect-square bg-white border rounded overflow-hidden cursor-pointer transition-all flex flex-col group ${
                           selectedImageToApply === file.name 
                             ? 'ring-4 ring-green-500 border-green-500 z-10' 
-                            : 'border-[#ccd0d4] hover:border-[#2271b1]'
+                            : 'border-[#ccd0d4] hover:border-[#00a651]'
                         }`}
                       >
                         <div className="flex-1 relative overflow-hidden">
@@ -535,7 +535,7 @@ export default function NewsRepairPage() {
               <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-[#1d2327]">Tudo Reparado!</h2>
               <p className="text-[#50575e] mt-2">Todas as notícias têm agora imagens válidas no servidor.</p>
-              <Link href="/admin/noticias" className="inline-block mt-6 px-6 py-2 bg-[#2271b1] text-white rounded font-bold">
+              <Link href="/admin/noticias" className="inline-block mt-6 px-6 py-2 bg-[#00a651] text-white rounded font-bold">
                 Voltar às Notícias
               </Link>
             </div>

@@ -81,7 +81,7 @@ export default function ComentariosPage() {
         <h1 className="flex items-center gap-2 text-[23px] font-normal text-[#1d2327]">
           <MessageSquare className="h-5 w-5 text-gray-500" /> Comentários
         </h1>
-        <button onClick={load} className="ml-auto flex items-center gap-1.5 text-sm text-[#2271b1] hover:underline">
+        <button onClick={load} className="ml-auto flex items-center gap-1.5 text-sm text-[#008f45] hover:underline">
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Atualizar
         </button>
       </div>
@@ -91,7 +91,7 @@ export default function ComentariosPage() {
           <li key={t.key}>
             <button
               onClick={() => setTab(t.key)}
-              className={`-mb-px border border-b-0 px-3 py-2 ${tab === t.key ? 'border-[#ccd0d4] bg-white font-semibold text-[#1d2327]' : 'border-transparent text-[#2271b1] hover:text-[#135e96]'}`}
+              className={`-mb-px border border-b-0 px-3 py-2 ${tab === t.key ? 'border-[#ccd0d4] bg-white font-semibold text-[#1d2327]' : 'border-transparent text-[#008f45] hover:text-[#006b33]'}`}
             >
               {t.label} <span className="text-gray-400">({counts[t.key] ?? 0})</span>
             </button>
@@ -112,14 +112,14 @@ export default function ComentariosPage() {
               <li key={c.id} className="p-4">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[13px]">
                   <strong className="text-[#1d2327]">{c.name}</strong>
-                  <a href={`mailto:${c.email}`} className="text-[#2271b1] hover:underline">{c.email}</a>
+                  <a href={`mailto:${c.email}`} className="text-[#008f45] hover:underline">{c.email}</a>
                   {c.website && (
                     <a href={c.website} target="_blank" rel="nofollow noopener noreferrer" className="text-gray-500 hover:underline">
                       {c.website}
                     </a>
                   )}
                   <span className="text-gray-400">{new Date(c.created_at).toLocaleString('pt-PT', { dateStyle: 'medium', timeStyle: 'short' })}</span>
-                  <Link href={`/noticias/${c.news_slug}#comentarios`} target="_blank" className="ml-auto flex items-center gap-1 text-[#2271b1] hover:underline">
+                  <Link href={`/noticias/${c.news_slug}#comentarios`} target="_blank" className="ml-auto flex items-center gap-1 text-[#008f45] hover:underline">
                     Ver notícia <ExternalLink className="h-3 w-3" />
                   </Link>
                 </div>

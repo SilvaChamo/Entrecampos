@@ -82,7 +82,7 @@ export default function RegisterPage() {
             </div>
           )}
           {info && (
-            <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+            <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
               {info}
             </div>
           )}
@@ -96,7 +96,7 @@ export default function RegisterPage() {
                   required
                   type="text"
                   placeholder="Seu nome"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#2271b1] focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#00a651] focus:border-transparent outline-none transition-all"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
@@ -112,7 +112,7 @@ export default function RegisterPage() {
                   autoComplete="email"
                   type="email"
                   placeholder="exemplo@email.com"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#2271b1] focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#00a651] focus:border-transparent outline-none transition-all"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -129,7 +129,7 @@ export default function RegisterPage() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Mínimo 6 caracteres"
                   minLength={6}
-                  className="w-full pl-10 pr-11 py-2 border border-gray-300 focus:ring-2 focus:ring-[#2271b1] focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-11 py-2 border border-gray-300 focus:ring-2 focus:ring-[#00a651] focus:border-transparent outline-none transition-all"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
@@ -151,7 +151,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#2271b1] text-white font-bold hover:bg-[#135e96] transition-all shadow-md flex items-center justify-center gap-2 group disabled:opacity-70"
+            className="w-full py-3 bg-[#00a651] text-white font-bold hover:bg-[#008f45] transition-all shadow-md flex items-center justify-center gap-2 group disabled:opacity-70"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -165,7 +165,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-sm text-gray-500">
             Já tem uma conta?{' '}
-            <Link href="/login" className="text-[#2271b1] hover:underline font-medium">
+            <Link href="/login" className="text-[#008f45] hover:underline font-medium">
               Faça login
             </Link>
           </p>

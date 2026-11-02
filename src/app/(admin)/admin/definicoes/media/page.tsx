@@ -29,7 +29,7 @@ export default function DefinicoesMediaPage() {
           <h1 className="text-2xl font-bold text-[#1d2327]">Definições de Media</h1>
           <p className="text-[#50575e] mt-1">Configure as opções de upload e processamento de imagens</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
           <Save className="w-4 h-4" /> Guardar
         </button>
       </div>
@@ -37,7 +37,7 @@ export default function DefinicoesMediaPage() {
       <div className="space-y-6">
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Upload className="w-5 h-5 text-[#2271b1]" /> Upload de Ficheiros
+            <Upload className="w-5 h-5 text-[#008f45]" /> Upload de Ficheiros
           </h2>
           
           <div className="space-y-4">
@@ -60,7 +60,7 @@ export default function DefinicoesMediaPage() {
                     onClick={() => toggleFormat(format)}
                     className={`px-3 py-1 rounded-full text-sm ${
                       settings.allowedFormats.includes(format)
-                        ? 'bg-[#2271b1] text-white'
+                        ? 'bg-[#00a651] text-white'
                         : 'bg-gray-200 text-gray-600'
                     }`}
                   >
@@ -74,7 +74,7 @@ export default function DefinicoesMediaPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Image className="w-5 h-5 text-[#2271b1]" /> Processamento de Imagens
+            <Image className="w-5 h-5 text-[#008f45]" /> Processamento de Imagens
           </h2>
           
           <div className="space-y-4">
@@ -90,7 +90,7 @@ export default function DefinicoesMediaPage() {
                   onChange={(e) => setSettings({...settings, autoCompress: e.target.checked})}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
               </label>
             </div>
 
@@ -121,7 +121,7 @@ export default function DefinicoesMediaPage() {
                   onChange={(e) => setSettings({...settings, createThumbnails: e.target.checked})}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
               </label>
             </div>
 

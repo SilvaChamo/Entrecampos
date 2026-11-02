@@ -137,7 +137,7 @@ export default function NewsAdminPage() {
         { label: '‹', title: 'Anterior', to: currentPage - 1, off: currentPage === 1 },
       ].map((b) => (
         <button key={b.title} type="button" title={b.title} disabled={b.off} onClick={() => setPage(b.to)}
-          className="h-7 max-md:h-11 max-md:flex-1 min-w-7 border border-[#ccd0d4] bg-white px-2 hover:border-[#2271b1] hover:text-[#2271b1] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
+          className="h-7 max-md:h-11 max-md:flex-1 min-w-7 border border-[#ccd0d4] bg-white px-2 hover:border-[#00a651] hover:text-[#008f45] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
           {b.label}
         </button>
       ))}
@@ -147,7 +147,7 @@ export default function NewsAdminPage() {
         { label: '»', title: 'Última página', to: totalPages, off: currentPage >= totalPages },
       ].map((b) => (
         <button key={b.title} type="button" title={b.title} disabled={b.off} onClick={() => setPage(b.to)}
-          className="h-7 max-md:h-11 max-md:flex-1 min-w-7 border border-[#ccd0d4] bg-white px-2 hover:border-[#2271b1] hover:text-[#2271b1] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
+          className="h-7 max-md:h-11 max-md:flex-1 min-w-7 border border-[#ccd0d4] bg-white px-2 hover:border-[#00a651] hover:text-[#008f45] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
           {b.label}
         </button>
       ))}
@@ -297,7 +297,7 @@ export default function NewsAdminPage() {
             placeholder="Pesquisar artigos"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 pl-3 pr-3 border border-[#ccd0d4] rounded-md text-sm outline-none focus:border-[#2271b1] w-full min-w-0 flex-1 md:w-64 md:flex-none max-md:h-11"
+            className="h-8 pl-3 pr-3 border border-[#ccd0d4] rounded-md text-sm outline-none focus:border-[#00a651] w-full min-w-0 flex-1 md:w-64 md:flex-none max-md:h-11"
           />
           <Link
             href="/admin/noticias/arquivadas"
@@ -319,7 +319,7 @@ export default function NewsAdminPage() {
       {/* Toolbar superior com Filtros */}
       <div className="flex flex-wrap items-center gap-2 mb-4 max-sm:grid max-sm:grid-cols-2">
         <select
-          className="h-8 max-sm:h-11 max-sm:w-full border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#2271b1]"
+          className="h-8 max-sm:h-11 max-sm:w-full border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651]"
           value={bulkAction}
           onChange={(e) => setBulkAction(e.target.value)}
         >
@@ -342,7 +342,7 @@ export default function NewsAdminPage() {
         {selectedIds.size > 0 && bulkAction === 'archive' && (
           <button
             onClick={archiveSelected}
-            className="h-8 px-4 bg-[#2271b1] text-white rounded-md text-sm font-semibold hover:bg-[#135e96] flex items-center gap-2 max-sm:col-span-2 max-sm:h-11 max-sm:justify-center"
+            className="h-8 px-4 bg-[#00a651] text-white rounded-md text-sm font-semibold hover:bg-[#008f45] flex items-center gap-2 max-sm:col-span-2 max-sm:h-11 max-sm:justify-center"
           >
             <Archive className="w-4 h-4" />
             Arquivar ({selectedIds.size})
@@ -358,7 +358,7 @@ export default function NewsAdminPage() {
           </button>
         )}
         <select
-          className="h-8 max-sm:h-11 max-sm:w-full max-sm:ml-0 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#2271b1] ml-2"
+          className="h-8 max-sm:h-11 max-sm:w-full max-sm:ml-0 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651] ml-2"
           value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
         >
@@ -368,7 +368,7 @@ export default function NewsAdminPage() {
           ))}
         </select>
         <select
-          className="h-8 max-sm:h-11 max-sm:w-full max-sm:col-span-2 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#2271b1]"
+          className="h-8 max-sm:h-11 max-sm:w-full max-sm:col-span-2 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651]"
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
         >
@@ -429,7 +429,7 @@ export default function NewsAdminPage() {
             ) : (
               visibleNews.map((item, idx) => (
                 <React.Fragment key={item.id}>
-                  <tr className={`group max-md:block max-md:p-3 border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'} ${selectedIds.has(item.id) ? 'bg-blue-50' : ''}`}>
+                  <tr className={`group max-md:block max-md:p-3 border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'} ${selectedIds.has(item.id) ? 'bg-green-50' : ''}`}>
                     <td className="p-2 text-center align-top pt-4 max-md:block max-md:p-0 max-md:pb-2 max-md:text-left max-md:[&_input]:h-5 max-md:[&_input]:w-5">
                       <input
                         type="checkbox"
@@ -451,20 +451,20 @@ export default function NewsAdminPage() {
                         <div className="flex flex-col gap-1 min-w-0 max-md:w-full">
                           <div className="flex items-center gap-2">
                             {item.status === 'Archived' && <Recycle className="w-4 h-4 text-gray-400" />}
-                            <Link href={`/admin/noticias/editar/${item.id}`} className="text-[#2271b1] font-bold text-[14px] hover:text-[#135e96] block">
+                            <Link href={`/admin/noticias/editar/${item.id}`} className="text-[#008f45] font-bold text-[14px] hover:text-[#006b33] block">
                               {item.title}
                             </Link>
                           </div>
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 opacity-0 group-hover:opacity-100 max-lg:opacity-100 transition-opacity text-[11px] max-lg:text-[13px] font-medium text-[#2271b1] [&_button]:max-lg:py-1 [&_a]:max-lg:py-1">
-                            <Link href={`/admin/noticias/editar/${item.id}`} className="hover:text-[#135e96]">Editar</Link>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 opacity-0 group-hover:opacity-100 max-lg:opacity-100 transition-opacity text-[11px] max-lg:text-[13px] font-medium text-[#008f45] [&_button]:max-lg:py-1 [&_a]:max-lg:py-1">
+                            <Link href={`/admin/noticias/editar/${item.id}`} className="hover:text-[#006b33]">Editar</Link>
                             <span className="text-gray-300">|</span>
-                            <button onClick={() => handleQuickEdit(item)} className="hover:text-[#135e96]">Edição rápida</button>
+                            <button onClick={() => handleQuickEdit(item)} className="hover:text-[#006b33]">Edição rápida</button>
                             <span className="text-gray-300">|</span>
                             <button onClick={() => deleteNews(item.id, item.title)} className="text-[#d63638] hover:text-red-700">Lixo</button>
                             <span className="text-gray-300">|</span>
-                            <button onClick={() => archiveNews(item.id, item.title)} className="hover:text-[#135e96]">Arquivar</button>
+                            <button onClick={() => archiveNews(item.id, item.title)} className="hover:text-[#006b33]">Arquivar</button>
                             <span className="text-gray-300">|</span>
-                            <Link href={`/noticias/${item.slug}`} target="_blank" className="hover:text-[#135e96]">Ver</Link>
+                            <Link href={`/noticias/${item.slug}`} target="_blank" className="hover:text-[#006b33]">Ver</Link>
                           </div>
                         </div>
                       </div>
@@ -472,7 +472,7 @@ export default function NewsAdminPage() {
                     <td data-label="Categoria" className={`p-3 align-top max-md:block max-md:p-0 max-md:pt-2 ${LBL}`}>
                       <button
                         onClick={() => setFilterCategory(item.category)}
-                        className="text-[#2271b1] hover:text-[#135e96] capitalize text-left"
+                        className="text-[#008f45] hover:text-[#006b33] capitalize text-left"
                       >
                         {item.category}
                       </button>
@@ -496,7 +496,7 @@ export default function NewsAdminPage() {
                       <div className="flex items-start gap-2">
                         <div className="w-10 h-6 bg-[#f0f0f1] border border-[#ccd0d4] rounded flex items-center justify-center text-[10px] font-bold text-gray-400">N/A</div>
                         <div className="flex flex-col gap-0.5 text-[11px] text-[#50575e]">
-                          <p><strong>Palavra-chave:</strong> <span className="text-[#2271b1] cursor-pointer hover:underline">Não definido</span></p>
+                          <p><strong>Palavra-chave:</strong> <span className="text-[#008f45] cursor-pointer hover:underline">Não definido</span></p>
                           <p><strong>Esquema:</strong> Artigo</p>
                           <p className="flex items-center gap-2">
                             <span>Ligações:</span>
@@ -604,7 +604,7 @@ export default function NewsAdminPage() {
                                   <div className="pt-2 flex items-center gap-2 justify-end">
                                     <button
                                       onClick={saveQuickEdit}
-                                      className="h-8 px-6 bg-[#2271b1] text-white rounded-[3px] text-sm font-bold hover:bg-[#135e96] transition-colors"
+                                      className="h-8 px-6 bg-[#00a651] text-white rounded-[3px] text-sm font-bold hover:bg-[#008f45] transition-colors"
                                     >
                                       {loading ? 'A guardar...' : 'Atualizar Notícia'}
                                     </button>

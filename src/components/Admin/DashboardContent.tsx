@@ -130,7 +130,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
             
             <div className="space-y-3">
               <h3 className="text-[16px] font-bold">Próximos passos</h3>
-              <ul className="space-y-2 text-[13px] text-[#2271b1]">
+              <ul className="space-y-2 text-[13px] text-[#008f45]">
                 {role === 'guest' ? (
                   <>
                     <li className="flex items-center gap-2 hover:underline cursor-pointer"><Users className="w-4 h-4 text-gray-400" /> Registe-se para mais funções</li>
@@ -153,7 +153,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
 
             <div className="space-y-3">
               <h3 className="text-[16px] font-bold">Mais acções</h3>
-              <ul className="space-y-2 text-[13px] text-[#2271b1]">
+              <ul className="space-y-2 text-[13px] text-[#008f45]">
                 <li className="flex items-center gap-2 hover:underline cursor-pointer"><Plus className="w-4 h-4 text-gray-400" /> Adicionar multimédia</li>
                 <li className="flex items-center gap-2 hover:underline cursor-pointer"><Video className="w-4 h-4 text-gray-400" /> Gerir vídeos</li>
               </ul>
@@ -231,7 +231,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                     {recentActivities.slice(0, 4).map(activity => (
                       <li key={activity.id} className="border-b border-[#f0f0f1] pb-2 last:border-0 last:pb-0">
                         <p className="text-[13px] text-gray-400 mb-0.5">{new Date(activity.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
-                        <Link href={`/admin/noticias/editar/${activity.id}`} className="text-[13px] text-[#2271b1] font-medium hover:underline">
+                        <Link href={`/admin/noticias/editar/${activity.id}`} className="text-[13px] text-[#008f45] font-medium hover:underline">
                           {activity.title}
                         </Link>
                       </li>
@@ -247,8 +247,8 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
           <div className="flex flex-col h-full gap-4">
             <div className="grid grid-cols-2 gap-4 flex-1">
               <Link href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias"} className="group h-full">
-                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-11 h-11 bg-blue-50 text-[#2271b1] rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#00a651] transition-all h-full flex flex-col items-center justify-center text-center">
+                  <div className="w-11 h-11 bg-green-50 text-[#008f45] rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                     {role === 'editor' ? <Clock className="w-5 h-5" /> : <Newspaper className="w-5 h-5" />}
                   </div>
                   <span className="text-[22px] font-bold text-[#1d2327] mb-0.5">
@@ -261,7 +261,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               </Link>
 
               <Link href={role === 'editor' ? "/admin/noticias/revistas" : "/admin/noticias/nova"} className="group h-full">
-                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center justify-center text-center">
+                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#00a651] transition-all h-full flex flex-col items-center justify-center text-center">
                   <div className="w-11 h-11 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                     {role === 'editor' ? <CheckSquare className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                   </div>
@@ -275,7 +275,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               </Link>
 
               <Link href="/admin/media" className="group h-full">
-                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center justify-center text-center">
+                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#00a651] transition-all h-full flex flex-col items-center justify-center text-center">
                   <div className="w-11 h-11 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                     <ImageIcon className="w-5 h-5" />
                   </div>
@@ -289,7 +289,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               </Link>
 
               <Link href={role === 'guest' ? "/admin/planos" : "/admin/media"} className="group h-full">
-                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#2271b1] transition-all h-full flex flex-col items-center justify-center text-center">
+                <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#00a651] transition-all h-full flex flex-col items-center justify-center text-center">
                   <div className="w-11 h-11 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                     {role === 'guest' ? <CreditCard className="w-5 h-5" /> : <Video className="w-5 h-5" />}
                   </div>

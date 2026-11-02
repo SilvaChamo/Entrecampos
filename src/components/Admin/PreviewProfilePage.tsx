@@ -38,7 +38,7 @@ export default function PreviewProfilePage({ role }: PreviewProfilePageProps) {
         {canEdit && (
           <button 
             onClick={() => setIsEditing(!isEditing)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]"
+            className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
           >
             {isEditing ? 'Cancelar' : 'Editar Perfil'}
           </button>
@@ -50,7 +50,7 @@ export default function PreviewProfilePage({ role }: PreviewProfilePageProps) {
         <div className="bg-[#f6f7f7] p-6 border-b border-[#ccd0d4]">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-20 h-20 bg-[#2271b1] rounded-full flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-20 h-20 bg-[#00a651] rounded-full flex items-center justify-center text-white text-2xl font-bold">
                 {userData.name.charAt(0)}
               </div>
               {canEdit && isEditing && (
@@ -153,9 +153,9 @@ export default function PreviewProfilePage({ role }: PreviewProfilePageProps) {
       </div>
 
       {/* Informações adicionais */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-800 text-sm mb-2">Permissões do {userData.role}</h3>
-        <ul className="text-[13px] text-blue-700 space-y-1">
+      <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        <h3 className="font-semibold text-green-800 text-sm mb-2">Permissões do {userData.role}</h3>
+        <ul className="text-[13px] text-green-700 space-y-1">
           {role === 'editor' && (
             <>
               <li>• Pode revisar e publicar notícias</li>

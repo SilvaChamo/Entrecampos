@@ -58,19 +58,19 @@ export default function ImagensPage() {
               placeholder="Pesquisar imagens..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+              className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none"
             />
           </div>
           <div className="flex border border-[#ccd0d4] rounded-md overflow-hidden">
             <button 
               onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-[#2271b1] text-white' : 'bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+              className={`p-2 ${viewMode === 'grid' ? 'bg-[#00a651] text-white' : 'bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
             >
               <Grid3X3 className="w-4 h-4" />
             </button>
             <button 
               onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-[#2271b1] text-white' : 'bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+              className={`p-2 ${viewMode === 'list' ? 'bg-[#00a651] text-white' : 'bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
             >
               <List className="w-4 h-4" />
             </button>

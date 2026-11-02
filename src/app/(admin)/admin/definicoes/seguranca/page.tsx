@@ -20,7 +20,7 @@ export default function DefinicoesSegurancaPage() {
           <h1 className="text-2xl font-bold text-[#1d2327]">Definições de Segurança</h1>
           <p className="text-[#50575e] mt-1">Configure as opções de segurança do sistema</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
           <Save className="w-4 h-4" /> Guardar
         </button>
       </div>
@@ -28,7 +28,7 @@ export default function DefinicoesSegurancaPage() {
       <div className="space-y-6">
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Lock className="w-5 h-5 text-[#2271b1]" /> Proteção de Acesso
+            <Lock className="w-5 h-5 text-[#008f45]" /> Proteção de Acesso
           </h2>
           
           <div className="space-y-4">
@@ -44,7 +44,7 @@ export default function DefinicoesSegurancaPage() {
                   onChange={(e) => setSettings({...settings, forceHTTPS: e.target.checked})}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
               </label>
             </div>
 
@@ -73,7 +73,7 @@ export default function DefinicoesSegurancaPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[#2271b1]" /> Passwords
+            <Shield className="w-5 h-5 text-[#008f45]" /> Passwords
           </h2>
           
           <div className="space-y-4">
@@ -89,7 +89,7 @@ export default function DefinicoesSegurancaPage() {
                   onChange={(e) => setSettings({...settings, requireStrongPassword: e.target.checked})}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
               </label>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function DefinicoesSegurancaPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-[#2271b1]" /> Autenticação de Dois Fatores
+            <Smartphone className="w-5 h-5 text-[#008f45]" /> Autenticação de Dois Fatores
           </h2>
           
           <div className="space-y-4">
@@ -113,7 +113,7 @@ export default function DefinicoesSegurancaPage() {
                   onChange={(e) => setSettings({...settings, twoFactorAuth: e.target.checked})}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
               </label>
             </div>
           </div>

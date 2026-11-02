@@ -177,7 +177,7 @@ export default function EditUserPage() {
     return (
       <div className="p-6 text-[#2c3338]">
         <p className="text-red-500">Utilizador não encontrado.</p>
-        <Link href="/admin/utilizadores" className="text-[#2271b1] hover:underline mt-2 inline-block">← Voltar aos Utilizadores</Link>
+        <Link href="/admin/utilizadores" className="text-[#008f45] hover:underline mt-2 inline-block">← Voltar aos Utilizadores</Link>
       </div>
     );
   }
@@ -189,7 +189,7 @@ export default function EditUserPage() {
         <div>
           <h1 className="text-[23px] font-normal text-[#1d2327]">Editar utilizador: <strong>{form.username}</strong></h1>
           <p className="text-[13px] text-[#50575e] mt-1">
-            <Link href="/admin/utilizadores" className="text-[#2271b1] hover:underline">Utilizadores</Link>
+            <Link href="/admin/utilizadores" className="text-[#008f45] hover:underline">Utilizadores</Link>
             {' '}&rsaquo; Editar
           </p>
         </div>
@@ -264,7 +264,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] w-48 align-top pt-4">Nome próprio</th>
               <td className="p-3">
                 <input type="text" value={form.firstName || ''} onChange={e => setForm({...form, firstName: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]" />
               </td>
             </tr>
 
@@ -272,7 +272,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Apelido</th>
               <td className="p-3">
                 <input type="text" value={form.lastName || ''} onChange={e => setForm({...form, lastName: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]" />
               </td>
             </tr>
 
@@ -280,7 +280,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Alcunha</th>
               <td className="p-3">
                 <input type="text" value={form.alcunha || ''} onChange={e => setForm({...form, alcunha: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]" />
                 <p className="text-[12px] text-gray-500 mt-1">Opcional. Se preenchida, aparecerá como o nome do autor.</p>
               </td>
             </tr>
@@ -291,7 +291,7 @@ export default function EditUserPage() {
                 <select 
                   value={form.displayNameType} 
                   onChange={e => setForm({...form, displayNameType: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1] bg-white"
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651] bg-white"
                 >
                   <option value="first_name">{form.firstName || 'Nome próprio'}</option>
                   <option value="last_name">{form.lastName || 'Apelido'}</option>
@@ -313,7 +313,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">E-mail <span className="text-[#d63638]">*</span></th>
               <td className="p-3">
                 <input type="email" value={form.email || ''} onChange={e => setForm({...form, email: e.target.value})} required
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]" />
               </td>
             </tr>
 
@@ -321,7 +321,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Website</th>
               <td className="p-3">
                 <input type="url" value={form.website || ''} onChange={e => setForm({...form, website: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]" />
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]" />
               </td>
             </tr>
 
@@ -329,7 +329,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Descrição biográfica</th>
               <td className="p-3">
                 <textarea value={form.bio || ''} onChange={e => setForm({...form, bio: e.target.value})} rows={4}
-                  className="px-2 py-1.5 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[500px] outline-none focus:border-[#2271b1] resize-none"
+                  className="px-2 py-1.5 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[500px] outline-none focus:border-[#00a651] resize-none"
                   placeholder="Informação biográfica sobre este utilizador..." />
               </td>
             </tr>
@@ -338,7 +338,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Telefone</th>
               <td className="p-3">
                 <input type="tel" value={form.telefone || ''} onChange={e => setForm({...form, telefone: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]"
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]"
                   placeholder="+258 84 123 4567" />
               </td>
             </tr>
@@ -347,7 +347,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Profissão</th>
               <td className="p-3">
                 <input type="text" value={form.profissao || ''} onChange={e => setForm({...form, profissao: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]"
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]"
                   placeholder="Ex: Jornalista, Engenheiro, etc." />
               </td>
             </tr>
@@ -356,7 +356,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Cargo</th>
               <td className="p-3">
                 <input type="text" value={form.cargo || ''} onChange={e => setForm({...form, cargo: e.target.value})}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]"
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]"
                   placeholder="Ex: Editor Chefe, Repórter, etc." />
               </td>
             </tr>
@@ -371,7 +371,7 @@ export default function EditUserPage() {
               <td className="p-3">
                 <select value={form.role || 'Subscritor'} onChange={e => setForm({...form, role: e.target.value})}
                   disabled={form.isAdmin}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] bg-white outline-none focus:border-[#2271b1] disabled:opacity-60 disabled:cursor-not-allowed">
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] bg-white outline-none focus:border-[#00a651] disabled:opacity-60 disabled:cursor-not-allowed">
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
                 {form.isAdmin && <p className="text-[11px] text-[#50575e] mt-1">O papel do administrador não pode ser alterado.</p>}
@@ -387,7 +387,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Nova palavra-passe</th>
               <td className="p-3">
                 <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]"
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]"
                   placeholder="Deixe em branco para não alterar" />
               </td>
             </tr>
@@ -396,7 +396,7 @@ export default function EditUserPage() {
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Confirmar palavra-passe</th>
               <td className="p-3">
                 <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#2271b1]"
+                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]"
                   placeholder="Repita a nova palavra-passe" />
                 {newPassword && confirmPassword && newPassword !== confirmPassword && (
                   <p className="text-[11px] text-[#d63638] mt-1">As palavras-passe não coincidem.</p>
@@ -410,7 +410,7 @@ export default function EditUserPage() {
                 <button
                   type="button"
                   onClick={() => alert(`Email de reposição enviado para ${form.email}`)}
-                  className="h-8 px-4 border border-[#2271b1] text-[#2271b1] text-[13px] rounded-md hover:bg-[#f6f7f7] transition-all"
+                  className="h-8 px-4 border border-[#00a651] text-[#008f45] text-[13px] rounded-md hover:bg-[#f6f7f7] transition-all"
                 >
                   Enviar email de reposição de senha
                 </button>
@@ -425,11 +425,11 @@ export default function EditUserPage() {
           <button
             type="submit"
             disabled={saving}
-            className="h-9 px-5 bg-[#2271b1] text-white text-[13px] font-semibold rounded-md hover:bg-[#135e96] transition-all disabled:opacity-60"
+            className="h-9 px-5 bg-[#00a651] text-white text-[13px] font-semibold rounded-md hover:bg-[#008f45] transition-all disabled:opacity-60"
           >
             {saving ? 'A guardar...' : 'Atualizar utilizador'}
           </button>
-          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#135e96]">
+          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#006b33]">
             Cancelar
           </Link>
         </div>

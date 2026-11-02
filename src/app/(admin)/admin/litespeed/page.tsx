@@ -68,7 +68,7 @@ export default function NextJsCachePage() {
     <div className="p-6 text-[#2c3338] min-h-screen">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#2271b1] rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-[#00a651] rounded-lg flex items-center justify-center">
             <Zap className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -89,15 +89,15 @@ export default function NextJsCachePage() {
 
       {/* Info Panel */}
       {showInfo && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-green-600 mt-0.5" />
             <div>
-              <h4 className="font-semibold text-blue-900 mb-2">Sobre o Cache Next.js</h4>
-              <p className="text-sm text-blue-800 mb-2">
+              <h4 className="font-semibold text-green-900 mb-2">Sobre o Cache Next.js</h4>
+              <p className="text-sm text-green-800 mb-2">
                 <strong>É necessário limpar o cache?</strong> Geralmente <strong>NÃO</strong>. O Next.js gere automaticamente.
               </p>
-              <p className="text-sm text-blue-800">
+              <p className="text-sm text-green-800">
                 Apenas limpe se: (1) Alterou conteúdo estático e precisa de atualização imediata, 
                 (2) ISR não está a funcionar, (3) Há inconsistências nos dados.
               </p>
@@ -111,7 +111,7 @@ export default function NextJsCachePage() {
         {/* Static Generated Pages */}
         <div className="bg-white rounded-lg p-5 border border-[#ccd0d4] shadow-sm">
           <div className="flex items-center gap-2 mb-3">
-            <FileText className="w-5 h-5 text-[#2271b1]" />
+            <FileText className="w-5 h-5 text-[#008f45]" />
             <span className="text-[#1d2327] text-sm font-medium">Páginas Estáticas (SSG)</span>
           </div>
           <div className="text-center">
@@ -126,20 +126,20 @@ export default function NextJsCachePage() {
         {/* ISR Cache */}
         <div className="bg-white rounded-lg p-5 border border-[#ccd0d4] shadow-sm">
           <div className="flex items-center gap-2 mb-3">
-            <RefreshCw className="w-5 h-5 text-[#2271b1]" />
+            <RefreshCw className="w-5 h-5 text-[#008f45]" />
             <span className="text-[#1d2327] text-sm font-medium">ISR Cache</span>
           </div>
           <div className="text-center">
             <span className="text-4xl font-bold text-[#1d2327]">{stats.isrCached}</span>
             <p className="text-[#50575e] text-sm mt-1">páginas em revalidação</p>
-            <p className="text-xs text-blue-600 mt-2">Revalidação: 60s</p>
+            <p className="text-xs text-green-600 mt-2">Revalidação: 60s</p>
           </div>
         </div>
 
         {/* Cache Hit Rate */}
         <div className="bg-white rounded-lg p-5 border border-[#ccd0d4] shadow-sm">
           <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-5 h-5 text-[#2271b1]" />
+            <TrendingUp className="w-5 h-5 text-[#008f45]" />
             <span className="text-[#1d2327] text-sm font-medium">Taxa de Acerto Cache</span>
           </div>
           <div className="relative w-24 h-24 mx-auto mb-2">
@@ -158,7 +158,7 @@ export default function NextJsCachePage() {
         {/* Build Info */}
         <div className="bg-white rounded-lg p-5 border border-[#ccd0d4] shadow-sm">
           <div className="flex items-center gap-2 mb-3">
-            <Cpu className="w-5 h-5 text-[#2271b1]" />
+            <Cpu className="w-5 h-5 text-[#008f45]" />
             <span className="text-[#1d2327] text-sm font-medium">Último Build</span>
           </div>
           <div className="space-y-2 text-sm">
@@ -177,7 +177,7 @@ export default function NextJsCachePage() {
           <div key={cache.name} className="bg-white rounded-lg p-5 border border-[#ccd0d4] shadow-sm">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
-                <HardDrive className="w-5 h-5 text-[#2271b1]" />
+                <HardDrive className="w-5 h-5 text-[#008f45]" />
                 <h3 className="font-semibold text-[#1d2327]">{cache.name}</h3>
               </div>
               <span className={`px-2 py-1 text-xs rounded-full ${cache.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>

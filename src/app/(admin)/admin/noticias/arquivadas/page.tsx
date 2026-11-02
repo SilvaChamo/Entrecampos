@@ -87,8 +87,8 @@ export default function ArquivadasPage() {
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <span className="text-sm font-medium text-blue-700">{selectedIds.size} selecionado(s)</span>
+        <div className="flex items-center gap-3 mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+          <span className="text-sm font-medium text-green-700">{selectedIds.size} selecionado(s)</span>
           <button
             onClick={() => restore(Array.from(selectedIds))}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#00a651] text-white text-sm rounded-md hover:bg-[#008f46]"
@@ -122,7 +122,7 @@ export default function ArquivadasPage() {
             ) : news.length === 0 ? (
               <tr><td colSpan={5} className="p-10 text-center text-gray-400">Nenhuma notícia arquivada.</td></tr>
             ) : news.map((item, idx) => (
-              <tr key={item.id} className={`group border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'} ${selectedIds.has(item.id) ? 'bg-blue-50' : ''}`}>
+              <tr key={item.id} className={`group border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'} ${selectedIds.has(item.id) ? 'bg-green-50' : ''}`}>
                 <td className="p-3 text-center"><input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleSelect(item.id)} /></td>
                 <td className="p-3">
                   <div className="flex items-center gap-3">

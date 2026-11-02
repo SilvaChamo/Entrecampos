@@ -20,7 +20,7 @@ export default function DefinicoesNoticiasPage() {
           <h1 className="text-2xl font-bold text-[#1d2327]">Definições de Notícias</h1>
           <p className="text-[#50575e] mt-1">Configure as opções de publicação de notícias</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
           <Save className="w-4 h-4" /> Guardar
         </button>
       </div>
@@ -28,7 +28,7 @@ export default function DefinicoesNoticiasPage() {
       <div className="space-y-6">
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Newspaper className="w-5 h-5 text-[#2271b1]" /> Configurações de Publicação
+            <Newspaper className="w-5 h-5 text-[#008f45]" /> Configurações de Publicação
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -60,7 +60,7 @@ export default function DefinicoesNoticiasPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#2271b1]" /> Opções de Moderação
+            <Settings className="w-5 h-5 text-[#008f45]" /> Opções de Moderação
           </h2>
           
           <div className="space-y-4">
@@ -82,7 +82,7 @@ export default function DefinicoesNoticiasPage() {
                     onChange={(e) => setSettings({...settings, [item.key]: e.target.checked})}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                  <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
                 </label>
               </div>
             ))}

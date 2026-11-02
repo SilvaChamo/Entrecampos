@@ -8,7 +8,7 @@ export default function RecursosPage() {
 
   const roles = [
     { id: 'admin', label: 'Administrador', color: 'bg-purple-500' },
-    { id: 'editor', label: 'Editor', color: 'bg-blue-500' },
+    { id: 'editor', label: 'Editor', color: 'bg-green-600' },
     { id: 'contribuidor', label: 'Contribuidor', color: 'bg-green-500' },
     { id: 'subscriber', label: 'Subscritor', color: 'bg-yellow-500' },
     { id: 'guest', label: 'Guest', color: 'bg-gray-500' },
@@ -140,7 +140,7 @@ export default function RecursosPage() {
           <h1 className="text-2xl font-bold text-[#1d2327]">Recursos por Papel</h1>
           <p className="text-[#50575e] mt-1">Defina quais recursos cada papel pode visualizar no painel</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
           <Save className="w-4 h-4" /> Guardar Alterações
         </button>
       </div>
@@ -153,7 +153,7 @@ export default function RecursosPage() {
             onClick={() => setActiveTab(role.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
               activeTab === role.id
-                ? 'bg-[#2271b1] text-white'
+                ? 'bg-[#00a651] text-white'
                 : 'bg-white border border-[#ccd0d4] text-[#50575e] hover:bg-[#f6f7f7]'
             }`}
           >
@@ -165,7 +165,7 @@ export default function RecursosPage() {
 
       {/* Current Role Info */}
       <div className="mb-6 flex items-center gap-3">
-        <Boxes className="w-6 h-6 text-[#2271b1]" />
+        <Boxes className="w-6 h-6 text-[#008f45]" />
         <div>
           <h2 className="text-lg font-semibold text-[#1d2327]">
             {currentRole?.label}

@@ -82,7 +82,7 @@ export default function EtiquetasPage() {
         </div>
           <button 
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]"
+            className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
           >
             <Plus className="w-4 h-4" /> Adicionar Etiqueta
           </button>
@@ -128,7 +128,7 @@ export default function EtiquetasPage() {
             <div className="flex gap-2 mt-4">
               <button 
                 onClick={handleAdd}
-                className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]"
+                className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
               >
                 <Save className="w-4 h-4" /> Guardar
               </button>
@@ -150,8 +150,8 @@ export default function EtiquetasPage() {
                 key={tag.id} 
                 className={`group flex items-center gap-2 px-3 py-2 rounded-full border transition-all ${
                   isEditing === tag.id 
-                    ? 'bg-blue-50 border-blue-300' 
-                    : 'bg-[#f6f7f7] border-[#ccd0d4] hover:border-[#2271b1]'
+                    ? 'bg-green-50 border-green-300' 
+                    : 'bg-[#f6f7f7] border-[#ccd0d4] hover:border-[#00a651]'
                 }`}
               >
                 {isEditing === tag.id ? (
@@ -178,7 +178,7 @@ export default function EtiquetasPage() {
                   </>
                 ) : (
                   <>
-                    <Tag className="w-3 h-3 text-[#2271b1]" />
+                    <Tag className="w-3 h-3 text-[#008f45]" />
                     <span className="text-sm font-medium text-[#1d2327]">{tag.name}</span>
                     <span className="text-xs text-[#50575e] bg-white px-1.5 py-0.5 rounded-full">
                       {tag.count}
@@ -186,7 +186,7 @@ export default function EtiquetasPage() {
                     <div className="hidden group-hover:flex items-center gap-1 ml-1">
                       <button 
                         onClick={() => handleEdit(tag)}
-                        className="p-1 text-[#2271b1] hover:bg-blue-50 rounded"
+                        className="p-1 text-[#008f45] hover:bg-green-50 rounded"
                       >
                         <Edit2 className="w-3 h-3" />
                       </button>

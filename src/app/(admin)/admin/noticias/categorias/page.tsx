@@ -73,7 +73,7 @@ export default function CategoriasPage() {
             </div>
           <button 
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]"
+            className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
           >
             <Plus className="w-4 h-4" /> Adicionar Categoria
           </button>
@@ -118,7 +118,7 @@ export default function CategoriasPage() {
             <div className="flex gap-2 mt-4">
               <button 
                 onClick={handleAdd}
-                className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]"
+                className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
               >
                 <Save className="w-4 h-4" /> Guardar
               </button>
@@ -157,7 +157,7 @@ export default function CategoriasPage() {
                       />
                     ) : (
                       <div className="flex items-center gap-2">
-                        <Folder className="w-4 h-4 text-[#2271b1]" />
+                        <Folder className="w-4 h-4 text-[#008f45]" />
                         <span className="font-medium text-[#1d2327]">{category.name}</span>
                       </div>
                     )}
@@ -187,7 +187,7 @@ export default function CategoriasPage() {
                     )}
                   </td>
                   <td className="p-4 text-center">
-                    <span className="px-2 py-1 bg-[#2271b1]/10 text-[#2271b1] rounded-full text-xs font-semibold">
+                    <span className="px-2 py-1 bg-[#00a651]/10 text-[#008f45] rounded-full text-xs font-semibold">
                       {category.count}
                     </span>
                   </td>
@@ -211,7 +211,7 @@ export default function CategoriasPage() {
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 hover:opacity-100">
                         <button 
                           onClick={() => handleEdit(category)}
-                          className="p-2 text-[#2271b1] hover:bg-blue-50 rounded"
+                          className="p-2 text-[#008f45] hover:bg-green-50 rounded"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>

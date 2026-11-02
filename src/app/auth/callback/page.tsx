@@ -39,7 +39,7 @@ export default function AuthCallbackPage() {
         {error ? (
           <>
             <p className="text-sm text-red-700">{error}</p>
-            <Link href="/login" className="inline-block px-5 py-2 bg-[#2271b1] text-white font-bold hover:bg-[#135e96]">Voltar ao login</Link>
+            <Link href="/login" className="inline-block px-5 py-2 bg-[#00a651] text-white font-bold hover:bg-[#008f45]">Voltar ao login</Link>
           </>
         ) : (
           <>

@@ -152,7 +152,7 @@ export default function PartilhadoPage() {
     switch (type) {
       case 'video': return <FileVideo className="w-8 h-8 text-red-500" />;
       case 'image': return <FileImage className="w-8 h-8 text-green-500" />;
-      case 'document': return <FileText className="w-8 h-8 text-blue-500" />;
+      case 'document': return <FileText className="w-8 h-8 text-green-600" />;
       default: return <FolderOpen className="w-8 h-8 text-gray-500" />;
     }
   };
@@ -166,8 +166,8 @@ export default function PartilhadoPage() {
             onClick={handleBack} 
             className="flex items-center gap-2 px-4 bg-white border border-[#ccd0d4] rounded-lg hover:bg-[#f6f7f7] transition-colors"
           >
-            <ChevronLeft className="w-5 h-5 text-[#2271b1]" />
-            <span className="text-sm text-[#2271b1] font-medium">Voltar</span>
+            <ChevronLeft className="w-5 h-5 text-[#008f45]" />
+            <span className="text-sm text-[#008f45] font-medium">Voltar</span>
           </button>
         )}
         <div className="flex flex-col justify-center">
@@ -204,7 +204,7 @@ export default function PartilhadoPage() {
                       setFilterType(e.target.value as 'all' | 'users' | 'emails');
                       setCurrentPage(1);
                     }}
-                    className="h-10 pl-4 pr-10 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none appearance-none bg-white text-[#1d2327] cursor-pointer text-sm"
+                    className="h-10 pl-4 pr-10 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none appearance-none bg-white text-[#1d2327] cursor-pointer text-sm"
                   >
                     <option value="all">Todas as Partilhas</option>
                     <option value="users">Apenas Utilizadores</option>
@@ -216,7 +216,7 @@ export default function PartilhadoPage() {
                 {/* Botão Ver por Utilizador */}
                 <button
                   onClick={() => setView('contributors')}
-                  className="flex items-center gap-2 h-10 px-4 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96] transition-colors text-sm"
+                  className="flex items-center gap-2 h-10 px-4 bg-[#00a651] text-white rounded-md hover:bg-[#008f45] transition-colors text-sm"
                 >
                   <User className="w-4 h-4" />
                   Ver por Utilizador
@@ -233,7 +233,7 @@ export default function PartilhadoPage() {
                       setSearchTerm(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="w-full h-10 pl-9 pr-3 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none text-sm"
+                    className="w-full h-10 pl-9 pr-3 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none text-sm"
                   />
                 </div>
               </div>
@@ -317,10 +317,10 @@ export default function PartilhadoPage() {
                       ? `linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)), url(${item.imageUrl})` 
                       : `linear-gradient(135deg, ${
                           item.type === 'video' ? '#dc2626' : 
-                          item.type === 'document' ? '#2563eb' : '#16a34a'
+                          item.type === 'document' ? '#00a651' : '#16a34a'
                         }, ${
                           item.type === 'video' ? '#991b1b' : 
-                          item.type === 'document' ? '#1d4ed8' : '#15803d'
+                          item.type === 'document' ? '#008f45' : '#15803d'
                         })`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
@@ -333,7 +333,7 @@ export default function PartilhadoPage() {
                       <span className={`px-2 py-1 text-xs font-medium rounded shadow-sm ${
                         item.type === 'image' ? 'bg-green-500/90 text-white' :
                         item.type === 'video' ? 'bg-red-500/90 text-white' :
-                        'bg-blue-500/90 text-white'
+                        'bg-green-600/90 text-white'
                       }`}>
                         {item.type === 'image' ? 'IMG' : item.type === 'video' ? 'Vídeo' : 'DOC'}
                       </span>
@@ -430,7 +430,7 @@ export default function PartilhadoPage() {
                 placeholder={`Pesquisar ${filterType === 'emails' ? 'emails' : 'utilizadores'}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+                className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none"
               />
             </div>
           </div>
@@ -441,17 +441,17 @@ export default function PartilhadoPage() {
               <div 
                 key={contributor.id}
                 onClick={() => handleContributorClick(contributor)}
-                className="bg-white border border-[#ccd0d4] rounded-lg p-3 hover:shadow-md hover:border-[#2271b1] transition-all cursor-pointer group"
+                className="bg-white border border-[#ccd0d4] rounded-lg p-3 hover:shadow-md hover:border-[#00a651] transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-4">
                   {/* Avatar */}
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    contributor.isGuest ? 'bg-yellow-100' : 'bg-[#2271b1]/10'
+                    contributor.isGuest ? 'bg-yellow-100' : 'bg-[#00a651]/10'
                   }`}>
                     {contributor.isGuest ? (
                       <Mail className="w-5 h-5 text-yellow-600" />
                     ) : (
-                      <User className="w-5 h-5 text-[#2271b1]" />
+                      <User className="w-5 h-5 text-[#008f45]" />
                     )}
                   </div>
 
@@ -479,7 +479,7 @@ export default function PartilhadoPage() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button 
                       onClick={(e) => { e.stopPropagation(); alert(`Ver: ${contributor.name}`); }}
-                      className="p-2 text-[#2271b1] hover:bg-blue-50 rounded-md transition-colors"
+                      className="p-2 text-[#008f45] hover:bg-green-50 rounded-md transition-colors"
                       title="Ver Conteúdo"
                     >
                       <Eye className="w-4 h-4" />
@@ -517,7 +517,7 @@ export default function PartilhadoPage() {
       {view === 'content' && selectedContributor && (
         <>
           {/* Info do contribuidor - Estilo Premium */}
-          <div className="bg-gradient-to-r from-slate-50 to-blue-50 border border-blue-200 rounded-xl p-5 mb-6 shadow-sm">
+          <div className="bg-gradient-to-r from-slate-50 to-green-50 border border-green-200 rounded-xl p-5 mb-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Avatar com imagem real baseada no email */}
@@ -551,11 +551,11 @@ export default function PartilhadoPage() {
                   </div>
                   <div className="flex items-center gap-4 text-sm text-[#50575e]">
                     <span className="flex items-center gap-1.5">
-                      <Folder className="w-4 h-4 text-[#2271b1]" />
+                      <Folder className="w-4 h-4 text-[#008f45]" />
                       <strong className="text-[#1d2327]">{getContributorItems().length}</strong> ficheiros partilhados
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-[#2271b1]" />
+                      <Calendar className="w-4 h-4 text-[#008f45]" />
                       Membro desde <strong className="text-[#1d2327]">2026</strong>
                     </span>
                   </div>
@@ -568,7 +568,7 @@ export default function PartilhadoPage() {
                 <select
                   value={contentFilter}
                   onChange={(e) => setContentFilter(e.target.value as 'all' | 'image' | 'video' | 'document')}
-                  className="h-9 px-3 pr-8 border border-[#ccd0d4] rounded-lg bg-white text-sm text-[#2c3338] focus:border-[#2271b1] focus:outline-none cursor-pointer"
+                  className="h-9 px-3 pr-8 border border-[#ccd0d4] rounded-lg bg-white text-sm text-[#2c3338] focus:border-[#00a651] focus:outline-none cursor-pointer"
                 >
                   <option value="all">Todos os ficheiros</option>
                   <option value="image">Imagens</option>
@@ -595,10 +595,10 @@ export default function PartilhadoPage() {
                     ? `linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)), url(${item.imageUrl})` 
                     : `linear-gradient(135deg, ${
                         item.type === 'video' ? '#dc2626' : 
-                        item.type === 'document' ? '#2563eb' : '#16a34a'
+                        item.type === 'document' ? '#00a651' : '#16a34a'
                       }, ${
                         item.type === 'video' ? '#991b1b' : 
-                        item.type === 'document' ? '#1d4ed8' : '#15803d'
+                        item.type === 'document' ? '#008f45' : '#15803d'
                       })`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
@@ -611,7 +611,7 @@ export default function PartilhadoPage() {
                     <span className={`px-2 py-1 text-xs font-medium rounded shadow-sm ${
                       item.type === 'video' ? 'bg-red-500/90 text-white' :
                       item.type === 'image' ? 'bg-green-500/90 text-white' :
-                      'bg-blue-500/90 text-white'
+                      'bg-green-600/90 text-white'
                     }`}>
                       {item.type === 'video' ? 'Vídeo' : item.type === 'image' ? 'Imagem' : 'Documento'}
                     </span>

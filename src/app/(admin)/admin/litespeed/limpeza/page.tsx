@@ -52,10 +52,10 @@ export default function LiteSpeedLimpezaPage() {
       </div>
 
       {/* Última limpeza */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center gap-3">
-        <Clock className="w-5 h-5 text-blue-600" />
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+        <Clock className="w-5 h-5 text-green-600" />
         <div>
-          <p className="text-sm text-blue-800">
+          <p className="text-sm text-green-800">
             <span className="font-semibold">Última limpeza:</span> {lastCleared}
           </p>
         </div>
@@ -67,8 +67,8 @@ export default function LiteSpeedLimpezaPage() {
           <div key={cache.id} className="bg-white border border-[#ccd0d4] rounded-lg p-5">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#2271b1]/10 rounded-lg flex items-center justify-center">
-                  <cache.icon className="w-5 h-5 text-[#2271b1]" />
+                <div className="w-10 h-10 bg-[#00a651]/10 rounded-lg flex items-center justify-center">
+                  <cache.icon className="w-5 h-5 text-[#008f45]" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-[#1d2327]">{cache.name}</h3>

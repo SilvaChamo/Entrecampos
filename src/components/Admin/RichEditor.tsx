@@ -240,7 +240,7 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlocksOpen((o) => !o)}
-            className="flex h-8 items-center gap-1 rounded bg-[#2271b1] px-3 text-[13px] font-medium text-white hover:bg-[#135e96]"
+            className="flex h-8 items-center gap-1 rounded bg-[#00a651] px-3 text-[13px] font-medium text-white hover:bg-[#008f45]"
           >
             <Plus className="h-4 w-4" />
             Adicionar bloco

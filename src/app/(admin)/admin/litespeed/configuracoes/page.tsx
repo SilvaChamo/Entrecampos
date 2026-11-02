@@ -43,7 +43,7 @@ export default function LiteSpeedConfigPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-2.5 bg-[#2271b1] text-white rounded-lg font-semibold hover:bg-[#135e96] disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2.5 bg-[#00a651] text-white rounded-lg font-semibold hover:bg-[#008f45] disabled:opacity-50"
         >
           {saving ? (
             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -55,9 +55,9 @@ export default function LiteSpeedConfigPage() {
       </div>
 
       {/* Aviso */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-blue-800">
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-green-800">
           Alterar estas configurações afeta diretamente a performance do site. 
           Teste sempre após fazer mudanças significativas.
         </p>
@@ -67,7 +67,7 @@ export default function LiteSpeedConfigPage() {
         {/* Cache Settings */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#2271b1]" /> Cache de Páginas
+            <Settings className="w-5 h-5 text-[#008f45]" /> Cache de Páginas
           </h2>
           
           <div className="space-y-4">
@@ -88,7 +88,7 @@ export default function LiteSpeedConfigPage() {
                     onChange={() => toggleSetting(item.key as keyof typeof settings)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                  <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
                 </label>
               </div>
             ))}
@@ -114,7 +114,7 @@ export default function LiteSpeedConfigPage() {
         {/* Optimization Settings */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#2271b1]" /> Otimização
+            <Settings className="w-5 h-5 text-[#008f45]" /> Otimização
           </h2>
           
           <div className="space-y-4">
@@ -138,7 +138,7 @@ export default function LiteSpeedConfigPage() {
                     onChange={() => toggleSetting(item.key as keyof typeof settings)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                  <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
                 </label>
               </div>
             ))}

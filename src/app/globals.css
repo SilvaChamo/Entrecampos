@@ -185,7 +185,7 @@ body {
 .ec-editor .ProseMirror img { max-width: 100%; height: auto; }
 .ec-editor .ProseMirror figure img { pointer-events: none; user-select: none; }
 
-.ec-editor .ProseMirror .ProseMirror-selectednode { outline: 2px solid #2271b1; }
+.ec-editor .ProseMirror .ProseMirror-selectednode { outline: 2px solid #00a651; }
 
 .ec-editor .ProseMirror figcaption:has(> br.ProseMirror-trailingBreak:only-child)::before {
   content: 'Escreva a legenda da foto…';

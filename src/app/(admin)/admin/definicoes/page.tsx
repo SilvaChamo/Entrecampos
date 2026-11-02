@@ -40,7 +40,7 @@ export default function DefinicoesGeraisPage() {
         {/* Site Info */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-[#2271b1]" /> Informações do Site
+            <Globe className="w-5 h-5 text-[#008f45]" /> Informações do Site
           </h2>
           
           <div className="space-y-4">
@@ -50,7 +50,7 @@ export default function DefinicoesGeraisPage() {
                 type="text"
                 value={formData.siteName}
                 onChange={(e) => setFormData({...formData, siteName: e.target.value})}
-                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none"
               />
             </div>
             
@@ -60,7 +60,7 @@ export default function DefinicoesGeraisPage() {
                 value={formData.siteDescription}
                 onChange={(e) => setFormData({...formData, siteDescription: e.target.value})}
                 rows={3}
-                className="w-full px-3 py-2 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+                className="w-full px-3 py-2 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none"
               />
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function DefinicoesGeraisPage() {
         {/* Branding */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <ImageIcon className="w-5 h-5 text-[#2271b1]" /> Identidade Visual
+            <ImageIcon className="w-5 h-5 text-[#008f45]" /> Identidade Visual
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -78,7 +78,7 @@ export default function DefinicoesGeraisPage() {
               <input
                 type="file"
                 accept="image/*"
-                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none text-sm"
+                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none text-sm"
               />
             </div>
             
@@ -87,7 +87,7 @@ export default function DefinicoesGeraisPage() {
               <input
                 type="file"
                 accept="image/*"
-                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none text-sm"
+                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none text-sm"
               />
             </div>
           </div>
@@ -96,7 +96,7 @@ export default function DefinicoesGeraisPage() {
         {/* Contact */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Mail className="w-5 h-5 text-[#2271b1]" /> Contactos
+            <Mail className="w-5 h-5 text-[#008f45]" /> Contactos
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -108,7 +108,7 @@ export default function DefinicoesGeraisPage() {
                 type="email"
                 value={formData.contactEmail}
                 onChange={(e) => setFormData({...formData, contactEmail: e.target.value})}
-                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none"
               />
             </div>
             
@@ -120,7 +120,7 @@ export default function DefinicoesGeraisPage() {
                 type="tel"
                 value={formData.contactPhone}
                 onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
-                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none"
               />
             </div>
             
@@ -132,7 +132,7 @@ export default function DefinicoesGeraisPage() {
                 type="text"
                 value={formData.address}
                 onChange={(e) => setFormData({...formData, address: e.target.value})}
-                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+                className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none"
               />
             </div>
           </div>
@@ -152,7 +152,7 @@ export default function DefinicoesGeraisPage() {
                 onChange={(e) => setFormData({...formData, maintenanceMode: e.target.checked})}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
             </label>
           </div>
         </div>

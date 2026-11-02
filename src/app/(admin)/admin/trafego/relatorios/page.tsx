@@ -21,7 +21,7 @@ export default function TrafegoRelatoriosPage() {
           <h1 className="text-2xl font-bold text-[#1d2327]">Relatórios Detalhados</h1>
           <p className="text-[#50575e] mt-1">Análise completa do tráfego do site</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-lg hover:bg-[#135e96]">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-lg hover:bg-[#008f45]">
           <FileText className="w-4 h-4" /> Gerar Novo Relatório
         </button>
       </div>
@@ -35,7 +35,7 @@ export default function TrafegoRelatoriosPage() {
               onClick={() => setDateRange(range)}
               className={`px-4 py-2 rounded-md text-sm font-medium ${
                 dateRange === range
-                  ? 'bg-[#2271b1] text-white'
+                  ? 'bg-[#00a651] text-white'
                   : 'text-[#50575e] hover:bg-[#f6f7f7]'
               }`}
             >
@@ -86,7 +86,7 @@ export default function TrafegoRelatoriosPage() {
               <tr key={report.id} className="hover:bg-[#f6f7f7]">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-[#2271b1]" />
+                    <FileText className="w-5 h-5 text-[#008f45]" />
                     <span className="font-medium text-[#1d2327]">{report.name}</span>
                   </div>
                 </td>
@@ -110,7 +110,7 @@ export default function TrafegoRelatoriosPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button className="p-2 text-[#2271b1] hover:bg-blue-50 rounded">
+                  <button className="p-2 text-[#008f45] hover:bg-green-50 rounded">
                     <Download className="w-4 h-4" />
                   </button>
                 </td>

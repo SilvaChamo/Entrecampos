@@ -80,7 +80,7 @@ export default function LoginPage() {
                   type="text"
                   autoComplete="username"
                   placeholder="E-mail ou utilizador"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#2271b1] focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#00a651] focus:border-transparent outline-none transition-all"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -97,7 +97,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   minLength={6}
-                  className="w-full pl-10 pr-11 py-2 border border-gray-300 focus:ring-2 focus:ring-[#2271b1] focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-11 py-2 border border-gray-300 focus:ring-2 focus:ring-[#00a651] focus:border-transparent outline-none transition-all"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
@@ -116,7 +116,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#2271b1] text-white font-bold hover:bg-[#135e96] transition-all shadow-md flex items-center justify-center gap-2 group disabled:opacity-70"
+            className="w-full py-3 bg-[#00a651] text-white font-bold hover:bg-[#008f45] transition-all shadow-md flex items-center justify-center gap-2 group disabled:opacity-70"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -147,14 +147,14 @@ export default function LoginPage() {
           </button>
 
           <p className="text-center text-sm">
-            <Link href="/recuperar-senha" className="text-[#2271b1] hover:underline font-medium">
+            <Link href="/recuperar-senha" className="text-[#008f45] hover:underline font-medium">
               Esqueceu a palavra-passe?
             </Link>
           </p>
 
           <p className="text-center text-sm text-gray-500">
             Ainda não tem conta?{' '}
-            <Link href="/register" className="text-[#2271b1] hover:underline font-medium">
+            <Link href="/register" className="text-[#008f45] hover:underline font-medium">
               Registe-se aqui
             </Link>
           </p>

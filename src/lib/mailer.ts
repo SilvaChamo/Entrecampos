@@ -38,7 +38,7 @@ export function recoveryEmail(link: string) {
 <p style="margin:0 0 20px;font-size:15px;line-height:1.6">Recebemos um pedido para criar uma nova palavra-passe na sua conta. Clique no botão para continuar. A ligação é válida durante 1 hora.</p>
 <p style="margin:0 0 24px"><a href="${safe}" style="background:#d6101c;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 24px;display:inline-block">Criar nova palavra-passe</a></p>
 <p style="margin:0 0 6px;font-size:12px;color:#646970">Se o botão não abrir, copie esta ligação para o navegador:</p>
-<p style="margin:0 0 20px;font-size:12px;word-break:break-all"><a href="${safe}" style="color:#2271b1">${safe}</a></p>
+<p style="margin:0 0 20px;font-size:12px;word-break:break-all"><a href="${safe}" style="color:#008f45">${safe}</a></p>
 <p style="margin:0;font-size:12px;color:#646970">Se não fez este pedido, ignore este e-mail: a sua palavra-passe não muda.</p>
 </td></tr>
 <tr><td style="background:#f6f7f7;padding:14px 28px;font-size:11px;color:#646970">EntreCAMPOS · Agricultura Sustentável em Moçambique</td></tr>

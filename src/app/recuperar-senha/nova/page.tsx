@@ -52,7 +52,7 @@ function Form() {
           {done ? (
             <>
               <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">{done}</div>
-              <Link href="/login" className="block w-full py-3 bg-[#2271b1] text-white font-bold text-center hover:bg-[#135e96]">Ir para o login</Link>
+              <Link href="/login" className="block w-full py-3 bg-[#00a651] text-white font-bold text-center hover:bg-[#008f45]">Ir para o login</Link>
             </>
           ) : (
             <>
@@ -67,7 +67,7 @@ function Form() {
                       autoComplete="new-password"
                       minLength={8}
                       maxLength={128}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#2271b1] focus:border-transparent outline-none"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#00a651] focus:border-transparent outline-none"
                       value={i === 0 ? password : again}
                       onChange={(e) => (i === 0 ? setPassword(e.target.value) : setAgain(e.target.value))}
                     />
@@ -77,7 +77,7 @@ function Form() {
               <button
                 type="submit"
                 disabled={loading || !token}
-                className="w-full py-3 bg-[#2271b1] text-white font-bold hover:bg-[#135e96] transition-all shadow-md flex items-center justify-center gap-2 group disabled:opacity-70"
+                className="w-full py-3 bg-[#00a651] text-white font-bold hover:bg-[#008f45] transition-all shadow-md flex items-center justify-center gap-2 group disabled:opacity-70"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Guardar palavra-passe <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>}
               </button>

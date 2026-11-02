@@ -27,7 +27,7 @@ export default function DefinicoesBackupPage() {
           <h1 className="text-2xl font-bold text-[#1d2327]">Backup e Restauração</h1>
           <p className="text-[#50575e] mt-1">Configure backups automáticos e restaure dados</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
           <Save className="w-4 h-4" /> Guardar
         </button>
       </div>
@@ -49,7 +49,7 @@ export default function DefinicoesBackupPage() {
         {/* Auto Backup Settings */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-[#2271b1]" /> Backup Automático
+            <Clock className="w-5 h-5 text-[#008f45]" /> Backup Automático
           </h2>
           
           <div className="space-y-4">
@@ -65,7 +65,7 @@ export default function DefinicoesBackupPage() {
                   onChange={(e) => setSettings({...settings, autoBackup: e.target.checked})}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
               </label>
             </div>
 
@@ -117,7 +117,7 @@ export default function DefinicoesBackupPage() {
                   onChange={(e) => setSettings({...settings, includeMedia: e.target.checked})}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2271b1]"></div>
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a651]"></div>
               </label>
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function DefinicoesBackupPage() {
         {/* Backup List */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[#2271b1]" /> Histórico de Backups
+            <Calendar className="w-5 h-5 text-[#008f45]" /> Histórico de Backups
           </h2>
           
           <div className="overflow-x-auto">
@@ -146,7 +146,7 @@ export default function DefinicoesBackupPage() {
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         backup.type === 'Automático' 
-                          ? 'bg-blue-100 text-blue-700' 
+                          ? 'bg-green-100 text-green-700' 
                           : 'bg-green-100 text-green-700'
                       }`}>
                         {backup.type}
@@ -154,7 +154,7 @@ export default function DefinicoesBackupPage() {
                     </td>
                     <td className="px-4 py-3 text-[#50575e]">{backup.size}</td>
                     <td className="px-4 py-3 text-right">
-                      <button className="p-1 text-[#2271b1] hover:bg-blue-50 rounded mr-1" title="Download">
+                      <button className="p-1 text-[#008f45] hover:bg-green-50 rounded mr-1" title="Download">
                         <Download className="w-4 h-4" />
                       </button>
                       <button className="p-1 text-[#d63638] hover:bg-red-50 rounded" title="Eliminar">
@@ -171,7 +171,7 @@ export default function DefinicoesBackupPage() {
         {/* Restore */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Upload className="w-5 h-5 text-[#2271b1]" /> Restaurar Backup
+            <Upload className="w-5 h-5 text-[#008f45]" /> Restaurar Backup
           </h2>
           <div className="border-2 border-dashed border-[#ccd0d4] rounded-lg p-8 text-center">
             <Upload className="w-12 h-12 text-[#ccd0d4] mx-auto mb-3" />
@@ -179,7 +179,7 @@ export default function DefinicoesBackupPage() {
             <input type="file" accept=".zip,.sql" className="hidden" id="restore-file" />
             <label 
               htmlFor="restore-file" 
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md cursor-pointer hover:bg-[#135e96]"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md cursor-pointer hover:bg-[#008f45]"
             >
               Selecionar Ficheiro
             </label>

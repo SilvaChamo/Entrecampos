@@ -49,7 +49,7 @@ export default function PreviewNewsPage({ role }: PreviewNewsPageProps) {
           <p className="text-[13px] text-[#50575e]">Gerenciar artigos do site</p>
         </div>
         {canCreate && (
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
             <Plus className="w-4 h-4" /> Adicionar Nova
           </button>
         )}
@@ -63,7 +63,7 @@ export default function PreviewNewsPage({ role }: PreviewNewsPageProps) {
             <input
               type="text"
               placeholder="Pesquisar notícias..."
-              className="h-9 pl-10 pr-4 border border-[#ccd0d4] rounded-md text-sm focus:border-[#2271b1] focus:outline-none w-64"
+              className="h-9 pl-10 pr-4 border border-[#ccd0d4] rounded-md text-sm focus:border-[#00a651] focus:outline-none w-64"
             />
           </div>
           <button className="flex items-center gap-2 h-9 px-3 border border-[#ccd0d4] rounded-md text-sm hover:bg-[#f6f7f7]">
@@ -74,8 +74,8 @@ export default function PreviewNewsPage({ role }: PreviewNewsPageProps) {
 
       {/* Ações em massa */}
       {canSelect && selectedItems.size > 0 && (
-        <div className="flex items-center gap-2 mb-4 p-2 bg-blue-50 border border-blue-200 rounded">
-          <span className="text-sm text-blue-700">{selectedItems.size} item(s) selecionado(s)</span>
+        <div className="flex items-center gap-2 mb-4 p-2 bg-green-50 border border-green-200 rounded">
+          <span className="text-sm text-green-700">{selectedItems.size} item(s) selecionado(s)</span>
           {canDelete && (
             <button className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded">
               <Trash2 className="w-4 h-4" /> Eliminar
@@ -119,7 +119,7 @@ export default function PreviewNewsPage({ role }: PreviewNewsPageProps) {
                   </td>
                 )}
                 <td className="p-3">
-                  <span className="text-[13px] text-[#2271b1] hover:underline cursor-pointer">{item.title}</span>
+                  <span className="text-[13px] text-[#008f45] hover:underline cursor-pointer">{item.title}</span>
                 </td>
                 <td className="p-3 text-[13px] text-[#50575e]">{item.author}</td>
                 <td className="p-3 text-[13px] text-[#50575e]">{item.category}</td>
@@ -138,7 +138,7 @@ export default function PreviewNewsPage({ role }: PreviewNewsPageProps) {
                     </button>
                     {canEdit && (
                       <button className="p-1.5 hover:bg-[#f0f0f1] rounded" title="Editar">
-                        <Edit2 className="w-4 h-4 text-[#2271b1]" />
+                        <Edit2 className="w-4 h-4 text-[#008f45]" />
                       </button>
                     )}
                     {canPublish && item.status === 'Pendente' && (

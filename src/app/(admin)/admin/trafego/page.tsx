@@ -109,7 +109,7 @@ export default function TrafegoPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
             <BarChart3 className="w-7 h-7 text-white" />
           </div>
           <div>
@@ -121,7 +121,7 @@ export default function TrafegoPage() {
           <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">
             <Download className="w-4 h-4" /> Exportar
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md text-sm hover:bg-[#135e96]">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md text-sm hover:bg-[#008f45]">
             <RefreshCw className="w-4 h-4" /> Atualizar
           </button>
         </div>
@@ -156,7 +156,7 @@ export default function TrafegoPage() {
         </div>
 
         {/* Today's Page Views */}
-        <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg p-5 text-white">
+        <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-lg p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-4xl font-bold">{MOCK_DATA.todayPageViews}</p>
@@ -186,12 +186,12 @@ export default function TrafegoPage() {
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-500" /> Traffic Report
+            <BarChart3 className="w-5 h-5 text-green-600" /> Traffic Report
           </h2>
           <select 
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="h-9 px-3 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:outline-none"
+            className="h-9 px-3 border border-gray-300 rounded-md text-sm focus:border-green-600 focus:outline-none"
           >
             <option value="7">Last 7 days</option>
             <option value="14">Last 14 days</option>
@@ -205,7 +205,7 @@ export default function TrafegoPage() {
             <div key={idx} className="flex-1 min-w-[34px] flex flex-col items-center gap-1">
               <div className="w-full flex gap-0.5">
                 <div 
-                  className="flex-1 bg-blue-400 rounded-t"
+                  className="flex-1 bg-green-400 rounded-t"
                   style={{ height: `${getBarHeight(day.visits, maxVisits)}px` }}
                   title={`Visitas: ${day.visits}`}
                 />
@@ -223,7 +223,7 @@ export default function TrafegoPage() {
         {/* Legend */}
         <div className="flex items-center justify-center gap-6 mt-8">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-400 rounded" />
+            <div className="w-4 h-4 bg-green-400 rounded" />
             <span className="text-sm text-gray-600">Visit</span>
           </div>
           <div className="flex items-center gap-2">
@@ -238,7 +238,7 @@ export default function TrafegoPage() {
         {/* Summary Statistics */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-500" /> Summary Statistics
+            <BarChart3 className="w-5 h-5 text-green-600" /> Summary Statistics
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -308,7 +308,7 @@ export default function TrafegoPage() {
         {/* Search Engines Summary */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <Search className="w-5 h-5 text-blue-500" /> Search Engines Summary
+            <Search className="w-5 h-5 text-green-600" /> Search Engines Summary
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -341,7 +341,7 @@ export default function TrafegoPage() {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-blue-500" /> Last 30 Days Traffic by IP
+            <Globe className="w-5 h-5 text-green-600" /> Last 30 Days Traffic by IP
           </h2>
           <div className="flex items-center gap-2">
             <button className="flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded text-sm">
@@ -391,7 +391,7 @@ export default function TrafegoPage() {
         {/* Pagination */}
         <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
           <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">&lt;</button>
-          <button className="px-3 py-1 bg-blue-500 text-white rounded text-sm">1</button>
+          <button className="px-3 py-1 bg-green-600 text-white rounded text-sm">1</button>
           <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">2</button>
           <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">3</button>
           <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">4</button>

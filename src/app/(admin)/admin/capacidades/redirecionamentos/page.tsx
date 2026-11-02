@@ -35,7 +35,7 @@ export default function RedirecionamentosPage() {
           <h1 className="text-2xl font-bold text-[#1d2327]">Redirecionamentos de Login</h1>
           <p className="text-[#50575e] mt-1">Configure para onde cada tipo de utilizador é redirecionado após login/logout</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
           <Plus className="w-4 h-4" /> Novo Redirecionamento
         </button>
       </div>
@@ -117,7 +117,7 @@ export default function RedirecionamentosPage() {
                   </button>
                   <button 
                     onClick={() => handleSave(redirect.id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
                   >
                     <Save className="w-4 h-4" /> Guardar
                   </button>
@@ -126,8 +126,8 @@ export default function RedirecionamentosPage() {
             ) : (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-4">
-                  <div className="w-10 h-10 shrink-0 bg-[#2271b1]/10 rounded-lg flex items-center justify-center">
-                    <LogIn className="w-5 h-5 text-[#2271b1]" />
+                  <div className="w-10 h-10 shrink-0 bg-[#00a651]/10 rounded-lg flex items-center justify-center">
+                    <LogIn className="w-5 h-5 text-[#008f45]" />
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-x-2">
@@ -144,7 +144,7 @@ export default function RedirecionamentosPage() {
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => handleEdit(redirect)}
-                    className="p-2 text-[#2271b1] hover:bg-blue-50 rounded-md"
+                    className="p-2 text-[#008f45] hover:bg-green-50 rounded-md"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
@@ -159,9 +159,9 @@ export default function RedirecionamentosPage() {
       </div>
 
       {/* Info Card */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-semibold text-blue-800 mb-2">Como funciona?</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
+      <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        <h4 className="font-semibold text-green-800 mb-2">Como funciona?</h4>
+        <ul className="text-sm text-green-700 space-y-1">
           <li>• Após login, o utilizador é redirecionado para a página definida em "Após Login"</li>
           <li>• Após logout, o utilizador é redirecionado para a página definida em "Após Logout"</li>
           <li>• Se não houver redirecionamento definido, usa o padrão do sistema</li>

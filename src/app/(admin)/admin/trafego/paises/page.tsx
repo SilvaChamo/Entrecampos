@@ -36,8 +36,8 @@ export default function TrafegoPaisesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#2271b1]/10 rounded-lg flex items-center justify-center">
-              <Globe className="w-5 h-5 text-[#2271b1]" />
+            <div className="w-10 h-10 bg-[#00a651]/10 rounded-lg flex items-center justify-center">
+              <Globe className="w-5 h-5 text-[#008f45]" />
             </div>
             <div>
               <p className="text-sm text-[#50575e]">Total de Países</p>
@@ -78,7 +78,7 @@ export default function TrafegoPaisesPage() {
             placeholder="Pesquisar país..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#2271b1] focus:outline-none"
+            className="w-full h-10 pl-10 pr-4 border border-[#ccd0d4] rounded-md focus:border-[#00a651] focus:outline-none"
           />
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function TrafegoPaisesPage() {
                 <td className="px-4 py-3 w-48">
                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-[#2271b1] rounded-full"
+                      className="h-full bg-[#00a651] rounded-full"
                       style={{ width: `${country.percentage}%` }}
                     />
                   </div>
@@ -135,7 +135,7 @@ export default function TrafegoPaisesPage() {
       {/* Mapa Placeholder */}
       <div className="mt-6 bg-white border border-[#ccd0d4] rounded-lg p-6">
         <h3 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-[#2271b1]" /> Mapa de Visitantes
+          <MapPin className="w-5 h-5 text-[#008f45]" /> Mapa de Visitantes
         </h3>
         <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
           <div className="text-center">

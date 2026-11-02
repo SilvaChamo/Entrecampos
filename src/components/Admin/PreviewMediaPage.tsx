@@ -45,7 +45,7 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
           <p className="text-[13px] text-[#50575e]">Gerenciar ficheiros de media</p>
         </div>
         {canUpload && (
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#2271b1] text-white rounded-md hover:bg-[#135e96]">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
             <Plus className="w-4 h-4" /> Adicionar Novo
           </button>
         )}
@@ -59,7 +59,7 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
             <input
               type="text"
               placeholder="Pesquisar media..."
-              className="h-9 pl-10 pr-4 border border-[#ccd0d4] rounded-md text-sm focus:border-[#2271b1] focus:outline-none w-64"
+              className="h-9 pl-10 pr-4 border border-[#ccd0d4] rounded-md text-sm focus:border-[#00a651] focus:outline-none w-64"
             />
           </div>
           <button className="flex items-center gap-2 h-9 px-3 border border-[#ccd0d4] rounded-md text-sm hover:bg-[#f6f7f7]">
@@ -70,13 +70,13 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setViewMode('grid')}
-            className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[#2271b1] text-white' : 'text-[#50575e] hover:bg-[#f6f7f7]'}`}
+            className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[#00a651] text-white' : 'text-[#50575e] hover:bg-[#f6f7f7]'}`}
           >
             <Grid3X3 className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setViewMode('list')}
-            className={`p-2 rounded ${viewMode === 'list' ? 'bg-[#2271b1] text-white' : 'text-[#50575e] hover:bg-[#f6f7f7]'}`}
+            className={`p-2 rounded ${viewMode === 'list' ? 'bg-[#00a651] text-white' : 'text-[#50575e] hover:bg-[#f6f7f7]'}`}
           >
             <List className="w-4 h-4" />
           </button>
@@ -85,8 +85,8 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
 
       {/* Ações em massa - só se puder selecionar */}
       {canSelect && selectedFiles.size > 0 && (
-        <div className="flex items-center gap-2 mb-4 p-2 bg-blue-50 border border-blue-200 rounded">
-          <span className="text-sm text-blue-700">{selectedFiles.size} ficheiro(s) selecionado(s)</span>
+        <div className="flex items-center gap-2 mb-4 p-2 bg-green-50 border border-green-200 rounded">
+          <span className="text-sm text-green-700">{selectedFiles.size} ficheiro(s) selecionado(s)</span>
           {canDelete && (
             <button className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded">
               <Trash2 className="w-4 h-4" /> Eliminar
@@ -102,7 +102,7 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
             <div 
               key={file.id}
               className={`relative aspect-square bg-white border rounded cursor-pointer overflow-hidden group ${
-                selectedFiles.has(file.id) ? 'ring-2 ring-[#2271b1] border-[#2271b1]' : 'border-[#ccd0d4]'
+                selectedFiles.has(file.id) ? 'ring-2 ring-[#00a651] border-[#00a651]' : 'border-[#ccd0d4]'
               }`}
               onClick={() => {
                 if (canSelect) {
@@ -129,7 +129,7 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
               {/* Checkbox de seleção */}
               {canSelect && (
                 <div className={`absolute top-2 left-2 w-4 h-4 rounded border flex items-center justify-center ${
-                  selectedFiles.has(file.id) ? 'bg-[#2271b1] border-[#2271b1]' : 'bg-white border-gray-400'
+                  selectedFiles.has(file.id) ? 'bg-[#00a651] border-[#00a651]' : 'bg-white border-gray-400'
                 }`}>
                   {selectedFiles.has(file.id) && <Check className="w-3 h-3 text-white" />}
                 </div>
@@ -163,7 +163,7 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
                     <td className="p-3">
                       <div 
                         className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer ${
-                          selectedFiles.has(file.id) ? 'bg-[#2271b1] border-[#2271b1]' : 'bg-white border-gray-400'
+                          selectedFiles.has(file.id) ? 'bg-[#00a651] border-[#00a651]' : 'bg-white border-gray-400'
                         }`}
                         onClick={() => {
                           setSelectedFiles(prev => {
@@ -183,7 +183,7 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
                       <span className="text-lg">
                         {file.name.endsWith('.mp4') ? '🎥' : file.name.endsWith('.pdf') ? '📄' : '🖼️'}
                       </span>
-                      <span className="text-[13px] text-[#2271b1] hover:underline cursor-pointer">{file.name}</span>
+                      <span className="text-[13px] text-[#008f45] hover:underline cursor-pointer">{file.name}</span>
                     </div>
                   </td>
                   <td className="p-3 text-[13px] text-[#50575e]">{file.author}</td>

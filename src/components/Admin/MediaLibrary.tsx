@@ -287,8 +287,8 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
       {/* Toolbar Superior */}
       <div className="bg-white border-b border-[#ccd0d4] p-2 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0 z-10 shadow-sm">
         <div className="flex items-center gap-1">
-          <button className="p-1.5 text-[#50575e] hover:text-[#2271b1]"><ListIcon className="w-5 h-5" /></button>
-          <button className="p-1.5 bg-[#f0f0f1] text-[#2271b1] rounded-[3px]"><LayoutGrid className="w-5 h-5" /></button>
+          <button className="p-1.5 text-[#50575e] hover:text-[#008f45]"><ListIcon className="w-5 h-5" /></button>
+          <button className="p-1.5 bg-[#f0f0f1] text-[#008f45] rounded-[3px]"><LayoutGrid className="w-5 h-5" /></button>
           
           {!isBulkMode ? (
             <button 
@@ -299,8 +299,8 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
             </button>
           ) : (
             <div className="flex items-center gap-2 ml-4">
-              {special && <button onClick={() => actOnSelected('restore')} className="h-8 px-3 bg-[#2271b1] text-white rounded-[3px] text-sm font-bold">Restaurar ({selectedIds.size})</button>}
-              {canSeeTrash && view === 'galeria' && <button onClick={() => actOnSelected('archive')} className="h-8 px-3 border border-[#2271b1] text-[#2271b1] bg-white rounded-[3px] text-sm font-bold">Arquivar ({selectedIds.size})</button>}
+              {special && <button onClick={() => actOnSelected('restore')} className="h-8 px-3 bg-[#00a651] text-white rounded-[3px] text-sm font-bold">Restaurar ({selectedIds.size})</button>}
+              {canSeeTrash && view === 'galeria' && <button onClick={() => actOnSelected('archive')} className="h-8 px-3 border border-[#00a651] text-[#008f45] bg-white rounded-[3px] text-sm font-bold">Arquivar ({selectedIds.size})</button>}
               {view !== 'arquivo' && <button onClick={deleteBulk} className="h-8 px-3 bg-[#d63638] text-white rounded-[3px] text-sm font-bold">{view === 'lixo' ? 'Eliminar para sempre' : 'Eliminar'} ({selectedIds.size})</button>}
               {!special && <button onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="h-8 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-sm">Cancelar</button>}
             </div>
@@ -316,7 +316,7 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                 placeholder="Pesquisar..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-8 pl-8 pr-2 border border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#2271b1]"
+                className="w-full h-8 pl-8 pr-2 border border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#00a651]"
               />
               <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-[#50575e]" />
             </div>
@@ -327,7 +327,7 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                 onClick={() => setView((v) => (v === 'arquivo' ? 'galeria' : 'arquivo'))}
                 title={view === 'arquivo' ? 'Voltar à galeria' : 'Arquivadas'}
                 aria-pressed={view === 'arquivo'}
-                className={`inline-flex h-8 w-8 items-center justify-center rounded-[3px] border ${view === 'arquivo' ? 'border-[#2271b1] bg-[#2271b1] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-[3px] border ${view === 'arquivo' ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
               >
                 <Archive className="w-4 h-4" />
               </button>
@@ -366,17 +366,17 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                   }}
                   className={`aspect-square relative border cursor-pointer overflow-hidden bg-white shadow-sm transition-all ${
                     selectedIds.has(file.name) || activeFile?.name === file.name 
-                      ? 'ring-4 ring-[#2271b1] ring-inset' 
-                      : 'border-[#ccd0d4] hover:border-[#2271b1]'
+                      ? 'ring-4 ring-[#00a651] ring-inset' 
+                      : 'border-[#ccd0d4] hover:border-[#00a651]'
                   }`}
                 >
                   <img src={getPublicUrl(file.name)} className="w-full h-full object-cover" alt="" loading="lazy" />
                   {selectedIds.has(file.name) && (
-                    <div className="absolute top-1 right-1 bg-[#2271b1] text-white p-0.5 rounded-sm"><Check className="w-3 h-3" /></div>
+                    <div className="absolute top-1 right-1 bg-[#00a651] text-white p-0.5 rounded-sm"><Check className="w-3 h-3" /></div>
                   )}
                   {isModal && onSelect && (
                     <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
-                      <span className="bg-[#2271b1] text-white px-3 py-1 text-xs font-bold rounded">Selecionar</span>
+                      <span className="bg-[#00a651] text-white px-3 py-1 text-xs font-bold rounded">Selecionar</span>
                     </div>
                   )}
                 </div>
@@ -386,7 +386,7 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
           
           {!loading && visibleCount < filteredFiles.length && (
             <div className="flex justify-center py-8">
-              <button onClick={() => setVisibleCount(prev => prev + 70)} className="px-8 py-2 border border-[#2271b1] text-[#2271b1] text-sm font-bold rounded-[3px] hover:bg-white transition-all">Carregar mais</button>
+              <button onClick={() => setVisibleCount(prev => prev + 70)} className="px-8 py-2 border border-[#00a651] text-[#008f45] text-sm font-bold rounded-[3px] hover:bg-white transition-all">Carregar mais</button>
             </div>
           )}
         </div>
@@ -407,21 +407,21 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
               <div className="space-y-4 pt-4">
                 <div>
                   <label className="block text-[12px] font-bold text-gray-700 mb-1">Texto alternativo</label>
-                  <textarea value={metadata.alt_text} onChange={(e) => setMetadata({...metadata, alt_text: e.target.value})} className="w-full text-xs border border-[#ccd0d4] p-2 focus:border-[#2271b1] outline-none h-14 rounded-[3px]" />
+                  <textarea value={metadata.alt_text} onChange={(e) => setMetadata({...metadata, alt_text: e.target.value})} className="w-full text-xs border border-[#ccd0d4] p-2 focus:border-[#00a651] outline-none h-14 rounded-[3px]" />
                 </div>
                 <div>
                   <label className="block text-[12px] font-bold text-gray-700 mb-1">Título</label>
-                  <input type="text" value={metadata.title} onChange={(e) => setMetadata({...metadata, title: e.target.value})} className="w-full text-xs border border-[#ccd0d4] p-2 focus:border-[#2271b1] outline-none rounded-[3px]" />
+                  <input type="text" value={metadata.title} onChange={(e) => setMetadata({...metadata, title: e.target.value})} className="w-full text-xs border border-[#ccd0d4] p-2 focus:border-[#00a651] outline-none rounded-[3px]" />
                 </div>
                 <div>
                   <label className="block text-[12px] font-bold text-gray-700 mb-1">Legenda</label>
-                  <textarea value={metadata.caption} onChange={(e) => setMetadata({...metadata, caption: e.target.value})} className="w-full text-xs border border-[#ccd0d4] p-2 focus:border-[#2271b1] outline-none h-14 rounded-[3px]" />
+                  <textarea value={metadata.caption} onChange={(e) => setMetadata({...metadata, caption: e.target.value})} className="w-full text-xs border border-[#ccd0d4] p-2 focus:border-[#00a651] outline-none h-14 rounded-[3px]" />
                 </div>
               </div>
 
               <div className="pt-4 border-t border-[#ccd0d4] flex flex-wrap gap-2">
-                <button onClick={() => setIsEditorOpen(true)} className="flex-1 h-9 bg-white border border-[#2271b1] text-[#2271b1] rounded-[3px] text-sm font-bold hover:bg-gray-100">Editar Imagem</button>
-                <button onClick={saveMetadata} disabled={savingMetadata} className="flex-1 h-9 bg-[#2271b1] text-white rounded-[3px] text-sm font-bold hover:bg-[#135e96] disabled:opacity-50">{savingMetadata ? '...' : 'Salvar'}</button>
+                <button onClick={() => setIsEditorOpen(true)} className="flex-1 h-9 bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-sm font-bold hover:bg-gray-100">Editar Imagem</button>
+                <button onClick={saveMetadata} disabled={savingMetadata} className="flex-1 h-9 bg-[#00a651] text-white rounded-[3px] text-sm font-bold hover:bg-[#008f45] disabled:opacity-50">{savingMetadata ? '...' : 'Salvar'}</button>
                 <button onClick={() => deleteSingle(activeFile.name)} className="h-9 px-3 border border-red-600 text-red-600 rounded-[3px] hover:bg-red-600 hover:text-white"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
@@ -459,8 +459,8 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => { setEditWidth(Math.round(editWidth*0.5)); setEditHeight(Math.round(editHeight*0.5)); }} className="text-[11px] text-[#2271b1] hover:underline">50%</button>
-                  <button onClick={() => { setEditWidth(Math.round(editWidth*0.75)); setEditHeight(Math.round(editHeight*0.75)); }} className="text-[11px] text-[#2271b1] hover:underline">75%</button>
+                  <button onClick={() => { setEditWidth(Math.round(editWidth*0.5)); setEditHeight(Math.round(editHeight*0.5)); }} className="text-[11px] text-[#008f45] hover:underline">50%</button>
+                  <button onClick={() => { setEditWidth(Math.round(editWidth*0.75)); setEditHeight(Math.round(editHeight*0.75)); }} className="text-[11px] text-[#008f45] hover:underline">75%</button>
                 </div>
               </div>
 
@@ -474,7 +474,7 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
               </div>
 
               <div className="pt-8 border-t flex flex-col gap-3">
-                <button onClick={applyImageEdits} disabled={processingImage} className="w-full py-3 bg-[#2271b1] text-white font-bold rounded-[3px] hover:bg-[#135e96] disabled:opacity-50">{processingImage ? 'A processar...' : 'Guardar Como Novo'}</button>
+                <button onClick={applyImageEdits} disabled={processingImage} className="w-full py-3 bg-[#00a651] text-white font-bold rounded-[3px] hover:bg-[#008f45] disabled:opacity-50">{processingImage ? 'A processar...' : 'Guardar Como Novo'}</button>
                 <button onClick={() => setIsEditorOpen(false)} className="w-full py-3 border border-[#ccd0d4] font-bold rounded-[3px] hover:bg-gray-50">Cancelar</button>
               </div>
             </aside>
@@ -501,25 +501,25 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                 <button 
                   onClick={() => confirmSave(true)}
                   disabled={processingImage}
-                  className="w-full flex items-center justify-between p-4 border border-[#ccd0d4] rounded-lg hover:border-[#2271b1] hover:bg-blue-50 transition-all group text-left"
+                  className="w-full flex items-center justify-between p-4 border border-[#ccd0d4] rounded-lg hover:border-[#00a651] hover:bg-green-50 transition-all group text-left"
                 >
                   <div>
-                    <span className="block font-bold text-[#1d2327] group-hover:text-[#2271b1]">Substituir Original</span>
+                    <span className="block font-bold text-[#1d2327] group-hover:text-[#008f45]">Substituir Original</span>
                     <span className="text-xs text-[#50575e]">O ficheiro antigo será removido e substituído por este.</span>
                   </div>
-                  <RefreshCw className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#2271b1]" />
+                  <RefreshCw className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#008f45]" />
                 </button>
 
                 <button 
                   onClick={() => confirmSave(false)}
                   disabled={processingImage}
-                  className="w-full flex items-center justify-between p-4 border border-[#ccd0d4] rounded-lg hover:border-[#2271b1] hover:bg-blue-50 transition-all group text-left"
+                  className="w-full flex items-center justify-between p-4 border border-[#ccd0d4] rounded-lg hover:border-[#00a651] hover:bg-green-50 transition-all group text-left"
                 >
                   <div>
-                    <span className="block font-bold text-[#1d2327] group-hover:text-[#2271b1]">Guardar Como Novo</span>
+                    <span className="block font-bold text-[#1d2327] group-hover:text-[#008f45]">Guardar Como Novo</span>
                     <span className="text-xs text-[#50575e]">Cria uma nova versão da imagem mantendo a original intacta.</span>
                   </div>
-                  <FileDown className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#2271b1]" />
+                  <FileDown className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#008f45]" />
                 </button>
               </div>
             </div>

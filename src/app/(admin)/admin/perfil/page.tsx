@@ -215,7 +215,7 @@ export default function MeuPerfilPage() {
         <div>
           <h1 className="text-[23px] font-normal text-[#1d2327]">O seu perfil</h1>
           <p className="text-[13px] text-[#50575e] mt-1">
-            <Link href="/admin/utilizadores" className="text-[#2271b1] hover:underline">Utilizadores</Link>
+            <Link href="/admin/utilizadores" className="text-[#008f45] hover:underline">Utilizadores</Link>
             {' '}&rsaquo; O seu perfil
           </p>
         </div>
@@ -301,7 +301,7 @@ export default function MeuPerfilPage() {
                         type="text" 
                         value={form.firstName || ''} 
                         onChange={e => setForm({...form, firstName: e.target.value})}
-                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                         placeholder="Seu nome"
                       />
                     </dd>
@@ -315,7 +315,7 @@ export default function MeuPerfilPage() {
                         type="text" 
                         value={form.lastName || ''} 
                         onChange={e => setForm({...form, lastName: e.target.value})}
-                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                         placeholder="Seu apelido"
                       />
                     </dd>
@@ -329,7 +329,7 @@ export default function MeuPerfilPage() {
                         type="text" 
                         value={form.alcunha || ''} 
                         onChange={e => setForm({...form, alcunha: e.target.value})}
-                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                         placeholder="Como quer ser chamado"
                       />
                     </dd>
@@ -344,7 +344,7 @@ export default function MeuPerfilPage() {
                         value={form.email || ''} 
                         onChange={e => setForm({...form, email: e.target.value})}
                         required
-                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                       />
                     </dd>
                   </div>
@@ -360,7 +360,7 @@ export default function MeuPerfilPage() {
                         type="tel" 
                         value={form.telefone || ''} 
                         onChange={e => setForm({...form, telefone: e.target.value})}
-                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                         placeholder="+258 84 123 4567"
                       />
                     </dd>
@@ -374,7 +374,7 @@ export default function MeuPerfilPage() {
                         type="text" 
                         value={form.profissao || ''} 
                         onChange={e => setForm({...form, profissao: e.target.value})}
-                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                         placeholder="Ex: Jornalista, Engenheiro"
                       />
                     </dd>
@@ -388,7 +388,7 @@ export default function MeuPerfilPage() {
                         type="text" 
                         value={form.cargo || ''} 
                         onChange={e => setForm({...form, cargo: e.target.value})}
-                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                         placeholder="Ex: Editor Chefe"
                       />
                     </dd>
@@ -402,7 +402,7 @@ export default function MeuPerfilPage() {
                         type="url" 
                         value={form.website || ''} 
                         onChange={e => setForm({...form, website: e.target.value})}
-                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                         placeholder="https://..."
                       />
                     </dd>
@@ -420,7 +420,7 @@ export default function MeuPerfilPage() {
                 value={form.bio || ''} 
                 onChange={e => setForm({...form, bio: e.target.value})} 
                 rows={4}
-                className="px-3 py-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[600px] outline-none focus:border-[#2271b1] resize-none"
+                className="px-3 py-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[600px] outline-none focus:border-[#00a651] resize-none"
                 placeholder="Escreva uma breve biografia sobre si..."
               />
             </div>
@@ -445,7 +445,7 @@ export default function MeuPerfilPage() {
                     <select 
                       value={form.displayNameType} 
                       onChange={e => setForm({...form, displayNameType: e.target.value})}
-                      className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1] bg-white"
+                      className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651] bg-white"
                     >
                       <option value="first_name">{form.firstName || 'Nome próprio'}</option>
                       <option value="last_name">{form.lastName || 'Apelido'}</option>
@@ -470,7 +470,7 @@ export default function MeuPerfilPage() {
                       type="password" 
                       value={newPassword} 
                       onChange={e => setNewPassword(e.target.value)}
-                      className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                      className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                       placeholder="Deixe em branco para não alterar"
                     />
                   </dd>
@@ -482,7 +482,7 @@ export default function MeuPerfilPage() {
                       type="password" 
                       value={confirmPassword} 
                       onChange={e => setConfirmPassword(e.target.value)}
-                      className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#2271b1]"
+                      className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
                       placeholder="Repita a nova palavra-passe"
                     />
                     {newPassword && confirmPassword && newPassword !== confirmPassword && (
@@ -500,11 +500,11 @@ export default function MeuPerfilPage() {
           <button
             type="submit"
             disabled={saving}
-            className="h-9 px-5 bg-[#2271b1] text-white text-[13px] font-semibold rounded-md hover:bg-[#135e96] transition-all disabled:opacity-60"
+            className="h-9 px-5 bg-[#00a651] text-white text-[13px] font-semibold rounded-md hover:bg-[#008f45] transition-all disabled:opacity-60"
           >
             {saving ? 'A guardar...' : 'Guardar alterações'}
           </button>
-          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#135e96]">
+          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#006b33]">
             Cancelar
           </Link>
         </div>
