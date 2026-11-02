@@ -186,7 +186,7 @@ export default function TrafegoPage() {
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-green-600" /> Traffic Report
+            <BarChart3 className="w-5 h-5 text-blue-500" /> Traffic Report
           </h2>
           <select 
             value={selectedPeriod}
@@ -238,7 +238,7 @@ export default function TrafegoPage() {
         {/* Summary Statistics */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-green-600" /> Summary Statistics
+            <BarChart3 className="w-5 h-5 text-blue-500" /> Summary Statistics
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -308,7 +308,7 @@ export default function TrafegoPage() {
         {/* Search Engines Summary */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <Search className="w-5 h-5 text-green-600" /> Search Engines Summary
+            <Search className="w-5 h-5 text-blue-500" /> Search Engines Summary
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -341,7 +341,7 @@ export default function TrafegoPage() {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-green-600" /> Last 30 Days Traffic by IP
+            <Globe className="w-5 h-5 text-blue-500" /> Last 30 Days Traffic by IP
           </h2>
           <div className="flex items-center gap-2">
             <button className="flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded text-sm">

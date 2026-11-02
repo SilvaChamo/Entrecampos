@@ -229,7 +229,7 @@ export default function CapacidadesPage() {
                 className="w-full flex items-center justify-between p-4 bg-[#f6f7f7] hover:bg-[#e8e9ea] transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <Icon className="w-5 h-5 text-[#008f45]" />
+                  <Icon className="w-5 h-5 text-[#2271b1]" />
                   <span className="font-semibold text-[#1d2327]">{group.name}</span>
                   <span className="text-sm text-[#50575e]">({groupGranted} de {group.capabilities.length})</span>
                 </div>
@@ -305,10 +305,10 @@ export default function CapacidadesPage() {
       {/* Info Box */}
       <div className="mt-8 bg-green-50 border border-green-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-green-800 text-sm mb-1">Como usar as Capacidades</h4>
-            <ul className="text-sm text-green-700 space-y-1 list-disc list-inside">
+            <h4 className="font-semibold text-blue-800 text-sm mb-1">Como usar as Capacidades</h4>
+            <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
               <li>Selecione um papel no menu dropdown acima</li>
               <li>Clique em cada grupo para expandir as capacidades</li>
               <li>Clique em uma capacidade para conceder ou remover</li>
@@ -316,7 +316,7 @@ export default function CapacidadesPage() {
               <li>□ = Capacidade não concedida</li>
               <li>✕ = Capacidade negada (não pode ser concedida por outra função)</li>
             </ul>
-            <a href="#" className="inline-flex items-center gap-1 text-sm text-green-600 hover:underline mt-2">
+            <a href="#" className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline mt-2">
               Ver Documentação <ChevronRight className="w-3 h-3" />
             </a>
           </div>

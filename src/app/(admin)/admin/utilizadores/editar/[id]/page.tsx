@@ -177,7 +177,7 @@ export default function EditUserPage() {
     return (
       <div className="p-6 text-[#2c3338]">
         <p className="text-red-500">Utilizador não encontrado.</p>
-        <Link href="/admin/utilizadores" className="text-[#008f45] hover:underline mt-2 inline-block">← Voltar aos Utilizadores</Link>
+        <Link href="/admin/utilizadores" className="text-[#2271b1] hover:underline mt-2 inline-block">← Voltar aos Utilizadores</Link>
       </div>
     );
   }
@@ -189,7 +189,7 @@ export default function EditUserPage() {
         <div>
           <h1 className="text-[23px] font-normal text-[#1d2327]">Editar utilizador: <strong>{form.username}</strong></h1>
           <p className="text-[13px] text-[#50575e] mt-1">
-            <Link href="/admin/utilizadores" className="text-[#008f45] hover:underline">Utilizadores</Link>
+            <Link href="/admin/utilizadores" className="text-[#2271b1] hover:underline">Utilizadores</Link>
             {' '}&rsaquo; Editar
           </p>
         </div>
@@ -429,7 +429,7 @@ export default function EditUserPage() {
           >
             {saving ? 'A guardar...' : 'Atualizar utilizador'}
           </button>
-          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#006b33]">
+          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#135e96]">
             Cancelar
           </Link>
         </div>

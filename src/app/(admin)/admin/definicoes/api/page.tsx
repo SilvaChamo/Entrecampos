@@ -59,7 +59,7 @@ export default function DefinicoesAPIPage() {
         {/* API Key */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Key className="w-5 h-5 text-[#008f45]" /> Chave de API
+            <Key className="w-5 h-5 text-[#2271b1]" /> Chave de API
           </h2>
           
           <div className="space-y-4">
@@ -101,13 +101,13 @@ export default function DefinicoesAPIPage() {
         {/* API Documentation */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Code className="w-5 h-5 text-[#008f45]" /> Documentação da API
+            <Code className="w-5 h-5 text-[#2271b1]" /> Documentação da API
           </h2>
           
           <div className="space-y-3">
             <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
               <p className="text-[#50575e] mb-1">// Exemplo: Listar notícias</p>
-              <p className="text-[#008f45]">GET</p>
+              <p className="text-[#2271b1]">GET</p>
               <p className="text-[#1d2327]">https://entrecamposblog.com/api/v1/news</p>
               <p className="text-[#50575e] mt-2">Headers:</p>
               <p className="text-[#1d2327]">Authorization: Bearer {apiKey}</p>
@@ -115,7 +115,7 @@ export default function DefinicoesAPIPage() {
 
             <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
               <p className="text-[#50575e] mb-1">// Exemplo: Criar notícia</p>
-              <p className="text-[#008f45]">POST</p>
+              <p className="text-[#2271b1]">POST</p>
               <p className="text-[#1d2327]">https://entrecamposblog.com/api/v1/news</p>
               <p className="text-[#50575e] mt-2">Body:</p>
               <p className="text-[#1d2327]">{`{"title": "Nova Notícia", "content": "..."}`}</p>
@@ -123,7 +123,7 @@ export default function DefinicoesAPIPage() {
 
             <a 
               href="#" 
-              className="inline-flex items-center gap-2 text-[#008f45] hover:underline"
+              className="inline-flex items-center gap-2 text-[#2271b1] hover:underline"
             >
               Ver documentação completa →
             </a>
@@ -133,7 +133,7 @@ export default function DefinicoesAPIPage() {
         {/* Webhooks */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Webhook className="w-5 h-5 text-[#008f45]" /> Webhooks
+            <Webhook className="w-5 h-5 text-[#2271b1]" /> Webhooks
           </h2>
           
           <p className="text-sm text-[#50575e] mb-4">
@@ -212,15 +212,15 @@ export default function DefinicoesAPIPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-gray-50 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-[#008f45]">1000</p>
+              <p className="text-3xl font-bold text-[#2271b1]">1000</p>
               <p className="text-sm text-[#50575e]">Requisições/hora</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-[#008f45]">100</p>
+              <p className="text-3xl font-bold text-[#2271b1]">100</p>
               <p className="text-sm text-[#50575e]">Uploads/hora</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-[#008f45]">10MB</p>
+              <p className="text-3xl font-bold text-[#2271b1]">10MB</p>
               <p className="text-sm text-[#50575e]">Tamanho máximo</p>
             </div>
           </div>

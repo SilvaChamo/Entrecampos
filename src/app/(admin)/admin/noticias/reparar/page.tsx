@@ -257,7 +257,7 @@ export default function NewsRepairPage() {
                 className="flex items-center gap-2 px-3 py-2 bg-white border border-[#ccd0d4] rounded text-sm font-medium hover:bg-[#f6f7f7] transition-all disabled:opacity-50"
                 title="Recarregar dados"
               >
-                <RefreshCw className={`w-4 h-4 text-[#008f45] ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 text-[#2271b1] ${loading ? 'animate-spin' : ''}`} />
                 Atualizar
               </button>
               <div className="bg-white px-4 py-2 border border-[#ccd0d4] rounded text-sm font-bold">
@@ -303,7 +303,7 @@ export default function NewsRepairPage() {
                         disabled={history.length === 0 || viewingHistoryIndex === 0}
                         className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-white border border-[#ccd0d4] rounded-full shadow-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#f6f7f7] disabled:hover:bg-white transition-all"
                       >
-                        <ChevronLeft className="w-5 h-5 text-[#008f45]" />
+                        <ChevronLeft className="w-5 h-5 text-[#2271b1]" />
                       </button>
 
                       {viewingHistoryIndex !== null ? (
@@ -333,7 +333,7 @@ export default function NewsRepairPage() {
                         disabled={viewingHistoryIndex === null}
                         className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-white border border-[#ccd0d4] rounded-full shadow-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#f6f7f7] disabled:hover:bg-white transition-all"
                       >
-                        <ChevronRight className="w-5 h-5 text-[#008f45]" />
+                        <ChevronRight className="w-5 h-5 text-[#2271b1]" />
                       </button>
                     </div>
 
@@ -381,7 +381,7 @@ export default function NewsRepairPage() {
               <div className="lg:col-span-7">
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                   <h3 className="text-sm font-bold text-[#1d2327] flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-[#008f45]" />
+                    <ImageIcon className="w-4 h-4 text-[#2271b1]" />
                     {manualFilter ? `Resultados para "${manualFilter}"` : 'Sugestões (baseado no título)'}
                   </h3>
                   <div className="flex items-center gap-3">
@@ -397,7 +397,7 @@ export default function NewsRepairPage() {
                     {manualFilter && (
                       <button 
                         onClick={() => setManualFilter(null)}
-                        className="text-xs text-[#008f45] hover:underline"
+                        className="text-xs text-[#2271b1] hover:underline"
                       >
                         Limpar filtro
                       </button>
@@ -440,7 +440,7 @@ export default function NewsRepairPage() {
                               e.stopPropagation();
                               toggleSelectImage(file.name);
                             }}
-                            className="w-4 h-4 rounded border-[#ccd0d4] text-[#008f45] focus:ring-[#00a651] cursor-pointer"
+                            className="w-4 h-4 rounded border-[#ccd0d4] text-[#2271b1] focus:ring-[#00a651] cursor-pointer"
                           />
                           <button 
                             onClick={async (e) => {
@@ -470,7 +470,7 @@ export default function NewsRepairPage() {
                 ) : (
                   <div className="bg-white border border-[#ccd0d4] p-12 rounded-lg text-center">
                     <p className="text-[#50575e] mb-4">Nenhuma sugestão automática encontrada para este título.</p>
-                    <Link href="/admin/media" className="text-[#008f45] hover:underline text-sm font-bold">
+                    <Link href="/admin/media" className="text-[#2271b1] hover:underline text-sm font-bold">
                       Procurar manualmente na Biblioteca
                     </Link>
                   </div>

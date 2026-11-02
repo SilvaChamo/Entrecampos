@@ -27,7 +27,7 @@ export default function DefinicoesUtilizadoresPage() {
       <div className="space-y-6">
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-[#008f45]" /> Registo de Utilizadores
+            <UserPlus className="w-5 h-5 text-[#2271b1]" /> Registo de Utilizadores
           </h2>
           
           <div className="space-y-4">
@@ -67,7 +67,7 @@ export default function DefinicoesUtilizadoresPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-[#008f45]" /> Configurações de Papel
+            <Users className="w-5 h-5 text-[#2271b1]" /> Configurações de Papel
           </h2>
           
           <div className="space-y-4">
@@ -88,7 +88,7 @@ export default function DefinicoesUtilizadoresPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Mail className="w-5 h-5 text-[#008f45]" /> Segurança de Sessão
+            <Mail className="w-5 h-5 text-[#2271b1]" /> Segurança de Sessão
           </h2>
           
           <div className="space-y-4">

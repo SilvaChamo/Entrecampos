@@ -480,13 +480,13 @@ export default function MediaGallery() {
               
               <button 
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-[#f0f0f1] text-[#008f45]' : 'text-[#50575e] hover:text-[#008f45]'}`}
+                className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-[#f0f0f1] text-[#2271b1]' : 'text-[#50575e] hover:text-[#2271b1]'}`}
               >
                 <ListIcon className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-[#f0f0f1] text-[#008f45]' : 'text-[#50575e] hover:text-[#008f45]'}`}
+                className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-[#f0f0f1] text-[#2271b1]' : 'text-[#50575e] hover:text-[#2271b1]'}`}
               >
                 <LayoutGrid className="w-5 h-5" />
               </button>
@@ -527,7 +527,7 @@ export default function MediaGallery() {
                   {canSeeTrash && view === 'galeria' && (
                     <span
                       onClick={selectedIds.size > 0 ? () => archive(Array.from(selectedIds)) : undefined}
-                      className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#008f45] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                      className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#2271b1] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
                     >
                       Arquivar ({selectedIds.size})
                     </span>
@@ -541,7 +541,7 @@ export default function MediaGallery() {
                   {special && (
                     <span
                       onClick={selectedIds.size > 0 ? () => restore(Array.from(selectedIds)) : undefined}
-                      className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#008f45] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                      className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#2271b1] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
                     >
                       Restaurar ({selectedIds.size})
                     </span>
@@ -648,7 +648,7 @@ export default function MediaGallery() {
                         <div className="flex flex-col min-w-0">
                           <button 
                             onClick={() => openDetails(file)}
-                            className="text-[#008f45] font-bold hover:text-[#006b33] text-left truncate whitespace-nowrap block w-full"
+                            className="text-[#2271b1] font-bold hover:text-[#135e96] text-left truncate whitespace-nowrap block w-full"
                           >
                             {file.name}
                           </button>
@@ -663,11 +663,11 @@ export default function MediaGallery() {
                     </td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => openDetails(file)} className="text-[#008f45] hover:underline">Editar</button>
+                        <button onClick={() => openDetails(file)} className="text-[#2271b1] hover:underline">Editar</button>
                         <span className="text-[#ccd0d4]">|</span>
                         <button onClick={() => deleteSingle(file.name)} className="text-[#d63638] hover:underline">Eliminar</button>
                         <span className="text-[#ccd0d4]">|</span>
-                        <button onClick={() => copyUrl(file.name)} className="text-[#008f45] hover:underline">Ver</button>
+                        <button onClick={() => copyUrl(file.name)} className="text-[#2271b1] hover:underline">Ver</button>
                       </div>
                     </td>
                   </tr>
@@ -720,7 +720,7 @@ export default function MediaGallery() {
                   <div className="w-full max-w-4xl bg-white border border-[#ccd0d4] shadow-lg p-6">
                     <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                       <h3 className="text-xl font-bold">Ferramentas de Edição</h3>
-                      <button onClick={() => setIsEditingImage(false)} className="text-sm text-[#008f45] hover:underline">Voltar aos detalhes</button>
+                      <button onClick={() => setIsEditingImage(false)} className="text-sm text-[#2271b1] hover:underline">Voltar aos detalhes</button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -758,13 +758,13 @@ export default function MediaGallery() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => { setEditWidth(Math.round(editWidth*0.5)); setEditHeight(Math.round(editHeight*0.5)); }} className="text-[11px] text-[#008f45] hover:underline">50%</button>
-                            <button onClick={() => { setEditWidth(Math.round(editWidth*0.75)); setEditHeight(Math.round(editHeight*0.75)); }} className="text-[11px] text-[#008f45] hover:underline">75%</button>
+                            <button onClick={() => { setEditWidth(Math.round(editWidth*0.5)); setEditHeight(Math.round(editHeight*0.5)); }} className="text-[11px] text-[#2271b1] hover:underline">50%</button>
+                            <button onClick={() => { setEditWidth(Math.round(editWidth*0.75)); setEditHeight(Math.round(editHeight*0.75)); }} className="text-[11px] text-[#2271b1] hover:underline">75%</button>
                           </div>
                           
                           <div className="bg-[#f6f7f7] p-2 border border-[#ccd0d4] rounded-[2px] mt-2">
                             <p className="text-[11px] text-gray-600">Tamanho atual: <strong>{formatSize(selectedFile.metadata?.size || 0)}</strong></p>
-                            <p className="text-[11px] text-[#008f45]">Tamanho final estimado: <strong>{estimatedSize ? formatSize(estimatedSize) : 'A calcular...'}</strong></p>
+                            <p className="text-[11px] text-[#2271b1]">Tamanho final estimado: <strong>{estimatedSize ? formatSize(estimatedSize) : 'A calcular...'}</strong></p>
                           </div>
                         </div>
 
@@ -861,15 +861,15 @@ export default function MediaGallery() {
                       value={getPublicUrl(selectedFile.name)}
                       className="w-full text-[11px] border border-[#ccd0d4] p-1.5 bg-[#f0f0f1] rounded-[3px]"
                     />
-                    <button onClick={() => copyUrl(selectedFile.name)} className="text-[11px] text-[#008f45] hover:underline text-left mt-1">Copiar URL</button>
+                    <button onClick={() => copyUrl(selectedFile.name)} className="text-[11px] text-[#2271b1] hover:underline text-left mt-1">Copiar URL</button>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-[#ccd0d4] flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     {view !== 'arquivo' && <button onClick={() => deleteSingle(selectedFile.name)} className="text-[12px] text-[#d63638] hover:underline">{showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'}</button>}
-                    {canSeeTrash && view === 'galeria' && <button onClick={() => archive([selectedFile.name])} className="text-[12px] text-[#008f45] hover:underline">Arquivar</button>}
-                    {special && <button onClick={() => restore([selectedFile.name])} className="text-[12px] text-[#008f45] hover:underline">Restaurar</button>}
+                    {canSeeTrash && view === 'galeria' && <button onClick={() => archive([selectedFile.name])} className="text-[12px] text-[#2271b1] hover:underline">Arquivar</button>}
+                    {special && <button onClick={() => restore([selectedFile.name])} className="text-[12px] text-[#2271b1] hover:underline">Restaurar</button>}
                   </div>
                   <button 
                     onClick={saveMetadata}

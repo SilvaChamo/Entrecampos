@@ -86,7 +86,7 @@ export default function TrafegoRelatoriosPage() {
               <tr key={report.id} className="hover:bg-[#f6f7f7]">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-[#008f45]" />
+                    <FileText className="w-5 h-5 text-[#2271b1]" />
                     <span className="font-medium text-[#1d2327]">{report.name}</span>
                   </div>
                 </td>
@@ -110,7 +110,7 @@ export default function TrafegoRelatoriosPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button className="p-2 text-[#008f45] hover:bg-green-50 rounded">
+                  <button className="p-2 text-[#2271b1] hover:bg-green-50 rounded">
                     <Download className="w-4 h-4" />
                   </button>
                 </td>

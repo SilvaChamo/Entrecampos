@@ -431,18 +431,18 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <Link href="/" className="flex items-center gap-2 hover:text-[#39ff14]">
+          <Link href="/" className="flex items-center gap-2 hover:text-[#72aee6]">
             <Settings className="w-4 h-4 max-sm:hidden" />
             <span className="font-bold">EntreCampos</span>
           </Link>
           
           <div className="flex items-center gap-3 lg:gap-4">
             {/* "Novo" sempre à vista (também no telemóvel): escrever e publicar uma notícia */}
-            <Link href="/admin/noticias/nova" className="flex items-center gap-1.5 hover:text-[#39ff14] max-lg:bg-[#00a651] max-lg:px-3 max-lg:py-2 max-lg:rounded max-lg:text-white">
+            <Link href="/admin/noticias/nova" className="flex items-center gap-1.5 hover:text-[#72aee6] max-lg:bg-[#00a651] max-lg:px-3 max-lg:py-2 max-lg:rounded max-lg:text-white">
               <Plus className="w-4 h-4" />
               <span>Novo</span>
             </Link>
-            <Link href="/" target="_blank" className="hidden md:flex items-center gap-1.5 hover:text-[#39ff14]">
+            <Link href="/" target="_blank" className="hidden md:flex items-center gap-1.5 hover:text-[#72aee6]">
               <ExternalLink className="w-4 h-4" />
               <span>Ver Site</span>
             </Link>
@@ -472,7 +472,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               <button 
                 key={r}
                 onClick={() => setRole(r)}
-                className={`w-full text-left px-3 py-1 text-[11px] hover:text-[#39ff14] ${user?.role === r ? 'text-[#008f45] font-bold' : 'text-gray-300'}`}
+                className={`w-full text-left px-3 py-1 text-[11px] hover:text-[#72aee6] ${user?.role === r ? 'text-[#2271b1] font-bold' : 'text-gray-300'}`}
               >
                 {r}
               </button>

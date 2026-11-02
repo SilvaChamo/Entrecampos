@@ -56,8 +56,8 @@ export default function LiteSpeedConfigPage() {
 
       {/* Aviso */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-green-800">
+        <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-blue-800">
           Alterar estas configurações afeta diretamente a performance do site. 
           Teste sempre após fazer mudanças significativas.
         </p>
@@ -67,7 +67,7 @@ export default function LiteSpeedConfigPage() {
         {/* Cache Settings */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#008f45]" /> Cache de Páginas
+            <Settings className="w-5 h-5 text-[#2271b1]" /> Cache de Páginas
           </h2>
           
           <div className="space-y-4">
@@ -114,7 +114,7 @@ export default function LiteSpeedConfigPage() {
         {/* Optimization Settings */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#008f45]" /> Otimização
+            <Settings className="w-5 h-5 text-[#2271b1]" /> Otimização
           </h2>
           
           <div className="space-y-4">

@@ -79,7 +79,7 @@ export default function RecuperarSenhaPage() {
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            <Link href="/login" className="text-[#008f45] hover:underline font-medium">Voltar ao login</Link>
+            <Link href="/login" className="text-[#2271b1] hover:underline font-medium">Voltar ao login</Link>
           </p>
         </form>
       </div>

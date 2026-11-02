@@ -154,8 +154,8 @@ export default function PreviewProfilePage({ role }: PreviewProfilePageProps) {
 
       {/* Informações adicionais */}
       <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-        <h3 className="font-semibold text-green-800 text-sm mb-2">Permissões do {userData.role}</h3>
-        <ul className="text-[13px] text-green-700 space-y-1">
+        <h3 className="font-semibold text-blue-800 text-sm mb-2">Permissões do {userData.role}</h3>
+        <ul className="text-[13px] text-blue-700 space-y-1">
           {role === 'editor' && (
             <>
               <li>• Pode revisar e publicar notícias</li>

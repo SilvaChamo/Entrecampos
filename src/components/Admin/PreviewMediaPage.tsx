@@ -86,7 +86,7 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
       {/* Ações em massa - só se puder selecionar */}
       {canSelect && selectedFiles.size > 0 && (
         <div className="flex items-center gap-2 mb-4 p-2 bg-green-50 border border-green-200 rounded">
-          <span className="text-sm text-green-700">{selectedFiles.size} ficheiro(s) selecionado(s)</span>
+          <span className="text-sm text-blue-700">{selectedFiles.size} ficheiro(s) selecionado(s)</span>
           {canDelete && (
             <button className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded">
               <Trash2 className="w-4 h-4" /> Eliminar
@@ -183,7 +183,7 @@ export default function PreviewMediaPage({ role }: PreviewMediaPageProps) {
                       <span className="text-lg">
                         {file.name.endsWith('.mp4') ? '🎥' : file.name.endsWith('.pdf') ? '📄' : '🖼️'}
                       </span>
-                      <span className="text-[13px] text-[#008f45] hover:underline cursor-pointer">{file.name}</span>
+                      <span className="text-[13px] text-[#2271b1] hover:underline cursor-pointer">{file.name}</span>
                     </div>
                   </td>
                   <td className="p-3 text-[13px] text-[#50575e]">{file.author}</td>

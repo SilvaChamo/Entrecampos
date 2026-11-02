@@ -325,7 +325,7 @@ export default function AddUserPage() {
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Adicionar novo utilizador
           </button>
-          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#006b33]">
+          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#135e96]">
             Cancelar
           </Link>
         </div>

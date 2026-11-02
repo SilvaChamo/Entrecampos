@@ -197,7 +197,7 @@ export default function MediaCleanupPage() {
                 if (selectedNames.size === orphans.length) setSelectedNames(new Set());
                 else setSelectedNames(new Set(orphans.map(f => f.name)));
               }}
-              className="text-sm text-[#008f45] hover:underline font-medium whitespace-nowrap"
+              className="text-sm text-[#2271b1] hover:underline font-medium whitespace-nowrap"
             >
               {selectedNames.size === orphans.length ? 'Desmarcar Tudo' : 'Selecionar Tudo'}
             </button>
@@ -355,7 +355,7 @@ export default function MediaCleanupPage() {
                           <FileText className="w-4 h-4 text-amber-600" />
                           <span className="text-sm font-medium text-amber-900 truncate max-w-[300px]">{news.title}</span>
                         </div>
-                        <Link href={`/admin/noticias/editar/${news.id}`} className="text-xs text-[#008f45] hover:underline">Ver Notícia</Link>
+                        <Link href={`/admin/noticias/editar/${news.id}`} className="text-xs text-[#2271b1] hover:underline">Ver Notícia</Link>
                       </div>
                     ))
                   ) : (

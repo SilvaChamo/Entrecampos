@@ -157,7 +157,7 @@ export default function CategoriasPage() {
                       />
                     ) : (
                       <div className="flex items-center gap-2">
-                        <Folder className="w-4 h-4 text-[#008f45]" />
+                        <Folder className="w-4 h-4 text-[#2271b1]" />
                         <span className="font-medium text-[#1d2327]">{category.name}</span>
                       </div>
                     )}
@@ -211,7 +211,7 @@ export default function CategoriasPage() {
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 hover:opacity-100">
                         <button 
                           onClick={() => handleEdit(category)}
-                          className="p-2 text-[#008f45] hover:bg-green-50 rounded"
+                          className="p-2 text-[#2271b1] hover:bg-green-50 rounded"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>

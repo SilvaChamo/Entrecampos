@@ -88,7 +88,7 @@ export default function ArquivadasPage() {
 
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-          <span className="text-sm font-medium text-green-700">{selectedIds.size} selecionado(s)</span>
+          <span className="text-sm font-medium text-blue-700">{selectedIds.size} selecionado(s)</span>
           <button
             onClick={() => restore(Array.from(selectedIds))}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#00a651] text-white text-sm rounded-md hover:bg-[#008f46]"

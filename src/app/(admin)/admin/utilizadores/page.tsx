@@ -136,7 +136,7 @@ export default function UsersAdminPage() {
             <button
               key={role}
               onClick={() => setFilter(role)}
-              className={`hover:text-[#008f45] transition-colors ${filter === role ? 'font-bold text-black' : 'text-[#008f45]'}`}
+              className={`hover:text-[#2271b1] transition-colors ${filter === role ? 'font-bold text-black' : 'text-[#2271b1]'}`}
             >
               {role} <span className="text-gray-400 font-normal">({count})</span>
             </button>
@@ -214,14 +214,14 @@ export default function UsersAdminPage() {
                         />
                       )}
                       <div className="flex flex-col">
-                        <Link href={`/admin/utilizadores/editar/${user.id}`} className="text-[#008f45] font-bold text-[14px] hover:text-[#006b33]">
+                        <Link href={`/admin/utilizadores/editar/${user.id}`} className="text-[#2271b1] font-bold text-[14px] hover:text-[#135e96]">
                           {user.username}
                         </Link>
                         {/* Hover actions (visible on row hover) */}
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity text-[11px] font-medium mt-1">
-                          <Link href={`/admin/utilizadores/editar/${user.id}`} className="text-[#008f45] hover:text-[#006b33]">Editar</Link>
+                          <Link href={`/admin/utilizadores/editar/${user.id}`} className="text-[#2271b1] hover:text-[#135e96]">Editar</Link>
                           <span className="text-gray-300">|</span>
-                          <Link href={`/admin/utilizadores/ver/${user.id}`} className="text-[#008f45] hover:text-[#006b33]">Ver</Link>
+                          <Link href={`/admin/utilizadores/ver/${user.id}`} className="text-[#2271b1] hover:text-[#135e96]">Ver</Link>
                           {!user.isAdmin && (
                             <>
                               <span className="text-gray-300">|</span>
@@ -237,7 +237,7 @@ export default function UsersAdminPage() {
                           <span className="text-gray-300">|</span>
                           <button
                             onClick={() => handleResetPassword(user)}
-                            className="text-[#008f45] hover:text-[#006b33]"
+                            className="text-[#2271b1] hover:text-[#135e96]"
                           >
                             Enviar reposição de senha
                           </button>
@@ -248,11 +248,11 @@ export default function UsersAdminPage() {
                   <td className="p-3 text-[#50575e]">{user.name}</td>
                   <td className="p-3 text-[#50575e]">{user.alcunha || '—'}</td>
                   <td className="p-3">
-                    <a href={`mailto:${user.email}`} className="text-[#008f45] hover:underline">{user.email}</a>
+                    <a href={`mailto:${user.email}`} className="text-[#2271b1] hover:underline">{user.email}</a>
                   </td>
                   <td className="p-3 text-[#50575e]">{user.role}</td>
                   <td className="p-3 text-center">
-                    <Link href={`/admin/noticias?autor=${user.username}`} className="text-[#008f45] font-bold hover:underline">
+                    <Link href={`/admin/noticias?autor=${user.username}`} className="text-[#2271b1] font-bold hover:underline">
                       {user.articles}
                     </Link>
                   </td>

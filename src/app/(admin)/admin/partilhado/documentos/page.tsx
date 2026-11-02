@@ -23,7 +23,7 @@ export default function DocumentosPage() {
     switch (type) {
       case 'pdf': return <File className="w-8 h-8 text-red-500" />;
       case 'xlsx': return <FileSpreadsheet className="w-8 h-8 text-green-500" />;
-      case 'docx': return <FileText className="w-8 h-8 text-green-600" />;
+      case 'docx': return <FileText className="w-8 h-8 text-blue-500" />;
       default: return <FileCode className="w-8 h-8 text-gray-500" />;
     }
   };
@@ -90,7 +90,7 @@ export default function DocumentosPage() {
                 <td className="px-4 py-3 text-[#50575e]">{doc.date}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button className="p-1.5 text-[#008f45] hover:bg-green-50 rounded" title="Visualizar">
+                    <button className="p-1.5 text-[#2271b1] hover:bg-green-50 rounded" title="Visualizar">
                       <Eye className="w-4 h-4" />
                     </button>
                     <button className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Download">

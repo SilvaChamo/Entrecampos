@@ -28,7 +28,7 @@ export default function DefinicoesSegurancaPage() {
       <div className="space-y-6">
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Lock className="w-5 h-5 text-[#008f45]" /> Proteção de Acesso
+            <Lock className="w-5 h-5 text-[#2271b1]" /> Proteção de Acesso
           </h2>
           
           <div className="space-y-4">
@@ -73,7 +73,7 @@ export default function DefinicoesSegurancaPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[#008f45]" /> Passwords
+            <Shield className="w-5 h-5 text-[#2271b1]" /> Passwords
           </h2>
           
           <div className="space-y-4">
@@ -97,7 +97,7 @@ export default function DefinicoesSegurancaPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-[#008f45]" /> Autenticação de Dois Fatores
+            <Smartphone className="w-5 h-5 text-[#2271b1]" /> Autenticação de Dois Fatores
           </h2>
           
           <div className="space-y-4">

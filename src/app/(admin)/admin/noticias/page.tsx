@@ -451,20 +451,20 @@ export default function NewsAdminPage() {
                         <div className="flex flex-col gap-1 min-w-0 max-md:w-full">
                           <div className="flex items-center gap-2">
                             {item.status === 'Archived' && <Recycle className="w-4 h-4 text-gray-400" />}
-                            <Link href={`/admin/noticias/editar/${item.id}`} className="text-[#008f45] font-bold text-[14px] hover:text-[#006b33] block">
+                            <Link href={`/admin/noticias/editar/${item.id}`} className="text-[#2271b1] font-bold text-[14px] hover:text-[#135e96] block">
                               {item.title}
                             </Link>
                           </div>
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 opacity-0 group-hover:opacity-100 max-lg:opacity-100 transition-opacity text-[11px] max-lg:text-[13px] font-medium text-[#008f45] [&_button]:max-lg:py-1 [&_a]:max-lg:py-1">
-                            <Link href={`/admin/noticias/editar/${item.id}`} className="hover:text-[#006b33]">Editar</Link>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 opacity-0 group-hover:opacity-100 max-lg:opacity-100 transition-opacity text-[11px] max-lg:text-[13px] font-medium text-[#2271b1] [&_button]:max-lg:py-1 [&_a]:max-lg:py-1">
+                            <Link href={`/admin/noticias/editar/${item.id}`} className="hover:text-[#135e96]">Editar</Link>
                             <span className="text-gray-300">|</span>
-                            <button onClick={() => handleQuickEdit(item)} className="hover:text-[#006b33]">Edição rápida</button>
+                            <button onClick={() => handleQuickEdit(item)} className="hover:text-[#135e96]">Edição rápida</button>
                             <span className="text-gray-300">|</span>
                             <button onClick={() => deleteNews(item.id, item.title)} className="text-[#d63638] hover:text-red-700">Lixo</button>
                             <span className="text-gray-300">|</span>
-                            <button onClick={() => archiveNews(item.id, item.title)} className="hover:text-[#006b33]">Arquivar</button>
+                            <button onClick={() => archiveNews(item.id, item.title)} className="hover:text-[#135e96]">Arquivar</button>
                             <span className="text-gray-300">|</span>
-                            <Link href={`/noticias/${item.slug}`} target="_blank" className="hover:text-[#006b33]">Ver</Link>
+                            <Link href={`/noticias/${item.slug}`} target="_blank" className="hover:text-[#135e96]">Ver</Link>
                           </div>
                         </div>
                       </div>
@@ -472,7 +472,7 @@ export default function NewsAdminPage() {
                     <td data-label="Categoria" className={`p-3 align-top max-md:block max-md:p-0 max-md:pt-2 ${LBL}`}>
                       <button
                         onClick={() => setFilterCategory(item.category)}
-                        className="text-[#008f45] hover:text-[#006b33] capitalize text-left"
+                        className="text-[#2271b1] hover:text-[#135e96] capitalize text-left"
                       >
                         {item.category}
                       </button>
@@ -496,7 +496,7 @@ export default function NewsAdminPage() {
                       <div className="flex items-start gap-2">
                         <div className="w-10 h-6 bg-[#f0f0f1] border border-[#ccd0d4] rounded flex items-center justify-center text-[10px] font-bold text-gray-400">N/A</div>
                         <div className="flex flex-col gap-0.5 text-[11px] text-[#50575e]">
-                          <p><strong>Palavra-chave:</strong> <span className="text-[#008f45] cursor-pointer hover:underline">Não definido</span></p>
+                          <p><strong>Palavra-chave:</strong> <span className="text-[#2271b1] cursor-pointer hover:underline">Não definido</span></p>
                           <p><strong>Esquema:</strong> Artigo</p>
                           <p className="flex items-center gap-2">
                             <span>Ligações:</span>

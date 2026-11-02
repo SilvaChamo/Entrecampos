@@ -215,7 +215,7 @@ export default function MeuPerfilPage() {
         <div>
           <h1 className="text-[23px] font-normal text-[#1d2327]">O seu perfil</h1>
           <p className="text-[13px] text-[#50575e] mt-1">
-            <Link href="/admin/utilizadores" className="text-[#008f45] hover:underline">Utilizadores</Link>
+            <Link href="/admin/utilizadores" className="text-[#2271b1] hover:underline">Utilizadores</Link>
             {' '}&rsaquo; O seu perfil
           </p>
         </div>
@@ -504,7 +504,7 @@ export default function MeuPerfilPage() {
           >
             {saving ? 'A guardar...' : 'Guardar alterações'}
           </button>
-          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#006b33]">
+          <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#135e96]">
             Cancelar
           </Link>
         </div>

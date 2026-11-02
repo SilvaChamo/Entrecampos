@@ -37,7 +37,7 @@ export default function DefinicoesMediaPage() {
       <div className="space-y-6">
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Upload className="w-5 h-5 text-[#008f45]" /> Upload de Ficheiros
+            <Upload className="w-5 h-5 text-[#2271b1]" /> Upload de Ficheiros
           </h2>
           
           <div className="space-y-4">
@@ -74,7 +74,7 @@ export default function DefinicoesMediaPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Image className="w-5 h-5 text-[#008f45]" /> Processamento de Imagens
+            <Image className="w-5 h-5 text-[#2271b1]" /> Processamento de Imagens
           </h2>
           
           <div className="space-y-4">

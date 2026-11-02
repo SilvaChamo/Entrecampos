@@ -178,7 +178,7 @@ export default function EtiquetasPage() {
                   </>
                 ) : (
                   <>
-                    <Tag className="w-3 h-3 text-[#008f45]" />
+                    <Tag className="w-3 h-3 text-[#2271b1]" />
                     <span className="text-sm font-medium text-[#1d2327]">{tag.name}</span>
                     <span className="text-xs text-[#50575e] bg-white px-1.5 py-0.5 rounded-full">
                       {tag.count}
@@ -186,7 +186,7 @@ export default function EtiquetasPage() {
                     <div className="hidden group-hover:flex items-center gap-1 ml-1">
                       <button 
                         onClick={() => handleEdit(tag)}
-                        className="p-1 text-[#008f45] hover:bg-green-50 rounded"
+                        className="p-1 text-[#2271b1] hover:bg-green-50 rounded"
                       >
                         <Edit2 className="w-3 h-3" />
                       </button>

@@ -108,7 +108,7 @@ export default function PendingNewsPage() {
                         </div>
                       )}
                       <div>
-                        <Link href={`/admin/noticias/editar/${item.id}`} className="text-[#008f45] font-bold text-[14px] hover:underline block">
+                        <Link href={`/admin/noticias/editar/${item.id}`} className="text-[#2271b1] font-bold text-[14px] hover:underline block">
                           {item.title}
                         </Link>
                         <span className="text-[11px] text-gray-400 capitalize">{item.category}</span>

@@ -300,7 +300,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
                     <label key={cat} className="flex items-start gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        className="mt-0.5 rounded border-[#8c8f94] text-[#008f45] focus:ring-[#00a651]"
+                        className="mt-0.5 rounded border-[#8c8f94] text-[#2271b1] focus:ring-[#00a651]"
                         checked={formData.categories.some((c) => catKey(c) === catKey(cat))}
                         onChange={() => toggleCategory(cat)}
                       />
@@ -322,7 +322,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
                   <button
                     type="button"
                     onClick={() => setIsImageSelectorOpen(true)}
-                    className="text-[#008f45] text-[13px] hover:underline underline-offset-2"
+                    className="text-[#2271b1] text-[13px] hover:underline underline-offset-2"
                   >
                     Substituir imagem
                   </button>
@@ -339,7 +339,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
                 <button
                   type="button"
                   onClick={() => setIsImageSelectorOpen(true)}
-                  className="text-[#008f45] text-[13px] hover:text-[#006b33] underline underline-offset-2 text-left"
+                  className="text-[#2271b1] text-[13px] hover:text-[#135e96] underline underline-offset-2 text-left"
                 >
                   Definir imagem de destaque
                 </button>

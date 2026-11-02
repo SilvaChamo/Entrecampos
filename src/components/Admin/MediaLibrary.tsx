@@ -287,8 +287,8 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
       {/* Toolbar Superior */}
       <div className="bg-white border-b border-[#ccd0d4] p-2 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0 z-10 shadow-sm">
         <div className="flex items-center gap-1">
-          <button className="p-1.5 text-[#50575e] hover:text-[#008f45]"><ListIcon className="w-5 h-5" /></button>
-          <button className="p-1.5 bg-[#f0f0f1] text-[#008f45] rounded-[3px]"><LayoutGrid className="w-5 h-5" /></button>
+          <button className="p-1.5 text-[#50575e] hover:text-[#2271b1]"><ListIcon className="w-5 h-5" /></button>
+          <button className="p-1.5 bg-[#f0f0f1] text-[#2271b1] rounded-[3px]"><LayoutGrid className="w-5 h-5" /></button>
           
           {!isBulkMode ? (
             <button 
@@ -420,7 +420,7 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
               </div>
 
               <div className="pt-4 border-t border-[#ccd0d4] flex flex-wrap gap-2">
-                <button onClick={() => setIsEditorOpen(true)} className="flex-1 h-9 bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-sm font-bold hover:bg-gray-100">Editar Imagem</button>
+                <button onClick={() => setIsEditorOpen(true)} className="flex-1 h-9 bg-white border border-[#00a651] text-[#2271b1] rounded-[3px] text-sm font-bold hover:bg-gray-100">Editar Imagem</button>
                 <button onClick={saveMetadata} disabled={savingMetadata} className="flex-1 h-9 bg-[#00a651] text-white rounded-[3px] text-sm font-bold hover:bg-[#008f45] disabled:opacity-50">{savingMetadata ? '...' : 'Salvar'}</button>
                 <button onClick={() => deleteSingle(activeFile.name)} className="h-9 px-3 border border-red-600 text-red-600 rounded-[3px] hover:bg-red-600 hover:text-white"><Trash2 className="w-4 h-4" /></button>
               </div>
@@ -459,8 +459,8 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => { setEditWidth(Math.round(editWidth*0.5)); setEditHeight(Math.round(editHeight*0.5)); }} className="text-[11px] text-[#008f45] hover:underline">50%</button>
-                  <button onClick={() => { setEditWidth(Math.round(editWidth*0.75)); setEditHeight(Math.round(editHeight*0.75)); }} className="text-[11px] text-[#008f45] hover:underline">75%</button>
+                  <button onClick={() => { setEditWidth(Math.round(editWidth*0.5)); setEditHeight(Math.round(editHeight*0.5)); }} className="text-[11px] text-[#2271b1] hover:underline">50%</button>
+                  <button onClick={() => { setEditWidth(Math.round(editWidth*0.75)); setEditHeight(Math.round(editHeight*0.75)); }} className="text-[11px] text-[#2271b1] hover:underline">75%</button>
                 </div>
               </div>
 
@@ -504,10 +504,10 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                   className="w-full flex items-center justify-between p-4 border border-[#ccd0d4] rounded-lg hover:border-[#00a651] hover:bg-green-50 transition-all group text-left"
                 >
                   <div>
-                    <span className="block font-bold text-[#1d2327] group-hover:text-[#008f45]">Substituir Original</span>
+                    <span className="block font-bold text-[#1d2327] group-hover:text-[#2271b1]">Substituir Original</span>
                     <span className="text-xs text-[#50575e]">O ficheiro antigo será removido e substituído por este.</span>
                   </div>
-                  <RefreshCw className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#008f45]" />
+                  <RefreshCw className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#2271b1]" />
                 </button>
 
                 <button 
@@ -516,10 +516,10 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
                   className="w-full flex items-center justify-between p-4 border border-[#ccd0d4] rounded-lg hover:border-[#00a651] hover:bg-green-50 transition-all group text-left"
                 >
                   <div>
-                    <span className="block font-bold text-[#1d2327] group-hover:text-[#008f45]">Guardar Como Novo</span>
+                    <span className="block font-bold text-[#1d2327] group-hover:text-[#2271b1]">Guardar Como Novo</span>
                     <span className="text-xs text-[#50575e]">Cria uma nova versão da imagem mantendo a original intacta.</span>
                   </div>
-                  <FileDown className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#008f45]" />
+                  <FileDown className="w-5 h-5 text-[#ccd0d4] group-hover:text-[#2271b1]" />
                 </button>
               </div>
             </div>

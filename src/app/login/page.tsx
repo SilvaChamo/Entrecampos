@@ -147,14 +147,14 @@ export default function LoginPage() {
           </button>
 
           <p className="text-center text-sm">
-            <Link href="/recuperar-senha" className="text-[#008f45] hover:underline font-medium">
+            <Link href="/recuperar-senha" className="text-[#2271b1] hover:underline font-medium">
               Esqueceu a palavra-passe?
             </Link>
           </p>
 
           <p className="text-center text-sm text-gray-500">
             Ainda não tem conta?{' '}
-            <Link href="/register" className="text-[#008f45] hover:underline font-medium">
+            <Link href="/register" className="text-[#2271b1] hover:underline font-medium">
               Registe-se aqui
             </Link>
           </p>

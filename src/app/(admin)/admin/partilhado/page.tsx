@@ -152,7 +152,7 @@ export default function PartilhadoPage() {
     switch (type) {
       case 'video': return <FileVideo className="w-8 h-8 text-red-500" />;
       case 'image': return <FileImage className="w-8 h-8 text-green-500" />;
-      case 'document': return <FileText className="w-8 h-8 text-green-600" />;
+      case 'document': return <FileText className="w-8 h-8 text-blue-500" />;
       default: return <FolderOpen className="w-8 h-8 text-gray-500" />;
     }
   };
@@ -166,8 +166,8 @@ export default function PartilhadoPage() {
             onClick={handleBack} 
             className="flex items-center gap-2 px-4 bg-white border border-[#ccd0d4] rounded-lg hover:bg-[#f6f7f7] transition-colors"
           >
-            <ChevronLeft className="w-5 h-5 text-[#008f45]" />
-            <span className="text-sm text-[#008f45] font-medium">Voltar</span>
+            <ChevronLeft className="w-5 h-5 text-[#2271b1]" />
+            <span className="text-sm text-[#2271b1] font-medium">Voltar</span>
           </button>
         )}
         <div className="flex flex-col justify-center">
@@ -451,7 +451,7 @@ export default function PartilhadoPage() {
                     {contributor.isGuest ? (
                       <Mail className="w-5 h-5 text-yellow-600" />
                     ) : (
-                      <User className="w-5 h-5 text-[#008f45]" />
+                      <User className="w-5 h-5 text-[#2271b1]" />
                     )}
                   </div>
 
@@ -479,7 +479,7 @@ export default function PartilhadoPage() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button 
                       onClick={(e) => { e.stopPropagation(); alert(`Ver: ${contributor.name}`); }}
-                      className="p-2 text-[#008f45] hover:bg-green-50 rounded-md transition-colors"
+                      className="p-2 text-[#2271b1] hover:bg-green-50 rounded-md transition-colors"
                       title="Ver Conteúdo"
                     >
                       <Eye className="w-4 h-4" />
@@ -551,11 +551,11 @@ export default function PartilhadoPage() {
                   </div>
                   <div className="flex items-center gap-4 text-sm text-[#50575e]">
                     <span className="flex items-center gap-1.5">
-                      <Folder className="w-4 h-4 text-[#008f45]" />
+                      <Folder className="w-4 h-4 text-[#2271b1]" />
                       <strong className="text-[#1d2327]">{getContributorItems().length}</strong> ficheiros partilhados
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-[#008f45]" />
+                      <Calendar className="w-4 h-4 text-[#2271b1]" />
                       Membro desde <strong className="text-[#1d2327]">2026</strong>
                     </span>
                   </div>

@@ -40,7 +40,7 @@ export default function DefinicoesGeraisPage() {
         {/* Site Info */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-[#008f45]" /> Informações do Site
+            <Globe className="w-5 h-5 text-[#2271b1]" /> Informações do Site
           </h2>
           
           <div className="space-y-4">
@@ -69,7 +69,7 @@ export default function DefinicoesGeraisPage() {
         {/* Branding */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <ImageIcon className="w-5 h-5 text-[#008f45]" /> Identidade Visual
+            <ImageIcon className="w-5 h-5 text-[#2271b1]" /> Identidade Visual
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -96,7 +96,7 @@ export default function DefinicoesGeraisPage() {
         {/* Contact */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Mail className="w-5 h-5 text-[#008f45]" /> Contactos
+            <Mail className="w-5 h-5 text-[#2271b1]" /> Contactos
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

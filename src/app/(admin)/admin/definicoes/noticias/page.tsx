@@ -28,7 +28,7 @@ export default function DefinicoesNoticiasPage() {
       <div className="space-y-6">
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Newspaper className="w-5 h-5 text-[#008f45]" /> Configurações de Publicação
+            <Newspaper className="w-5 h-5 text-[#2271b1]" /> Configurações de Publicação
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -60,7 +60,7 @@ export default function DefinicoesNoticiasPage() {
 
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
           <h2 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#008f45]" /> Opções de Moderação
+            <Settings className="w-5 h-5 text-[#2271b1]" /> Opções de Moderação
           </h2>
           
           <div className="space-y-4">

@@ -75,7 +75,7 @@ export default function ReviewedNewsPage() {
                         <div className="w-12 h-12 bg-gray-100 border border-gray-200" />
                       )}
                       <div>
-                        <Link href={`/admin/noticias/editar/${item.id}`} className="text-[#008f45] font-bold text-[14px] hover:underline block">
+                        <Link href={`/admin/noticias/editar/${item.id}`} className="text-[#2271b1] font-bold text-[14px] hover:underline block">
                           {item.title}
                         </Link>
                         <span className="text-[11px] text-gray-400 capitalize">{item.category}</span>
@@ -85,7 +85,7 @@ export default function ReviewedNewsPage() {
                   <td className="p-4 whitespace-nowrap text-[#50575e]">{item.author_name || '—'}</td>
                   <td className="p-4 whitespace-nowrap text-[#50575e]">{new Date(item.date).toLocaleDateString('pt-PT')}</td>
                   <td className="p-4 text-right space-x-2">
-                    <Link href={`/admin/noticias/editar/${item.id}`} aria-label="Editar" className="inline-flex p-1.5 text-[#008f45] hover:bg-green-50 rounded max-md:h-11 max-md:w-11 max-md:items-center max-md:justify-center">
+                    <Link href={`/admin/noticias/editar/${item.id}`} aria-label="Editar" className="inline-flex p-1.5 text-[#2271b1] hover:bg-green-50 rounded max-md:h-11 max-md:w-11 max-md:items-center max-md:justify-center">
                       <Edit2 className="w-4 h-4" />
                     </Link>
                     <Link href={`/noticias/${item.slug}`} target="_blank" aria-label="Ver no site" className="inline-flex p-1.5 text-[#50575e] hover:bg-gray-100 rounded max-md:h-11 max-md:w-11 max-md:items-center max-md:justify-center">

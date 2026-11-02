@@ -152,7 +152,7 @@ export default function ImageEditor({ imageUrl, onSave, onClose, originalFileNam
 
       {/* Progress */}
       {processing && (
-        <div className="px-4 py-2 bg-[#00a651]/20 text-[#39ff14] text-[13px] text-center">
+        <div className="px-4 py-2 bg-[#00a651]/20 text-[#72aee6] text-[13px] text-center">
           <Loader2 className="w-4 h-4 inline animate-spin mr-2" />
           {progress}
         </div>

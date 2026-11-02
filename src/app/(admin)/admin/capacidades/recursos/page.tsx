@@ -165,7 +165,7 @@ export default function RecursosPage() {
 
       {/* Current Role Info */}
       <div className="mb-6 flex items-center gap-3">
-        <Boxes className="w-6 h-6 text-[#008f45]" />
+        <Boxes className="w-6 h-6 text-[#2271b1]" />
         <div>
           <h2 className="text-lg font-semibold text-[#1d2327]">
             {currentRole?.label}

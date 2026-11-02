@@ -37,7 +37,7 @@ export default function TrafegoPaisesPage() {
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#00a651]/10 rounded-lg flex items-center justify-center">
-              <Globe className="w-5 h-5 text-[#008f45]" />
+              <Globe className="w-5 h-5 text-[#2271b1]" />
             </div>
             <div>
               <p className="text-sm text-[#50575e]">Total de Países</p>
@@ -135,7 +135,7 @@ export default function TrafegoPaisesPage() {
       {/* Mapa Placeholder */}
       <div className="mt-6 bg-white border border-[#ccd0d4] rounded-lg p-6">
         <h3 className="text-lg font-semibold text-[#1d2327] mb-4 flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-[#008f45]" /> Mapa de Visitantes
+          <MapPin className="w-5 h-5 text-[#2271b1]" /> Mapa de Visitantes
         </h3>
         <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
           <div className="text-center">
