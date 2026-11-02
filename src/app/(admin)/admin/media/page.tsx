@@ -391,9 +391,9 @@ export default function MediaGallery() {
         {/* Header Estilo WP */}
         <div className="pt-0 pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <h1 className="text-2xl font-normal">Biblioteca multimédia</h1>
-            <label className="px-3 py-1 bg-white border border-[#2271b1] text-[#2271b1] rounded-[3px] text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
+            <label className="px-3 py-1 text-center bg-white border border-[#2271b1] text-[#2271b1] rounded-[3px] text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
               {uploading ? 'A carregar...' : 'Adicionar ficheiros multimédia'}
               <input 
                 type="file" 
@@ -462,7 +462,7 @@ export default function MediaGallery() {
         {/* Toolbar de Filtros - AGORA FIXA */}
         <div className="ec-sticky-bar sticky z-40 bg-[#f0f0f1] pt-4 pb-4">
           <div className="flex flex-col md:flex-row items-center justify-between bg-white border border-[#ccd0d4] p-2 gap-2 shadow-sm">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 max-md:w-full">
               {isBulkMode && (
                 <input 
                   type="checkbox" 
@@ -492,7 +492,7 @@ export default function MediaGallery() {
               </button>
 
               <select 
-                className="ml-2 h-8 text-sm border-[#ccd0d4] rounded-md bg-white px-2"
+                className="ml-2 max-md:ml-0 h-8 max-md:min-w-[130px] max-md:flex-1 text-sm border-[#ccd0d4] rounded-md bg-white px-2"
                 value={fileTypeFilter}
                 onChange={(e) => setFileTypeFilter(e.target.value)}
               >
@@ -505,7 +505,7 @@ export default function MediaGallery() {
               </select>
               
               <select 
-                className="h-8 text-sm border-[#ccd0d4] rounded-md bg-white px-2"
+                className="h-8 max-md:min-w-[130px] max-md:flex-1 text-sm border-[#ccd0d4] rounded-md bg-white px-2"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
               >
@@ -518,12 +518,12 @@ export default function MediaGallery() {
               {!isBulkMode ? (
                 <button 
                   onClick={() => setIsBulkMode(true)}
-                  className="ml-2 h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
+                  className="ml-2 max-md:ml-0 h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
                 >
                   Seleção em massa
                 </button>
               ) : (
-                <div className="flex items-center gap-3 ml-2 flex-nowrap">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 ml-2 max-md:ml-0">
                   {canSeeTrash && view === 'galeria' && (
                     <span
                       onClick={selectedIds.size > 0 ? () => archive(Array.from(selectedIds)) : undefined}
@@ -556,7 +556,7 @@ export default function MediaGallery() {
               )}
             </div>
 
-            <div className="flex items-center gap-4 flex-nowrap">
+            <div className="flex items-center gap-4 flex-wrap justify-center">
               {/* Paginação Superior */}
               <div className="flex items-center gap-2 text-[13px] text-[#50575e] whitespace-nowrap">
                 <span>{filteredFiles.length} itens</span>
@@ -681,7 +681,7 @@ export default function MediaGallery() {
         {selectedFile && (
           <div className="fixed inset-0 bg-white z-[100] flex flex-col">
             <div className="flex items-center justify-between px-4 h-12 border-b bg-[#f6f7f7]">
-              <h2 className="text-lg font-bold">Detalhes do anexo</h2>
+              <h2 className="text-lg font-bold truncate">Detalhes do anexo</h2>
               <button onClick={() => setSelectedFile(null)} className="p-2 hover:bg-[#ccd0d4]"><X className="w-6 h-6" /></button>
             </div>
             
@@ -695,7 +695,7 @@ export default function MediaGallery() {
                       className="max-w-full max-h-[70vh] shadow-lg border border-[#ccd0d4] bg-white"
                       alt="" 
                     />
-                    <div className="mt-4 flex gap-2">
+                    <div className="mt-4 flex flex-wrap justify-center gap-2">
                       <button 
                         onClick={() => {
                           const img = new Image();
@@ -787,7 +787,7 @@ export default function MediaGallery() {
                           </div>
                         </div>
 
-                        <div className="pt-6 border-t flex gap-3">
+                        <div className="pt-6 border-t flex flex-wrap gap-3">
                           <button 
                             onClick={applyImageEdits}
                             disabled={processingImage}
@@ -810,7 +810,7 @@ export default function MediaGallery() {
 
               {/* Detail Sidebar */}
               <div className="w-full md:w-[300px] bg-[#f6f7f7] border-l border-[#ccd0d4] overflow-y-auto p-4 space-y-4">
-                <div className="text-[12px] text-[#50575e] space-y-1">
+                <div className="text-[12px] text-[#50575e] space-y-1 break-all">
                   <p><strong>Carregado em:</strong> {selectedFile.created_at ? new Date(selectedFile.created_at).toLocaleDateString('pt-PT') : '-'}</p>
                   <p><strong>Nome:</strong> {selectedFile.name}</p>
                   <p><strong>Tipo:</strong> {selectedFile.metadata?.mimetype}</p>

@@ -124,13 +124,13 @@ export default function RedirecionamentosPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-[#2271b1]/10 rounded-lg flex items-center justify-center">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="w-10 h-10 shrink-0 bg-[#2271b1]/10 rounded-lg flex items-center justify-center">
                     <LogIn className="w-5 h-5 text-[#2271b1]" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-x-2">
                       <h3 className="font-semibold text-[#1d2327] capitalize">{redirect.role}</h3>
                       <span className="text-xs text-[#50575e]">• {redirect.description}</span>
                     </div>

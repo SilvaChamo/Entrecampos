@@ -321,6 +321,8 @@ body {
   /* Nenhuma página do painel fica mais larga que o ecrã (aguenta 320px). */
   .ec-admin main { overflow-x: hidden; }
   .ec-admin main img, .ec-admin main video, .ec-admin main select { max-width: 100%; }
+  /* Campos dentro de linhas flex encolhem em vez de empurrar os botões ao lado. */
+  .ec-admin main input:not([type="checkbox"]):not([type="radio"]), .ec-admin main select, .ec-admin main textarea { min-width: 0; }
   .ec-admin input[class*="max-w-"],
   .ec-admin select[class*="max-w-"],
   .ec-admin textarea[class*="max-w-"] { max-width: 100% !important; }

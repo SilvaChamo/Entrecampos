@@ -195,7 +195,7 @@ export default function CapacidadesPage() {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-6 mb-6 text-sm">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-6 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center">
             <Check className="w-3 h-3 text-white" />
@@ -275,8 +275,8 @@ export default function CapacidadesPage() {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between mt-8 pt-6 border-t border-[#ccd0d4]">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-8 pt-6 border-t border-[#ccd0d4]">
+        <div className="flex flex-wrap items-center gap-4">
           <button 
             onClick={() => setCapabilities({ ...capabilities, [selectedRole]: DEFAULT_CAPABILITIES[selectedRole] })}
             className="flex items-center gap-2 h-10 px-4 text-[#d63638] border border-[#d63638] rounded-md text-sm hover:bg-red-50"

@@ -152,11 +152,11 @@ export default function DefinicoesAPIPage() {
                   className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <select
                   value={newWebhook.event}
                   onChange={(e) => setNewWebhook({...newWebhook, event: e.target.value})}
-                  className="flex-1 h-10 px-3 border border-[#ccd0d4] rounded-md"
+                  className="flex-1 min-w-0 h-10 px-3 border border-[#ccd0d4] rounded-md"
                 >
                   <option value="news.created">Notícia criada</option>
                   <option value="news.updated">Notícia atualizada</option>
@@ -178,7 +178,7 @@ export default function DefinicoesAPIPage() {
             {webhooks.map((webhook) => (
               <div 
                 key={webhook.id} 
-                className="flex items-center justify-between p-3 border border-[#ccd0d4] rounded-lg"
+                className="flex flex-wrap items-center justify-between gap-2 p-3 border border-[#ccd0d4] rounded-lg"
               >
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-[#1d2327] truncate">{webhook.url}</p>

@@ -195,7 +195,7 @@ export default function PartilhadoPage() {
           {/* Controles: Filtro | Botão | Busca | Paginação */}
           <div className="mb-6">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-4 flex-wrap max-md:w-full">
                 {/* Select Filtro */}
                 <div className="relative">
                   <select
@@ -223,7 +223,7 @@ export default function PartilhadoPage() {
                 </button>
 
                 {/* Busca */}
-                <div className="relative w-80">
+                <div className="relative w-80 max-w-full">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#50575e]" />
                   <input
                     type="text"

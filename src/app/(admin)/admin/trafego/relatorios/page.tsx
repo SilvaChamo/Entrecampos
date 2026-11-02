@@ -27,8 +27,8 @@ export default function TrafegoRelatoriosPage() {
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center gap-2 bg-white border border-[#ccd0d4] rounded-lg p-1">
+      <div className="flex flex-wrap items-center gap-4 mb-6">
+        <div className="flex flex-wrap items-center gap-2 bg-white border border-[#ccd0d4] rounded-lg p-1">
           {['24h', '7d', '30d', '90d'].map(range => (
             <button
               key={range}

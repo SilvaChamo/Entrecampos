@@ -77,7 +77,7 @@ function LanguageMenu() {
       <div className={`absolute right-0 top-full z-[60] overflow-hidden ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open}>
         <ul
           role="listbox"
-          className={`mt-1 space-y-2 border border-[#39ff14]/40 bg-[#0c1f08] p-2.5 shadow-xl transition-[transform,opacity] duration-200 ease-out ${
+          className={`mt-1 divide-y divide-white/10 border border-[#39ff14]/40 bg-[#0c1f08] py-1 shadow-xl transition-[transform,opacity] duration-200 ease-out ${
             open ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
           }`}
         >
@@ -91,7 +91,7 @@ function LanguageMenu() {
                   localStorage.setItem('ec-lang', l.code);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center gap-2 whitespace-nowrap text-left text-[11px] font-normal ${l.code === code ? 'text-[#39ff14]' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                className={`flex w-full items-center gap-2 whitespace-nowrap px-3 py-2.5 text-left text-[12px] font-normal ${l.code === code ? 'text-[#39ff14]' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
               >
                 <Flag flag={l.flag} />
                 <span className="leading-none">{l.label}</span>

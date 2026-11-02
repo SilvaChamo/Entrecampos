@@ -89,9 +89,9 @@ export default function LiteSpeedLimpezaPage() {
 
       {/* Limpar Tudo */}
       <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 shrink-0 bg-red-100 rounded-lg flex items-center justify-center">
               <Trash2 className="w-6 h-6 text-red-600" />
             </div>
             <div>

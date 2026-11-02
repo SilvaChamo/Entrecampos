@@ -203,12 +203,12 @@ export default function MediaCleanupPage() {
             </button>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             <span className="text-sm text-[#50575e]">{selectedNames.size} selecionados</span>
             <button 
               onClick={deleteSelected}
               disabled={selectedNames.size === 0 || deleting}
-              className="flex items-center gap-2 px-6 py-2 bg-[#d63638] text-white rounded-[3px] text-sm font-bold hover:bg-[#b32d2e] disabled:opacity-50 transition-colors"
+              className="flex items-center justify-center gap-2 px-6 py-2 max-md:px-3 bg-[#d63638] text-white rounded-[3px] text-sm font-bold hover:bg-[#b32d2e] disabled:opacity-50 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               {deleting ? 'A eliminar...' : 'Eliminar Permanentemente'}

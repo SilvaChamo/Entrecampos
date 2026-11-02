@@ -200,9 +200,9 @@ export default function TrafegoPage() {
         </div>
 
         {/* Chart */}
-        <div className="h-64 flex items-end justify-between gap-2 px-4">
+        <div className="h-64 flex items-end justify-between gap-2 px-4 overflow-x-auto">
           {MOCK_DATA.trafficByDay.map((day, idx) => (
-            <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+            <div key={idx} className="flex-1 min-w-[34px] flex flex-col items-center gap-1">
               <div className="w-full flex gap-0.5">
                 <div 
                   className="flex-1 bg-blue-400 rounded-t"
@@ -389,7 +389,7 @@ export default function TrafegoPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-center gap-2 mt-6">
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
           <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">&lt;</button>
           <button className="px-3 py-1 bg-blue-500 text-white rounded text-sm">1</button>
           <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">2</button>
