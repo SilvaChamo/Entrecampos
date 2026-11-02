@@ -66,7 +66,7 @@ export default function NextJsCachePage() {
 
   return (
     <div className="p-6 text-[#2c3338] min-h-screen">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#2271b1] rounded-lg flex items-center justify-center">
             <Zap className="w-6 h-6 text-white" />

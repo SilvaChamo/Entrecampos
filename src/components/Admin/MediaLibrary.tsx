@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { supabase, STORAGE_BUCKET as BUCKET_NAME } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Trash2, 
+  Archive, 
   Copy, 
   ExternalLink, 
   RefreshCw, 
@@ -45,6 +47,11 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkMode, setIsBulkMode] = useState(false);
+  const { user } = useAuth();
+  // Só administrador e editor veem as arquivadas e o lixo (o contribuidor manda para o lixo mas não o vê).
+  const canSeeTrash = user?.role === 'admin' || user?.role === 'editor';
+  const [view, setView] = useState<'galeria' | 'arquivo' | 'lixo'>('galeria');
+  const special = view !== 'galeria';
   const [visibleCount, setVisibleCount] = useState(70);
   
   // Advanced Editor States
@@ -71,12 +78,11 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
   const loadImages = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.storage.from(BUCKET_NAME).list('', {
-        limit: 1000,
-        sortBy: { column: 'created_at', order: 'desc' }
-      });
-      if (error) throw error;
-      setFiles(data || []);
+      // Pelo servidor: devolve todas as imagens do site (a biblioteca geral) a quem tem acesso a multimédia.
+      const res = await fetch(`/api/admin/media/list${special ? `?view=${view === 'lixo' ? 'trash' : 'archive'}` : ''}`, { credentials: 'include' });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || 'Não foi possível carregar a biblioteca.');
+      setFiles(body.files || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -85,8 +91,11 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
   };
 
   useEffect(() => {
+    setSelectedIds(new Set());
+    setActiveFile(null);
+    setIsBulkMode(special); // nas arquivadas e no lixo escolhe-se por seleção (para restaurar ou eliminar)
     loadImages();
-  }, []);
+  }, [view]);
 
   const filteredFiles = useMemo(() => {
     const query = (externalSearchQuery || searchQuery).toLowerCase();
@@ -148,23 +157,45 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
     }
   };
 
+  // Eliminar pelo servidor (a eliminação feita no browser falha sem avisar). Devolve true se correu bem.
+  const removeFiles = async (names: string[], action: 'trash' | 'purge' | 'restore' | 'archive' = 'trash') => {
+    const res = await fetch('/api/admin/media/delete', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, names }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert(body.error || 'Não foi possível eliminar.');
+      return false;
+    }
+    return true;
+  };
+
   const deleteSingle = async (filename: string) => {
     if (!confirm('Eliminar esta imagem permanentemente?')) return;
     setLoading(true);
-    await supabase.storage.from(BUCKET_NAME).remove([filename]);
-    await supabase.from('media_details').delete().eq('file_name', filename);
+    if (!(await removeFiles([filename]))) return setLoading(false);
     setActiveFile(null);
     setIsEditorOpen(false);
     loadImages();
   };
 
+  const actOnSelected = async (action: 'restore' | 'archive') => {
+    if (selectedIds.size === 0) return;
+    setLoading(true);
+    if (!(await removeFiles(Array.from(selectedIds), action))) return setLoading(false);
+    setSelectedIds(new Set());
+    loadImages();
+  };
+
   const deleteBulk = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Eliminar ${selectedIds.size} itens?`)) return;
+    if (!confirm(view === 'lixo' ? `Eliminar PARA SEMPRE ${selectedIds.size} itens?` : `Mover ${selectedIds.size} itens para o lixo?`)) return;
     setLoading(true);
     const ids = Array.from(selectedIds);
-    await supabase.storage.from(BUCKET_NAME).remove(ids);
-    await supabase.from('media_details').delete().in('file_name', ids);
+    if (!(await removeFiles(ids, view === 'lixo' ? 'purge' : 'trash'))) return setLoading(false);
     setSelectedIds(new Set());
     setIsBulkMode(false);
     loadImages();
@@ -268,8 +299,10 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
             </button>
           ) : (
             <div className="flex items-center gap-2 ml-4">
-              <button onClick={deleteBulk} className="h-8 px-3 bg-[#d63638] text-white rounded-[3px] text-sm font-bold">Eliminar ({selectedIds.size})</button>
-              <button onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="h-8 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-sm">Cancelar</button>
+              {special && <button onClick={() => actOnSelected('restore')} className="h-8 px-3 bg-[#2271b1] text-white rounded-[3px] text-sm font-bold">Restaurar ({selectedIds.size})</button>}
+              {canSeeTrash && view === 'galeria' && <button onClick={() => actOnSelected('archive')} className="h-8 px-3 border border-[#2271b1] text-[#2271b1] bg-white rounded-[3px] text-sm font-bold">Arquivar ({selectedIds.size})</button>}
+              {view !== 'arquivo' && <button onClick={deleteBulk} className="h-8 px-3 bg-[#d63638] text-white rounded-[3px] text-sm font-bold">{view === 'lixo' ? 'Eliminar para sempre' : 'Eliminar'} ({selectedIds.size})</button>}
+              {!special && <button onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="h-8 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-sm">Cancelar</button>}
             </div>
           )}
         </div>
@@ -288,10 +321,30 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
               <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-[#50575e]" />
             </div>
           )}
+          {canSeeTrash && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setView((v) => (v === 'arquivo' ? 'galeria' : 'arquivo'))}
+                title={view === 'arquivo' ? 'Voltar à galeria' : 'Arquivadas'}
+                aria-pressed={view === 'arquivo'}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-[3px] border ${view === 'arquivo' ? 'border-[#2271b1] bg-[#2271b1] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+              >
+                <Archive className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setView((v) => (v === 'lixo' ? 'galeria' : 'lixo'))}
+                title={view === 'lixo' ? 'Voltar à galeria' : 'Lixo'}
+                aria-pressed={view === 'lixo'}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-[3px] border ${view === 'lixo' ? 'border-[#d63638] bg-[#d63638] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Grid Principal */}
         <div className="flex-1 overflow-y-auto p-0 custom-scrollbar bg-[#f0f0f1]">
           {loading && files.length === 0 ? (
@@ -391,7 +444,7 @@ export default function MediaLibrary({ onSelect, isModal, externalSearchQuery }:
               </div>
             </div>
 
-            <aside className="w-[400px] bg-white border-l border-[#ccd0d4] overflow-y-auto p-6 space-y-8 shadow-[-5px_0_15px_rgba(0,0,0,0.05)]">
+            <aside className="w-full lg:w-[400px] shrink-0 bg-white border-l border-[#ccd0d4] overflow-y-auto p-6 space-y-8 shadow-[-5px_0_15px_rgba(0,0,0,0.05)]">
               <div className="space-y-4">
                 <h3 className="font-bold text-sm border-b pb-2 uppercase tracking-wider text-gray-500">Escalar Imagem</h3>
                 <div className="flex items-center gap-4">

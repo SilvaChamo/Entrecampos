@@ -66,7 +66,7 @@ export default function CategoriasPage() {
         </>
       ) : (
         <>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div>
               <h1 className="text-2xl font-bold text-[#1d2327]">Categorias</h1>
               <p className="text-[#50575e] mt-1">Gerencie as categorias das notícias</p>

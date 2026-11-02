@@ -185,7 +185,7 @@ export default function EditUserPage() {
   return (
     <div className="p-6 text-[#2c3338] w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-[23px] font-normal text-[#1d2327]">Editar utilizador: <strong>{form.username}</strong></h1>
           <p className="text-[13px] text-[#50575e] mt-1">

@@ -149,7 +149,7 @@ export default function MediaCleanupPage() {
 
   return (
     <div className="p-6 text-[#2c3338]">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-normal text-[#1d2327]">Auditoria de Media</h1>
           <p className="text-[13px] text-[#50575e]">Identifique e remova imagens que não estão associadas a nenhuma notícia.</p>

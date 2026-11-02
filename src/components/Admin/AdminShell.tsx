@@ -168,6 +168,41 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     }
   }, [loading, user, router]);
 
+  // Mobile: cada célula das tabelas de listas ganha o nome da sua coluna (o CSS mostra-o quando a tabela vira cartões).
+  useEffect(() => {
+    let frame = 0;
+    const label = () => {
+      document.querySelectorAll<HTMLTableElement>('.ec-admin table:not(.ec-cards)').forEach((table) => {
+        const heads: string[] = [];
+        table.querySelectorAll('thead th').forEach((th) => {
+          const span = (th as HTMLTableCellElement).colSpan || 1;
+          for (let i = 0; i < span; i++) heads.push((th.textContent || '').trim());
+        });
+        if (heads.length === 0) return;
+        table.querySelectorAll('tbody > tr').forEach((tr) => {
+          let col = 0;
+          Array.from(tr.children).forEach((cell) => {
+            const c = cell as HTMLTableCellElement;
+            const text = c.colSpan > 1 ? '' : heads[col] || '';
+            if (c.getAttribute('data-label') !== text) c.setAttribute('data-label', text);
+            col += c.colSpan || 1;
+          });
+        });
+      });
+    };
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(label);
+    };
+    schedule();
+    const mo = new MutationObserver(schedule);
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      mo.disconnect();
+    };
+  }, [pathname]);
+
   // O visitante (guest) não tem acesso à galeria de fotos: se abrir o endereço à mão, volta ao seu painel.
   useEffect(() => {
     if (user?.role === 'guest' && pathname.startsWith('/admin/media')) router.replace('/admin/guest');
@@ -382,7 +417,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const menuItems = getMenuItems(user?.role || 'guest');
 
   return (
-    <div className="ec-admin flex flex-col min-h-screen bg-[#f0f0f1]">
+    <div className={`ec-admin flex flex-col h-[100dvh] bg-[#f0f0f1] ${viewAs ? 'ec-viewing-as' : ''}`}>
       {/* Admin Bar (Barra Superior Preta) */}
       <header className="sticky top-0 z-[100] h-12 lg:h-8 bg-[#1d2327] text-[#f0f0f1] flex items-center justify-between gap-2 px-3 lg:px-4 text-[13px]">
         <div className="flex min-w-0 items-center gap-3 lg:gap-6">

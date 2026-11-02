@@ -33,7 +33,7 @@ export default function PreviewProfilePage({ role }: PreviewProfilePageProps) {
 
   return (
     <div className="p-6 w-full">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="text-2xl font-normal text-[#1d2327]">Perfil do Utilizador</h1>
         {canEdit && (
           <button 

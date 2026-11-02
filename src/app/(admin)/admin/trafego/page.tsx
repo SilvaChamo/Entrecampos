@@ -107,7 +107,7 @@ export default function TrafegoPage() {
   return (
     <div className="p-6 text-[#2c3338] w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
             <BarChart3 className="w-7 h-7 text-white" />
@@ -184,7 +184,7 @@ export default function TrafegoPage() {
 
       {/* Traffic Chart */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-blue-500" /> Traffic Report
           </h2>
@@ -339,7 +339,7 @@ export default function TrafegoPage() {
 
       {/* Traffic by IP */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
             <Globe className="w-5 h-5 text-blue-500" /> Last 30 Days Traffic by IP
           </h2>

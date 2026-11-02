@@ -16,7 +16,7 @@ export default function TrafegoRelatoriosPage() {
 
   return (
     <div className="p-6 text-[#2c3338]">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-[#1d2327]">Relatórios Detalhados</h1>
           <p className="text-[#50575e] mt-1">Análise completa do tráfego do site</p>

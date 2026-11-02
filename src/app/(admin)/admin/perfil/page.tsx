@@ -211,7 +211,7 @@ export default function MeuPerfilPage() {
   return (
     <div className="p-6 text-[#2c3338]">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-[23px] font-normal text-[#1d2327]">O seu perfil</h1>
           <p className="text-[13px] text-[#50575e] mt-1">
@@ -229,7 +229,7 @@ export default function MeuPerfilPage() {
       <form onSubmit={handleSave}>
         <div className="bg-white border border-[#ccd0d4] rounded-md overflow-hidden mb-4">
           {/* Avatar e nome - Header */}
-          <div className="p-6 border-b border-[#ccd0d4] flex items-center gap-5">
+          <div className="p-6 border-b border-[#ccd0d4] flex items-center gap-5 max-sm:flex-col max-sm:items-start">
             {avatarPreview ? (
               <div className="relative w-24 h-24 flex-shrink-0">
                 <img src={avatarPreview} className="w-24 h-24 rounded-full border border-gray-200 object-cover" alt="" />
@@ -263,7 +263,7 @@ export default function MeuPerfilPage() {
               <span className="inline-block mt-1 px-2 py-0.5 bg-[#f6f7f7] border border-[#ccd0d4] text-[11px] font-semibold rounded-md text-[#50575e]">
                 {form.role}
               </span>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="h-8 px-3 border border-[#ccd0d4] bg-white text-[13px] font-semibold rounded-md hover:bg-[#f6f7f7] flex items-center gap-1.5">
                   <Camera className="w-3.5 h-3.5" /> Alterar foto
                 </button>
@@ -496,7 +496,7 @@ export default function MeuPerfilPage() {
         </div>
 
         {/* Botões de ação */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="submit"
             disabled={saving}

@@ -245,7 +245,7 @@ export default function NewsRepairPage() {
         <div className="py-4 md:py-8">
           
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
             <div>
               <h1 className="text-2xl font-normal text-[#1d2327]">Reparação de Imagens</h1>
               <p className="text-[13px] text-[#50575e]">Associe as imagens corretas às notícias com links partidos.</p>
@@ -379,7 +379,7 @@ export default function NewsRepairPage() {
               </div>
 
               <div className="lg:col-span-7">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                   <h3 className="text-sm font-bold text-[#1d2327] flex items-center gap-2">
                     <ImageIcon className="w-4 h-4 text-[#2271b1]" />
                     {manualFilter ? `Resultados para "${manualFilter}"` : 'Sugestões (baseado no título)'}

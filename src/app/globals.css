@@ -281,16 +281,49 @@ body {
   .ec-drop { animation: ec-drop 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 }
 
-/* Painel no telemóvel: as listas (tabelas) deslizam na horizontal em vez de ficarem esmagadas ou cortadas.
-   A lista de notícias (.ec-cards) não precisa: vira uma coluna de cartões. */
+/* Painel no telemóvel e tablet pequeno: tudo numa só coluna, cada item na sua linha.
+   - Tabelas de listas viram cartões: o cabeçalho esconde-se e cada célula mostra o nome da coluna (data-label,
+     posto por AdminShell a partir do <thead>).
+   - Tabelas de formulário (nome | campo) ficam com o nome por cima do campo.
+   - Campos com largura máxima fixa passam a ocupar a largura toda.
+   A lista de notícias (.ec-cards) tem o seu próprio formato. */
 @media (max-width: 767px) {
-  .ec-admin div:has(> table) {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
+  .ec-admin table:not(.ec-cards),
+  .ec-admin table:not(.ec-cards) > tbody,
+  .ec-admin table:not(.ec-cards) > tbody > tr,
+  .ec-admin table:not(.ec-cards) > tbody > tr > td,
+  .ec-admin table:not(.ec-cards) > tbody > tr > th {
+    display: block;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
   }
-  .ec-admin div:has(> table) > table:not(.ec-cards) {
-    min-width: 640px;
+  .ec-admin table:not(.ec-cards) > thead { display: none; }
+  .ec-admin table:not(.ec-cards) > tbody > tr {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #ccd0d4;
+    text-align: left !important;
   }
+  .ec-admin table:not(.ec-cards) > tbody > tr > td,
+  .ec-admin table:not(.ec-cards) > tbody > tr > th {
+    padding: 0.25rem 0 !important;
+    border: 0 !important;
+    text-align: left !important;
+    overflow-wrap: anywhere;
+  }
+  .ec-admin table:not(.ec-cards) > tbody > tr > td[data-label]:not([data-label=""])::before {
+    content: attr(data-label) ': ';
+    font-weight: 700;
+    color: #646970;
+  }
+  .ec-admin table:not(.ec-cards) td .flex { flex-wrap: wrap; }
+  .ec-admin input[class*="max-w-"],
+  .ec-admin select[class*="max-w-"],
+  .ec-admin textarea[class*="max-w-"] { max-width: 100% !important; }
+  .ec-admin input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  .ec-admin select,
+  .ec-admin textarea { min-height: 2.75rem; }
 }
 
 /* Spinner único do site (components/Common/Spinner.tsx): dois arcos em sentidos opostos + ponto que pulsa. */
@@ -323,3 +356,7 @@ body {
   .ec-spinner-outer, .ec-spinner-inner { animation-duration: 3s; }
   .ec-spinner-dot { animation: none; }
 }
+
+/* Barras de ferramentas fixas no scroll do painel: o conteúdo (main) é que rola, por isso a barra cola-se ao topo dele,
+   logo por baixo da barra preta (e da barra vermelha do "ver como"). */
+.ec-admin .ec-sticky-bar { top: 0; }

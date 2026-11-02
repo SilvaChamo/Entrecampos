@@ -227,7 +227,7 @@ export default function ImagensPage() {
           <div className="relative flex items-center justify-center max-w-5xl w-full">
             {/* Imagem - popup com crop para preencher */}
             <div 
-              className="relative rounded-xl shadow-2xl overflow-hidden min-w-[800px] min-h-[500px] w-[85vw] h-[75vh] bg-black"
+              className="relative rounded-xl shadow-2xl overflow-hidden md:min-w-[800px] md:min-h-[500px] w-[92vw] md:w-[85vw] h-[75vh] bg-black"
               onClick={(e) => e.stopPropagation()}
             >
               <img 

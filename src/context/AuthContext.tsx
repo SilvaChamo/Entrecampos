@@ -120,7 +120,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     role: UserRole
   ) => {
     const supabase = getSupabase();
-    const safeRole: UserRole = role === 'admin' || role === 'editor' ? 'guest' : role;
+    // Quem se regista entra sempre como visitante: editor e contribuidor são atribuídos pelo administrador.
+    const safeRole: UserRole = 'guest';
 
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),

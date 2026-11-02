@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { supabase, STORAGE_BUCKET as BUCKET_NAME } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Trash2, 
+  Archive, 
   Copy, 
   ExternalLink, 
   RefreshCw, 
@@ -32,6 +34,30 @@ interface StorageFile {
   } | null;
 }
 
+/** Tipo de ficheiro pela extensão. */
+function kindOf(name: string): string {
+  if (/\.(jpg|jpeg|png|gif|webp|svg|bmp|avif)$/i.test(name)) return 'imagens';
+  if (/\.(mp4|mov|avi|mkv|webm|flv|wmv)$/i.test(name)) return 'videos';
+  if (/\.pdf$/i.test(name)) return 'pdf';
+  if (/\.(mp3|wav|aac|ogg|flac|m4a|wma)$/i.test(name)) return 'audio';
+  return 'documentos';
+}
+
+/** Miniatura: foto para imagens; para os outros tipos, um quadro com a extensão. */
+function FileThumb({ name, url, className = 'w-full h-full object-cover' }: { name: string; url: string; className?: string }) {
+  if (kindOf(name) === 'imagens') {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={url} className={className} alt="" loading="lazy" />;
+  }
+  const ext = (name.split('.').pop() || '').toUpperCase();
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-[#f6f7f7] text-[#50575e]">
+      <span className="text-[11px] font-bold tracking-wider">{ext}</span>
+      <span className="max-w-full truncate px-2 text-[10px]">{name.split('/').pop()}</span>
+    </div>
+  );
+}
+
 export default function MediaGallery() {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +67,12 @@ export default function MediaGallery() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkMode, setIsBulkMode] = useState(false);
+  const { user } = useAuth();
+  // Contribuidor manda para o lixo; só administrador e editor veem o lixo, restauram e eliminam para sempre.
+  const canSeeTrash = user?.role === 'admin' || user?.role === 'editor';
+  const [view, setView] = useState<'galeria' | 'arquivo' | 'lixo'>('galeria');
+  const showTrash = view === 'lixo';
+  const special = view !== 'galeria'; // arquivadas ou lixo
   const [fileTypeFilter, setFileTypeFilter] = useState('todos');
   const [dateFilter, setDateFilter] = useState('todas');
   
@@ -69,13 +101,11 @@ export default function MediaGallery() {
   const loadImages = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.storage.from(BUCKET_NAME).list('', {
-        limit: 1000,
-        offset: 0,
-        sortBy: { column: 'created_at', order: 'desc' }
-      });
-      if (error) throw error;
-      setFiles(data || []);
+      // Pelo servidor: devolve todas as imagens do site (a biblioteca geral) a quem tem acesso a multimédia.
+      const res = await fetch(`/api/admin/media/list${special ? `?view=${showTrash ? 'trash' : 'archive'}` : ''}`, { credentials: 'include' });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || 'Não foi possível carregar a biblioteca.');
+      setFiles(body.files || []);
     } catch (err: any) {
       console.error('Erro ao carregar imagens:', err);
     } finally {
@@ -84,8 +114,10 @@ export default function MediaGallery() {
   };
 
   useEffect(() => {
+    setSelectedIds(new Set());
+    setSelectedFile(null);
     loadImages();
-  }, []);
+  }, [view]);
 
   // Extrair anos únicos dos ficheiros
   const years = useMemo(() => {
@@ -102,7 +134,7 @@ export default function MediaGallery() {
   const filteredFiles = useMemo(() => {
     return files.filter(f => {
       const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = fileTypeFilter === 'todos' || 
+      const matchesType = fileTypeFilter === 'todos' ||
         (fileTypeFilter === 'imagens' && /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(f.name)) ||
         (fileTypeFilter === 'videos' && /\.(mp4|mov|avi|mkv|webm|flv|wmv)$/i.test(f.name)) ||
         (fileTypeFilter === 'documentos' && /\.(doc|docx|xls|xlsx|ppt|pptx|txt|rtf|odt)$/i.test(f.name)) ||
@@ -141,21 +173,24 @@ export default function MediaGallery() {
 
   const deleteSelected = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Deseja eliminar permanentemente os ${selectedIds.size} itens selecionados?`)) return;
+    if (!confirm(showTrash ? `Eliminar PARA SEMPRE os ${selectedIds.size} itens selecionados?` : `Mover os ${selectedIds.size} itens selecionados para o lixo?`)) return;
 
     try {
       setLoading(true);
       const idsArray = Array.from(selectedIds);
-      const { error } = await supabase.storage.from(BUCKET_NAME).remove(idsArray);
-      if (error) throw error;
-      
-      // Limpar metadados se existirem
-      await supabase.from('media_details').delete().in('file_name', idsArray);
+      const res = await fetch('/api/admin/media/delete', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: showTrash ? 'purge' : 'trash', names: idsArray }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Não foi possível eliminar.');
 
       setSelectedIds(new Set());
       setIsBulkMode(false);
       loadImages();
-      alert('Itens eliminados com sucesso!');
+      alert(showTrash ? 'Itens eliminados para sempre.' : 'Itens movidos para o lixo.');
     } catch (err: any) {
       alert('Erro ao eliminar: ' + err.message);
     } finally {
@@ -163,12 +198,55 @@ export default function MediaGallery() {
     }
   };
 
-  const deleteSingle = async (filename: string) => {
-    if (!confirm(`Eliminar "${filename}"?`)) return;
+  const archive = async (names: string[]) => {
     try {
-      const { error } = await supabase.storage.from(BUCKET_NAME).remove([filename]);
-      if (error) throw error;
-      await supabase.from('media_details').delete().eq('file_name', filename);
+      const res = await fetch('/api/admin/media/delete', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'archive', names }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Não foi possível arquivar.');
+      setSelectedFile(null);
+      setSelectedIds(new Set());
+      setIsBulkMode(false);
+      loadImages();
+    } catch (err: any) {
+      alert('Erro: ' + err.message);
+    }
+  };
+
+  const restore = async (names: string[]) => {
+    try {
+      const res = await fetch('/api/admin/media/delete', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'restore', names }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Não foi possível restaurar.');
+      setSelectedFile(null);
+      setSelectedIds(new Set());
+      setIsBulkMode(false);
+      loadImages();
+    } catch (err: any) {
+      alert('Erro: ' + err.message);
+    }
+  };
+
+  const deleteSingle = async (filename: string) => {
+    if (!confirm(showTrash ? `Eliminar PARA SEMPRE "${filename}"?` : `Mover "${filename}" para o lixo?`)) return;
+    try {
+      const res = await fetch('/api/admin/media/delete', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: showTrash ? 'purge' : 'trash', names: [filename] }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Não foi possível eliminar.');
       setFiles(files.filter(f => f.name !== filename));
       if (selectedFile?.name === filename) setSelectedFile(null);
     } catch (err: any) {
@@ -320,7 +398,7 @@ export default function MediaGallery() {
               <input 
                 type="file" 
                 className="hidden" 
-                accept="image/*" 
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt" 
                 multiple
                 onChange={async (e) => {
                   const filesToUpload = e.target.files;
@@ -346,21 +424,43 @@ export default function MediaGallery() {
             </label>
           </div>
 
-          <div className="relative">
+          <div className="flex items-center gap-2 max-md:w-full">
+          <div className="relative max-md:flex-1">
             <input 
               type="text" 
               placeholder="Procurar itens multimédia..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 pr-2 border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] w-64"
+              className="h-8 pl-8 pr-2 border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] w-64 max-md:w-full"
             />
             <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-[#50575e]" />
+          </div>
+          {canSeeTrash && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setView((v) => (v === 'arquivo' ? 'galeria' : 'arquivo'))}
+                title={view === 'arquivo' ? 'Voltar à galeria' : 'Arquivadas'}
+                aria-pressed={view === 'arquivo'}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-md border ${view === 'arquivo' ? 'border-[#2271b1] bg-[#2271b1] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+              >
+                <Archive className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setView((v) => (v === 'lixo' ? 'galeria' : 'lixo'))}
+                title={view === 'lixo' ? 'Voltar à galeria' : 'Lixo'}
+                aria-pressed={view === 'lixo'}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-md border ${view === 'lixo' ? 'border-[#d63638] bg-[#d63638] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           </div>
         </div>
       </div>
 
         {/* Toolbar de Filtros - AGORA FIXA */}
-        <div className="sticky top-0 z-40 bg-[#f0f0f1] pt-4 pb-4">
+        <div className="ec-sticky-bar sticky z-40 bg-[#f0f0f1] pt-4 pb-4">
           <div className="flex flex-col md:flex-row items-center justify-between bg-white border border-[#ccd0d4] p-2 gap-2 shadow-sm">
             <div className="flex items-center gap-2">
               {isBulkMode && (
@@ -424,12 +524,28 @@ export default function MediaGallery() {
                 </button>
               ) : (
                 <div className="flex items-center gap-3 ml-2 flex-nowrap">
-                  <span 
+                  {canSeeTrash && view === 'galeria' && (
+                    <span
+                      onClick={selectedIds.size > 0 ? () => archive(Array.from(selectedIds)) : undefined}
+                      className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#2271b1] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                    >
+                      Arquivar ({selectedIds.size})
+                    </span>
+                  )}
+                  {view !== 'arquivo' && <span 
                     onClick={selectedIds.size > 0 ? deleteSelected : undefined}
                     className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#d63638] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
                   >
-                    Eliminar {selectedIds.size} de imagens selecionadas
-                  </span>
+                    {showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'} ({selectedIds.size})
+                  </span>}
+                  {special && (
+                    <span
+                      onClick={selectedIds.size > 0 ? () => restore(Array.from(selectedIds)) : undefined}
+                      className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#2271b1] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                    >
+                      Restaurar ({selectedIds.size})
+                    </span>
+                  )}
                   <button 
                     onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }}
                     className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
@@ -482,11 +598,7 @@ export default function MediaGallery() {
                   selectedIds.has(file.name) ? 'ring-[3px] ring-[#2271b1] ring-inset' : 'border-[#ccd0d4]'
                 }`}
               >
-                <img 
-                  src={getPublicUrl(file.name)} 
-                  className="w-full h-full object-cover" 
-                  alt="" 
-                />
+                <FileThumb name={file.name} url={getPublicUrl(file.name)} />
                 
                 {isBulkMode && (
                   <div className={`absolute top-1 right-1 w-5 h-5 rounded-sm border flex items-center justify-center ${
@@ -531,7 +643,7 @@ export default function MediaGallery() {
                     <td className="p-3">
                       <div className="flex items-center gap-3 max-w-[400px]">
                         <div className="w-16 h-16 border border-[#ccd0d4] bg-[#f0f0f1] flex-shrink-0">
-                          <img src={getPublicUrl(file.name)} className="w-full h-full object-cover" alt="" />
+                          <FileThumb name={file.name} url={getPublicUrl(file.name)} />
                         </div>
                         <div className="flex flex-col min-w-0">
                           <button 
@@ -606,7 +718,7 @@ export default function MediaGallery() {
                 ) : (
                   /* Interface de Edição de Imagem */
                   <div className="w-full max-w-4xl bg-white border border-[#ccd0d4] shadow-lg p-6">
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                       <h3 className="text-xl font-bold">Ferramentas de Edição</h3>
                       <button onClick={() => setIsEditingImage(false)} className="text-sm text-[#2271b1] hover:underline">Voltar aos detalhes</button>
                     </div>
@@ -754,7 +866,11 @@ export default function MediaGallery() {
                 </div>
 
                 <div className="pt-4 border-t border-[#ccd0d4] flex justify-between items-center">
-                  <button onClick={() => deleteSingle(selectedFile.name)} className="text-[12px] text-[#d63638] hover:underline">Eliminar permanentemente</button>
+                  <div className="flex items-center gap-3">
+                    {view !== 'arquivo' && <button onClick={() => deleteSingle(selectedFile.name)} className="text-[12px] text-[#d63638] hover:underline">{showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'}</button>}
+                    {canSeeTrash && view === 'galeria' && <button onClick={() => archive([selectedFile.name])} className="text-[12px] text-[#2271b1] hover:underline">Arquivar</button>}
+                    {special && <button onClick={() => restore([selectedFile.name])} className="text-[12px] text-[#2271b1] hover:underline">Restaurar</button>}
+                  </div>
                   <button 
                     onClick={saveMetadata}
                     disabled={savingMetadata}

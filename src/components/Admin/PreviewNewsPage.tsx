@@ -43,7 +43,7 @@ export default function PreviewNewsPage({ role }: PreviewNewsPageProps) {
   return (
     <div className="p-6">
       {/* Header - igual ao /admin/noticias */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-normal text-[#1d2327]">Todas as Notícias</h1>
           <p className="text-[13px] text-[#50575e]">Gerenciar artigos do site</p>
@@ -56,7 +56,7 @@ export default function PreviewNewsPage({ role }: PreviewNewsPageProps) {
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#50575e]" />
