@@ -7,8 +7,11 @@ import SimpleHeader from '@/components/Layout/SimpleHeader';
 
 async function getPosts() {
   const postsPath = path.join(process.cwd(), 'data', 'posts.json');
-  const posts = JSON.parse(fs.readFileSync(postsPath, 'utf-8'));
-  return posts;
+  try {
+    return JSON.parse(fs.readFileSync(postsPath, 'utf-8'));
+  } catch {
+    return []; // sem a importação antiga (ex.: build sem a pasta data) a página abre vazia em vez de falhar o deploy
+  }
 }
 
 export default async function Home() {
