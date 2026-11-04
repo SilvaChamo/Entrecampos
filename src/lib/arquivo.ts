@@ -14,6 +14,11 @@ export const ARQUIVO_ROOT = 'arquivo';
 export const folderSlug = (name: string) =>
   name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
 
+/** O nome de uma pasta tem no máximo 4 palavras. */
+export const MAX_FOLDER_WORDS = 4;
+export const wordCount = (name: string) => name.trim().split(/\s+/).filter(Boolean).length;
+const tooManyWords = () => new Error(`O nome da pasta pode ter no máximo ${MAX_FOLDER_WORDS} palavras.`);
+
 export const isFolderSlug = (s: string) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s) && s.length <= 60;
 
 export type ArquivoFolder = { slug: string; nome: string; cor: string | null; count: number; cover: string | null; updated_at: string };
@@ -71,6 +76,7 @@ export async function createFolder(nome: string): Promise<ArquivoFolder> {
   const clean = nome.trim().replace(/\s+/g, ' ').slice(0, 80);
   const slug = folderSlug(clean);
   if (!clean || !slug) throw new Error('Dê um nome à pasta.');
+  if (wordCount(clean) > MAX_FOLDER_WORDS) throw tooManyWords();
   const existing = await list(ARQUIVO_ROOT);
   if (existing.some((r) => r.id === null && r.name === slug)) throw new Error('Já existe uma pasta com esse nome.');
   await writeMeta(slug, { nome: clean, cor: null }, false);
@@ -84,6 +90,7 @@ export async function updateFolder(slug: string, changes: { nome?: string; cor?:
   if (changes.nome !== undefined) {
     const clean = changes.nome.trim().replace(/\s+/g, ' ').slice(0, 80);
     if (!clean) throw new Error('Dê um nome à pasta.');
+    if (wordCount(clean) > MAX_FOLDER_WORDS) throw tooManyWords();
     meta.nome = clean;
   }
   if (changes.cor !== undefined) {

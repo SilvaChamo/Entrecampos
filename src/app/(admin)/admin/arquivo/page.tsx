@@ -9,6 +9,9 @@ import { useAuth } from '@/context/AuthContext';
 import MediaGaleria from '@/components/Admin/MediaGaleria';
 import { prepareImage } from '@/lib/client-image';
 
+/** Nome de pasta: no máximo 4 palavras (a quinta não chega a ser escrita). */
+const limitWords = (v: string) => { const w = v.trimStart().split(/\s+/); return w.length > 4 ? w.slice(0, 4).join(' ') : v.trimStart(); };
+
 /** Arquivo de fotos do jornal: pastas com nome, como num Drive só de fotos. */
 export default function ArquivoPage() {
   const [folders, setFolders] = useState<FolderInfo[] | null>(null);
@@ -80,7 +83,7 @@ export default function ArquivoPage() {
   };
 
   const actions: FolderActions = {
-    onRename: (f) => { const nome = prompt('Novo nome da pasta:', f.nome); if (nome && nome.trim() && nome.trim() !== f.nome) patch({ slug: f.slug, nome }); },
+    onRename: (f) => { const nome = prompt('Novo nome da pasta (máx. 4 palavras):', f.nome); if (nome && nome.trim() && nome.trim() !== f.nome) patch({ slug: f.slug, nome }); },
     onColor: (f, cor) => { patch({ slug: f.slug, cor }); },
     onShare: async (f) => {
       const url = `${window.location.origin}/admin/arquivo?pasta=${f.slug}`;
@@ -193,7 +196,7 @@ export default function ArquivoPage() {
       {creating && !aberta && (
         <form onSubmit={create} className="mb-5 flex flex-wrap items-center gap-2 rounded border border-[#ccd0d4] bg-white p-3">
           <label htmlFor="nome-pasta" className="text-sm font-semibold">Nome da pasta</label>
-          <input id="nome-pasta" autoFocus required maxLength={80} value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: Eleições 2026" className="h-8 min-w-[16rem] flex-1 rounded-[3px] border border-[#ccd0d4] px-2 text-sm outline-none focus:border-[#00a651]" />
+          <input id="nome-pasta" autoFocus required maxLength={80} value={nome} onChange={(e) => setNome(limitWords(e.target.value))} placeholder="Ex.: Eleições 2026 (máx. 4 palavras)" className="h-8 min-w-[16rem] flex-1 rounded-[3px] border border-[#ccd0d4] px-2 text-sm outline-none focus:border-[#00a651]" />
           <button type="submit" disabled={saving} className="h-8 rounded-[3px] bg-[#00a651] px-4 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'A criar…' : 'Criar'}</button>
           <button type="button" onClick={() => { setCreating(false); setNome(''); }} className="h-8 rounded-[3px] border border-[#ccd0d4] bg-white px-4 text-sm">Cancelar</button>
         </form>
