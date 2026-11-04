@@ -65,6 +65,7 @@ export default function PartilhadoPage() {
 
       <ArquivoTabs
         active="partilhadas"
+        onPartilhadasClick={() => setAberta(null)}
         right={
           <button onClick={sync} disabled={syncing || !data?.configured} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white disabled:opacity-50">
             <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'A sincronizar…' : 'Sincronizar agora'}
@@ -87,7 +88,7 @@ export default function PartilhadoPage() {
         </div>
       )}
 
-      {!data && !error ? (
+      {aberta ? null : !data && !error ? (
         <div className="flex justify-center py-20"><Spinner /></div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -108,7 +109,7 @@ export default function PartilhadoPage() {
         </div>
       )}
 
-      {aberta && <div className="mt-6"><PartilhadoPasta key={aberta} pasta={aberta} withTitle={aberta !== 'imagens'} /></div>}
+      {aberta && <PartilhadoPasta key={aberta} pasta={aberta} />}
     </div>
   );
 }

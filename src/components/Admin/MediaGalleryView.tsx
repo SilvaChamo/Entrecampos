@@ -86,9 +86,11 @@ export type MediaGalleryViewProps = {
   onOpenFolder?: (slug: string) => void;
   /** O botão "Adicionar" fica visível mas inutilizado (fotos partilhadas e arquivo, que têm o seu sítio próprio). */
   uploadDisabled?: boolean;
+  /** Só a grelha de fotos (sem cabeçalho nem barra de menu): para mostrar dentro de outra página. */
+  bare?: boolean;
 };
 
-export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder, uploadDisabled }: MediaGalleryViewProps) {
+export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder, uploadDisabled, bare }: MediaGalleryViewProps) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -465,6 +467,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   return (
     <div className={embedded ? 'text-[#2c3338]' : 'min-h-screen text-[#2c3338] p-6'}>
       <div className="w-full">
+        {!bare && (
+        <>
         {/* Header Estilo WP */}
         <div className="pt-0 pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -693,6 +697,9 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           </div>
         </div>
 
+        </>
+        )}
+
         {busyMsg && !selectedFile && (
           <div role="status" className="mb-2 rounded border border-[#00a651] bg-white px-3 py-2 text-sm font-semibold text-[#008f45]">{busyMsg}</div>
         )}
@@ -706,6 +713,31 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           )
         ) : loading ? (
           <SkeletonMediaGrid count={14} />
+        ) : bare && viewMode === 'grid' ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
+            {(zipOptions ?? []).map((z) => (
+              <button
+                key={z.path}
+                type="button"
+                onClick={() => onPickZip?.(z.path)}
+                title="Descompactar e mostrar as fotos deste zip"
+                className="flex aspect-square flex-col items-center justify-center gap-1 border border-[#ccd0d4] bg-white p-2 text-[#50575e] hover:border-[#00a651]"
+              >
+                <span className="text-[11px] font-bold tracking-wider">ZIP</span>
+                <span className="max-w-full truncate text-[10px]">{z.label}</span>
+                <span className="mt-1 rounded-[3px] bg-[#00a651] px-2 py-0.5 text-[10px] font-semibold text-white">Descompactar</span>
+              </button>
+            ))}
+            {paginatedFiles.map((file) => (
+              <div
+                key={file.name}
+                onClick={() => (isBulkMode ? toggleSelect(file.name) : openDetails(file))}
+                className="aspect-square relative bg-white border border-[#ccd0d4] cursor-pointer overflow-hidden group"
+              >
+                <FileThumb name={file.name} url={getPublicUrl(file.name)} />
+              </div>
+            ))}
+          </div>
         ) : viewMode === 'grid' ? (
           /* Grid View - 7 COLUNAS */
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">

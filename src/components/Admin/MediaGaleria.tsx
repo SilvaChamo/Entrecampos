@@ -17,7 +17,7 @@ const TABS: { id: MediaSource; label: string; short: string }[] = [
  * Galeria principal. Junto ao título há um selector para ver também o arquivo de fotos (por pasta) e as fotos
  * partilhadas. Com `?escolher=ID` (aberta pelo formulário da notícia) clicar numa foto devolve-a ao formulário.
  */
-function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, uploadHere }: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean }) {
+function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, uploadHere, bare }: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean }) {
   const params = useSearchParams();
   const pickId = params.get('escolher');
   const [source, setSource] = useState<MediaSource>(initialSource);
@@ -122,6 +122,7 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
         pasta={pasta}
         pick={pick}
         embedded={embedded}
+        bare={bare}
         // "Adicionar" só na galeria; o arquivo recebe fotos no seu próprio lugar (a página de cada pasta) e as partilhadas só chegam por e-mail.
         uploadDisabled={!(source === 'galeria' || (source === 'arquivo' && !!pasta && !!uploadHere))}
         reloadKey={reloadKey}
@@ -141,7 +142,7 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
 }
 
 /** A galeria principal, com selector Galeria | Arquivo de fotos | Fotos partilhadas. Pode abrir já numa origem/pasta. */
-export default function MediaGaleria(props: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean }) {
+export default function MediaGaleria(props: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean }) {
   return (
     <Suspense fallback={null}>
       <GaleriaInner {...props} />
