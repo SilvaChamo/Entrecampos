@@ -77,11 +77,14 @@ export type MediaGalleryViewProps = {
   reloadKey?: number;
   /** Filtro inicial pelo nome (ex.: as fotos que saíram de um zip). */
   initialQuery?: string;
+  /** Zips de fotos (fotos partilhadas): aparecem no selector de tipo; escolher um descompacta-o na página. */
+  zipOptions?: { path: string; label: string }[];
+  onPickZip?: (path: string) => void;
 };
 
 type ArquivoFolderRef = { slug: string; nome: string };
 
-export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '' }: MediaGalleryViewProps) {
+export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip }: MediaGalleryViewProps) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -599,7 +602,10 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
               <select 
                 className="ml-2 max-md:ml-0 h-8 max-md:min-w-[130px] max-md:flex-1 text-sm border-[#ccd0d4] rounded-md bg-white px-2"
                 value={fileTypeFilter}
-                onChange={(e) => setFileTypeFilter(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.startsWith('zip:')) onPickZip?.(e.target.value.slice(4)); // descompacta na página; o filtro fica como estava
+                  else setFileTypeFilter(e.target.value);
+                }}
               >
                 <option value="todos">Todos os ficheiros</option>
                 <option value="imagens">Imagens</option>
@@ -607,6 +613,11 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 <option value="documentos">Documentos</option>
                 <option value="pdf">PDF</option>
                 <option value="audio">Áudio</option>
+                {zipOptions && zipOptions.length > 0 && (
+                  <optgroup label="Zip de fotos partilhadas">
+                    {zipOptions.map((z) => <option key={z.path} value={`zip:${z.path}`}>{z.label}</option>)}
+                  </optgroup>
+                )}
               </select>
               
               <select 

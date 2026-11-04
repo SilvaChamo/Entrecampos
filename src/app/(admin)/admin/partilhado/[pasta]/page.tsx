@@ -73,6 +73,28 @@ export default function PastaPage({ params }: { params: Promise<{ pasta: string 
 
   useEffect(() => { load(); }, [load]);
 
+  const [unzipping, setUnzipping] = useState(false);
+
+  /** Escolhido no selector da galeria: descompacta o zip e mostra logo as suas fotos na página. */
+  const unzipFromSelector = async (path: string) => {
+    setUnzipping(true);
+    setUnzipNote('');
+    try {
+      const res = await fetch('/api/admin/partilhado/zip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Erro ao descompactar.');
+      const src = /^(\d+-[\d_]+)-/.exec(path.split('/').pop() ?? '')?.[1] ?? '';
+      setUnzipNote(`${json.extracted} foto(s) do zip.`);
+      setFilter(src ? `${src}-z` : '');
+      setReloadKey((k) => k + 1);
+      load();
+    } catch (e) {
+      setUnzipNote(e instanceof Error ? e.message : 'Erro ao descompactar.');
+    } finally {
+      setUnzipping(false);
+    }
+  };
+
   const zips = (files ?? []).filter(isZip);
   const others = (files ?? []).filter((f) => !isZip(f));
 
@@ -86,7 +108,7 @@ export default function PastaPage({ params }: { params: Promise<{ pasta: string 
       {!files && !error && <div className="flex justify-center py-20"><Spinner /></div>}
       {files && files.length === 0 && pasta !== 'imagens' && <p className="py-10 text-center text-sm text-[#50575e]">Esta pasta ainda está vazia. Use “Sincronizar agora” na página Partilhado.</p>}
 
-      {zips.length > 0 && (
+      {zips.length > 0 && pasta !== 'imagens' && (
         <>
           <h2 className="mb-2 text-sm font-semibold">Pacotes ZIP</h2>
           <ul className="mb-6 divide-y divide-[#ccd0d4] rounded border border-[#ccd0d4] bg-white">
@@ -97,13 +119,22 @@ export default function PastaPage({ params }: { params: Promise<{ pasta: string 
 
       {pasta === 'imagens' && (
         <>
-          {filter && (
+          {unzipping && <p role="status" className="mb-2 text-sm font-semibold text-[#008f45]">A descompactar…</p>}
+          {filter && !unzipping && (
             <div className="mb-3 flex flex-wrap items-center gap-3 rounded border border-[#00a651] bg-white p-3 text-sm">
-              <span>{unzipNote || 'A mostrar só as fotos do zip.'} A mostrar só as fotos desse zip.</span>
+              <span>{unzipNote} A mostrar só as fotos desse zip.</span>
               <button onClick={() => { setFilter(''); setReloadKey((k) => k + 1); }} className="font-semibold text-[#008f45] hover:underline">Ver todas as fotos partilhadas</button>
             </div>
           )}
-          <MediaGalleryView source="partilhado" title="Fotos partilhadas" embedded reloadKey={reloadKey} initialQuery={filter} />
+          <MediaGalleryView
+            source="partilhado"
+            title="Fotos partilhadas"
+            embedded
+            reloadKey={reloadKey}
+            initialQuery={filter}
+            zipOptions={zips.map((z) => ({ path: z.path, label: z.name }))}
+            onPickZip={unzipFromSelector}
+          />
         </>
       )}
 
