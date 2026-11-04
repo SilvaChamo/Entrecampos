@@ -86,9 +86,17 @@ export default function ArquivoPage() {
     onRename: (f) => { const nome = prompt('Novo nome da pasta (máx. 4 palavras):', f.nome); if (nome && nome.trim() && nome.trim() !== f.nome) patch({ slug: f.slug, nome }); },
     onColor: (f, cor) => { patch({ slug: f.slug, cor }); },
     onShare: async (f) => {
-      const url = `${window.location.origin}/admin/arquivo?pasta=${f.slug}`;
-      try { await navigator.clipboard.writeText(url); setNotice(`Ligação da pasta “${f.nome}” copiada. Quem tiver acesso ao painel abre-a directamente.`); }
-      catch { prompt('Copie a ligação da pasta:', url); }
+      try {
+        const res = await fetch('/api/admin/arquivo/partilhar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: f.slug }) });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Não foi possível criar a ligação.');
+        const url = `${window.location.origin}${json.path}`;
+        const msg = `Fotos partilhadas do EntreCAMPOS (“${f.nome}”): ${url}\nDescarregue as fotos o quanto antes: a ligação só funciona durante ${json.horas} horas.`;
+        try { await navigator.clipboard.writeText(msg); setNotice(`Ligação da pasta “${f.nome}” copiada, com o aviso de que dura ${json.horas} horas. Quem a receber vê só as fotos e descarrega-as sem fazer login.`); }
+        catch { prompt('Copie a mensagem e a ligação:', msg); }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Não foi possível criar a ligação.');
+      }
     },
     onDownload: (f) => { window.location.href = `/api/admin/arquivo/zip?pasta=${encodeURIComponent(f.slug)}`; },
     onDelete: canDelete

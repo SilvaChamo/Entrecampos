@@ -129,3 +129,26 @@ export async function folderFiles(slug: string): Promise<{ name: string; data: U
 export async function folderExists(slug: string) {
   return isFolderSlug(slug) && (await list(ARQUIVO_ROOT)).some((r) => r.id === null && r.name === slug);
 }
+
+export type FolderPhoto = { leaf: string; nome: string; url: string; size: number };
+
+/** Nome e fotos de uma pasta (para a página de partilha pública). */
+export async function folderPhotos(slug: string): Promise<{ nome: string; fotos: FolderPhoto[] } | null> {
+  if (!isFolderSlug(slug) || !(await folderExists(slug))) return null;
+  const rows = (await list(`${ARQUIVO_ROOT}/${slug}`)).filter((r) => r.id && IMAGE.test(r.name));
+  const fotos = rows.map((r) => ({
+    leaf: r.name,
+    nome: r.name.replace(/^\d+-[a-z0-9]+-/, '') || r.name,
+    url: supabase().storage.from(BUCKET()).getPublicUrl(`${ARQUIVO_ROOT}/${slug}/${r.name}`).data.publicUrl,
+    size: Number((r as { metadata?: { size?: number } }).metadata?.size ?? 0),
+  }));
+  return { nome: (await readMeta(slug)).nome, fotos };
+}
+
+/** Uma foto de uma pasta (bytes), para a descarga. Só aceita nomes de ficheiro que existem na pasta. */
+export async function folderPhotoFile(slug: string, leaf: string): Promise<{ data: Uint8Array; type: string; nome: string } | null> {
+  if (!isFolderSlug(slug) || !/^[\w.\-]+$/.test(leaf) || !IMAGE.test(leaf)) return null;
+  const { data, error } = await supabase().storage.from(BUCKET()).download(`${ARQUIVO_ROOT}/${slug}/${leaf}`);
+  if (error || !data) return null;
+  return { data: new Uint8Array(await data.arrayBuffer()), type: data.type || 'image/jpeg', nome: leaf.replace(/^\d+-[a-z0-9]+-/, '') || leaf };
+}

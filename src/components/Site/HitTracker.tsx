@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 export default function HitTracker() {
   const pathname = usePathname();
   useEffect(() => {
-    if (!pathname || pathname.startsWith('/admin')) return;
+    if (!pathname || pathname.startsWith('/admin') || pathname.startsWith('/partilha/')) return;
     const slug = pathname.startsWith('/noticias/') ? decodeURIComponent(pathname.split('/')[2] || '') : undefined;
     const payload = JSON.stringify({ path: pathname, slug, ref: document.referrer });
     try {
