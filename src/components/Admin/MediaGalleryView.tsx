@@ -20,7 +20,8 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreVertical,
-  Check
+  Check,
+  FileArchive
 } from 'lucide-react';
 import { SkeletonMediaGrid } from '@/components/Admin/Skeleton';
 import { prepareImage } from '@/lib/client-image';
@@ -773,12 +774,11 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 key={z.path}
                 type="button"
                 onClick={() => onPickZip?.(z.path)}
-                title="Descompactar e mostrar as fotos deste zip"
+                aria-label={`Abrir o zip ${z.label}`}
                 className="flex aspect-square flex-col items-center justify-center gap-1 border border-[#ccd0d4] bg-white p-2 text-[#50575e] hover:border-[#00a651]"
               >
-                <span className="text-[11px] font-bold tracking-wider">ZIP</span>
+                <FileArchive className="h-12 w-12 text-[#00a651]" strokeWidth={1.5} aria-hidden="true" />
                 <span className="max-w-full truncate text-[10px]">{z.label}</span>
-                <span className="mt-1 max-w-full truncate text-[9px] leading-none text-[#008f45]">Descompactar</span>
               </button>
             ))}
             {paginatedFiles.length === 0 && !(zipOptions && zipOptions.length > 0 && view !== 'lixo') && (

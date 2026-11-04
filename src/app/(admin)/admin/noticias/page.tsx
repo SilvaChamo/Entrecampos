@@ -455,7 +455,7 @@ export default function NewsAdminPage() {
                               {item.title}
                             </Link>
                           </div>
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 opacity-0 group-hover:opacity-100 max-lg:opacity-100 transition-opacity text-[11px] max-lg:text-[13px] font-medium text-[#2271b1] [&_button]:max-lg:py-1 [&_a]:max-lg:py-1">
+                          <div className="flex flex-nowrap items-center gap-x-1.5 whitespace-nowrap opacity-0 group-hover:opacity-100 max-lg:opacity-100 transition-opacity text-[11px] leading-none font-medium text-[#2271b1]">
                             <Link href={`/admin/noticias/editar/${item.id}`} className="hover:text-[#135e96]">Editar</Link>
                             <span className="text-gray-300">|</span>
                             <button onClick={() => handleQuickEdit(item)} className="hover:text-[#135e96]">Edição rápida</button>
