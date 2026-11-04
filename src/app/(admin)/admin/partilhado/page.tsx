@@ -42,8 +42,11 @@ export default function PartilhadoPage() {
 
   useEffect(() => {
     const onCount = (e: Event) => setSelCount(Number((e as CustomEvent).detail) || 0);
+    // Clicar no menu "Arquivos partilhados" estando já aqui volta a mostrar os cartões.
+    const onNav = (e: Event) => { if ((e as CustomEvent).detail === '/admin/partilhado') { setAberta(null); setBin(false); setSelCount(0); } };
     window.addEventListener('ec-bulk-count', onCount);
-    return () => window.removeEventListener('ec-bulk-count', onCount);
+    window.addEventListener('ec-nav', onNav);
+    return () => { window.removeEventListener('ec-bulk-count', onCount); window.removeEventListener('ec-nav', onNav); };
   }, []);
 
   const sync = async () => {
@@ -71,7 +74,7 @@ export default function PartilhadoPage() {
   return (
     <div className="min-h-screen p-6 text-[#2c3338]">
       <h1 className="mb-1 text-2xl font-normal">Arquivo de fotos</h1>
-      <p className="mb-3 text-sm text-[#50575e]">Fotos partilhadas por email: <strong>{data?.address ?? 'redaccao@entrecamposblog.com'}</strong>.</p>
+      <p className="mb-3 text-sm text-[#50575e]">Arquivos partilhados por email: <strong>{data?.address ?? 'redaccao@entrecamposblog.com'}</strong>.</p>
 
       <ArquivoTabs
         active="partilhadas"

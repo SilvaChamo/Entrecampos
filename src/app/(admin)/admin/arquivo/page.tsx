@@ -51,8 +51,11 @@ export default function ArquivoPage() {
 
   useEffect(() => {
     const onCount = (e: Event) => setSelCount(Number((e as CustomEvent).detail) || 0);
+    // Clicar no menu "Arquivo de fotos" estando já aqui fecha a pasta aberta e mostra as pastas.
+    const onNav = (e: Event) => { if ((e as CustomEvent).detail === '/admin/arquivo') { setAberta(null); setSelCount(0); } };
     window.addEventListener('ec-bulk-count', onCount);
-    return () => window.removeEventListener('ec-bulk-count', onCount);
+    window.addEventListener('ec-nav', onNav);
+    return () => { window.removeEventListener('ec-bulk-count', onCount); window.removeEventListener('ec-nav', onNav); };
   }, []);
 
   const create = async (e: React.FormEvent) => {

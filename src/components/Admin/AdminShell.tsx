@@ -17,6 +17,9 @@ interface SidebarItemProps {
   onToggle?: () => void;
 }
 
+/** Quem clica num link do menu para a página onde já está não a recarrega: avisa-se a página para voltar ao início (ex.: fechar a pasta aberta). */
+const avisarNavegacao = (href: string) => window.dispatchEvent(new CustomEvent('ec-nav', { detail: href }));
+
 const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false, onToggle }: SidebarItemProps) => {
   const pathname = usePathname();
   const isChildActive = submenu?.some(item => pathname === item.href);
@@ -43,7 +46,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
                 : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338] hover:border-[#00a651]'
             }`}
           >
-            <Link href={href} className="flex items-center gap-3 flex-1">
+            <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1">
               <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
               <span className="font-medium">{label}</span>
             </Link>
@@ -64,7 +67,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
               ? 'bg-[#00a651] text-white border-[#00a651]' 
               : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338] hover:border-[#00a651]'
           }`}>
-            <Link href={href} className="flex items-center gap-3 flex-1">
+            <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1">
               <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
               <span className="font-medium">{label}</span>
             </Link>
@@ -91,6 +94,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => avisarNavegacao(item.href)}
                 className={`block px-4 py-1.5 text-[13px] hover:text-[#00a651] transition-colors border-l-[3px] border-transparent ml-[10px] ${
                   pathname === item.href ? 'text-[#00a651] border-[#00a651]' : 'text-[#f0f0f1] hover:border-[#00a651]'
                 }`}
@@ -109,6 +113,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => avisarNavegacao(item.href)}
               className={`block px-4 py-1.5 text-[13px] hover:text-[#00a651] transition-colors border-l-[3px] border-transparent ml-[10px] ${
                 pathname === item.href ? 'text-[#00a651] border-[#00a651]' : 'text-[#f0f0f1] hover:border-[#00a651]'
               }`}
@@ -282,8 +287,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           icon: FolderOpen,
           label: 'Arquivo de fotos',
           submenu: [
-            { label: 'Pastas do arquivo', href: '/admin/arquivo' },
-            { label: 'Fotos partilhadas', href: '/admin/partilhado' },
+            { label: 'Arquivo de fotos', href: '/admin/arquivo' },
+            { label: 'Arquivos partilhados', href: '/admin/partilhado' },
             { label: 'PDF', href: '/admin/partilhado/pdf' },
             { label: 'Arquivos ZIP', href: '/admin/partilhado/zip' },
             { label: 'Documentos', href: '/admin/partilhado/documentos' },
@@ -316,8 +321,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           icon: FolderOpen,
           label: 'Arquivo de fotos',
           submenu: [
-            { label: 'Pastas do arquivo', href: '/admin/arquivo' },
-            { label: 'Fotos partilhadas', href: '/admin/partilhado' },
+            { label: 'Arquivo de fotos', href: '/admin/arquivo' },
+            { label: 'Arquivos partilhados', href: '/admin/partilhado' },
             { label: 'PDF', href: '/admin/partilhado/pdf' },
             { label: 'Arquivos ZIP', href: '/admin/partilhado/zip' },
             { label: 'Documentos', href: '/admin/partilhado/documentos' },

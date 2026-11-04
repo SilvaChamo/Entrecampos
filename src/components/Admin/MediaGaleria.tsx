@@ -10,7 +10,7 @@ import { type FolderInfo } from '@/components/Admin/ArquivoFolders';
 const TABS: { id: MediaSource; label: string; short: string }[] = [
   { id: 'galeria', label: 'Galeria', short: 'Galeria' },
   { id: 'arquivo', label: 'Arquivo de fotos', short: 'Arquivo' },
-  { id: 'partilhado', label: 'Fotos partilhadas', short: 'Partilhadas' },
+  { id: 'partilhado', label: 'Arquivos partilhados', short: 'Partilhados' },
 ];
 
 /**

@@ -13,7 +13,7 @@ export default function ArquivoTabs({ active, right, onPartilhadasClick, onArqui
       <div className="flex items-end">
         {withSlots && <div id="ec-bulk-check" className="mr-3 flex items-center self-center empty:hidden" />}
         <Link href="/admin/arquivo" onClick={(e) => { if (onArquivoClick) { e.preventDefault(); onArquivoClick(); } }} className={tab(active === 'arquivo', true)}>Arquivo{active === 'arquivo' && line(true)}</Link>
-        <Link href="/admin/partilhado" onClick={(e) => { if (onPartilhadasClick) { e.preventDefault(); onPartilhadasClick(); } }} className={tab(active === 'partilhadas')}>Fotos partilhadas{active === 'partilhadas' && line()}</Link>
+        <Link href="/admin/partilhado" onClick={(e) => { if (onPartilhadasClick) { e.preventDefault(); onPartilhadasClick(); } }} className={tab(active === 'partilhadas')}>Arquivos partilhados{active === 'partilhadas' && line()}</Link>
         {withSlots && <div id="ec-bulk-slot" className="ml-3 flex items-center gap-3 self-center" />}
       </div>
       {right && <div className="pb-1.5">{right}</div>}
