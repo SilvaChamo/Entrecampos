@@ -106,7 +106,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   // Na grelha simples, a seleção em massa sobe para a linha dos separadores da página (se existir).
   const [bulkSlot, setBulkSlot] = useState<HTMLElement | null>(null);
   const [checkSlot, setCheckSlot] = useState<HTMLElement | null>(null);
-  const [confirmDel, setConfirmDel] = useState(false);
+  // Confirmação de eliminar (popup da própria página: os diálogos nativos do navegador podem não aparecer).
+  const [pendingDel, setPendingDel] = useState<{ names: string[]; single: boolean } | null>(null);
   useEffect(() => {
     if (!bare) return;
     setBulkSlot(document.getElementById('ec-bulk-slot'));
@@ -183,7 +184,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   }, [bare, selectedIds]);
   useEffect(() => {
     if (!bare) return;
-    const ask = () => { if (selectedIds.size > 0) setConfirmDel(true); };
+    const ask = () => { if (selectedIds.size > 0) setPendingDel({ names: Array.from(selectedIds), single: false }); };
     window.addEventListener('ec-bulk-delete', ask);
     return () => window.removeEventListener('ec-bulk-delete', ask);
   }, [bare, selectedIds]);
@@ -241,31 +242,39 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
     }
   };
 
-  const deleteSelected = async (skipConfirm = false) => {
-    if (selectedIds.size === 0) return;
-    if (skipConfirm !== true && !confirm(showTrash ? `Eliminar PARA SEMPRE os ${selectedIds.size} itens selecionados?` : `Mover os ${selectedIds.size} itens selecionados para o lixo?`)) return;
+  const notify = (msg: string) => {
+    setBusyMsg(msg);
+    setTimeout(() => setBusyMsg((cur) => (cur === msg ? '' : cur)), 7000);
+  };
 
+  /** Elimina de verdade (para o lixo, ou para sempre quando já se está no lixo). Chamado depois da confirmação. */
+  const performDelete = async (names: string[]) => {
     try {
       setLoading(true);
-      const idsArray = Array.from(selectedIds);
       const res = await fetch('/api/admin/media/delete', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: showTrash ? 'purge' : 'trash', names: idsArray }),
+        body: JSON.stringify({ action: showTrash ? 'purge' : 'trash', names }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || 'Não foi possível eliminar.');
 
       setSelectedIds(new Set());
       setIsBulkMode(false);
+      setSelectedFile(null);
       loadImages();
-      if (!bare) alert(showTrash ? 'Itens eliminados para sempre.' : 'Itens movidos para o lixo.');
+      notify(showTrash ? 'Eliminada para sempre.' : 'Movida para o lixo.');
     } catch (err: any) {
-      alert('Erro ao eliminar: ' + err.message);
+      notify('Erro ao eliminar: ' + err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const deleteSelected = () => {
+    if (selectedIds.size === 0) return;
+    setPendingDel({ names: Array.from(selectedIds), single: false });
   };
 
   const archive = async (names: string[]) => {
@@ -282,8 +291,9 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
       setSelectedIds(new Set());
       setIsBulkMode(false);
       loadImages();
+      notify('Arquivada. Vê-a no botão das arquivadas da galeria.');
     } catch (err: any) {
-      alert('Erro: ' + err.message);
+      notify('Erro: ' + err.message);
     }
   };
 
@@ -301,28 +311,13 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
       setSelectedIds(new Set());
       setIsBulkMode(false);
       loadImages();
+      notify('Restaurada.');
     } catch (err: any) {
-      alert('Erro: ' + err.message);
+      notify('Erro: ' + err.message);
     }
   };
 
-  const deleteSingle = async (filename: string) => {
-    if (!confirm(showTrash ? `Eliminar PARA SEMPRE "${filename}"?` : `Mover "${filename}" para o lixo?`)) return;
-    try {
-      const res = await fetch('/api/admin/media/delete', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: showTrash ? 'purge' : 'trash', names: [filename] }),
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || 'Não foi possível eliminar.');
-      setFiles(files.filter(f => f.name !== filename));
-      if (selectedFile?.name === filename) setSelectedFile(null);
-    } catch (err: any) {
-      alert('Erro: ' + err.message);
-    }
-  };
+  const deleteSingle = (filename: string) => setPendingDel({ names: [filename], single: true });
 
   /** Copia fotos para a galeria geral ou para uma pasta do arquivo (o original fica onde está). */
   const transfer = async (names: string[], to: 'galeria' | 'arquivo', toPasta?: string) => {
@@ -673,7 +668,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                     </span>
                   )}
                   {view !== 'arquivo' && <span 
-                    onClick={selectedIds.size > 0 ? () => deleteSelected() : undefined}
+                    onClick={selectedIds.size > 0 ? deleteSelected : undefined}
                     className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#d63638] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
                   >
                     {showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'} ({selectedIds.size})
@@ -1109,16 +1104,16 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
         )}
       </div>
       
-      {confirmDel && (
+      {pendingDel && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Confirmar eliminação">
           <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-2xl">
             <h3 className="text-center text-[16px] font-semibold text-[#1d2327]">Eliminar fotos</h3>
             <p className="mt-2 text-center text-sm text-[#3c434a]">
-              Quer mesmo eliminar {selectedIds.size === 1 ? 'a foto selecionada' : `as ${selectedIds.size} fotos selecionadas`}?
+              Quer mesmo eliminar {pendingDel.single ? 'esta foto' : pendingDel.names.length === 1 ? 'a foto selecionada' : `as ${pendingDel.names.length} fotos selecionadas`}?
             </p>
             <div className="mt-5 flex justify-center gap-2">
-              <button type="button" onClick={() => setConfirmDel(false)} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm font-semibold text-[#50575e] hover:bg-[#f6f7f7]">Cancelar</button>
-              <button type="button" onClick={async () => { setConfirmDel(false); await deleteSelected(true); }} className="rounded-[3px] bg-[#d63638] px-5 py-1.5 text-sm font-semibold text-white hover:bg-[#b32d2e]">Sim</button>
+              <button type="button" onClick={() => setPendingDel(null)} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm font-semibold text-[#50575e] hover:bg-[#f6f7f7]">Cancelar</button>
+              <button type="button" onClick={async () => { const n = pendingDel.names; setPendingDel(null); await performDelete(n); }} className="rounded-[3px] bg-[#d63638] px-5 py-1.5 text-sm font-semibold text-white hover:bg-[#b32d2e]">Sim</button>
             </div>
           </div>
         </div>

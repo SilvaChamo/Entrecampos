@@ -68,7 +68,7 @@ export async function GET(req: Request) {
     if (trash) {
       files = await walk(view === 'archive' ? '_arquivo/' : '_lixo/', false);
       // Cada biblioteca só vê o seu lixo e as suas arquivadas.
-      files = files.filter((f) => (source === 'galeria' ? !/\/(arquivo|partilhado)\//.test(`/${f.name}`.replace(/^\/(_lixo|_arquivo)\/\d+/, '')) : f.name.includes(here)));
+      files = files.filter((f) => (source === 'galeria' ? !/\/partilhado\//.test(`/${f.name}`.replace(/^\/(_lixo|_arquivo)\/\d+/, '')) : f.name.includes(here)));
     } else if (source === 'arquivo') files = await walk(`arquivo/${pasta}/`, false);
     else if (source === 'partilhado') files = (await walk('partilhado/imagens/', false)).filter((f) => IMAGE.test(f.name));
     else files = await walk();
