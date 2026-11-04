@@ -122,6 +122,9 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
   );
 };
 
+/** Páginas iniciais do painel (cada papel tem a sua): só nelas aparece o botão "Novo". */
+const PANEL_HOME = ['/admin', '/admin/dashboard', '/admin/editor', '/admin/contribuidor', '/admin/guest'];
+
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -382,11 +385,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </Link>
           
           <div className="flex items-center gap-3 lg:gap-4">
-            {/* "Novo" sempre à vista (também no telemóvel): escrever e publicar uma notícia */}
-            <Link href="/admin/noticias/nova" className="flex items-center gap-1.5 hover:text-[#72aee6] max-lg:bg-[#00a651] max-lg:px-3 max-lg:py-2 max-lg:rounded max-lg:text-white">
-              <Plus className="w-4 h-4" />
-              <span>Novo</span>
-            </Link>
+            {/* "Novo" só na página inicial do painel */}
+            {PANEL_HOME.includes(pathname) && (
+              <Link href="/admin/noticias/nova" className="flex items-center gap-1.5 hover:text-[#72aee6] max-lg:bg-[#00a651] max-lg:px-3 max-lg:py-2 max-lg:rounded max-lg:text-white">
+                <Plus className="w-4 h-4" />
+                <span>Novo</span>
+              </Link>
+            )}
             <Link href="/" target="_blank" className="hidden md:flex items-center gap-1.5 hover:text-[#72aee6]">
               <ExternalLink className="w-4 h-4" />
               <span>Ver Site</span>
