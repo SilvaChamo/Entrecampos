@@ -101,7 +101,7 @@ export default function MeuPerfilPage() {
           const canvas = document.createElement('canvas');
           const finalSize = 400;
           const sourceSize = Math.min(img.width, img.height);
-          let sx = (img.width - sourceSize) / 2;
+          const sx = (img.width - sourceSize) / 2;
           let sy = (img.height - sourceSize) / 2;
           if (img.height > img.width) {
             sy = (img.height - sourceSize) * 0.15;

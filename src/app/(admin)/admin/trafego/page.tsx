@@ -1,405 +1,145 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { 
-  BarChart3,
-  Users,
-  Globe,
-  Clock,
-  MapPin,
-  Search,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Download,
-  RefreshCw,
-  ChevronDown,
-  ExternalLink,
-  FileText,
-  Flag
-} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Database, Eye, Radio, Users } from 'lucide-react';
+import Spinner from '@/components/Common/Spinner';
 
-// Mock data for demonstration
-const MOCK_DATA = {
-  onlineUsers: 0,
-  todayVisitors: 0,
-  todayPageViews: 0,
-  totalSearchEngines: 248,
-  
-  trafficByDay: [
-    { date: '14/04', visits: 8, visitors: 8 },
-    { date: '15/04', visits: 20, visitors: 21 },
-    { date: '16/04', visits: 18, visitors: 19 },
-    { date: '17/04', visits: 16, visitors: 17 },
-    { date: '18/04', visits: 24, visitors: 26 },
-    { date: '19/04', visits: 22, visitors: 24 },
-    { date: '20/04', visits: 10, visitors: 11 },
-    { date: '21/04', visits: 9, visitors: 10 },
-    { date: '22/04', visits: 9, visitors: 10 },
-    { date: '23/04', visits: 10, visitors: 11 },
-    { date: '24/04', visits: 12, visitors: 13 },
-    { date: '25/04', visits: 2, visitors: 3 },
-    { date: '26/04', visits: 1, visitors: 2 },
-    { date: '27/04', visits: 0, visitors: 0 },
-  ],
-  
-  summaryStats: {
-    today: { visitors: 0, pageViews: 0 },
-    yesterday: { visitors: 1, pageViews: 1 },
-    last7Days: { visitors: 39, pageViews: 43 },
-    last30Days: { visitors: 189, pageViews: 198 },
-    thisYear: { visitors: 433, pageViews: 485 },
-    total: { visitors: 791, pageViews: 968 },
-    newVisitors: 711,
-    returningVisitors: 36,
-    bounceRate: '95.1%',
-    avgSession: '23m 50s'
-  },
-  
-  trafficByIP: [
-    { ip: '41.220.200.163', country: 'Moçambique', city: 'Maputo, Cidade de Maputo', time: '26 Apr 2026 @ 10:44 pm', duration: '00:00:01', hits: 1, flag: 'mz' },
-    { ip: '34.72.176.129', country: 'United States', city: 'Council Bluffs, Iowa', time: '25 Apr 2026 @ 07:24 pm', duration: '00:00:01', hits: 1, flag: 'us' },
-    { ip: '41.220.200.249', country: 'Moçambique', city: 'Maputo, Cidade de Maputo', time: '25 Apr 2026 @ 10:54 am', duration: '00:00:01', hits: 1, flag: 'mz' },
-    { ip: '197.218.116.8', country: 'Moçambique', city: 'Maputo, Cidade de Maputo', time: '24 Apr 2026 @ 10:57 pm', duration: '00:00:01', hits: 1, flag: 'mz' },
-    { ip: '41.220.201.67', country: 'Moçambique', city: 'Cidade de Maputo', time: '24 Apr 2026 @ 09:43 pm', duration: '00:01:14', hits: 1, flag: 'mz' },
-    { ip: '197.218.118.237', country: 'Moçambique', city: 'Cidade de Maputo', time: '24 Apr 2026 @ 09:38 pm', duration: '00:00:01', hits: 1, flag: 'mz' },
-    { ip: '34.122.147.229', country: 'United States', city: 'Council Bluffs, Iowa', time: '24 Apr 2026 @ 08:25 pm', duration: '00:00:01', hits: 1, flag: 'us' },
-    { ip: '34.72.176.129', country: 'United States', city: 'Council Bluffs, Iowa', time: '24 Apr 2026 @ 07:25 pm', duration: '00:00:01', hits: 1, flag: 'us' },
-    { ip: '34.123.170.104', country: 'United States', city: 'Council Bluffs, Iowa', time: '24 Apr 2026 @ 07:24 pm', duration: '00:00:01', hits: 1, flag: 'us' },
-    { ip: '197.218.58.139', country: 'Moçambique', city: 'Cidade de Maputo', time: '24 Apr 2026 @ 03:08 pm', duration: '00:00:01', hits: 1, flag: 'mz' },
-  ],
-  
-  searchEngines: [
-    { name: 'Google', total: 138 },
-    { name: 'Bing', total: 104 },
-    { name: 'Yahoo Search', total: 6 },
-  ]
+type Stats = {
+  online: number;
+  today: string;
+  daily: { day: string; views: number; visitors: number }[];
+  pages: { path: string; views: number }[];
+  countries: { country: string; views: number }[];
+  devices: { device: string; views: number }[];
+  referrers: { referrer: string; views: number }[];
 };
 
-const FLAG_ICONS: Record<string, string> = {
-  mz: '🇲🇿',
-  us: '🇺🇸',
+const DEVICE_LABEL: Record<string, string> = { desktop: 'Computador', mobile: 'Telemóvel', tablet: 'Tablet' };
+const regionNames = typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['pt'], { type: 'region' }) : null;
+const countryName = (code: string) => {
+  if (!code || code === '??') return 'Desconhecido';
+  try { return regionNames?.of(code) || code; } catch { return code; }
 };
+
+function Table({ title, rows }: { title: string; rows: { label: string; views: number }[] }) {
+  const max = Math.max(1, ...rows.map((r) => r.views));
+  return (
+    <section className="rounded border border-[#ccd0d4] bg-white p-4">
+      <h2 className="mb-3 text-sm font-semibold">{title}</h2>
+      {rows.length === 0 ? (
+        <p className="text-xs text-[#50575e]">Sem dados ainda.</p>
+      ) : (
+        <ul className="space-y-2">
+          {rows.map((r) => (
+            <li key={r.label} className="text-xs">
+              <div className="flex justify-between gap-2"><span className="truncate">{r.label}</span><span className="font-semibold">{r.views}</span></div>
+              <div className="mt-1 h-1.5 rounded bg-[#f0f0f1]"><div className="h-1.5 rounded bg-[#00a651]" style={{ width: `${(r.views / max) * 100}%` }} /></div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
 
 export default function TrafegoPage() {
-  const [currentTime, setCurrentTime] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('14');
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const now = new Date();
-    setCurrentTime(now.toLocaleDateString('pt-PT', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
-    }) + ', ' + now.toLocaleTimeString('pt-PT', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      second: '2-digit'
-    }));
+    fetch('/api/admin/stats?dias=30', { cache: 'no-store' })
+      .then(async (res) => {
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Erro ao ler as estatísticas.');
+        setStats(json);
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : 'Erro ao ler as estatísticas.'));
   }, []);
 
-  const getBarHeight = (value: number, max: number) => {
-    return Math.max((value / max) * 100, 5);
-  };
+  const windows = useMemo(() => {
+    if (!stats) return [];
+    const byDay = new Map(stats.daily.map((d) => [d.day, d]));
+    const day = (offset: number) => {
+      const d = new Date(`${stats.today}T12:00:00Z`);
+      d.setUTCDate(d.getUTCDate() - offset);
+      return d.toISOString().slice(0, 10);
+    };
+    const sum = (from: number, to: number) => {
+      let views = 0, visitors = 0;
+      for (let i = from; i <= to; i++) { const d = byDay.get(day(i)); if (d) { views += d.views; visitors += d.visitors; } }
+      return { views, visitors };
+    };
+    return [
+      { label: 'Hoje', ...sum(0, 0) },
+      { label: 'Ontem', ...sum(1, 1) },
+      { label: 'Últimos 7 dias', ...sum(0, 6) },
+      { label: 'Últimos 30 dias', ...sum(0, 29) },
+    ];
+  }, [stats]);
 
-  const maxVisits = Math.max(...MOCK_DATA.trafficByDay.map(d => d.visits));
+  const series = useMemo(() => {
+    if (!stats) return [];
+    const byDay = new Map(stats.daily.map((d) => [d.day, d]));
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(`${stats.today}T12:00:00Z`);
+      d.setUTCDate(d.getUTCDate() - (29 - i));
+      const key = d.toISOString().slice(0, 10);
+      return { key, label: key.slice(8) + '/' + key.slice(5, 7), views: byDay.get(key)?.views ?? 0 };
+    });
+  }, [stats]);
+  const maxViews = Math.max(1, ...series.map((s) => s.views));
 
   return (
-    <div className="p-6 text-[#2c3338] w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
-            <BarChart3 className="w-7 h-7 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-700">Visitor Traffic Real Time Statistics pro</h1>
-            <p className="text-sm text-gray-500">{currentTime}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">
-            <Download className="w-4 h-4" /> Exportar
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md text-sm hover:bg-[#008f45]">
-            <RefreshCw className="w-4 h-4" /> Atualizar
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen p-6 text-[#2c3338]">
+      <h1 className="mb-1 text-2xl font-normal">Estatísticas</h1>
+      <p className="mb-4 text-sm text-[#50575e]">Visitas reais ao site, sem cookies nem dados pessoais. Os visitantes contam-se por dia.</p>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* Online Users */}
-        <div className="bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-4xl font-bold">{MOCK_DATA.onlineUsers}</p>
-              <p className="text-sm opacity-90 flex items-center gap-2 mt-1">
-                <Users className="w-4 h-4" /> Online Users
-              </p>
+      {error === 'missing_sql' && (
+        <div className="rounded border border-[#dba617] bg-white p-4 text-sm leading-6">
+          <Database className="mb-1 h-5 w-5 text-[#50575e]" />
+          Falta criar a tabela das estatísticas. Cole o conteúdo de <code>sql/estatisticas.sql</code> no SQL Editor do Supabase e corra-o uma vez; as visitas começam a contar logo a seguir.
+        </div>
+      )}
+      {error && error !== 'missing_sql' && <div className="rounded border border-[#d63638] bg-white p-3 text-sm text-[#d63638]">{error}</div>}
+      {!stats && !error && <div className="flex justify-center py-20"><Spinner /></div>}
+
+      {stats && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            <div className="rounded border border-[#ccd0d4] bg-white p-4">
+              <Radio className="mb-1 h-4 w-4 text-[#00a651]" />
+              <p className="text-2xl">{stats.online}</p>
+              <p className="text-xs text-[#50575e]">Online agora (5 min)</p>
             </div>
-            <Users className="w-12 h-12 opacity-20" />
-          </div>
-        </div>
-
-        {/* Today's Visitors */}
-        <div className="bg-gradient-to-br from-red-400 to-red-600 rounded-lg p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-4xl font-bold">{MOCK_DATA.todayVisitors}</p>
-              <p className="text-sm opacity-90 flex items-center gap-2 mt-1">
-                <Globe className="w-4 h-4" /> Today&apos;s Visitors
-              </p>
-            </div>
-            <Globe className="w-12 h-12 opacity-20" />
-          </div>
-        </div>
-
-        {/* Today's Page Views */}
-        <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-lg p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-4xl font-bold">{MOCK_DATA.todayPageViews}</p>
-              <p className="text-sm opacity-90 flex items-center gap-2 mt-1">
-                <FileText className="w-4 h-4" /> Today&apos;s Page Views
-              </p>
-            </div>
-            <FileText className="w-12 h-12 opacity-20" />
-          </div>
-        </div>
-
-        {/* Search Engines */}
-        <div className="bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-4xl font-bold">{MOCK_DATA.totalSearchEngines}</p>
-              <p className="text-sm opacity-90 flex items-center gap-2 mt-1">
-                <Search className="w-4 h-4" /> All Time Search Engines
-              </p>
-            </div>
-            <Search className="w-12 h-12 opacity-20" />
-          </div>
-        </div>
-      </div>
-
-      {/* Traffic Chart */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-500" /> Traffic Report
-          </h2>
-          <select 
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="h-9 px-3 border border-gray-300 rounded-md text-sm focus:border-green-600 focus:outline-none"
-          >
-            <option value="7">Last 7 days</option>
-            <option value="14">Last 14 days</option>
-            <option value="30">Last 30 days</option>
-          </select>
-        </div>
-
-        {/* Chart */}
-        <div className="h-64 flex items-end justify-between gap-2 px-4 overflow-x-auto">
-          {MOCK_DATA.trafficByDay.map((day, idx) => (
-            <div key={idx} className="flex-1 min-w-[34px] flex flex-col items-center gap-1">
-              <div className="w-full flex gap-0.5">
-                <div 
-                  className="flex-1 bg-green-400 rounded-t"
-                  style={{ height: `${getBarHeight(day.visits, maxVisits)}px` }}
-                  title={`Visitas: ${day.visits}`}
-                />
-                <div 
-                  className="flex-1 bg-amber-400 rounded-t"
-                  style={{ height: `${getBarHeight(day.visitors, maxVisits)}px` }}
-                  title={`Visitantes: ${day.visitors}`}
-                />
+            {windows.map((w) => (
+              <div key={w.label} className="rounded border border-[#ccd0d4] bg-white p-4">
+                <p className="text-xs font-semibold">{w.label}</p>
+                <p className="mt-1 flex items-center gap-1 text-lg"><Users className="h-4 w-4 text-[#50575e]" /> {w.visitors}</p>
+                <p className="flex items-center gap-1 text-sm text-[#50575e]"><Eye className="h-4 w-4" /> {w.views} páginas</p>
               </div>
-              <span className="text-xs text-gray-500 transform -rotate-45 origin-top-left translate-y-4">{day.date}</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-6 mt-8">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-400 rounded" />
-            <span className="text-sm text-gray-600">Visit</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-amber-400 rounded" />
-            <span className="text-sm text-gray-600">Visitor</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Summary Statistics */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-500" /> Summary Statistics
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-gray-600 font-medium">Período</th>
-                  <th className="px-4 py-3 text-right text-gray-600 font-medium">Visitors</th>
-                  <th className="px-4 py-3 text-right text-gray-600 font-medium">Page Views</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                <tr>
-                  <td className="px-4 py-3 text-gray-700">Today</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.today.visitors}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.today.pageViews}</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 text-gray-700">Yesterday</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.yesterday.visitors}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.yesterday.pageViews}</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 text-gray-700">Last 7 Days</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.last7Days.visitors}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.last7Days.pageViews}</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 text-gray-700">Last 30 Days</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.last30Days.visitors}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.last30Days.pageViews}</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 text-gray-700">This Year</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.thisYear.visitors}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.thisYear.pageViews}</td>
-                </tr>
-                <tr className="bg-green-50">
-                  <td className="px-4 py-3 text-green-700 font-semibold">Total</td>
-                  <td className="px-4 py-3 text-right text-green-600 font-semibold">{MOCK_DATA.summaryStats.total.visitors}</td>
-                  <td className="px-4 py-3 text-right text-green-600 font-semibold">{MOCK_DATA.summaryStats.total.pageViews}</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 text-gray-700">New Visitors</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.newVisitors}</td>
-                  <td className="px-4 py-3 text-right text-gray-400">-</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 text-gray-700">Returning Visitors</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.returningVisitors}</td>
-                  <td className="px-4 py-3 text-right text-gray-400">-</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 text-gray-700">Bounce Rate</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.bounceRate}</td>
-                  <td className="px-4 py-3 text-right text-gray-400">-</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 text-gray-700">Avg. Session</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{MOCK_DATA.summaryStats.avgSession}</td>
-                  <td className="px-4 py-3 text-right text-gray-400">-</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Search Engines Summary */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <Search className="w-5 h-5 text-blue-500" /> Search Engines Summary
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-gray-600 font-medium">Engine</th>
-                  <th className="px-4 py-3 text-right text-gray-600 font-medium">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {MOCK_DATA.searchEngines.map((engine, idx) => (
-                  <tr key={idx}>
-                    <td className="px-4 py-3 text-gray-700">{engine.name}</td>
-                    <td className="px-4 py-3 text-right text-gray-600">{engine.total}</td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-50 font-semibold">
-                  <td className="px-4 py-3 text-gray-700">Total</td>
-                  <td className="px-4 py-3 text-right text-gray-700">
-                    {MOCK_DATA.searchEngines.reduce((sum, e) => sum + e.total, 0)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Traffic by IP */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-blue-500" /> Last 30 Days Traffic by IP
-          </h2>
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded text-sm">
-              <Download className="w-4 h-4" /> Exportar
-            </button>
-            <button className="flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded text-sm">
-              <Search className="w-4 h-4" /> Pesquisar
-            </button>
-          </div>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-gray-600 font-medium">IP Address</th>
-                <th className="px-4 py-3 text-left text-gray-600 font-medium">Location</th>
-                <th className="px-4 py-3 text-left text-gray-600 font-medium">Time</th>
-                <th className="px-4 py-3 text-left text-gray-600 font-medium">Duration</th>
-                <th className="px-4 py-3 text-center text-gray-600 font-medium">Hits</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {MOCK_DATA.trafficByIP.map((ip, idx) => (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-700 font-mono text-xs">{ip.ip}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{FLAG_ICONS[ip.flag] || '🏳️'}</span>
-                      <span className="text-gray-700">{ip.country}</span>
-                    </div>
-                    <p className="text-xs text-gray-500 ml-7">{ip.city}</p>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">{ip.time}</td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">{ip.duration}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 bg-green-500 text-white text-xs font-semibold rounded">
-                      {ip.hits}
-                    </span>
-                  </td>
-                </tr>
+          <section className="rounded border border-[#ccd0d4] bg-white p-4">
+            <h2 className="mb-3 text-sm font-semibold">Páginas vistas por dia (30 dias)</h2>
+            <div className="flex h-40 items-end gap-1">
+              {series.map((s) => (
+                <div key={s.key} className="flex flex-1 flex-col items-center justify-end" title={`${s.label}: ${s.views}`}>
+                  <div className="w-full rounded-t bg-[#00a651]" style={{ height: `${(s.views / maxViews) * 100}%`, minHeight: s.views ? 2 : 0 }} />
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+            <div className="mt-1 flex justify-between text-[10px] text-[#50575e]"><span>{series[0]?.label}</span><span>{series[series.length - 1]?.label}</span></div>
+          </section>
 
-        {/* Pagination */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
-          <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">&lt;</button>
-          <button className="px-3 py-1 bg-green-600 text-white rounded text-sm">1</button>
-          <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">2</button>
-          <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">3</button>
-          <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">4</button>
-          <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">...</button>
-          <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">19</button>
-          <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-sm">&gt;</button>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Table title="Páginas mais vistas" rows={stats.pages.map((p) => ({ label: p.path, views: p.views }))} />
+            <Table title="Países" rows={stats.countries.map((c) => ({ label: countryName(c.country), views: c.views }))} />
+            <Table title="Dispositivos" rows={stats.devices.map((d) => ({ label: DEVICE_LABEL[d.device] ?? d.device, views: d.views }))} />
+            <Table title="Origem do tráfego" rows={stats.referrers.map((r) => ({ label: r.referrer, views: r.views }))} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

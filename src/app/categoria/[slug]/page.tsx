@@ -4,7 +4,7 @@ import { Pagination } from '@/components/Site/parts';
 import InnerPage, { InnerSidebar } from '@/components/Expnews/InnerPage';
 import { NewsCard } from '@/components/Expnews/blocks';
 
-export const revalidate = 60;
+export const revalidate = 604800; // 7 dias; gravar no painel limpa já o cache (lib/refresh-site.ts)
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const slug = slugify(decodeURIComponent((await params).slug));

@@ -4,38 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
-import { 
-  LayoutDashboard, 
-  Newspaper, 
-  ImageIcon, 
-  Users, 
-  Settings, 
-  Plus, 
-  ExternalLink,
-  ChevronDown,
-  User as UserIcon,
-  LogOut,
-  Menu,
-  X,
-  FileText,
-  Clock,
-  CheckSquare,
-  CreditCard,
-  Eye,
-  Video,
-  Zap,
-  Shield,
-  BarChart3,
-  FolderOpen,
-  FileImage,
-  FileVideo,
-  File,
-  LogIn,
-  Layers,
-  Boxes,
-  Loader2,
-  MessageSquare
-} from 'lucide-react';
+import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, Menu, X, Clock, CheckSquare, MessageSquare } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 
 interface SidebarItemProps {
@@ -300,6 +269,19 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Limpeza de Media', href: '/admin/media/limpeza' },
           ]
         },
+        {
+          href: '/admin/partilhado',
+          icon: FolderOpen,
+          label: 'Partilhado',
+          submenu: [
+            { label: 'Todas as pastas', href: '/admin/partilhado' },
+            { label: 'Imagens', href: '/admin/partilhado/imagens' },
+            { label: 'PDF', href: '/admin/partilhado/pdf' },
+            { label: 'Arquivos ZIP', href: '/admin/partilhado/zip' },
+            { label: 'Documentos', href: '/admin/partilhado/documentos' },
+          ]
+        },
+        { href: '/admin/trafego', icon: BarChart3, label: 'Estatísticas' },
         { 
           href: '/admin/utilizadores', 
           icon: Users, 
@@ -308,61 +290,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Todos os utilizadores', href: '/admin/utilizadores' },
             { label: 'Adicionar utilizador', href: '/admin/utilizadores/novo' },
             { label: 'O seu perfil', href: '/admin/perfil' },
-          ]
-        },
-        { 
-          href: '/admin/litespeed', 
-          icon: Zap, 
-          label: 'LiteSpeed Cache',
-          submenu: [
-            { label: 'Otimização da página', href: '/admin/litespeed' },
-            { label: 'Limpeza de cache', href: '/admin/litespeed/limpeza' },
-            { label: 'Configurações', href: '/admin/litespeed/configuracoes' },
-          ]
-        },
-        { 
-          href: '/admin/capacidades', 
-          icon: Shield, 
-          label: 'Capacidades',
-          submenu: [
-            { label: 'Redirecionamentos', href: '/admin/capacidades/redirecionamentos' },
-            { label: 'Gerir capacidades', href: '/admin/capacidades' },
-            { label: 'Recursos', href: '/admin/capacidades/recursos' },
-          ]
-        },
-        { 
-          href: '/admin/trafego', 
-          icon: BarChart3, 
-          label: 'Visitor Traffic',
-          submenu: [
-            { label: 'Estatísticas em tempo real', href: '/admin/trafego' },
-            { label: 'Relatórios detalhados', href: '/admin/trafego/relatorios' },
-            { label: 'Visitantes por país', href: '/admin/trafego/paises' },
-          ]
-        },
-        { 
-          href: '/admin/partilhado', 
-          icon: FolderOpen, 
-          label: 'Partilhado',
-          submenu: [
-            { label: 'Geral', href: '/admin/partilhado' },
-            { label: 'Vídeos', href: '/admin/partilhado/videos' },
-            { label: 'Imagens', href: '/admin/partilhado/imagens' },
-            { label: 'Documentos', href: '/admin/partilhado/documentos' },
-          ]
-        },
-        { 
-          href: '/admin/definicoes', 
-          icon: Settings, 
-          label: 'Definições',
-          submenu: [
-            { label: 'Geral', href: '/admin/definicoes' },
-            { label: 'Notícias', href: '/admin/definicoes/noticias' },
-            { label: 'Utilizadores', href: '/admin/definicoes/utilizadores' },
-            { label: 'Media', href: '/admin/definicoes/media' },
-            { label: 'Segurança', href: '/admin/definicoes/seguranca' },
-            { label: 'Backup', href: '/admin/definicoes/backup' },
-            { label: 'API & Integrações', href: '/admin/definicoes/api' },
           ]
         },
       );
@@ -376,6 +303,18 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         { href: '/admin/noticias/revistas', icon: CheckSquare, label: 'Últimos Revistos' },
         { href: '/admin/noticias', icon: Newspaper, label: 'Todas as Notícias' },
         { href: '/admin/media', icon: ImageIcon, label: 'Multimédia' },
+        {
+          href: '/admin/partilhado',
+          icon: FolderOpen,
+          label: 'Partilhado',
+          submenu: [
+            { label: 'Todas as pastas', href: '/admin/partilhado' },
+            { label: 'Imagens', href: '/admin/partilhado/imagens' },
+            { label: 'PDF', href: '/admin/partilhado/pdf' },
+            { label: 'Arquivos ZIP', href: '/admin/partilhado/zip' },
+            { label: 'Documentos', href: '/admin/partilhado/documentos' },
+          ]
+        },
       );
     }
 

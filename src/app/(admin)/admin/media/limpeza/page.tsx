@@ -324,7 +324,7 @@ export default function MediaCleanupPage() {
             <h4 className="font-bold text-amber-900 mb-1">Como funciona esta ferramenta?</h4>
             <ul className="text-sm text-amber-800 list-disc list-inside space-y-1">
               <li>Identificamos imagens que <strong>não aparecem</strong> em nenhuma notícia na base de dados.</li>
-              <li>Ficheiros que contêm palavras como "logo" ou "background" são <strong>protegidos automaticamente</strong>.</li>
+              <li>Ficheiros que contêm palavras como &quot;logo&quot; ou &quot;background&quot; são <strong>protegidos automaticamente</strong>.</li>
               <li>Se carregou uma imagem mas não a usou em nenhuma notícia, ela aparecerá aqui como órfã.</li>
               <li><strong>Recomendação:</strong> Verifique as miniaturas antes de apagar.</li>
             </ul>

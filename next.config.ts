@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
   },
   // Garantir que todas as rotas estáticas sejam geradas
   trailingSlash: false,
+  compress: true,
+  poweredByHeader: false,
+  // Ficheiros estáticos do site ficam 7 dias no navegador; o painel e a API nunca vão para cache.
+  async headers() {
+    return [
+      { source: '/images/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }] },
+      { source: '/:file(favicon.ico|icon.png|apple-icon.png)', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800' }] },
+      { source: '/admin/:path*', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
+    ];
+  },
 };
 
 export default nextConfig;

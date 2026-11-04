@@ -488,8 +488,7 @@ export default function NewsAdminPage() {
                         <svg className="w-5 h-5 text-green-600 mb-1" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M5 19h14V5H5v14zm2-2v-4h2v4H7zm4 0v-8h2v8h-2zm4 0v-6h2v6h-2z" />
                         </svg>
-                        <span className="font-bold text-[#1d2327]">{item.views || Math.floor(Math.random() * 200)} hits</span>
-                        <span className="text-[10px] text-gray-400">{Math.floor((item.views || 200) * 0.7)} visitors</span>
+                        <span className="font-bold text-[#1d2327]">{item.views || 0} leituras</span>
                       </div>
                     </td>
                     <td className="p-3 align-top max-md:hidden">

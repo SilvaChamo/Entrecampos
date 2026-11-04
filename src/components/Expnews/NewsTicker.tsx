@@ -19,7 +19,9 @@ export default function NewsTicker({ posts }: { posts: TickerPost[] }) {
   const boost = useRef(0);
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
-  pausedRef.current = paused;
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   // Uma volta completa tem pelo menos 8 títulos; desenham-se duas voltas seguidas para o ciclo não ter buracos.
   const lap = posts.length ? Array.from({ length: Math.ceil(8 / posts.length) }, () => posts).flat() : [];

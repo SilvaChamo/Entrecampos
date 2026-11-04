@@ -11,7 +11,7 @@ import PrintButton from '@/components/Site/PrintButton';
 import CommentsSection from '@/components/Comments/CommentsSection';
 import { InnerSidebar } from '@/components/Expnews/InnerPage';
 
-export const revalidate = 60;
+export const revalidate = 604800; // 7 dias; gravar no painel limpa já o cache (lib/refresh-site.ts)
 
 /** Origem usada nos links de partilha. Fixa (sem ler os cabeçalhos do pedido) para a página poder ficar em cache. */
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://entrecamposblog.com').replace(/\/$/, '');

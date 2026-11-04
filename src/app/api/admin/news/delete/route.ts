@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-guard';
+import { refreshSite } from '@/lib/refresh-site';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,6 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    refreshSite();
     return NextResponse.json({ success: true, deleted: targetIds.length });
   } catch (err: any) {
     console.error('Erro ao eliminar:', err);

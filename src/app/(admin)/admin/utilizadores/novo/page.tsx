@@ -54,7 +54,7 @@ export default function AddUserPage() {
           
           // Lógica de "Smart Crop" para focar na cara (parte superior/central)
           const sourceSize = Math.min(img.width, img.height);
-          let sx = (img.width - sourceSize) / 2;
+          const sx = (img.width - sourceSize) / 2;
           let sy = (img.height - sourceSize) / 2;
 
           // Se a foto for vertical (corpo inteiro), subimos o corte para focar na cabeça

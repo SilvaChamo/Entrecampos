@@ -231,7 +231,7 @@ async function querySupabase(table: string, filter: string, select = '*', limit 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=${select}&${filter}&order=date.desc&limit=${limit}`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
       signal: AbortSignal.timeout(15000),
-      next: { revalidate: 60, tags: ['news'] },
+      next: { revalidate: 604800, tags: ['news'] },
     });
     if (!res.ok) {
       // Base de dados sem a coluna `categories` ainda: repete sem ela.

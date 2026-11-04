@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cron/limpar-cache", "schedule": "0 2 * * 6" },
+    { "path": "/api/cron/sincronizar-redaccao", "schedule": "0 5 * * *" }
+  ]
+}

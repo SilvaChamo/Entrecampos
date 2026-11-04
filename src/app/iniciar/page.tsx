@@ -18,7 +18,7 @@ export const metadata = {
   description: 'Jornal EntreCAMPOS',
 };
 
-export const revalidate = 300;
+export const revalidate = 604800;
 
 const NAV = [
   { label: 'Início', href: '/iniciar' },

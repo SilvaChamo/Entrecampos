@@ -11,7 +11,7 @@ async function approvedComments(slug: string): Promise<Comment[]> {
   try {
     const res = await fetch(
       `${URL_}/rest/v1/comments?select=id,name,website,content,created_at&news_slug=eq.${encodeURIComponent(slug)}&status=eq.approved&order=created_at.asc&limit=200`,
-      { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, signal: AbortSignal.timeout(8000), next: { revalidate: 30, tags: ["comments"] } },
+      { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, signal: AbortSignal.timeout(8000), next: { revalidate: 604800, tags: ["comments"] } },
     );
     return res.ok ? ((await res.json()) as Comment[]) : [];
   } catch {

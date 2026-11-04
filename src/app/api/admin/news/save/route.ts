@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { refreshSite } from '@/lib/refresh-site';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { SESSION_COOKIE, verifySession } from '@/lib/local-session';
@@ -73,7 +73,7 @@ async function saveWithColumnFallback(
 
 /** Faz a home, as categorias e a página de leitura mostrarem logo a notícia nova/editada. */
 function refreshPublicPages() {
-  revalidatePath('/', 'layout');
+  refreshSite();
 }
 
 export async function POST(request: Request) {

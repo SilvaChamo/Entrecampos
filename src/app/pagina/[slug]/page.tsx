@@ -3,7 +3,7 @@ import InnerPage from '@/components/Expnews/InnerPage';
 import { getStaticPage } from '@/lib/news-data';
 import ContactLayout from '@/components/Site/ContactLayout';
 
-export const revalidate = 3600;
+export const revalidate = 604800;
 
 export default async function PaginaPage({ params }: { params: Promise<{ slug: string }> }) {
   const params_slug = (await params).slug;

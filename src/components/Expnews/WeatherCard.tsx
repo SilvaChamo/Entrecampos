@@ -1,10 +1,8 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSnow, CloudSun, Sun, Thermometer, Wind } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-
-const URL =
-  'https://api.open-meteo.com/v1/forecast?latitude=-25.97&longitude=32.57' +
-  '&current=temperature_2m,relative_humidity_2m,wind_speed_10m' +
-  '&daily=weather_code,temperature_2m_max&timezone=Africa%2FMaputo&forecast_days=5';
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
@@ -29,20 +27,16 @@ interface Forecast {
   daily: { time: string[]; weather_code: number[]; temperature_2m_max: number[] };
 }
 
-async function getForecast(): Promise<Forecast | null> {
-  try {
-    const res = await fetch(URL, { next: { revalidate: 1800 }, signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return null;
-    const data = (await res.json()) as Forecast;
-    return data?.current && data?.daily?.time?.length ? data : null;
-  } catch {
-    return null;
-  }
-}
-
 /** Clima real de Maputo: temperatura actual e previsão de hoje + 4 dias seguintes. */
-export default async function WeatherCard() {
-  const f = await getForecast();
+export default function WeatherCard() {
+  // O clima vem do navegador (rota /api/clima, em cache de 30 min): assim a página da notícia pode ficar 7 dias em cache.
+  const [f, setF] = useState<Forecast | null>(null);
+  useEffect(() => {
+    fetch('/api/clima')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: Forecast | null) => setF(data?.current && data?.daily?.time?.length ? data : null))
+      .catch(() => setF(null));
+  }, []);
   if (!f) return null;
 
   const days = f.daily.time.slice(0, 5).map((iso, i) => {

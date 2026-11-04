@@ -145,7 +145,7 @@ export default function ExpShell({
 
         {/* Rodapé: 4 colunas + barra de copyright */}
         <footer className="relative overflow-hidden bg-[#0b0b0b] text-gray-300">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           {backdrop && (
             <img
               src={backdrop}

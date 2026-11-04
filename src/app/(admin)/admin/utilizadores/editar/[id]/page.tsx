@@ -81,7 +81,7 @@ export default function EditUserPage() {
           
           // Lógica de "Smart Crop" para focar na cara
           const sourceSize = Math.min(img.width, img.height);
-          let sx = (img.width - sourceSize) / 2;
+          const sx = (img.width - sourceSize) / 2;
           let sy = (img.height - sourceSize) / 2;
 
           if (img.height > img.width) {

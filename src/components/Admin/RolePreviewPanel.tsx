@@ -75,7 +75,7 @@ export default function RolePreviewPanel({ role }: RolePreviewPanelProps) {
             <div>
               <h4 className="font-semibold text-amber-800 text-sm">Visualização de Teste</h4>
               <p className="text-sm text-amber-700 mt-1">
-                A página "{currentView}" como vista por um {roleLabels[role]}.
+                A página &quot;{currentView}&quot; como vista por um {roleLabels[role]}.
                 No painel real, o utilizador veria o mesmo layout mas com dados filtrados pelas suas permissões.
               </p>
             </div>

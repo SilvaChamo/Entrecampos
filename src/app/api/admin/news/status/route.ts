@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-guard';
 import { hasPermission } from '@/lib/permissions';
+import { refreshSite } from '@/lib/refresh-site';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Supports both new format (sb_secret_...) and legacy JWT
@@ -46,6 +47,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    refreshSite();
     return NextResponse.json({ success: true, updated: targetIds.length });
   } catch (err: any) {
     console.error('Erro ao atualizar status:', err);

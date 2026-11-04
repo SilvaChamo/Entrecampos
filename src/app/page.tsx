@@ -15,7 +15,7 @@ export const metadata = {
   description: 'Jornal EntreCAMPOS',
 };
 
-export const revalidate = 60;
+export const revalidate = 604800; // 7 dias; gravar no painel limpa já o cache (lib/refresh-site.ts)
 
 const RED = 'bg-[#d6101c]';
 
