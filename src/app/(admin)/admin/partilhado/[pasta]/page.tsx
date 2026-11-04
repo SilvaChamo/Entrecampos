@@ -4,7 +4,7 @@ import { use, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Archive, ChevronLeft, Download, PackageOpen } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
-import MediaGalleryView from '@/components/Admin/MediaGalleryView';
+import MediaGaleria from '@/components/Admin/MediaGaleria';
 
 type SharedFile = { name: string; path: string; url: string; size: number; created_at: string; mime: string };
 
@@ -53,13 +53,9 @@ function ZipRow({ file, onUnzipped }: { file: SharedFile; onUnzipped: (prefix: s
   );
 }
 
-export default function PastaPage({ params }: { params: Promise<{ pasta: string }> }) {
-  const { pasta } = use(params);
+function ListaPasta({ pasta }: { pasta: string }) {
   const [files, setFiles] = useState<SharedFile[] | null>(null);
   const [error, setError] = useState('');
-  const [reloadKey, setReloadKey] = useState(0);
-  const [filter, setFilter] = useState('');
-  const [unzipNote, setUnzipNote] = useState('');
 
   const load = useCallback(() => {
     fetch(`/api/admin/partilhado?pasta=${encodeURIComponent(pasta)}`, { cache: 'no-store' })
@@ -73,27 +69,6 @@ export default function PastaPage({ params }: { params: Promise<{ pasta: string 
 
   useEffect(() => { load(); }, [load]);
 
-  const [unzipping, setUnzipping] = useState(false);
-
-  /** Escolhido no selector da galeria: descompacta o zip e mostra logo as suas fotos na página. */
-  const unzipFromSelector = async (path: string) => {
-    setUnzipping(true);
-    setUnzipNote('');
-    try {
-      const res = await fetch('/api/admin/partilhado/zip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Erro ao descompactar.');
-      const src = /^(\d+-[\d_]+)-/.exec(path.split('/').pop() ?? '')?.[1] ?? '';
-      setFilter(src ? `${src}-z` : '');
-      setReloadKey((k) => k + 1);
-      load();
-    } catch (e) {
-      setUnzipNote(e instanceof Error ? e.message : 'Erro ao descompactar.');
-    } finally {
-      setUnzipping(false);
-    }
-  };
-
   const zips = (files ?? []).filter(isZip);
   const others = (files ?? []).filter((f) => !isZip(f));
 
@@ -102,37 +77,21 @@ export default function PastaPage({ params }: { params: Promise<{ pasta: string 
       <Link href="/admin/partilhado" className="mb-3 inline-flex items-center gap-1 text-sm text-[#008f45] hover:underline">
         <ChevronLeft className="h-4 w-4" /> Arquivo de fotos
       </Link>
-      {pasta !== 'imagens' && <h1 className="mb-4 text-2xl font-normal">{LABELS[pasta] ?? pasta}</h1>}
+      <h1 className="mb-4 text-2xl font-normal">{LABELS[pasta] ?? pasta}</h1>
       {error && <div className="rounded border border-[#d63638] bg-white p-3 text-sm text-[#d63638]">{error}</div>}
       {!files && !error && <div className="flex justify-center py-20"><Spinner /></div>}
-      {files && files.length === 0 && pasta !== 'imagens' && <p className="py-10 text-center text-sm text-[#50575e]">Esta pasta ainda está vazia. Use “Sincronizar agora” na página Partilhado.</p>}
+      {files && files.length === 0 && <p className="py-10 text-center text-sm text-[#50575e]">Esta pasta ainda está vazia. Use “Sincronizar agora” na página Partilhado.</p>}
 
-      {zips.length > 0 && pasta !== 'imagens' && (
+      {zips.length > 0 && (
         <>
           <h2 className="mb-2 text-sm font-semibold">Pacotes ZIP</h2>
           <ul className="mb-6 divide-y divide-[#ccd0d4] rounded border border-[#ccd0d4] bg-white">
-            {zips.map((f) => <ZipRow key={f.path} file={f} onUnzipped={(prefix, summary) => { setFilter(prefix); setUnzipNote(summary); setReloadKey((k) => k + 1); load(); }} />)}
+            {zips.map((f) => <ZipRow key={f.path} file={f} onUnzipped={() => { load(); }} />)}
           </ul>
         </>
       )}
 
-      {pasta === 'imagens' && (
-        <>
-          {unzipping && <p role="status" className="mb-2 text-sm font-semibold text-[#008f45]">A descompactar…</p>}
-          {unzipNote && !unzipping && <p role="alert" className="mb-2 text-sm text-[#d63638]">{unzipNote}</p>}
-          <MediaGalleryView
-            source="partilhado"
-            title="Fotos partilhadas"
-            embedded
-            reloadKey={reloadKey}
-            initialQuery={filter}
-            zipOptions={zips.map((z) => ({ path: z.path, label: z.name }))}
-            onPickZip={unzipFromSelector}
-          />
-        </>
-      )}
-
-      {others.length > 0 && pasta !== 'imagens' && (
+      {others.length > 0 && (
         <ul className="divide-y divide-[#ccd0d4] rounded border border-[#ccd0d4] bg-white">
           {others.map((f) => (
             <li key={f.path} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
@@ -149,4 +108,10 @@ export default function PastaPage({ params }: { params: Promise<{ pasta: string 
       )}
     </div>
   );
+}
+
+/** As fotos partilhadas são a mesma galeria do painel (mesmo cabeçalho, barra, grelha e funções); as outras pastas são listas de ficheiros. */
+export default function PastaPage({ params }: { params: Promise<{ pasta: string }> }) {
+  const { pasta } = use(params);
+  return pasta === 'imagens' ? <MediaGaleria initialSource="partilhado" /> : <ListaPasta pasta={pasta} />;
 }
