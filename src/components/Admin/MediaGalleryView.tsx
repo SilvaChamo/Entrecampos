@@ -83,6 +83,8 @@ export type MediaGalleryViewProps = {
   /** Zips de fotos (fotos partilhadas): aparecem no selector de tipo; escolher um descompacta-o na página. */
   zipOptions?: { path: string; label: string }[];
   onPickZip?: (path: string) => void;
+  /** Texto de estado por zip (ex.: "A descompactar…"), mostrado dentro do mosaico do zip. */
+  zipStatus?: Record<string, string>;
   /** Arquivo sem pasta aberta: mostra as pastas no lugar das fotos, com o mesmo cabeçalho da galeria. */
   folders?: FolderInfo[];
   onOpenFolder?: (slug: string) => void;
@@ -96,7 +98,7 @@ export type MediaGalleryViewProps = {
   fourCols?: boolean;
 };
 
-export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder, uploadDisabled, bare, binMode, fourCols }: MediaGalleryViewProps) {
+export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, zipStatus, folders: folderList, onOpenFolder, uploadDisabled, bare, binMode, fourCols }: MediaGalleryViewProps) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -777,8 +779,11 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 aria-label={`Abrir o zip ${z.label}`}
                 className="flex aspect-square flex-col items-center justify-center gap-1 border border-[#ccd0d4] bg-white p-2 text-[#50575e] hover:border-[#00a651]"
               >
-                <FileArchive className="h-12 w-12 text-[#00a651]" strokeWidth={1.5} aria-hidden="true" />
+                <FileArchive className={`h-12 w-12 text-[#00a651] ${zipStatus?.[z.path] === 'A descompactar…' ? 'animate-pulse' : ''}`} strokeWidth={1.5} aria-hidden="true" />
                 <span className="max-w-full truncate text-[10px]">{z.label}</span>
+                {zipStatus?.[z.path] && (
+                  <span role="status" title={zipStatus[z.path]} className={`max-w-full truncate text-[9px] leading-none ${zipStatus[z.path].startsWith('Erro') ? 'text-[#d63638]' : 'text-[#008f45]'}`}>{zipStatus[z.path]}</span>
+                )}
               </button>
             ))}
             {paginatedFiles.length === 0 && !(zipOptions && zipOptions.length > 0 && view !== 'lixo') && (

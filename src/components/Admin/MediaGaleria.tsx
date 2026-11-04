@@ -27,7 +27,8 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
   const [zips, setZips] = useState<{ path: string; label: string }[]>([]);
   const [reloadKey, setReloadKey] = useState(0);
   const [filter, setFilter] = useState('');
-  const [unzipMsg, setUnzipMsg] = useState('');
+  // Estado de cada zip, mostrado dentro do próprio mosaico do zip (nunca por cima da página).
+  const [zipStatus, setZipStatus] = useState<Record<string, string>>({});
   const { user } = useAuth();
   // As fotos partilhadas (e-mail da redacção) são só para administrador e editor.
   const canSeeShared = user?.role === 'admin' || user?.role === 'editor';
@@ -50,15 +51,17 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
   useEffect(() => { if (source === 'partilhado') loadZips(); }, [source]);
 
   const unzip = async (path: string) => {
-    setUnzipMsg('A descompactar…');
+    setZipStatus((z) => ({ ...z, [path]: 'A descompactar…' }));
     try {
       const res = await fetch('/api/admin/partilhado/zip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ path }) });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Erro ao descompactar.');
       setReloadKey((k) => k + 1);
-      setUnzipMsg('');
+      setZipStatus((z) => { const n = { ...z }; delete n[path]; return n; });
     } catch (e) {
-      setUnzipMsg(e instanceof Error ? e.message : 'Erro ao descompactar.');
+      const msg = e instanceof Error ? e.message : 'Erro ao descompactar.';
+      setZipStatus((z) => ({ ...z, [path]: `Erro: ${msg}` }));
+      setTimeout(() => setZipStatus((z) => { const n = { ...z }; delete n[path]; return n; }), 8000);
     }
   };
 
@@ -113,7 +116,6 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
           </button>
         </div>
       )}
-      {unzipMsg && <p role="status" className="px-6 pt-3 text-sm text-[#50575e]">{unzipMsg}</p>}
       <MediaGalleryView
         key={`${source}:${pasta}:${reloadKey}:${refreshKey}`}
         source={source}
@@ -129,6 +131,7 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
         initialQuery={filter}
         zipOptions={source === 'partilhado' ? zips : undefined}
         onPickZip={unzip}
+        zipStatus={zipStatus}
         folders={source === 'arquivo' && !pasta ? folders : undefined}
         onOpenFolder={setPasta}
         tabsRow={

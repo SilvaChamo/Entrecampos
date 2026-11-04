@@ -36,6 +36,18 @@ const CATEGORIES = [
   'Apicultura', 'Seguranca-alimentar', 'Agro-negocio', 'Ambiente', 'Comunidade'
 ];
 
+/** Verificações de SEO com o que está realmente guardado na notícia (título, resumo, imagem, endereço). */
+function seoChecks(n: NewsItem) {
+  const titulo = (n.title || '').trim().length;
+  const resumo = (n.summary || '').trim().length;
+  return [
+    { id: 'titulo', label: 'Título', detalhe: `${titulo} caracteres (ideal: 30 a 65)`, ok: titulo >= 30 && titulo <= 65 },
+    { id: 'resumo', label: 'Descrição (resumo)', detalhe: resumo ? `${resumo} caracteres (ideal: 70 a 160)` : 'Sem descrição', ok: resumo >= 70 && resumo <= 160 },
+    { id: 'imagem', label: 'Imagem de destaque', detalhe: n.image_url ? 'Tem imagem' : 'Sem imagem', ok: !!n.image_url },
+    { id: 'endereco', label: 'Endereço', detalhe: n.slug ? `/noticias/${n.slug}` : 'Sem endereço', ok: !!n.slug },
+  ];
+}
+
 const LBL = "max-md:before:font-bold max-md:before:text-gray-500 max-md:before:content-[attr(data-label)_':_']";
 
 export default function NewsAdminPage() {
@@ -46,6 +58,7 @@ export default function NewsAdminPage() {
   const [filterCategory, setFilterCategory] = useState('Todas as categorias');
   const [filterDate, setFilterDate] = useState('Todas as datas');
   const [quickEditId, setQuickEditId] = useState<string | null>(null);
+  const [seoItem, setSeoItem] = useState<NewsItem | null>(null); // popup com o SEO desta notícia
   const [editForm, setEditForm] = useState<Partial<NewsItem>>({});
   const [filterMissingImage, setFilterMissingImage] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -416,7 +429,7 @@ export default function NewsAdminPage() {
               <th className="p-3 w-40">Categorias</th>
               <th className="p-3 w-48">Data</th>
               <th className="p-3 w-32">Hits</th>
-              <th className="p-3">Detalhes de SEO</th>
+              <th className="p-3 w-24 text-center">SEO</th>
             </tr>
           </thead>
           <tbody className="max-md:block">
@@ -491,22 +504,22 @@ export default function NewsAdminPage() {
                         <span className="font-bold text-[#1d2327]">{item.views || 0} leituras</span>
                       </div>
                     </td>
-                    <td className="p-3 align-top max-md:hidden">
-                      <div className="flex items-start gap-2">
-                        <div className="w-10 h-6 bg-[#f0f0f1] border border-[#ccd0d4] rounded flex items-center justify-center text-[10px] font-bold text-gray-400">N/A</div>
-                        <div className="flex flex-col gap-0.5 text-[11px] text-[#50575e]">
-                          <p><strong>Palavra-chave:</strong> <span className="text-[#2271b1] cursor-pointer hover:underline">Não definido</span></p>
-                          <p><strong>Esquema:</strong> Artigo</p>
-                          <p className="flex items-center gap-2">
-                            <span>Ligações:</span>
-                            <span className="flex items-center gap-0.5 opacity-60"><ExternalLink className="w-3 h-3" /> 0</span>
-                            <span className="text-gray-300">|</span>
-                            <span className="flex items-center gap-0.5 opacity-60"><ExternalLink className="w-3 h-3" /> 0</span>
-                            <span className="text-gray-300">|</span>
-                            <span className="flex items-center gap-0.5 opacity-60"><ExternalLink className="w-3 h-3" /> 2</span>
-                          </p>
-                        </div>
-                      </div>
+                    <td className="p-3 align-top text-center max-md:hidden">
+                      {(() => {
+                        const checks = seoChecks(item);
+                        const ok = checks.filter((c) => c.ok).length;
+                        const tone = ok === checks.length ? 'border-[#00a651] text-[#008f45]' : ok >= 2 ? 'border-[#dba617] text-[#996800]' : 'border-[#d63638] text-[#d63638]';
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => setSeoItem(item)}
+                            title="Ver os detalhes de SEO"
+                            className={`inline-flex h-6 items-center rounded border bg-white px-2 text-[11px] font-bold ${tone}`}
+                          >
+                            {ok}/{checks.length}
+                          </button>
+                        );
+                      })()}
                     </td>
                   </tr>
 
@@ -628,6 +641,31 @@ export default function NewsAdminPage() {
           </tbody>
         </table>
       </div>
+
+      {seoItem && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Detalhes de SEO" onClick={() => setSeoItem(null)}>
+          <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-[16px] font-semibold text-[#1d2327]">SEO desta notícia</h3>
+            <p className="mt-1 line-clamp-2 text-[13px] text-[#50575e]">{seoItem.title}</p>
+            <ul className="mt-4 divide-y divide-[#e2e4e7] text-[13px]">
+              {seoChecks(seoItem).map((c) => (
+                <li key={c.id} className="flex items-start gap-3 py-2">
+                  <span className={`mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${c.ok ? 'bg-[#00a651]' : 'bg-[#dba617]'}`} aria-hidden="true">{c.ok ? '✓' : '!'}</span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[#2c3338]">{c.label}</p>
+                    <p className="break-words text-[#50575e]">{c.detalhe}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setSeoItem(null)} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm font-semibold text-[#50575e] hover:bg-[#f6f7f7]">Fechar</button>
+              <a href={`/noticias/${seoItem.slug}`} target="_blank" rel="noreferrer" className="rounded-[3px] border border-[#00a651] bg-white px-4 py-1.5 text-sm font-semibold text-[#008f45] hover:bg-[#f6f7f7]">Ver</a>
+              <Link href={`/admin/noticias/editar/${seoItem.id}`} className="rounded-[3px] bg-[#00a651] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#008f45]">Editar</Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Paginação (em baixo) */}
       <div className="mt-3">{pager}</div>
