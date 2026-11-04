@@ -4,12 +4,13 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, ChevronLeft } from 'lucide-react';
 import MediaGalleryView, { type MediaSource } from '@/components/Admin/MediaGalleryView';
+import { useAuth } from '@/context/AuthContext';
 import ArquivoFolders, { type FolderInfo } from '@/components/Admin/ArquivoFolders';
 
-const TABS: { id: MediaSource; label: string }[] = [
-  { id: 'galeria', label: 'Galeria' },
-  { id: 'arquivo', label: 'Arquivo de fotos' },
-  { id: 'partilhado', label: 'Fotos partilhadas' },
+const TABS: { id: MediaSource; label: string; short: string }[] = [
+  { id: 'galeria', label: 'Galeria', short: 'Galeria' },
+  { id: 'arquivo', label: 'Arquivo de fotos', short: 'Arquivo' },
+  { id: 'partilhado', label: 'Fotos partilhadas', short: 'Partilhadas' },
 ];
 
 /**
@@ -23,6 +24,9 @@ function GaleriaPage() {
   const [folders, setFolders] = useState<FolderInfo[]>([]);
   const [pasta, setPasta] = useState('');
   const [done, setDone] = useState(false);
+  const { user } = useAuth();
+  // As fotos partilhadas (e-mail da redacção) são só para administrador e editor.
+  const canSeeShared = user?.role === 'admin' || user?.role === 'editor';
 
   useEffect(() => {
     if (source !== 'arquivo' || folders.length) return;
@@ -58,15 +62,16 @@ function GaleriaPage() {
   }
 
   const tabs = (
-    <div className="flex flex-wrap items-center gap-1">
-      {TABS.map((t) => (
+    <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2">
+      {TABS.filter((t) => t.id !== 'partilhado' || canSeeShared).map((t) => (
         <button
           key={t.id}
           type="button"
           onClick={() => { setSource(t.id); setPasta(''); }}
-          className={`h-8 rounded-[3px] border px-3 text-sm font-semibold ${source === t.id ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+          className={`h-8 shrink-0 whitespace-nowrap rounded-[3px] border px-1.5 text-[10px] font-semibold sm:px-3 sm:text-sm ${source === t.id ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
         >
-          {t.label}
+          <span className="sm:hidden">{t.short}</span>
+          <span className="hidden sm:inline">{t.label}</span>
         </button>
       ))}
     </div>
@@ -97,12 +102,11 @@ function GaleriaPage() {
           source={source}
           pasta={pasta}
           pick={pick}
-          title={pick ? 'Escolher foto' : 'Biblioteca multimédia'}
-          headerExtra={
+          tabsRow={
             <>
               {source === 'arquivo' && (
-                <button type="button" onClick={() => setPasta('')} className="inline-flex h-8 items-center gap-1 rounded-[3px] border border-[#ccd0d4] bg-white px-2 text-sm font-semibold text-[#008f45] hover:bg-[#f6f7f7]">
-                  <ChevronLeft className="h-4 w-4" /> Todas as pastas
+                <button type="button" onClick={() => setPasta('')} className="inline-flex h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-[3px] border border-[#ccd0d4] bg-white px-2 text-[11px] font-semibold text-[#008f45] hover:bg-[#f6f7f7] sm:text-sm">
+                  <ChevronLeft className="h-4 w-4" /> <span className="sm:hidden">Pastas</span><span className="hidden sm:inline">Todas as pastas</span>
                 </button>
               )}
               {tabs}

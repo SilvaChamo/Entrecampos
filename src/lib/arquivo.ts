@@ -16,7 +16,9 @@ export const folderSlug = (name: string) =>
 
 export const isFolderSlug = (s: string) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s) && s.length <= 60;
 
-export type ArquivoFolder = { slug: string; nome: string; count: number; cover: string | null; updated_at: string };
+export type ArquivoFolder = { slug: string; nome: string; cor: string | null; count: number; cover: string | null; updated_at: string };
+
+export const FOLDER_COLORS = ['#e5b447', '#a12a82', '#3b82f6', '#22b573', '#ef4444', '#8b5cf6'];
 
 type Row = { name: string; id: string | null; created_at?: string; updated_at?: string; metadata?: { mimetype?: string } | null };
 
@@ -33,15 +35,23 @@ async function list(prefix: string): Promise<Row[]> {
   return out;
 }
 
-async function readName(slug: string): Promise<string> {
+async function readMeta(slug: string): Promise<{ nome: string; cor: string | null }> {
+  const fallback = slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
   const { data } = await supabase().storage.from(BUCKET()).download(`${ARQUIVO_ROOT}/${slug}/_pasta.json`);
   if (data) {
     try {
-      const nome = String((JSON.parse(await data.text()) as { nome?: string }).nome || '').trim();
-      if (nome) return nome;
+      const j = JSON.parse(await data.text()) as { nome?: string; cor?: string };
+      return { nome: String(j.nome || '').trim() || fallback, cor: j.cor && FOLDER_COLORS.includes(j.cor) ? j.cor : null };
     } catch { /* usa o nome derivado do slug */ }
   }
-  return slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+  return { nome: fallback, cor: null };
+}
+
+async function writeMeta(slug: string, meta: { nome: string; cor: string | null }, upsert: boolean) {
+  const { error } = await supabase()
+    .storage.from(BUCKET())
+    .upload(`${ARQUIVO_ROOT}/${slug}/_pasta.json`, Buffer.from(JSON.stringify(meta)), { contentType: 'application/json', upsert });
+  if (error) throw new Error(error.message);
 }
 
 export async function listFolders(): Promise<ArquivoFolder[]> {
@@ -50,7 +60,8 @@ export async function listFolders(): Promise<ArquivoFolder[]> {
     dirs.map(async (d): Promise<ArquivoFolder> => {
       const files = (await list(`${ARQUIVO_ROOT}/${d.name}`)).filter((r) => r.id && IMAGE.test(r.name));
       const cover = files[0] ? supabase().storage.from(BUCKET()).getPublicUrl(`${ARQUIVO_ROOT}/${d.name}/${files[0].name}`).data.publicUrl : null;
-      return { slug: d.name, nome: await readName(d.name), count: files.length, cover, updated_at: files[0]?.created_at ?? d.updated_at ?? '' };
+      const meta = await readMeta(d.name);
+      return { slug: d.name, nome: meta.nome, cor: meta.cor, count: files.length, cover, updated_at: files[0]?.created_at ?? d.updated_at ?? '' };
     }),
   );
   return folders.sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
@@ -62,20 +73,50 @@ export async function createFolder(nome: string): Promise<ArquivoFolder> {
   if (!clean || !slug) throw new Error('Dê um nome à pasta.');
   const existing = await list(ARQUIVO_ROOT);
   if (existing.some((r) => r.id === null && r.name === slug)) throw new Error('Já existe uma pasta com esse nome.');
-  const { error } = await supabase()
-    .storage.from(BUCKET())
-    .upload(`${ARQUIVO_ROOT}/${slug}/_pasta.json`, Buffer.from(JSON.stringify({ nome: clean })), { contentType: 'application/json', upsert: false });
-  if (error) throw new Error(error.message);
-  return { slug, nome: clean, count: 0, cover: null, updated_at: new Date().toISOString() };
+  await writeMeta(slug, { nome: clean, cor: null }, false);
+  return { slug, nome: clean, cor: null, count: 0, cover: null, updated_at: new Date().toISOString() };
 }
 
-export async function renameFolder(slug: string, nome: string) {
-  const clean = nome.trim().replace(/\s+/g, ' ').slice(0, 80);
-  if (!isFolderSlug(slug) || !clean) throw new Error('Pedido inválido.');
-  const { error } = await supabase()
-    .storage.from(BUCKET())
-    .upload(`${ARQUIVO_ROOT}/${slug}/_pasta.json`, Buffer.from(JSON.stringify({ nome: clean })), { contentType: 'application/json', upsert: true });
+/** Muda o nome visível e/ou a cor de destaque de uma pasta; a sua chave (slug) não muda. */
+export async function updateFolder(slug: string, changes: { nome?: string; cor?: string | null }) {
+  if (!isFolderSlug(slug) || !(await folderExists(slug))) throw new Error('Essa pasta não existe.');
+  const meta = await readMeta(slug);
+  if (changes.nome !== undefined) {
+    const clean = changes.nome.trim().replace(/\s+/g, ' ').slice(0, 80);
+    if (!clean) throw new Error('Dê um nome à pasta.');
+    meta.nome = clean;
+  }
+  if (changes.cor !== undefined) {
+    if (changes.cor !== null && !FOLDER_COLORS.includes(changes.cor)) throw new Error('Cor inválida.');
+    meta.cor = changes.cor;
+  }
+  await writeMeta(slug, meta, true);
+}
+
+/** Elimina uma pasta vazia (com fotos dentro não: primeiro movem-se ou eliminam-se as fotos). */
+export async function deleteFolder(slug: string) {
+  if (!isFolderSlug(slug) || !(await folderExists(slug))) throw new Error('Essa pasta não existe.');
+  const files = (await list(`${ARQUIVO_ROOT}/${slug}`)).filter((r) => r.id && r.name !== '_pasta.json');
+  if (files.length > 0) throw new Error(`A pasta ainda tem ${files.length} ${files.length === 1 ? 'foto' : 'fotos'}. Mova-as ou elimine-as primeiro.`);
+  const { error } = await supabase().storage.from(BUCKET()).remove([`${ARQUIVO_ROOT}/${slug}/_pasta.json`]);
   if (error) throw new Error(error.message);
+}
+
+/** Todas as fotos de uma pasta, com os bytes (para "Transferir pasta"). */
+export async function folderFiles(slug: string): Promise<{ name: string; data: Uint8Array }[]> {
+  if (!isFolderSlug(slug)) throw new Error('Pasta inválida.');
+  const rows = (await list(`${ARQUIVO_ROOT}/${slug}`)).filter((r) => r.id && IMAGE.test(r.name));
+  const out: { name: string; data: Uint8Array }[] = [];
+  let total = 0;
+  for (const r of rows) {
+    const { data, error } = await supabase().storage.from(BUCKET()).download(`${ARQUIVO_ROOT}/${slug}/${r.name}`);
+    if (error || !data) throw new Error(error?.message || 'Não foi possível ler uma foto.');
+    const bytes = new Uint8Array(await data.arrayBuffer());
+    total += bytes.length;
+    if (total > 120 * 1024 * 1024) throw new Error('A pasta é grande demais para um único zip (máx. 120 MB). Descarregue por partes.');
+    out.push({ name: r.name.replace(/^\d+-[a-z0-9]+-/, '') || r.name, data: bytes });
+  }
+  return out;
 }
 
 export async function folderExists(slug: string) {

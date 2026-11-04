@@ -71,8 +71,8 @@ export type MediaGalleryViewProps = {
   pick?: (url: string) => void | Promise<void>;
   /** Sem a margem de página (para ficar dentro de outra página). */
   embedded?: boolean;
-  /** Conteúdo extra no cabeçalho (separadores, botões). */
-  headerExtra?: ReactNode;
+  /** Linha própria, por cima da barra de menu, à esquerda (separadores Galeria / Arquivo / Partilhadas). */
+  tabsRow?: ReactNode;
   /** Mudar este valor volta a ler a lista. */
   reloadKey?: number;
   /** Filtro inicial pelo nome (ex.: as fotos que saíram de um zip). */
@@ -81,7 +81,7 @@ export type MediaGalleryViewProps = {
 
 type ArquivoFolderRef = { slug: string; nome: string };
 
-export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, headerExtra, reloadKey = 0, initialQuery = '' }: MediaGalleryViewProps) {
+export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '' }: MediaGalleryViewProps) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -479,9 +479,10 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <h1 className="text-2xl font-normal">{title}</h1>
+            <div className="flex max-w-full flex-nowrap items-center gap-1.5 overflow-x-auto sm:gap-2">
             {source !== 'partilhado' && !pick && (
-            <label className="px-3 py-1 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
-              {uploading ? 'A carregar...' : source === 'arquivo' ? 'Carregar fotos' : 'Adicionar ficheiros multimédia'}
+            <label className="inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
+              {uploading ? 'A carregar...' : source === 'arquivo' ? 'Carregar fotos' : (<><span className="sm:hidden">Adicionar</span><span className="hidden sm:inline">Adicionar ficheiros multimédia</span></>)}
               <input
                 type="file"
                 className="hidden"
@@ -524,7 +525,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
               />
             </label>
             )}
-            {headerExtra}
+            {tabsRow}
+            </div>
           </div>
 
           <div className="flex items-center gap-2 max-md:w-full">

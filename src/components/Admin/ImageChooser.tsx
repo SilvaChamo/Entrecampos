@@ -62,23 +62,36 @@ export default function ImageChooser({ title = 'Imagem', onChoose, onClose }: { 
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="w-full max-w-md rounded-lg bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#ccd0d4] px-5 py-3">
-          <h2 className="text-[16px] font-semibold text-[#1d2327]">{title}</h2>
-          <button type="button" onClick={onClose} className="rounded-full p-1.5 hover:bg-gray-100" aria-label="Fechar"><X className="h-5 w-5 text-gray-500" /></button>
-        </div>
-        <div className="grid grid-cols-2 gap-3 p-5">
-          <button type="button" onClick={openGallery} className="flex flex-col items-center gap-2 rounded-lg border border-[#ccd0d4] px-3 py-6 text-sm font-semibold hover:border-[#00a651] hover:bg-[#f6f7f7]">
-            <FolderOpen className="h-8 w-8 text-[#00a651]" /> Galeria
+    <div className="fixed inset-0 z-[200] flex flex-col bg-white" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="flex shrink-0 items-center justify-between border-b border-[#ccd0d4] bg-white p-4">
+        <h2 className="text-[18px] font-semibold text-[#1d2327]">{title}</h2>
+        <button type="button" onClick={onClose} className="rounded-full p-2 transition-colors hover:bg-gray-100" aria-label="Fechar"><X className="h-5 w-5 text-gray-500" /></button>
+      </div>
+
+      <div
+        className="flex flex-1 flex-col items-center justify-center bg-[#f0f0f1] p-6"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) fromComputer(f); }}
+      >
+        <p className="mb-6 text-[16px] text-[#3c434a]">De onde quer escolher a foto?</p>
+        <div className="grid w-full max-w-xl grid-cols-1 gap-4 sm:grid-cols-2">
+          <button type="button" onClick={openGallery} className="flex flex-col items-center gap-3 rounded-lg border border-[#ccd0d4] bg-white px-4 py-12 text-[15px] font-semibold text-[#1d2327] shadow-sm transition hover:border-[#00a651]">
+            <FolderOpen className="h-12 w-12 text-[#00a651]" /> Galeria
+            <span className="text-[12px] font-normal text-[#50575e]">Escolher uma foto da biblioteca</span>
           </button>
-          <button type="button" onClick={() => fileRef.current?.click()} className="flex flex-col items-center gap-2 rounded-lg border border-[#ccd0d4] px-3 py-6 text-sm font-semibold hover:border-[#00a651] hover:bg-[#f6f7f7]">
-            <Monitor className="h-8 w-8 text-[#00a651]" /> Computador
+          <button type="button" onClick={() => fileRef.current?.click()} className="flex flex-col items-center gap-3 rounded-lg border border-[#ccd0d4] bg-white px-4 py-12 text-[15px] font-semibold text-[#1d2327] shadow-sm transition hover:border-[#00a651]">
+            <Monitor className="h-12 w-12 text-[#00a651]" /> Computador
+            <span className="text-[12px] font-normal text-[#50575e]">Ou largue a foto aqui</span>
           </button>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) fromComputer(f); }} />
         </div>
-        {waiting && <p className="border-t border-[#ccd0d4] px-5 py-3 text-sm text-[#50575e]">A galeria abriu noutro separador: clique na foto e ela volta para aqui.</p>}
-        {blocked && <p className="border-t border-[#ccd0d4] px-5 py-3 text-sm text-[#d63638]">O navegador bloqueou o separador da galeria. Permita janelas para este site e tente de novo.</p>}
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) fromComputer(f); }} />
+        {waiting && <p className="mt-6 text-sm text-[#50575e]">A galeria abriu noutro separador: clique na foto e ela volta para aqui.</p>}
+        {blocked && <p className="mt-6 text-sm text-[#d63638]">O navegador bloqueou o separador da galeria. Permita janelas para este site e tente de novo.</p>}
+      </div>
+
+      <div className="flex shrink-0 items-center justify-between border-t border-[#ccd0d4] bg-[#f6f7f7] p-4">
+        <span className="text-xs text-[#50575e]">A foto escolhida do computador também fica guardada na galeria.</span>
+        <button type="button" onClick={onClose} className="rounded-[4px] bg-[#00a651] px-6 py-2 text-[13px] font-bold text-white hover:bg-[#008f45]">Fechar</button>
       </div>
     </div>
   );

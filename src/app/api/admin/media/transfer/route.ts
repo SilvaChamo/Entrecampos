@@ -23,6 +23,11 @@ export async function POST(req: NextRequest) {
   if ('error' in guard) return guard.error;
   const body = (await req.json().catch(() => null)) as { names?: unknown; to?: string; pasta?: string } | null;
   const names = Array.isArray(body?.names) ? [...new Set(body!.names.map(String))] : [];
+  if (names.some((n) => n.startsWith('partilhado/'))) {
+    // Fotos do e-mail da redacção: só quem tem acesso à área Partilhado.
+    const shared = await requireAuth('gerir_biblioteca', 'upload_imagens', 'publicar_artigos');
+    if ('error' in shared) return shared.error;
+  }
   if (names.length === 0 || names.length > 100 || names.some((n) => !SOURCE.test(n) || n.includes('..'))) {
     return NextResponse.json({ error: 'Pedido inválido.' }, { status: 400 });
   }

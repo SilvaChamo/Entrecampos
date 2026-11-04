@@ -131,6 +131,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { user, loading, logout, setRole, realRole, viewAs, setViewAs } = useAuth();
 
+  // Galeria aberta só para escolher uma foto (a partir da notícia): sem a barra lateral.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('escolher')) setIsSidebarOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     if (!loading && !user) {
       router.replace('/login');

@@ -5,16 +5,20 @@ import Link from 'next/link';
 import { FolderPlus, Search } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import ArquivoTabs from '@/components/Admin/ArquivoTabs';
-import ArquivoFolders, { type FolderInfo } from '@/components/Admin/ArquivoFolders';
+import ArquivoFolders, { type FolderActions, type FolderInfo } from '@/components/Admin/ArquivoFolders';
+import { useAuth } from '@/context/AuthContext';
 
 /** Arquivo de fotos do jornal: pastas com nome, como num Drive só de fotos. */
 export default function ArquivoPage() {
   const [folders, setFolders] = useState<FolderInfo[] | null>(null);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [creating, setCreating] = useState(false);
   const [nome, setNome] = useState('');
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState('');
+  const { user } = useAuth();
+  const canDelete = user?.role === 'admin' || user?.role === 'editor';
 
   const load = useCallback(async () => {
     try {
@@ -47,27 +51,55 @@ export default function ArquivoPage() {
     }
   };
 
+  const patch = async (body: Record<string, unknown>) => {
+    const res = await fetch('/api/admin/arquivo', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) { setError(json.error || 'Não foi possível guardar.'); return false; }
+    setError('');
+    await load();
+    return true;
+  };
+
+  const actions: FolderActions = {
+    onRename: (f) => { const nome = prompt('Novo nome da pasta:', f.nome); if (nome && nome.trim() && nome.trim() !== f.nome) patch({ slug: f.slug, nome }); },
+    onColor: (f, cor) => { patch({ slug: f.slug, cor }); },
+    onShare: async (f) => {
+      const url = `${window.location.origin}/admin/arquivo/${f.slug}`;
+      try { await navigator.clipboard.writeText(url); setNotice(`Ligação da pasta “${f.nome}” copiada. Quem tiver acesso ao painel abre-a directamente.`); }
+      catch { prompt('Copie a ligação da pasta:', url); }
+    },
+    onDownload: (f) => { window.location.href = `/api/admin/arquivo/zip?pasta=${encodeURIComponent(f.slug)}`; },
+    onDelete: canDelete
+      ? async (f) => {
+          if (!confirm(`Eliminar a pasta “${f.nome}”? Só é possível se estiver vazia.`)) return;
+          const res = await fetch('/api/admin/arquivo', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: f.slug }) });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) setError(json.error || 'Não foi possível eliminar a pasta.');
+          else { setError(''); await load(); }
+        }
+      : undefined,
+  };
+
   const shown = useMemo(() => (folders ?? []).filter((f) => f.nome.toLowerCase().includes(query.toLowerCase())), [folders, query]);
 
   return (
     <div className="min-h-screen p-6 text-[#2c3338]">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-normal">Arquivo de fotos</h1>
-          <p className="mt-1 text-sm text-[#50575e]">As fotos do jornal, em pastas. Qualquer pessoa da equipa pode abrir uma pasta, partilhar as fotos e usá-las nas notícias.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar pasta…" className="h-8 w-56 rounded-[3px] border border-[#ccd0d4] pl-8 pr-2 text-sm outline-none focus:border-[#00a651]" />
-            <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[#50575e]" />
-          </div>
-          <button onClick={() => setCreating((c) => !c)} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white">
-            <FolderPlus className="h-4 w-4" /> Nova pasta
-          </button>
-        </div>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-normal">Arquivo de fotos</h1>
+        <button onClick={() => setCreating((c) => !c)} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white">
+          <FolderPlus className="h-4 w-4" /> Nova pasta
+        </button>
       </div>
 
-      <ArquivoTabs active="arquivo" />
+      <ArquivoTabs
+        active="arquivo"
+        right={
+          <div className="relative">
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar pasta…" aria-label="Procurar pasta" className="h-8 w-56 rounded-[3px] border border-[#ccd0d4] pl-8 pr-2 text-sm outline-none focus:border-[#00a651]" />
+            <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[#50575e]" />
+          </div>
+        }
+      />
 
       {creating && (
         <form onSubmit={create} className="mb-5 flex flex-wrap items-center gap-2 rounded border border-[#ccd0d4] bg-white p-3">
@@ -78,13 +110,14 @@ export default function ArquivoPage() {
         </form>
       )}
 
+      {notice && <div className="mb-4 rounded border border-[#00a651] bg-white p-3 text-sm">{notice}</div>}
       {error && <div className="mb-4 rounded border border-[#d63638] bg-white p-3 text-sm text-[#d63638]">{error}</div>}
       {!folders && !error && <div className="flex justify-center py-20"><Spinner /></div>}
       {folders && folders.length === 0 && (
         <p className="rounded border border-dashed border-[#ccd0d4] bg-white py-12 text-center text-sm text-[#50575e]">O arquivo ainda não tem pastas. Clique em “Nova pasta”, dê-lhe um nome e carregue as fotos.</p>
       )}
 
-      <ArquivoFolders folders={shown} hrefBase="/admin/arquivo" />
+      <ArquivoFolders folders={shown} hrefBase="/admin/arquivo" actions={actions} />
     </div>
   );
 }
