@@ -34,11 +34,11 @@ function FolderCard({ f, href, onOpen, actions }: { f: FolderInfo; href?: string
   const label = (
     <>
       <Folder className="h-5 w-5 shrink-0" style={{ color: cor }} fill={cor} fillOpacity={0.15} />
-      <span className="truncate text-[13px] font-semibold text-[#2c3338]" title={`${f.nome} · ${f.count} ${f.count === 1 ? 'foto' : 'fotos'}`}>{f.nome}</span>
+      <span className="truncate text-[12px] font-semibold text-[#2c3338]" title={`${f.nome} · ${f.count} ${f.count === 1 ? 'foto' : 'fotos'}`}>{f.nome}</span>
     </>
   );
   const labelCls = 'flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 text-left';
-  const item = 'flex w-full items-center gap-3 px-4 py-2 text-left text-[13px] text-[#8a2a6b] hover:bg-[#f6f7f7]';
+  const item = 'flex w-full items-center gap-3 px-4 py-2 text-left text-[13px] text-[#2c3338] hover:bg-[#f6f7f7] [&>svg]:text-[#50575e]';
 
   return (
     <div className="relative flex items-center rounded-lg border border-[#e2e4e7] bg-white shadow-sm transition hover:border-[#00a651]">
@@ -96,7 +96,7 @@ function FolderCard({ f, href, onOpen, actions }: { f: FolderInfo; href?: string
 /** Pastas do arquivo. Abre por ligação (`hrefBase`) ou por `onOpen`; com `actions` cada pasta tem o menu de gestão. */
 export default function ArquivoFolders({ folders, hrefBase, onOpen, actions }: { folders: FolderInfo[]; hrefBase?: string; onOpen?: (slug: string) => void; actions?: FolderActions }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {folders.map((f) => (
         <FolderCard key={f.slug} f={f} href={hrefBase ? `${hrefBase}/${f.slug}` : undefined} onOpen={onOpen ? () => onOpen(f.slug) : undefined} actions={actions} />
       ))}

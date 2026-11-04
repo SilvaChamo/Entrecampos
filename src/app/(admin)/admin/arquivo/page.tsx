@@ -208,7 +208,7 @@ export default function ArquivoPage() {
       )}
 
       {aberta ? (
-        <MediaGaleria key={aberta} initialSource="arquivo" initialPasta={aberta} embedded bare fourCols refreshKey={refresh} />
+        <MediaGaleria key={aberta} initialSource="arquivo" initialPasta={aberta} embedded bare refreshKey={refresh} />
       ) : (
         <ArquivoFolders folders={shown} onOpen={(slug) => { setSelCount(0); setAberta(slug); }} actions={actions} />
       )}
