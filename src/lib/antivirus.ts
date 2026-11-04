@@ -2,14 +2,34 @@ import net from 'net';
 
 /**
  * Análise com ClamAV (clamd) pelo protocolo INSTREAM.
- * Configurar CLAMD_HOST (+ CLAMD_PORT, por defeito 3310) ou CLAMD_SOCKET (ex.: /var/run/clamav/clamd.ctl,
+ * Configurar CLAMD_URL (+ CLAMD_TOKEN): ponte HTTPS protegida no servidor, o caminho para a Vercel;
+ * ou CLAMD_HOST (+ CLAMD_PORT, por defeito 3310); ou CLAMD_SOCKET (ex.: /var/run/clamav/clamd.ctl,
  * quando a aplicação corre no próprio servidor).
  */
 export type ScanResult = { status: 'clean' } | { status: 'infected'; signature: string } | { status: 'unavailable'; reason: string };
 
-export const antivirusConfigured = () => Boolean(process.env.CLAMD_HOST || process.env.CLAMD_SOCKET);
+export const antivirusConfigured = () => Boolean(process.env.CLAMD_URL || process.env.CLAMD_HOST || process.env.CLAMD_SOCKET);
+
+async function scanViaGateway(data: Buffer, timeoutMs: number): Promise<ScanResult> {
+  try {
+    const res = await fetch(process.env.CLAMD_URL!, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.CLAMD_TOKEN || ''}`, 'Content-Type': 'application/octet-stream' },
+      body: new Uint8Array(data),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!res.ok) return { status: 'unavailable', reason: `ponte do antivírus respondeu ${res.status}` };
+    const body = (await res.json()) as { status?: string; signature?: string };
+    if (body.status === 'clean') return { status: 'clean' };
+    if (body.status === 'infected') return { status: 'infected', signature: body.signature || 'desconhecido' };
+    return { status: 'unavailable', reason: 'resposta inválida do antivírus' };
+  } catch (err) {
+    return { status: 'unavailable', reason: err instanceof Error ? err.message : 'falha na ponte do antivírus' };
+  }
+}
 
 export function scanBuffer(data: Buffer, timeoutMs = 60_000): Promise<ScanResult> {
+  if (process.env.CLAMD_URL) return scanViaGateway(data, timeoutMs);
   return new Promise((resolve) => {
     const socket = process.env.CLAMD_SOCKET
       ? net.createConnection({ path: process.env.CLAMD_SOCKET })
