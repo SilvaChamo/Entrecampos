@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase, STORAGE_BUCKET as BUCKET_NAME } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -100,6 +101,9 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [busyMsg, setBusyMsg] = useState('');
+  // Na grelha simples, a seleção em massa sobe para a linha dos separadores da página (se existir).
+  const [bulkSlot, setBulkSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => { if (bare) setBulkSlot(document.getElementById('ec-bulk-slot')); }, [bare]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkMode, setIsBulkMode] = useState(false);
   const { user } = useAuth();
@@ -718,6 +722,69 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           <SkeletonMediaGrid count={14} />
         ) : bare && viewMode === 'grid' ? (
           <>
+          {bulkSlot ? createPortal(<>
+            {!isBulkMode ? (
+              <button onClick={() => setIsBulkMode(true)} className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap">Seleção em massa</button>
+            ) : (
+              <>
+                <input
+                  type="checkbox"
+                  aria-label="Selecionar todas"
+                  checked={selectedIds.size === paginatedFiles.length && paginatedFiles.length > 0}
+                  onChange={() => setSelectedIds(selectedIds.size === paginatedFiles.length ? new Set() : new Set(paginatedFiles.map((f) => f.name)))}
+                  className="w-4 h-4 cursor-pointer"
+                />
+                <span
+                  onClick={selectedIds.size > 0 ? deleteSelected : undefined}
+                  className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#d63638] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                >
+                  {showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'} ({selectedIds.size})
+                </span>
+                {special && (
+                  <span
+                    onClick={selectedIds.size > 0 ? () => restore(Array.from(selectedIds)) : undefined}
+                    className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#2271b1] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                  >
+                    Restaurar ({selectedIds.size})
+                  </span>
+                )}
+                <button onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap">Cancelar</button>
+              </>
+            )}
+            <span className="text-[13px] text-[#50575e]">{filteredFiles.length} itens</span>
+          </>, bulkSlot) : (
+          <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+            {!isBulkMode ? (
+              <button onClick={() => setIsBulkMode(true)} className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap">Seleção em massa</button>
+            ) : (
+              <>
+                <input
+                  type="checkbox"
+                  aria-label="Selecionar todas"
+                  checked={selectedIds.size === paginatedFiles.length && paginatedFiles.length > 0}
+                  onChange={() => setSelectedIds(selectedIds.size === paginatedFiles.length ? new Set() : new Set(paginatedFiles.map((f) => f.name)))}
+                  className="w-4 h-4 cursor-pointer"
+                />
+                <span
+                  onClick={selectedIds.size > 0 ? deleteSelected : undefined}
+                  className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#d63638] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                >
+                  {showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'} ({selectedIds.size})
+                </span>
+                {special && (
+                  <span
+                    onClick={selectedIds.size > 0 ? () => restore(Array.from(selectedIds)) : undefined}
+                    className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#2271b1] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                  >
+                    Restaurar ({selectedIds.size})
+                  </span>
+                )}
+                <button onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap">Cancelar</button>
+              </>
+            )}
+            <span className="text-[13px] text-[#50575e]">{filteredFiles.length} itens</span>
+          </div>
+          )}
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
             {view !== 'lixo' && (zipOptions ?? []).map((z) => (
               <button
@@ -736,19 +803,14 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
               <div
                 key={file.name}
                 onClick={() => (isBulkMode ? toggleSelect(file.name) : openDetails(file))}
-                className="aspect-square relative bg-white border border-[#ccd0d4] cursor-pointer overflow-hidden group"
+                className={`aspect-square relative bg-white border cursor-pointer overflow-hidden group ${selectedIds.has(file.name) ? 'ring-[3px] ring-[#00a651] ring-inset' : 'border-[#ccd0d4]'}`}
               >
                 <FileThumb name={file.name} url={getPublicUrl(file.name)} />
-                <div className="absolute inset-x-1 bottom-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  {view === 'lixo' ? (
-                    <>
-                      <button type="button" onClick={(e) => { e.stopPropagation(); restore([file.name]); }} className="flex-1 rounded-[3px] bg-[#00a651] px-1 py-1 text-[11px] font-bold text-white shadow">Restaurar</button>
-                      <button type="button" onClick={(e) => { e.stopPropagation(); deleteSingle(file.name); }} className="flex-1 rounded-[3px] bg-[#d63638] px-1 py-1 text-[11px] font-bold text-white shadow">Eliminar</button>
-                    </>
-                  ) : (
-                    <button type="button" onClick={(e) => { e.stopPropagation(); deleteSingle(file.name); }} className="flex-1 rounded-[3px] bg-[#d63638] px-1 py-1 text-[11px] font-bold text-white shadow">Eliminar</button>
-                  )}
-                </div>
+                {isBulkMode && (
+                  <div className={`absolute top-1 right-1 w-5 h-5 rounded-sm border flex items-center justify-center ${selectedIds.has(file.name) ? 'bg-[#00a651] border-[#00a651]' : 'bg-white border-[#ccd0d4]'}`}>
+                    {selectedIds.has(file.name) && <Check className="w-3.5 h-3.5 text-white" />}
+                  </div>
+                )}
               </div>
             ))}
           </div>

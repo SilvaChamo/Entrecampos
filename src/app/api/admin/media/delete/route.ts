@@ -33,7 +33,11 @@ const ARCHIVE = '_arquivo/';
 export async function POST(req: NextRequest) {
   const { action = 'trash', names } = (await req.json().catch(() => ({}))) as { action?: string; names?: unknown };
   // Fotos partilhadas (e-mail da redacção): eliminar = quem tem acesso a essa área; a reciclagem (restaurar e eliminar para sempre) é só do administrador.
-  const shared = Array.isArray(names) && names.some((n) => /(^|\/)partilhado\//.test(String(n)));
+  const nameList = Array.isArray(names) ? names.map(String) : [];
+  const isShared = (n: string) => n.startsWith('partilhado/') || /^_(lixo|arquivo)\/\d+\/partilhado\//.test(n);
+  const shared = nameList.some(isShared);
+  // Um pedido não mistura fotos partilhadas com as outras: cada grupo tem as suas permissões.
+  if (shared && !nameList.every(isShared)) return NextResponse.json({ error: 'Não misture fotos partilhadas com outras no mesmo pedido.' }, { status: 400 });
   const guard = shared
     ? action === 'trash' || action === 'archive'
       ? await requireAuth('gerir_biblioteca', 'upload_imagens', 'publicar_artigos')

@@ -74,13 +74,13 @@ export default function PartilhadoPage() {
             <button onClick={sync} disabled={syncing || !data?.configured} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white disabled:opacity-50">
               <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'A sincronizar…' : 'Sincronizar agora'}
             </button>
-            {user?.role === 'admin' && (
+            {user?.role === 'admin' && aberta === 'imagens' && (
               <button
                 type="button"
                 title="Reciclagem"
                 aria-label="Reciclagem"
                 aria-pressed={bin}
-                onClick={() => { if (!bin) setAberta('imagens'); setBin(!bin); }}
+                onClick={() => setBin(!bin)}
                 className={`inline-flex h-8 w-8 items-center justify-center rounded-[3px] border ${bin ? 'border-[#d63638] bg-[#d63638] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -113,7 +113,7 @@ export default function PartilhadoPage() {
             <button
               key={id}
               type="button"
-              onClick={() => setAberta((cur) => (cur === id ? null : id))}
+              onClick={() => { setBin(false); setAberta((cur) => (cur === id ? null : id)); }}
               aria-pressed={aberta === id}
               className={`rounded border bg-white p-5 text-left transition hover:border-[#00a651] ${aberta === id ? 'border-[#00a651] ring-1 ring-[#00a651]' : 'border-[#ccd0d4]'}`}
             >
