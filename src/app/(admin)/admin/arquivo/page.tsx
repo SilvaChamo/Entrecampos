@@ -84,19 +84,19 @@ export default function ArquivoPage() {
 
   return (
     <div className="min-h-screen p-6 text-[#2c3338]">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-normal">Arquivo de fotos</h1>
-        <button onClick={() => setCreating((c) => !c)} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white">
-          <FolderPlus className="h-4 w-4" /> Nova pasta
-        </button>
-      </div>
+      <h1 className="mb-3 text-2xl font-normal">Arquivo de fotos</h1>
 
       <ArquivoTabs
         active="arquivo"
         right={
-          <div className="relative">
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar pasta…" aria-label="Procurar pasta" className="h-8 w-56 rounded-[3px] border border-[#ccd0d4] pl-8 pr-2 text-sm outline-none focus:border-[#00a651]" />
-            <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[#50575e]" />
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar pasta…" aria-label="Procurar pasta" className="h-8 w-72 max-w-full rounded-[3px] border border-[#ccd0d4] pl-8 pr-2 text-sm outline-none focus:border-[#00a651]" />
+              <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[#50575e]" />
+            </div>
+            <button onClick={() => setCreating((c) => !c)} className="inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white">
+              <FolderPlus className="h-4 w-4" /> Nova pasta
+            </button>
           </div>
         }
       />

@@ -417,14 +417,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               <UserIcon className="w-4 h-4" /> Ver Perfil
             </Link>
             {/* Quick role switch for testing */}
-            <div className="border-t border-[#3c434a] mt-2 pt-2 px-3 text-[10px] text-gray-400 uppercase">Trocar Role (Teste)</div>
+            <div className="border-t border-[#3c434a] mt-2 pt-3 px-3 pb-1 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">Trocar papel (teste)</div>
             {(['admin', 'editor', 'contribuidor', 'guest'] as UserRole[]).map(r => (
               <button 
                 key={r}
                 onClick={() => setRole(r)}
-                className={`w-full text-left px-3 py-1 text-[11px] hover:text-[#72aee6] ${user?.role === r ? 'text-[#2271b1] font-bold' : 'text-gray-300'}`}
+                className={`w-full rounded-md px-3 py-2 text-left text-[14px] capitalize hover:bg-[#3c434a] hover:text-[#72aee6] ${user?.role === r ? 'font-bold text-[#72aee6]' : 'text-gray-200'}`}
               >
-                {r}
+                {r === 'guest' ? 'Visitante' : r}
               </button>
             ))}
             <button 
