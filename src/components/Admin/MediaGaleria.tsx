@@ -96,10 +96,10 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '' }: { initia
           key={t.id}
           type="button"
           onClick={() => { setSource(t.id); setPasta(''); }}
-          className={`h-8 shrink-0 whitespace-nowrap rounded-[3px] border px-1.5 text-[10px] font-semibold sm:px-3 sm:text-sm ${source === t.id ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+          className={`h-8 shrink-0 whitespace-nowrap rounded-[3px] border px-1.5 text-[10px] font-semibold sm:px-2 sm:text-xs 2xl:px-3 2xl:text-sm ${source === t.id ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
         >
-          <span className="sm:hidden">{t.short}</span>
-          <span className="hidden sm:inline">{t.label}</span>
+          <span className="2xl:hidden">{t.short}</span>
+          <span className="hidden 2xl:inline">{t.label}</span>
         </button>
       ))}
     </div>
@@ -141,8 +141,8 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '' }: { initia
           tabsRow={
             <>
               {source === 'arquivo' && (
-                <button type="button" onClick={() => setPasta('')} className="inline-flex h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-[3px] border border-[#ccd0d4] bg-white px-2 text-[11px] font-semibold text-[#008f45] hover:bg-[#f6f7f7] sm:text-sm">
-                  <ChevronLeft className="h-4 w-4" /> <span className="sm:hidden">Pastas</span><span className="hidden sm:inline">Todas as pastas</span>
+                <button type="button" onClick={() => setPasta('')} className="inline-flex h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-[3px] border border-[#ccd0d4] bg-white px-2 text-[11px] font-semibold text-[#008f45] hover:bg-[#f6f7f7] sm:text-xs 2xl:text-sm">
+                  <ChevronLeft className="h-4 w-4" /> <span className="2xl:hidden">Pastas</span><span className="hidden 2xl:inline">Todas as pastas</span>
                 </button>
               )}
               {tabs}

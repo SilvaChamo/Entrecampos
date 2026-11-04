@@ -19,19 +19,26 @@ const slug = (name: string) =>
 
 /** Uma foto para uma pasta do arquivo (o browser envia uma de cada vez, já reduzida). */
 export async function POST(req: NextRequest) {
-  const guard = await requireAuth('usar_media', 'gerir_biblioteca', 'upload_imagens', 'publicar_artigos');
+  const form = await req.formData().catch(() => null);
+  const shared = form?.get('destino') === 'partilhado';
+  // Fotos partilhadas: as mesmas regras da área Partilhado; pastas do arquivo: quem usa multimédia.
+  const guard = shared
+    ? await requireAuth('gerir_biblioteca', 'upload_imagens', 'publicar_artigos')
+    : await requireAuth('usar_media', 'gerir_biblioteca', 'upload_imagens', 'publicar_artigos');
   if ('error' in guard) return guard.error;
   try {
-    const form = await req.formData();
+    if (!form) return NextResponse.json({ error: 'Pedido inválido.' }, { status: 400 });
     const file = form.get('file') as File | null;
     const pasta = String(form.get('pasta') ?? '');
     if (!file) return NextResponse.json({ error: 'Nenhum ficheiro enviado.' }, { status: 400 });
-    if (!(await folderExists(pasta))) return NextResponse.json({ error: 'Essa pasta não existe.' }, { status: 404 });
+    if (!shared && !(await folderExists(pasta))) return NextResponse.json({ error: 'Essa pasta não existe.' }, { status: 404 });
     const ext = TYPES[file.type];
     if (!ext) return NextResponse.json({ error: 'O arquivo só aceita fotos (JPG, PNG, WEBP, GIF).' }, { status: 400 });
     if (file.size > MAX_BYTES) return NextResponse.json({ error: 'A foto é demasiado grande depois de reduzida (máx. 4 MB).' }, { status: 400 });
 
-    const path = `${ARQUIVO_ROOT}/${pasta}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${slug(file.name)}.${ext}`;
+    const path = shared
+      ? `partilhado/imagens/${Date.now()}-0-${slug(file.name)}.${ext}` // o "0" marca que não veio do e-mail
+      : `${ARQUIVO_ROOT}/${pasta}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${slug(file.name)}.${ext}`;
     const { error } = await supabaseAdmin.storage.from(BUCKET()).upload(path, Buffer.from(await file.arrayBuffer()), {
       contentType: file.type,
       upsert: false,

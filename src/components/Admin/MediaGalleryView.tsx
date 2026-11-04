@@ -480,16 +480,16 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
         {/* Header Estilo WP */}
         <div className="pt-0 pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <h1 className="text-2xl font-normal">{title}</h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:flex-nowrap">
+            <h1 className="whitespace-nowrap text-2xl font-normal">{title}</h1>
             <div className="flex max-w-full flex-nowrap items-center gap-1.5 overflow-x-auto sm:gap-2">
-            {source !== 'partilhado' && !pick && (
-            <label className="inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
-              {uploading ? 'A carregar...' : source === 'arquivo' ? 'Carregar fotos' : (<><span className="sm:hidden">Adicionar</span><span className="hidden sm:inline">Adicionar ficheiros multimédia</span></>)}
+            {!pick && (
+            <label className="inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-2 2xl:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-xs 2xl:text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
+              {uploading ? 'A carregar...' : source === 'arquivo' ? 'Carregar fotos' : (<><span className="2xl:hidden">Adicionar</span><span className="hidden 2xl:inline">Adicionar ficheiros multimédia</span></>)}
               <input
                 type="file"
                 className="hidden"
-                accept={source === 'arquivo' ? 'image/*' : 'image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt'}
+                accept={source !== 'galeria' ? 'image/*' : 'image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt'}
                 multiple
                 onChange={async (e) => {
                   const filesToUpload = e.target.files ? Array.from(e.target.files) : [];
@@ -502,11 +502,12 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
 
                   for (const original of filesToUpload) {
                     setBusyMsg(`A carregar ${successCount + 1} de ${filesToUpload.length}…`);
-                    if (source === 'arquivo') {
+                    if (source !== 'galeria') {
                       const file = await prepareImage(original);
                       const form = new FormData();
                       form.append('file', file);
-                      form.append('pasta', pasta);
+                      if (source === 'arquivo') form.append('pasta', pasta);
+                      else form.append('destino', 'partilhado');
                       const res = await fetch('/api/admin/arquivo/upload', { method: 'POST', credentials: 'include', body: form });
                       if (res.ok) successCount++;
                       else lastError = (await res.json().catch(() => ({}))).error || 'Erro ao carregar.';
@@ -539,7 +540,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
               placeholder="Procurar itens multimédia..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 pr-2 border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#00a651] focus:ring-1 focus:ring-[#00a651] w-64 max-md:w-full"
+              className="h-8 pl-8 pr-2 border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#00a651] focus:ring-1 focus:ring-[#00a651] w-40 lg:w-48 2xl:w-64 max-md:w-full"
             />
             <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-[#50575e]" />
           </div>
