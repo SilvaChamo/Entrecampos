@@ -84,7 +84,8 @@ export default function ArquivoPage() {
 
   return (
     <div className="min-h-screen p-6 text-[#2c3338]">
-      <h1 className="mb-3 text-2xl font-normal">Arquivo de fotos</h1>
+      <h1 className="mb-1 text-2xl font-normal">Arquivo de fotos</h1>
+      <p className="mb-3 text-sm text-[#50575e]">Arquivo de fotos do EntreCAMPOS.</p>
 
       <ArquivoTabs
         active="arquivo"

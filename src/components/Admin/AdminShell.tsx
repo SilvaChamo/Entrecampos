@@ -411,22 +411,24 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <UserIcon className="w-7 h-7 lg:w-4 lg:h-4 bg-[#2c3338] p-1 lg:p-0.5 rounded-full" />
           </button>
 
-          <div className={`absolute right-0 top-full w-56 bg-[#2c3338] shadow-lg border border-[#3c434a] p-2 rounded-md lg:group-hover:block ${userMenuOpen ? 'block' : 'hidden'}`}>
-            <div className="sm:hidden px-3 py-2 text-[12px] text-gray-300 border-b border-[#3c434a] mb-1 capitalize break-words">{user?.name || 'Visitante'} · {user?.role || 'guest'}</div>
-            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-3 lg:py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[13px] rounded-md transition-colors">
+          <div className={`absolute right-0 top-full w-56 bg-[#2c3338] shadow-lg border border-[#3c434a] p-1 rounded-md lg:group-hover:block ${userMenuOpen ? 'block' : 'hidden'}`}>
+            <div className="sm:hidden px-3 py-1.5 text-[12px] text-gray-300 border-b border-[#3c434a] mb-1 capitalize break-words">{user?.name || 'Visitante'} · {user?.role || 'guest'}</div>
+            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[13px] rounded-md transition-colors">
               <UserIcon className="w-4 h-4" /> Ver Perfil
             </Link>
             {/* Quick role switch for testing */}
-            <div className="border-t border-[#3c434a] mt-2 pt-3 px-3 pb-1 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">Trocar papel (teste)</div>
+            <div className="border-t border-[#3c434a] mt-1 px-3 pb-1 pt-2 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">Trocar papel</div>
+            <div className="divide-y divide-[#3c434a] border-y border-[#3c434a]">
             {(['admin', 'editor', 'contribuidor', 'guest'] as UserRole[]).map(r => (
               <button 
                 key={r}
                 onClick={() => setRole(r)}
-                className={`w-full rounded-md px-3 py-2 text-left text-[14px] capitalize hover:bg-[#3c434a] hover:text-[#72aee6] ${user?.role === r ? 'font-bold text-[#72aee6]' : 'text-gray-200'}`}
+                className={`w-full rounded-md px-3 py-1.5 text-left text-[14px] capitalize hover:bg-[#3c434a] hover:text-[#72aee6] ${user?.role === r ? 'font-bold text-[#72aee6]' : 'text-gray-200'}`}
               >
                 {r === 'guest' ? 'Visitante' : r}
               </button>
             ))}
+            </div>
             <button 
               onClick={handleLogout}
               className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[13px] border-t border-[#3c434a] mt-2 rounded-md transition-colors"

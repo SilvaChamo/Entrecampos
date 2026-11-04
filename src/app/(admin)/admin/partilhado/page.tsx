@@ -60,7 +60,7 @@ export default function PartilhadoPage() {
   return (
     <div className="min-h-screen p-6 text-[#2c3338]">
       <h1 className="mb-1 text-2xl font-normal">Arquivo de fotos</h1>
-      <p className="mb-3 text-sm text-[#50575e]">Fotos partilhadas por e-mail.</p>
+      <p className="mb-3 text-sm text-[#50575e]">Fotos partilhadas por email: <strong>{data?.address ?? 'redaccao@entrecamposblog.com'}</strong>.</p>
 
       <ArquivoTabs
         active="partilhadas"
@@ -85,7 +85,6 @@ export default function PartilhadoPage() {
           Antivírus por ligar: por segurança, só as <strong>imagens</strong> (que são recodificadas) são importadas. PDF, ZIP e documentos ficam retidos até definir <code>CLAMD_HOST</code> e <code>CLAMD_PORT</code> (ClamAV).
         </div>
       )}
-      {data?.antivirus && <p className="mb-4 text-xs text-[#008f45]">Antivírus ligado: cada ficheiro é analisado antes de ser guardado.</p>}
 
       {!data && !error ? (
         <div className="flex justify-center py-20"><Spinner /></div>
