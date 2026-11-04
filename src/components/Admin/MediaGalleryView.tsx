@@ -103,7 +103,13 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   const [busyMsg, setBusyMsg] = useState('');
   // Na grelha simples, a seleção em massa sobe para a linha dos separadores da página (se existir).
   const [bulkSlot, setBulkSlot] = useState<HTMLElement | null>(null);
-  useEffect(() => { if (bare) setBulkSlot(document.getElementById('ec-bulk-slot')); }, [bare]);
+  const [checkSlot, setCheckSlot] = useState<HTMLElement | null>(null);
+  const [confirmDel, setConfirmDel] = useState(false);
+  useEffect(() => {
+    if (!bare) return;
+    setBulkSlot(document.getElementById('ec-bulk-slot'));
+    setCheckSlot(document.getElementById('ec-bulk-check'));
+  }, [bare]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkMode, setIsBulkMode] = useState(false);
   const { user } = useAuth();
@@ -167,6 +173,18 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
 
   useEffect(() => { setSearchQuery(initialQuery); }, [initialQuery]);
   useEffect(() => { if (bare) setView(binMode ? 'lixo' : 'galeria'); }, [bare, binMode]);
+  // A lixeira da página avisa-se por eventos: a página sabe quantas fotos estão selecionadas e pede a confirmação de eliminar.
+  useEffect(() => {
+    if (!bare) return;
+    window.dispatchEvent(new CustomEvent('ec-bulk-count', { detail: selectedIds.size }));
+    return () => { window.dispatchEvent(new CustomEvent('ec-bulk-count', { detail: 0 })); };
+  }, [bare, selectedIds]);
+  useEffect(() => {
+    if (!bare) return;
+    const ask = () => { if (selectedIds.size > 0) setConfirmDel(true); };
+    window.addEventListener('ec-bulk-delete', ask);
+    return () => window.removeEventListener('ec-bulk-delete', ask);
+  }, [bare, selectedIds]);
 
 
   // Extrair anos únicos dos ficheiros
@@ -221,9 +239,9 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
     }
   };
 
-  const deleteSelected = async () => {
+  const deleteSelected = async (skipConfirm = false) => {
     if (selectedIds.size === 0) return;
-    if (!confirm(showTrash ? `Eliminar PARA SEMPRE os ${selectedIds.size} itens selecionados?` : `Mover os ${selectedIds.size} itens selecionados para o lixo?`)) return;
+    if (skipConfirm !== true && !confirm(showTrash ? `Eliminar PARA SEMPRE os ${selectedIds.size} itens selecionados?` : `Mover os ${selectedIds.size} itens selecionados para o lixo?`)) return;
 
     try {
       setLoading(true);
@@ -240,7 +258,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
       setSelectedIds(new Set());
       setIsBulkMode(false);
       loadImages();
-      alert(showTrash ? 'Itens eliminados para sempre.' : 'Itens movidos para o lixo.');
+      if (!bare) alert(showTrash ? 'Itens eliminados para sempre.' : 'Itens movidos para o lixo.');
     } catch (err: any) {
       alert('Erro ao eliminar: ' + err.message);
     } finally {
@@ -653,7 +671,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                     </span>
                   )}
                   {view !== 'arquivo' && <span 
-                    onClick={selectedIds.size > 0 ? deleteSelected : undefined}
+                    onClick={selectedIds.size > 0 ? () => deleteSelected() : undefined}
                     className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#d63638] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
                   >
                     {showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'} ({selectedIds.size})
@@ -722,68 +740,35 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           <SkeletonMediaGrid count={14} />
         ) : bare && viewMode === 'grid' ? (
           <>
-          {bulkSlot ? createPortal(<>
-            {!isBulkMode ? (
-              <button type="button" onClick={() => setIsBulkMode(true)} className="text-sm text-[#2271b1] hover:underline whitespace-nowrap">Seleção em massa</button>
-            ) : (
+          {checkSlot && createPortal(
+            <input
+              type="checkbox"
+              aria-label="Seleção em massa"
+              title="Seleção em massa"
+              checked={isBulkMode}
+              onChange={() => { if (isBulkMode) { setIsBulkMode(false); setSelectedIds(new Set()); } else setIsBulkMode(true); }}
+              className="h-4 w-4 cursor-pointer accent-[#00a651]"
+            />,
+            checkSlot,
+          )}
+          {bulkSlot && createPortal(
+            isBulkMode ? (
               <>
-                <input
-                  type="checkbox"
-                  aria-label="Selecionar todas"
-                  checked={selectedIds.size === paginatedFiles.length && paginatedFiles.length > 0}
-                  onChange={() => setSelectedIds(selectedIds.size === paginatedFiles.length ? new Set() : new Set(paginatedFiles.map((f) => f.name)))}
-                  className="w-4 h-4 cursor-pointer"
-                />
-                <span
-                  onClick={selectedIds.size > 0 ? deleteSelected : undefined}
-                  className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#d63638] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
-                >
-                  {showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'} ({selectedIds.size})
-                </span>
+                <span className="text-sm whitespace-nowrap text-[#50575e]">{selectedIds.size} {selectedIds.size === 1 ? 'selecionada' : 'selecionadas'}</span>
                 {special && (
                   <span
                     onClick={selectedIds.size > 0 ? () => restore(Array.from(selectedIds)) : undefined}
                     className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#2271b1] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
                   >
-                    Restaurar ({selectedIds.size})
+                    Restaurar
                   </span>
                 )}
-                <button type="button" onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="text-sm text-[#50575e] hover:underline whitespace-nowrap">Cancelar</button>
+                <button type="button" onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="text-sm text-[#50575e] underline-offset-2 hover:underline whitespace-nowrap">Cancelar</button>
               </>
-            )}
-            <span className="text-[13px] text-[#50575e]">{filteredFiles.length} itens</span>
-          </>, bulkSlot) : (
-          <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-            {!isBulkMode ? (
-              <button onClick={() => setIsBulkMode(true)} className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap">Seleção em massa</button>
             ) : (
-              <>
-                <input
-                  type="checkbox"
-                  aria-label="Selecionar todas"
-                  checked={selectedIds.size === paginatedFiles.length && paginatedFiles.length > 0}
-                  onChange={() => setSelectedIds(selectedIds.size === paginatedFiles.length ? new Set() : new Set(paginatedFiles.map((f) => f.name)))}
-                  className="w-4 h-4 cursor-pointer"
-                />
-                <span
-                  onClick={selectedIds.size > 0 ? deleteSelected : undefined}
-                  className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#d63638] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
-                >
-                  {showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'} ({selectedIds.size})
-                </span>
-                {special && (
-                  <span
-                    onClick={selectedIds.size > 0 ? () => restore(Array.from(selectedIds)) : undefined}
-                    className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#2271b1] cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
-                  >
-                    Restaurar ({selectedIds.size})
-                  </span>
-                )}
-                <button onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap">Cancelar</button>
-              </>
-            )}
-            <span className="text-[13px] text-[#50575e]">{filteredFiles.length} itens</span>
-          </div>
+              <span className="text-[13px] text-[#50575e]">{filteredFiles.length} itens</span>
+            ),
+            bulkSlot,
           )}
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
             {view !== 'lixo' && (zipOptions ?? []).map((z) => (
@@ -1119,6 +1104,22 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
         )}
       </div>
       
+      {confirmDel && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Confirmar eliminação">
+          <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-2xl">
+            <h3 className="text-[16px] font-semibold text-[#1d2327]">Eliminar fotos</h3>
+            <p className="mt-2 text-sm text-[#3c434a]">
+              Quer mesmo eliminar {selectedIds.size === 1 ? 'a foto selecionada' : `as ${selectedIds.size} fotos selecionadas`}?
+              {' '}{showTrash ? 'Esta ação é definitiva.' : 'Vão para a reciclagem, a que só o administrador tem acesso.'}
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setConfirmDel(false)} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm font-semibold text-[#50575e] hover:bg-[#f6f7f7]">Cancelar</button>
+              <button type="button" onClick={async () => { setConfirmDel(false); await deleteSelected(true); }} className="rounded-[3px] bg-[#d63638] px-5 py-1.5 text-sm font-semibold text-white hover:bg-[#b32d2e]">Sim</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
         .bg-checkerboard {
           background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);

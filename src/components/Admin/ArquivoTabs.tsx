@@ -9,10 +9,11 @@ export default function ArquivoTabs({ active, right, onPartilhadasClick }: { act
   const line = (first = false) => <span aria-hidden="true" className={`absolute -bottom-px h-[2px] bg-[#00a651] ${first ? 'left-0 right-[10px]' : 'inset-x-[10px]'}`} />;
   return (
     <div className="mb-5 flex flex-wrap items-end justify-between gap-2 border-b border-[#ccd0d4]">
-      <div className="flex">
+      <div className="flex items-end">
+        {active === 'partilhadas' && <div id="ec-bulk-check" className="mr-3 flex items-center self-center empty:hidden" />}
         <Link href="/admin/arquivo" className={tab(active === 'arquivo', true)}>Arquivo{active === 'arquivo' && line(true)}</Link>
         <Link href="/admin/partilhado" onClick={(e) => { if (onPartilhadasClick) { e.preventDefault(); onPartilhadasClick(); } }} className={tab(active === 'partilhadas')}>Fotos partilhadas{active === 'partilhadas' && line()}</Link>
-        {active === 'partilhadas' && <div id="ec-bulk-slot" className="ml-3 flex items-center gap-3" />}
+        {active === 'partilhadas' && <div id="ec-bulk-slot" className="ml-3 flex items-center gap-3 self-center" />}
       </div>
       {right && <div className="pb-1.5">{right}</div>}
     </div>

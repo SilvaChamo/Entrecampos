@@ -22,6 +22,7 @@ export default function PartilhadoPage() {
   const [syncing, setSyncing] = useState(false);
   const [notice, setNotice] = useState('');
   const { user } = useAuth();
+  const [selCount, setSelCount] = useState(0); // fotos selecionadas na grelha (a lixeira elimina-as, com confirmação)
   const [bin, setBin] = useState(false); // reciclagem das fotos partilhadas (só administrador)
   const [aberta, setAberta] = useState<string | null>(null); // pasta aberta aqui mesmo, sem sair da página
 
@@ -38,6 +39,12 @@ export default function PartilhadoPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const onCount = (e: Event) => setSelCount(Number((e as CustomEvent).detail) || 0);
+    window.addEventListener('ec-bulk-count', onCount);
+    return () => window.removeEventListener('ec-bulk-count', onCount);
+  }, []);
 
   const sync = async () => {
     setSyncing(true);
@@ -74,14 +81,14 @@ export default function PartilhadoPage() {
             <button onClick={sync} disabled={syncing || !data?.configured} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white disabled:opacity-50">
               <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'A sincronizar…' : 'Sincronizar agora'}
             </button>
-            {user?.role === 'admin' && aberta === 'imagens' && (
+            {aberta === 'imagens' && (user?.role === 'admin' || selCount > 0) && (
               <button
                 type="button"
-                title="Reciclagem"
-                aria-label="Reciclagem"
+                title={selCount > 0 ? 'Eliminar as fotos selecionadas' : 'Reciclagem'}
+                aria-label={selCount > 0 ? 'Eliminar as fotos selecionadas' : 'Reciclagem'}
                 aria-pressed={bin}
-                onClick={() => setBin(!bin)}
-                className={`inline-flex h-8 w-8 items-center justify-center rounded-[3px] border ${bin ? 'border-[#d63638] bg-[#d63638] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+                onClick={() => (selCount > 0 ? window.dispatchEvent(new Event('ec-bulk-delete')) : setBin(!bin))}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-[3px] border ${bin || selCount > 0 ? 'border-[#d63638] bg-[#d63638] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
               >
                 <Trash2 className="h-4 w-4" />
               </button>
