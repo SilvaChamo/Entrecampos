@@ -84,9 +84,11 @@ export type MediaGalleryViewProps = {
   /** Arquivo sem pasta aberta: mostra as pastas no lugar das fotos, com o mesmo cabeçalho da galeria. */
   folders?: FolderInfo[];
   onOpenFolder?: (slug: string) => void;
+  /** O botão "Adicionar" fica visível mas inutilizado (fotos partilhadas e arquivo, que têm o seu sítio próprio). */
+  uploadDisabled?: boolean;
 };
 
-export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder }: MediaGalleryViewProps) {
+export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder, uploadDisabled }: MediaGalleryViewProps) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -469,12 +471,17 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:flex-nowrap">
             <h1 className="whitespace-nowrap text-2xl font-normal">{title}</h1>
             <div className="flex max-w-full flex-nowrap items-center gap-1.5 overflow-x-auto sm:gap-2">
-            {!pick && !folderList && (
-            <label className="inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-2 2xl:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-xs 2xl:text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
-              {uploading ? 'A carregar...' : source === 'arquivo' ? 'Carregar fotos' : (<><span className="2xl:hidden">Adicionar</span><span className="hidden 2xl:inline">Adicionar ficheiros multimédia</span></>)}
+            {/* O botão está sempre na linha; fica inutilizado onde não serve (arquivo fora da pasta e fotos partilhadas). */}
+            <label
+              aria-disabled={uploadDisabled || !!folderList}
+              title={uploadDisabled || folderList ? (source === 'partilhado' ? 'As fotos partilhadas chegam por e-mail.' : 'No Arquivo, as fotos adicionam-se dentro de cada pasta (menu Arquivo de fotos).') : undefined}
+              className={`inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-2 2xl:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-xs 2xl:text-sm font-semibold transition-all ${uploadDisabled || folderList ? 'cursor-not-allowed opacity-40' : 'hover:bg-[#f6f7f7] cursor-pointer'}`}
+            >
+              {uploading ? 'A carregar...' : (<><span className="2xl:hidden">Adicionar</span><span className="hidden 2xl:inline">Adicionar ficheiros multimédia</span></>)}
               <input
                 type="file"
                 className="hidden"
+                disabled={uploadDisabled || !!folderList}
                 accept={source !== 'galeria' ? 'image/*' : 'image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt'}
                 multiple
                 onChange={async (e) => {
@@ -514,7 +521,6 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 }}
               />
             </label>
-            )}
             {tabsRow}
             </div>
           </div>

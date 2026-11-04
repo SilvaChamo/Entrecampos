@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Archive, FileText, FolderOpen, Image as ImageIcon, Mail, RefreshCw } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import ArquivoTabs from '@/components/Admin/ArquivoTabs';
+import PartilhadoPasta from '@/components/Admin/PartilhadoPasta';
 
 const FOLDERS = [
   { id: 'imagens', label: 'Imagens', hint: 'Fotografias e gráficos', Icon: ImageIcon },
@@ -20,6 +20,7 @@ export default function PartilhadoPage() {
   const [error, setError] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [notice, setNotice] = useState('');
+  const [aberta, setAberta] = useState<string | null>(null); // pasta aberta aqui mesmo, sem sair da página
 
   const load = useCallback(async () => {
     setError('');
@@ -91,15 +92,23 @@ export default function PartilhadoPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FOLDERS.map(({ id, label, hint, Icon }) => (
-            <Link key={id} href={`/admin/partilhado/${id}`} className="rounded border border-[#ccd0d4] bg-white p-5 transition hover:border-[#00a651]">
+            <button
+              key={id}
+              type="button"
+              onClick={() => setAberta((cur) => (cur === id ? null : id))}
+              aria-pressed={aberta === id}
+              className={`rounded border bg-white p-5 text-left transition hover:border-[#00a651] ${aberta === id ? 'border-[#00a651] ring-1 ring-[#00a651]' : 'border-[#ccd0d4]'}`}
+            >
               <Icon className="mb-3 h-8 w-8 text-[#00a651]" />
               <p className="text-base font-semibold">{label}</p>
               <p className="text-xs text-[#50575e]">{hint}</p>
               <p className="mt-3 text-2xl">{data?.counts?.[id] ?? 0}</p>
-            </Link>
+            </button>
           ))}
         </div>
       )}
+
+      {aberta && <div className="mt-6"><PartilhadoPasta key={aberta} pasta={aberta} withTitle={aberta !== 'imagens'} /></div>}
     </div>
   );
 }
