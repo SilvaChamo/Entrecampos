@@ -763,7 +763,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                     Restaurar
                   </span>
                 )}
-                <button type="button" onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="text-sm text-[#50575e] underline-offset-2 hover:underline whitespace-nowrap">Cancelar</button>
+                <button type="button" onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="text-sm text-[#d63638] underline-offset-2 hover:underline whitespace-nowrap">Cancelar</button>
               </>
             ) : (
               <span className="text-[13px] text-[#50575e]">{filteredFiles.length} itens</span>
@@ -781,7 +781,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
               >
                 <span className="text-[11px] font-bold tracking-wider">ZIP</span>
                 <span className="max-w-full truncate text-[10px]">{z.label}</span>
-                <span className="mt-1 rounded-[3px] bg-[#00a651] px-2 py-0.5 text-[10px] font-semibold text-white">Descompactar</span>
+                <span className="mt-1 max-w-full truncate text-[9px] leading-none text-[#008f45]">Descompactar</span>
               </button>
             ))}
             {paginatedFiles.map((file) => (
@@ -1107,12 +1107,11 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
       {confirmDel && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Confirmar eliminação">
           <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-2xl">
-            <h3 className="text-[16px] font-semibold text-[#1d2327]">Eliminar fotos</h3>
-            <p className="mt-2 text-sm text-[#3c434a]">
+            <h3 className="text-center text-[16px] font-semibold text-[#1d2327]">Eliminar fotos</h3>
+            <p className="mt-2 text-center text-sm text-[#3c434a]">
               Quer mesmo eliminar {selectedIds.size === 1 ? 'a foto selecionada' : `as ${selectedIds.size} fotos selecionadas`}?
-              {' '}{showTrash ? 'Esta ação é definitiva.' : 'Vão para a reciclagem, a que só o administrador tem acesso.'}
             </p>
-            <div className="mt-5 flex justify-end gap-2">
+            <div className="mt-5 flex justify-center gap-2">
               <button type="button" onClick={() => setConfirmDel(false)} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm font-semibold text-[#50575e] hover:bg-[#f6f7f7]">Cancelar</button>
               <button type="button" onClick={async () => { setConfirmDel(false); await deleteSelected(true); }} className="rounded-[3px] bg-[#d63638] px-5 py-1.5 text-sm font-semibold text-white hover:bg-[#b32d2e]">Sim</button>
             </div>
