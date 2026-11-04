@@ -451,7 +451,7 @@ export default function NewsAdminPage() {
                         <div className="flex flex-col gap-1 min-w-0 max-md:w-full">
                           <div className="flex items-center gap-2">
                             {item.status === 'Archived' && <Recycle className="w-4 h-4 text-gray-400" />}
-                            <Link href={`/admin/noticias/editar/${item.id}`} className="text-[#2271b1] font-bold text-[14px] hover:text-[#135e96] block">
+                            <Link href={`/admin/noticias/editar/${item.id}`} title={item.title} className="text-[#2271b1] font-semibold text-[13px] leading-snug hover:text-[#135e96] line-clamp-2 break-words">
                               {item.title}
                             </Link>
                           </div>
