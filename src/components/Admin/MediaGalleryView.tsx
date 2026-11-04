@@ -724,7 +724,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           <>
           {bulkSlot ? createPortal(<>
             {!isBulkMode ? (
-              <button onClick={() => setIsBulkMode(true)} className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap">Seleção em massa</button>
+              <button type="button" onClick={() => setIsBulkMode(true)} className="text-sm text-[#2271b1] hover:underline whitespace-nowrap">Seleção em massa</button>
             ) : (
               <>
                 <input
@@ -748,7 +748,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                     Restaurar ({selectedIds.size})
                   </span>
                 )}
-                <button onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap">Cancelar</button>
+                <button type="button" onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }} className="text-sm text-[#50575e] hover:underline whitespace-nowrap">Cancelar</button>
               </>
             )}
             <span className="text-[13px] text-[#50575e]">{filteredFiles.length} itens</span>
