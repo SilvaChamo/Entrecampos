@@ -57,8 +57,10 @@ function FolderCard({ f, href, onOpen, actions }: { f: FolderInfo; href?: string
           </button>
           {open && (
             <div role="menu" className="absolute right-0 top-9 z-30 w-56 overflow-hidden rounded-lg border border-[#e2e4e7] bg-white py-1 shadow-lg">
-              {href && (
+              {href ? (
                 <Link role="menuitem" href={href} className={item}><Eye className="h-4 w-4" /> Abrir</Link>
+              ) : (
+                onOpen && <button role="menuitem" type="button" className={item} onClick={() => { setOpen(false); onOpen(); }}><Eye className="h-4 w-4" /> Abrir</button>
               )}
               <div className="my-1 border-t border-[#e2e4e7]" />
               <button role="menuitem" type="button" className={item} onClick={() => { setOpen(false); actions.onDownload(f); }}><Download className="h-4 w-4" /> Transferir pasta</button>
@@ -94,7 +96,7 @@ function FolderCard({ f, href, onOpen, actions }: { f: FolderInfo; href?: string
 /** Pastas do arquivo. Abre por ligação (`hrefBase`) ou por `onOpen`; com `actions` cada pasta tem o menu de gestão. */
 export default function ArquivoFolders({ folders, hrefBase, onOpen, actions }: { folders: FolderInfo[]; hrefBase?: string; onOpen?: (slug: string) => void; actions?: FolderActions }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {folders.map((f) => (
         <FolderCard key={f.slug} f={f} href={hrefBase ? `${hrefBase}/${f.slug}` : undefined} onOpen={onOpen ? () => onOpen(f.slug) : undefined} actions={actions} />
       ))}

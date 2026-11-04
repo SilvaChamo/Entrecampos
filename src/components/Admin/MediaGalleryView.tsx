@@ -91,9 +91,11 @@ export type MediaGalleryViewProps = {
   bare?: boolean;
   /** Na grelha simples: mostrar a reciclagem (fotos eliminadas) em vez das fotos. */
   binMode?: boolean;
+  /** Grelha simples com no máximo 4 colunas (2 em ecrã pequeno), em vez das 7 da galeria. */
+  fourCols?: boolean;
 };
 
-export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder, uploadDisabled, bare, binMode }: MediaGalleryViewProps) {
+export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder, uploadDisabled, bare, binMode, fourCols }: MediaGalleryViewProps) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -770,7 +772,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
             ),
             bulkSlot,
           )}
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
+          <div className={`grid ${fourCols ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2'}`}>
             {view !== 'lixo' && (zipOptions ?? []).map((z) => (
               <button
                 key={z.path}
@@ -784,6 +786,9 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 <span className="mt-1 max-w-full truncate text-[9px] leading-none text-[#008f45]">Descompactar</span>
               </button>
             ))}
+            {paginatedFiles.length === 0 && !(zipOptions && zipOptions.length > 0 && view !== 'lixo') && (
+              <p className="col-span-full py-6 text-sm text-[#50575e]">{view === 'lixo' ? 'A reciclagem está vazia.' : source === 'arquivo' ? 'Esta pasta ainda não tem fotos. Use “Adicionar fotos”.' : 'Ainda não há fotos.'}</p>
+            )}
             {paginatedFiles.map((file) => (
               <div
                 key={file.name}

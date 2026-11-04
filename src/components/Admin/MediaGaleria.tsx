@@ -17,7 +17,7 @@ const TABS: { id: MediaSource; label: string; short: string }[] = [
  * Galeria principal. Junto ao título há um selector para ver também o arquivo de fotos (por pasta) e as fotos
  * partilhadas. Com `?escolher=ID` (aberta pelo formulário da notícia) clicar numa foto devolve-a ao formulário.
  */
-function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, uploadHere, bare, binMode }: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean; binMode?: boolean }) {
+function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, uploadHere, bare, binMode, fourCols, refreshKey = 0 }: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean; binMode?: boolean; fourCols?: boolean; refreshKey?: number }) {
   const params = useSearchParams();
   const pickId = params.get('escolher');
   const [source, setSource] = useState<MediaSource>(initialSource);
@@ -115,13 +115,14 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
       )}
       {unzipMsg && <p role="status" className="px-6 pt-3 text-sm text-[#50575e]">{unzipMsg}</p>}
       <MediaGalleryView
-        key={`${source}:${pasta}:${reloadKey}`}
+        key={`${source}:${pasta}:${reloadKey}:${refreshKey}`}
         source={source}
         pasta={pasta}
         pick={pick}
         embedded={embedded}
         bare={bare}
         binMode={binMode}
+        fourCols={fourCols}
         // "Adicionar" só na galeria; o arquivo recebe fotos no seu próprio lugar (a página de cada pasta) e as partilhadas só chegam por e-mail.
         uploadDisabled={!(source === 'galeria' || (source === 'arquivo' && !!pasta && !!uploadHere))}
         reloadKey={reloadKey}
@@ -141,7 +142,7 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
 }
 
 /** A galeria principal, com selector Galeria | Arquivo de fotos | Fotos partilhadas. Pode abrir já numa origem/pasta. */
-export default function MediaGaleria(props: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean; binMode?: boolean }) {
+export default function MediaGaleria(props: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean; binMode?: boolean; fourCols?: boolean; refreshKey?: number }) {
   return (
     <Suspense fallback={null}>
       <GaleriaInner {...props} />
