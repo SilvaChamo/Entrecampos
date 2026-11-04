@@ -84,7 +84,6 @@ export default function PastaPage({ params }: { params: Promise<{ pasta: string 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Erro ao descompactar.');
       const src = /^(\d+-[\d_]+)-/.exec(path.split('/').pop() ?? '')?.[1] ?? '';
-      setUnzipNote(`${json.extracted} foto(s) do zip.`);
       setFilter(src ? `${src}-z` : '');
       setReloadKey((k) => k + 1);
       load();
@@ -120,12 +119,7 @@ export default function PastaPage({ params }: { params: Promise<{ pasta: string 
       {pasta === 'imagens' && (
         <>
           {unzipping && <p role="status" className="mb-2 text-sm font-semibold text-[#008f45]">A descompactar…</p>}
-          {filter && !unzipping && (
-            <div className="mb-3 flex flex-wrap items-center gap-3 rounded border border-[#00a651] bg-white p-3 text-sm">
-              <span>{unzipNote} A mostrar só as fotos desse zip.</span>
-              <button onClick={() => { setFilter(''); setReloadKey((k) => k + 1); }} className="font-semibold text-[#008f45] hover:underline">Ver todas as fotos partilhadas</button>
-            </div>
-          )}
+          {unzipNote && !unzipping && <p role="alert" className="mb-2 text-sm text-[#d63638]">{unzipNote}</p>}
           <MediaGalleryView
             source="partilhado"
             title="Fotos partilhadas"

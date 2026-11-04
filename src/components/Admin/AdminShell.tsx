@@ -408,7 +408,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             className="flex h-10 items-center gap-2 px-1 lg:h-8"
           >
             <span className="capitalize max-sm:hidden">Olá, {user?.name || 'Visitante'} ({user?.role || 'guest'})</span>
-            <UserIcon className="w-7 h-7 lg:w-4 lg:h-4 bg-[#2c3338] p-1 lg:p-0.5 rounded-full" />
+            <UserIcon className="w-8 h-8 lg:w-6 lg:h-6 bg-[#2c3338] p-1.5 lg:p-1 rounded-full" />
           </button>
 
           <div className={`absolute right-0 top-full w-56 bg-[#2c3338] shadow-lg border border-[#3c434a] p-1 rounded-md lg:group-hover:block ${userMenuOpen ? 'block' : 'hidden'}`}>
