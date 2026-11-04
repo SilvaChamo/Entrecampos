@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { SkeletonMediaGrid } from '@/components/Admin/Skeleton';
 import { prepareImage } from '@/lib/client-image';
+import ArquivoFolders, { type FolderInfo } from '@/components/Admin/ArquivoFolders';
 
 interface StorageFile {
   name: string;
@@ -80,11 +81,12 @@ export type MediaGalleryViewProps = {
   /** Zips de fotos (fotos partilhadas): aparecem no selector de tipo; escolher um descompacta-o na página. */
   zipOptions?: { path: string; label: string }[];
   onPickZip?: (path: string) => void;
+  /** Arquivo sem pasta aberta: mostra as pastas no lugar das fotos, com o mesmo cabeçalho da galeria. */
+  folders?: FolderInfo[];
+  onOpenFolder?: (slug: string) => void;
 };
 
-type ArquivoFolderRef = { slug: string; nome: string };
-
-export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip }: MediaGalleryViewProps) {
+export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder }: MediaGalleryViewProps) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -92,8 +94,6 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [busyMsg, setBusyMsg] = useState('');
-  const [folders, setFolders] = useState<ArquivoFolderRef[]>([]);
-  const [sendOpen, setSendOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkMode, setIsBulkMode] = useState(false);
   const { user } = useAuth();
@@ -128,6 +128,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
 
 
   const loadImages = async () => {
+    if (folderList) { setLoading(false); return; }
     setLoading(true);
     try {
       // Pelo servidor: devolve todas as imagens do site (a biblioteca geral) a quem tem acesso a multimédia.
@@ -156,14 +157,6 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
 
   useEffect(() => { setSearchQuery(initialQuery); }, [initialQuery]);
 
-  // Pastas do arquivo, para "Enviar para uma pasta do arquivo" (a partir das fotos partilhadas).
-  useEffect(() => {
-    if (source !== 'partilhado') return;
-    fetch('/api/admin/arquivo', { credentials: 'include', cache: 'no-store' })
-      .then((r) => r.json())
-      .then((b) => setFolders((b.folders ?? []).map((f: ArquivoFolderRef) => ({ slug: f.slug, nome: f.nome }))))
-      .catch(() => {});
-  }, [source]);
 
   // Extrair anos únicos dos ficheiros
   const years = useMemo(() => {
@@ -313,21 +306,6 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
     return body.done as { from: string; name: string; url: string }[];
   };
 
-  const sendSelected = async (names: string[], to: 'galeria' | 'arquivo', toPasta?: string, label = '') => {
-    setSendOpen(false);
-    setBusyMsg('A enviar…');
-    try {
-      await transfer(names, to, toPasta);
-      setBusyMsg(`${names.length === 1 ? 'Foto enviada' : `${names.length} fotos enviadas`} para ${label || (to === 'galeria' ? 'a galeria' : 'o arquivo')}.`);
-      setSelectedIds(new Set());
-      setIsBulkMode(false);
-    } catch (err: any) {
-      setBusyMsg('');
-      alert('Erro: ' + err.message);
-    }
-    setTimeout(() => setBusyMsg(''), 4000);
-  };
-
   /** Modo escolher: devolve o endereço da foto; se vier do arquivo ou das partilhadas, passa antes para a galeria. */
   const choose = async (file: StorageFile) => {
     if (!pick) return;
@@ -389,8 +367,9 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
       const timer = setTimeout(async () => {
         const img = new Image();
         img.crossOrigin = "anonymous";
-        img.src = getPublicUrl(selectedFile.name);
-        await new Promise(r => { img.onload = r; });
+        img.src = `${getPublicUrl(selectedFile.name)}?edit=${Date.now()}`;
+        await new Promise(r => { img.onload = r; img.onerror = r; });
+        if (!img.width) return;
 
         const canvas = document.createElement('canvas');
         canvas.width = editWidth || img.width;
@@ -411,41 +390,48 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   const applyImageEdits = async () => {
     if (!selectedFile) return;
     setProcessingImage(true);
-    
+
     try {
       const img = new Image();
       img.crossOrigin = "anonymous";
-      img.src = getPublicUrl(selectedFile.name);
-      
-      await new Promise((resolve) => { img.onload = resolve; });
+      // Nunca fica à espera para sempre: falha de carregamento ou demora a mais dão erro claro.
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('A imagem demorou demasiado a carregar.')), 20000);
+        img.onload = () => { clearTimeout(timer); resolve(); };
+        img.onerror = () => { clearTimeout(timer); reject(new Error('Não foi possível carregar a imagem para edição.')); };
+        img.src = `${getPublicUrl(selectedFile.name)}?edit=${Date.now()}`; // sem isto o navegador reutiliza a cópia da grelha (sem CORS) e a edição falha
+      });
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
+
       const finalWidth = editWidth || img.width;
       const finalHeight = editHeight || img.height;
-      
+
       canvas.width = finalWidth;
       canvas.height = finalHeight;
-      
+
       if (ctx) {
         ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
       }
 
-      const mimeType = editFormat === 'webp' ? 'image/webp' : editFormat === 'jpeg' ? 'image/jpeg' : selectedFile.metadata?.mimetype;
+      const original = selectedFile.metadata?.mimetype || (/\.png$/i.test(selectedFile.name) ? 'image/png' : /\.webp$/i.test(selectedFile.name) ? 'image/webp' : 'image/jpeg');
+      const mimeType = editFormat === 'webp' ? 'image/webp' : editFormat === 'jpeg' ? 'image/jpeg' : original;
       const extension = editFormat === 'webp' ? '.webp' : editFormat === 'jpeg' ? '.jpg' : '.' + selectedFile.name.split('.').pop();
-      
-      const blob: Blob = await new Promise((resolve) => {
-        canvas.toBlob((b) => resolve(b!), mimeType, 0.85); // 0.85 qualidade otimizada
+
+      const blob: Blob = await new Promise((resolve, reject) => {
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Não foi possível processar a imagem.'))), mimeType, 0.85); // 0.85 qualidade otimizada
       });
 
       const newFileName = selectedFile.name.replace(/\.[^/.]+$/, "") + (editFormat !== 'original' ? `_edited${extension}` : extension);
 
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .upload(newFileName, blob, { contentType: mimeType, upsert: true });
-
-      if (uploadError) throw uploadError;
+      // Grava pelo servidor (a gravação a partir do navegador falha sem aviso).
+      const form = new FormData();
+      form.append('file', new File([blob], newFileName.split('/').pop() || 'imagem', { type: blob.type || mimeType }));
+      form.append('name', newFileName);
+      const res = await fetch('/api/admin/media/replace', { method: 'POST', credentials: 'include', body: form });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Não foi possível guardar a imagem.');
 
       alert('Imagem processada e guardada com sucesso!');
       setIsEditingImage(false);
@@ -483,7 +469,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:flex-nowrap">
             <h1 className="whitespace-nowrap text-2xl font-normal">{title}</h1>
             <div className="flex max-w-full flex-nowrap items-center gap-1.5 overflow-x-auto sm:gap-2">
-            {!pick && (
+            {!pick && !folderList && (
             <label className="inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-2 2xl:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-xs 2xl:text-sm font-semibold hover:bg-[#f6f7f7] cursor-pointer transition-all">
               {uploading ? 'A carregar...' : source === 'arquivo' ? 'Carregar fotos' : (<><span className="2xl:hidden">Adicionar</span><span className="hidden 2xl:inline">Adicionar ficheiros multimédia</span></>)}
               <input
@@ -655,25 +641,6 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   >
                     {showTrash ? 'Eliminar para sempre' : 'Mover para o lixo'} ({selectedIds.size})
                   </span>}
-                  {source !== 'galeria' && !special && (
-                    <span className="relative">
-                      <span
-                        onClick={selectedIds.size > 0 ? () => (source === 'partilhado' ? setSendOpen((o) => !o) : sendSelected(Array.from(selectedIds), 'galeria')) : undefined}
-                        className={`text-sm whitespace-nowrap ${selectedIds.size > 0 ? 'text-[#008f45] font-semibold cursor-pointer hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
-                      >
-                        Enviar para… ({selectedIds.size})
-                      </span>
-                      {sendOpen && source === 'partilhado' && (
-                        <span className="absolute left-0 top-6 z-50 block w-56 rounded border border-[#ccd0d4] bg-white py-1 text-sm shadow-lg">
-                          <button type="button" onClick={() => sendSelected(Array.from(selectedIds), 'galeria')} className="block w-full px-3 py-1.5 text-left hover:bg-[#f6f7f7]">Galeria</button>
-                          {folders.map((f) => (
-                            <button key={f.slug} type="button" onClick={() => sendSelected(Array.from(selectedIds), 'arquivo', f.slug, `a pasta “${f.nome}”`)} className="block w-full truncate px-3 py-1.5 text-left hover:bg-[#f6f7f7]">Arquivo › {f.nome}</button>
-                          ))}
-                          {folders.length === 0 && <span className="block px-3 py-1.5 text-xs text-[#50575e]">Crie primeiro uma pasta no Arquivo.</span>}
-                        </span>
-                      )}
-                    </span>
-                  )}
                   {special && (
                     <span
                       onClick={selectedIds.size > 0 ? () => restore(Array.from(selectedIds)) : undefined}
@@ -695,7 +662,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
             <div className="flex items-center gap-4 flex-wrap justify-center">
               {/* Paginação Superior */}
               <div className="flex items-center gap-2 text-[13px] text-[#50575e] whitespace-nowrap">
-                <span>{filteredFiles.length} itens</span>
+                <span>{folderList ? folderList.length : filteredFiles.length} itens</span>
                 <div className="flex items-center gap-1 ml-2">
                   <button 
                     disabled={currentPage === 1}
@@ -725,7 +692,13 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
         )}
 
         {/* Content */}
-        {loading ? (
+        {folderList ? (
+          folderList.length === 0 ? (
+            <p className="py-6 text-sm text-[#50575e]">Ainda não há pastas no arquivo. Crie uma em “Arquivo de fotos”.</p>
+          ) : (
+            <ArquivoFolders folders={folderList.filter((f) => f.nome.toLowerCase().includes(searchQuery.toLowerCase()))} onOpen={onOpenFolder} />
+          )
+        ) : loading ? (
           <SkeletonMediaGrid count={14} />
         ) : viewMode === 'grid' ? (
           /* Grid View - 7 COLUNAS */
@@ -753,15 +726,6 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 )}
                 {pick && (
                   <div className="absolute inset-x-0 bottom-0 bg-[#00a651] py-1 text-center text-xs font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">Usar esta foto</div>
-                )}
-                {!pick && !isBulkMode && !special && source !== 'galeria' && kindOf(file.name) === 'imagens' && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); sendSelected([file.name], 'galeria'); }}
-                    className="absolute bottom-1 left-1 right-1 rounded-[3px] bg-[#00a651] px-1 py-1 text-[11px] font-bold text-white opacity-0 shadow transition-opacity group-hover:opacity-100"
-                  >
-                    Enviar para a galeria
-                  </button>
                 )}
               </div>
             ))}
@@ -828,6 +792,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
             </table>
           </div>
         )}
+
 
         {/* Modal WP Style */}
         {selectedFile && (
@@ -1017,22 +982,6 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   </div>
                 </div>
 
-                {source !== 'galeria' && !special && (
-                  <div className="space-y-2 rounded border border-[#ccd0d4] bg-white p-3">
-                    <p className="text-[12px] font-semibold text-[#50575e]">Usar noutro sítio</p>
-                    <button onClick={() => sendSelected([selectedFile.name], 'galeria')} className="w-full rounded-[3px] bg-[#00a651] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#008f45]">Enviar para a galeria</button>
-                    {source === 'partilhado' && folders.length > 0 && (
-                      <select
-                        defaultValue=""
-                        onChange={(e) => { const f = folders.find((x) => x.slug === e.target.value); if (f) sendSelected([selectedFile.name], 'arquivo', f.slug, `a pasta “${f.nome}”`); e.target.value = ''; }}
-                        className="h-8 w-full rounded-[3px] border border-[#ccd0d4] bg-white px-2 text-sm"
-                      >
-                        <option value="" disabled>Enviar para uma pasta do arquivo…</option>
-                        {folders.map((f) => <option key={f.slug} value={f.slug}>{f.nome}</option>)}
-                      </select>
-                    )}
-                  </div>
-                )}
                 {busyMsg && <p className="text-xs font-semibold text-[#008f45]">{busyMsg}</p>}
 
                 <div className="pt-4 border-t border-[#ccd0d4] flex justify-between items-center">

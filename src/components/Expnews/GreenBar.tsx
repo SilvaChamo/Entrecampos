@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CalendarDays, ChevronDown, Clock, Mail, Thermometer } from 'lucide-react';
+import { CalendarDays, ChevronDown, Clock, LayoutDashboard, Mail, Thermometer } from 'lucide-react';
 
 const EMAIL = 'geral@ecamposmz.com';
 const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast?latitude=-25.97&longitude=32.57&current=temperature_2m&timezone=Africa%2FMaputo';
@@ -122,6 +122,8 @@ export default function GreenBar() {
   const [date, setDate] = useState('');
   const [temp, setTemp] = useState<number | null>(null);
   const [time, setTime] = useState('');
+  // Quem fechou o painel sem sair continua com sessão: mostra o botão "Painel" para voltar.
+  const [painel, setPainel] = useState<string | null>(null);
 
   // A data calcula-se no browser: a página pode estar guardada em cache de há uns minutos.
   useEffect(() => setDate(today()), []);
@@ -131,6 +133,20 @@ export default function GreenBar() {
     setTime(now());
     const id = setInterval(() => setTime(now()), 1000);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { user?: { role?: string } | null } | null) => {
+        const role = d?.user?.role;
+        if (alive && role) setPainel(role === 'editor' ? '/admin/editor' : role === 'contribuidor' ? '/admin/contribuidor' : role === 'guest' ? '/admin/guest' : '/admin/dashboard');
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -166,6 +182,18 @@ export default function GreenBar() {
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
+            {painel && (
+              <>
+                <a
+                  href={painel}
+                  className="inline-flex items-center gap-1.5 rounded-[3px] border border-[#39ff14]/70 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-[#39ff14] transition-colors hover:bg-[#39ff14] hover:text-[#0c1f08]"
+                >
+                  <LayoutDashboard className="h-3 w-3" />
+                  Painel
+                </a>
+                <span className="text-[11px] text-white/30" aria-hidden="true">|</span>
+              </>
+            )}
             {temp !== null && (
               <>
                 <span className={item}>

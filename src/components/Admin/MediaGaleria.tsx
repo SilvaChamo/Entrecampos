@@ -2,10 +2,10 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, ChevronLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import MediaGalleryView, { type MediaSource } from '@/components/Admin/MediaGalleryView';
 import { useAuth } from '@/context/AuthContext';
-import ArquivoFolders, { type FolderInfo } from '@/components/Admin/ArquivoFolders';
+import { type FolderInfo } from '@/components/Admin/ArquivoFolders';
 
 const TABS: { id: MediaSource; label: string; short: string }[] = [
   { id: 'galeria', label: 'Galeria', short: 'Galeria' },
@@ -116,40 +116,23 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '' }: { initia
         </div>
       )}
       {unzipMsg && <p role="status" className="px-6 pt-3 text-sm text-[#50575e]">{unzipMsg}</p>}
-      {source === 'arquivo' && !pasta ? (
-        <div className="p-6">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pb-4">
-            <h1 className="text-2xl font-normal">Biblioteca multimédia</h1>
+      <MediaGalleryView
+        key={`${source}:${pasta}:${reloadKey}`}
+        source={source}
+        pasta={pasta}
+        pick={pick}
+        reloadKey={reloadKey}
+        initialQuery={filter}
+        zipOptions={source === 'partilhado' ? zips : undefined}
+        onPickZip={unzip}
+        folders={source === 'arquivo' && !pasta ? folders : undefined}
+        onOpenFolder={setPasta}
+        tabsRow={
+          <>
             {tabs}
-          </div>
-          {folders.length === 0 ? (
-            <p className="text-sm text-[#50575e]">Ainda não há pastas no arquivo. Crie uma em “Arquivo de fotos”.</p>
-          ) : (
-            <ArquivoFolders folders={folders} onOpen={setPasta} />
-          )}
-        </div>
-      ) : (
-        <MediaGalleryView
-          key={`${source}:${pasta}:${reloadKey}`}
-          source={source}
-          pasta={pasta}
-          pick={pick}
-          reloadKey={reloadKey}
-          initialQuery={filter}
-          zipOptions={source === 'partilhado' ? zips : undefined}
-          onPickZip={unzip}
-          tabsRow={
-            <>
-              {source === 'arquivo' && (
-                <button type="button" onClick={() => setPasta('')} className="inline-flex h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-[3px] border border-[#ccd0d4] bg-white px-2 text-[11px] font-semibold text-[#008f45] hover:bg-[#f6f7f7] sm:text-xs 2xl:text-sm">
-                  <ChevronLeft className="h-4 w-4" /> <span className="2xl:hidden">Pastas</span><span className="hidden 2xl:inline">Todas as pastas</span>
-                </button>
-              )}
-              {tabs}
-            </>
-          }
-        />
-      )}
+          </>
+        }
+      />
     </>
   );
 }
