@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Archive, Download, PackageOpen } from 'lucide-react';
+import { File as FileIcon, FileArchive, FileSpreadsheet, FileText, Presentation } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import MediaGaleria from '@/components/Admin/MediaGaleria';
 
@@ -12,50 +13,66 @@ const kb = (n: number) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${M
 
 const isZip = (f: SharedFile) => /\.zip$/i.test(f.path);
 
-/** Um zip: “Descompactar” tira as fotos e mostra-as logo na página, no formato da galeria. */
-function ZipRow({ file, onUnzipped }: { file: SharedFile; onUnzipped: (prefix: string, summary: string) => void }) {
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState('');
-
-  const unzip = async () => {
-    setBusy(true); setMsg('');
-    try {
-      const res = await fetch('/api/admin/partilhado/zip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: file.path }) });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Erro ao descompactar.');
-      const where = Object.entries(json.byFolder as Record<string, number>).map(([k, v]) => `${v} em ${LABELS[k] ?? k}`).join(', ');
-      const summary = `${json.extracted} ficheiro(s) descompactado(s)${where ? `: ${where}` : ''}.`;
-      setMsg(summary);
-      const src = /^(\d+-[\d_]+)-/.exec(file.path.split('/').pop() ?? '')?.[1] ?? '';
-      onUnzipped(src ? `${src}-z` : '', summary);
-    } catch (e) { setMsg(e instanceof Error ? e.message : 'Erro ao descompactar.'); }
-    finally { setBusy(false); }
-  };
-
-  return (
-    <li className="px-4 py-3 text-sm">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <Archive className="h-5 w-5 shrink-0 text-[#00a651]" />
-          <div className="min-w-0">
-            <p className="truncate font-medium">{file.name}</p>
-            <p className="text-xs text-[#50575e]">{kb(file.size)} · {file.created_at ? new Date(file.created_at).toLocaleString('pt-PT') : ''}</p>
-          </div>
-        </div>
-        <div className="flex shrink-0 gap-2">
-          <button onClick={unzip} disabled={busy} className="inline-flex items-center gap-1 rounded-[3px] bg-[#00a651] px-2 py-1 font-semibold text-white disabled:opacity-60"><PackageOpen className="h-3.5 w-3.5" /> {busy ? 'A descompactar…' : 'Descompactar'}</button>
-          <a href={file.url} download className="inline-flex items-center gap-1 rounded-[3px] border border-[#00a651] px-2 py-1 text-[#008f45] hover:bg-[#f6f7f7]" title="Descarregar o zip"><Download className="h-3.5 w-3.5" /></a>
-        </div>
-      </div>
-      {msg && <p className="mt-2 text-xs text-[#50575e]">{msg}</p>}
-    </li>
-  );
-}
-
 /** Conteúdo de uma pasta partilhada: as imagens são a galeria do painel; as outras pastas são listas de ficheiros. Mostra-se onde for pedido. */
 export default function PartilhadoPasta({ pasta, withTitle = false, bin = false }: { pasta: string; withTitle?: boolean; bin?: boolean }) {
   if (pasta === 'imagens') return <MediaGaleria initialSource="partilhado" embedded bare binMode={bin} />;
   return <ListaPasta pasta={pasta} withTitle={withTitle} />;
+}
+
+/** Formato do documento: ícone, cor e a extensão em letras pequenas. */
+function formatOf(name: string): { ext: string; color: string; Icon: LucideIcon } {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  if (ext === 'pdf') return { ext, color: '#d63638', Icon: FileText };
+  if (['doc', 'docx', 'odt', 'rtf'].includes(ext)) return { ext, color: '#2271b1', Icon: FileText };
+  if (['xls', 'xlsx', 'csv', 'ods'].includes(ext)) return { ext, color: '#1e8e4f', Icon: FileSpreadsheet };
+  if (['ppt', 'pptx', 'odp'].includes(ext)) return { ext, color: '#d97706', Icon: Presentation };
+  if (['zip', 'rar', '7z', 'gz', 'tar'].includes(ext)) return { ext, color: '#00a651', Icon: FileArchive };
+  if (ext === 'txt') return { ext, color: '#50575e', Icon: FileText };
+  return { ext, color: '#50575e', Icon: FileIcon };
+}
+
+const CARD = 'group relative flex aspect-[4/5] flex-col items-center justify-center gap-1 rounded border border-[#ccd0d4] bg-white p-1.5 text-center transition hover:border-[#00a651]';
+
+/** Cartão pequeno de um documento (abre o ficheiro). */
+function DocCard({ file }: { file: SharedFile }) {
+  const { ext, color, Icon } = formatOf(file.name);
+  return (
+    <a href={file.url} target="_blank" rel="noreferrer" title={`${file.name} · ${kb(file.size)}${file.created_at ? ` · ${new Date(file.created_at).toLocaleDateString('pt-PT')}` : ''}`} className={CARD}>
+      <Icon className="h-8 w-8" style={{ color }} strokeWidth={1.5} aria-hidden="true" />
+      <span className="rounded-[2px] px-1 text-[8px] font-bold uppercase leading-4 text-white" style={{ backgroundColor: color }}>{ext || 'ficheiro'}</span>
+      <span className="line-clamp-2 w-full break-words text-[10px] leading-tight text-[#2c3338]">{file.name}</span>
+      <span className="text-[9px] leading-none text-[#8c8f94]">{kb(file.size)}</span>
+    </a>
+  );
+}
+
+/** Cartão pequeno de um zip: clicar descompacta (as fotos vão para as Imagens) e o estado aparece dentro do cartão. */
+function ZipCard({ file, onDone }: { file: SharedFile; onDone: () => void }) {
+  const [status, setStatus] = useState('');
+  const { color, Icon } = formatOf(file.name);
+
+  const unzip = async () => {
+    setStatus('A descompactar…');
+    try {
+      const res = await fetch('/api/admin/partilhado/zip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: file.path }) });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Erro ao descompactar.');
+      setStatus(`${json.extracted} ficheiro(s) em Imagens`);
+      onDone();
+    } catch (e) {
+      setStatus(`Erro: ${e instanceof Error ? e.message : 'não foi possível descompactar.'}`);
+    }
+    setTimeout(() => setStatus(''), 8000);
+  };
+
+  return (
+    <button type="button" onClick={unzip} aria-label={`Abrir o zip ${file.name}`} className={CARD}>
+      <Icon className={`h-8 w-8 ${status === 'A descompactar…' ? 'animate-pulse' : ''}`} style={{ color }} strokeWidth={1.5} aria-hidden="true" />
+      <span className="rounded-[2px] px-1 text-[8px] font-bold uppercase leading-4 text-white" style={{ backgroundColor: color }}>zip</span>
+      <span className="line-clamp-2 w-full break-words text-[10px] leading-tight text-[#2c3338]">{file.name}</span>
+      <span role={status ? 'status' : undefined} className={`w-full truncate text-[9px] leading-none ${status.startsWith('Erro') ? 'text-[#d63638]' : status ? 'text-[#008f45]' : 'text-[#8c8f94]'}`}>{status || kb(file.size)}</span>
+    </button>
+  );
 }
 
 function ListaPasta({ pasta, withTitle }: { pasta: string; withTitle: boolean }) {
@@ -74,9 +91,6 @@ function ListaPasta({ pasta, withTitle }: { pasta: string; withTitle: boolean })
 
   useEffect(() => { load(); }, [load]);
 
-  const zips = (files ?? []).filter(isZip);
-  const others = (files ?? []).filter((f) => !isZip(f));
-
   return (
     <div className="text-[#2c3338]">
       {withTitle && <h1 className="mb-4 text-2xl font-normal">{LABELS[pasta] ?? pasta}</h1>}
@@ -84,31 +98,11 @@ function ListaPasta({ pasta, withTitle }: { pasta: string; withTitle: boolean })
       {!files && !error && <div className="flex justify-center py-20"><Spinner /></div>}
       {files && files.length === 0 && <p className="py-10 text-center text-sm text-[#50575e]">Esta pasta ainda está vazia. Use “Sincronizar agora” na página Partilhado.</p>}
 
-      {zips.length > 0 && (
-        <>
-          <h2 className="mb-2 text-sm font-semibold">Pacotes ZIP</h2>
-          <ul className="mb-6 divide-y divide-[#ccd0d4] rounded border border-[#ccd0d4] bg-white">
-            {zips.map((f) => <ZipRow key={f.path} file={f} onUnzipped={() => { load(); }} />)}
-          </ul>
-        </>
-      )}
-
-      {others.length > 0 && (
-        <ul className="divide-y divide-[#ccd0d4] rounded border border-[#ccd0d4] bg-white">
-          {others.map((f) => (
-            <li key={f.path} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
-              <div className="min-w-0">
-                <p className="truncate font-medium">{f.name}</p>
-                <p className="text-xs text-[#50575e]">{kb(f.size)} · {f.created_at ? new Date(f.created_at).toLocaleString('pt-PT') : ''}</p>
-              </div>
-              <a href={f.url} target="_blank" rel="noreferrer" download className="inline-flex shrink-0 items-center gap-1 rounded-[3px] border border-[#00a651] px-2 py-1 text-[#008f45] hover:bg-[#f6f7f7]">
-                <Download className="h-3.5 w-3.5" /> Descarregar
-              </a>
-            </li>
-          ))}
-        </ul>
+      {files && files.length > 0 && (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 xl:grid-cols-10">
+          {files.map((f) => (isZip(f) ? <ZipCard key={f.path} file={f} onDone={load} /> : <DocCard key={f.path} file={f} />))}
+        </div>
       )}
     </div>
   );
 }
-
