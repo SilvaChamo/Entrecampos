@@ -270,12 +270,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           ]
         },
         {
-          href: '/admin/partilhado',
+          href: '/admin/arquivo',
           icon: FolderOpen,
-          label: 'Partilhado',
+          label: 'Arquivo de fotos',
           submenu: [
-            { label: 'Todas as pastas', href: '/admin/partilhado' },
-            { label: 'Imagens', href: '/admin/partilhado/imagens' },
+            { label: 'Pastas do arquivo', href: '/admin/arquivo' },
+            { label: 'Fotos partilhadas', href: '/admin/partilhado' },
             { label: 'PDF', href: '/admin/partilhado/pdf' },
             { label: 'Arquivos ZIP', href: '/admin/partilhado/zip' },
             { label: 'Documentos', href: '/admin/partilhado/documentos' },
@@ -304,12 +304,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         { href: '/admin/noticias', icon: Newspaper, label: 'Todas as Notícias' },
         { href: '/admin/media', icon: ImageIcon, label: 'Multimédia' },
         {
-          href: '/admin/partilhado',
+          href: '/admin/arquivo',
           icon: FolderOpen,
-          label: 'Partilhado',
+          label: 'Arquivo de fotos',
           submenu: [
-            { label: 'Todas as pastas', href: '/admin/partilhado' },
-            { label: 'Imagens', href: '/admin/partilhado/imagens' },
+            { label: 'Pastas do arquivo', href: '/admin/arquivo' },
+            { label: 'Fotos partilhadas', href: '/admin/partilhado' },
             { label: 'PDF', href: '/admin/partilhado/pdf' },
             { label: 'Arquivos ZIP', href: '/admin/partilhado/zip' },
             { label: 'Documentos', href: '/admin/partilhado/documentos' },
@@ -340,6 +340,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Limpeza de Media', href: '/admin/media/limpeza' },
           ]
         },
+        { href: '/admin/arquivo', icon: FolderOpen, label: 'Arquivo de fotos' },
       );
     }
 

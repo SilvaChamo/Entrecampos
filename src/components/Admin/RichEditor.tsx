@@ -20,7 +20,7 @@ import {
   Strikethrough,
   Underline as UnderlineIcon,
 } from 'lucide-react';
-import ImageSelector from '@/components/Admin/ImageSelector';
+import ImageChooser from '@/components/Admin/ImageChooser';
 
 /** Imagem com legenda editável: <figure><img><figcaption>…</figcaption></figure>. */
 const Figure = Node.create({
@@ -280,11 +280,17 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
       <EditorContent editor={editor} />
 
       {picking && (
-        <ImageSelector
+        <ImageChooser
+          title="Inserir imagem"
           onClose={() => setPicking(false)}
-          onSelect={(url) => {
-            insertBlock(editor, { type: 'figure', attrs: { src: url, alt: '' } });
-            setPicking(false);
+          onChoose={async (img) => {
+            // Na imagem dentro do texto espera-se o endereço final (curto): assim o texto nunca guarda um endereço temporário.
+            try {
+              const url = img.uploading ? await img.uploading : img.url;
+              insertBlock(editor, { type: 'figure', attrs: { src: url, alt: '' } });
+            } catch {
+              alert('Não foi possível enviar a foto. Tente de novo.');
+            }
           }}
         />
       )}

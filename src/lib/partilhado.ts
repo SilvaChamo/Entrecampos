@@ -89,6 +89,9 @@ export async function syncMailbox(limit = 15): Promise<SyncResult> {
   for (const f of Object.keys(FOLDERS) as FolderId[]) {
     (await listFolderRows(f)).forEach((r) => known.add(r.name.split('-').slice(0, 2).join('-')));
   }
+  // Fotos que alguém tirou das partilhadas (lixo, arquivadas, eliminadas): não se importam outra vez.
+  const { data: removed } = await supabase().storage.from(BUCKET()).list(`${ROOT}/_removidos`, { limit: 1000 });
+  (removed ?? []).forEach((r) => known.add(r.name));
 
   const pending: { uid: number; part: string; folder: FolderId }[] = [];
   for (const m of await listMailFiles()) {

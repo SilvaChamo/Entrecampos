@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Archive, FileText, FolderOpen, Image as ImageIcon, Mail, RefreshCw } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
+import ArquivoTabs from '@/components/Admin/ArquivoTabs';
 
 const FOLDERS = [
   { id: 'imagens', label: 'Imagens', hint: 'Fotografias e gráficos', Icon: ImageIcon },
@@ -60,15 +61,17 @@ export default function PartilhadoPage() {
     <div className="min-h-screen p-6 text-[#2c3338]">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-normal">Partilhado</h1>
+          <h1 className="text-2xl font-normal">Arquivo de fotos</h1>
           <p className="mt-1 text-sm text-[#50575e]">
-            Anexos recebidos em <strong>{data?.address ?? 'redaccao@entrecamposblog.com'}</strong>, arrumados automaticamente por tipo. O e-mail só é lido, nunca alterado.
+            Fotos e ficheiros partilhados por e-mail em <strong>{data?.address ?? 'redaccao@entrecamposblog.com'}</strong>, arrumados automaticamente por tipo. O e-mail só é lido, nunca alterado.
           </p>
         </div>
         <button onClick={sync} disabled={syncing || !data?.configured} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white disabled:opacity-50">
           <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'A sincronizar…' : 'Sincronizar agora'}
         </button>
       </div>
+
+      <ArquivoTabs active="partilhadas" />
 
       {notice && <div className="mb-4 rounded border border-[#00a651] bg-white p-3 text-sm">{notice}</div>}
       {error && <div className="mb-4 rounded border border-[#d63638] bg-white p-3 text-sm text-[#d63638]">{error}</div>}

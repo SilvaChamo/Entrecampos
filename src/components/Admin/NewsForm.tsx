@@ -4,7 +4,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, SITE_ID } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import ImageSelector from '@/components/Admin/ImageSelector';
+import ImageChooser, { type ChosenImage } from '@/components/Admin/ImageChooser';
 import dynamic from 'next/dynamic';
 import {
   ImageIcon,
@@ -64,6 +64,25 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
   const { user: authUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
+  // Foto vinda do computador: aparece logo e segue para a biblioteca em segundo plano.
+  const pendingImage = useRef<Promise<string> | null>(null);
+  const [imageStatus, setImageStatus] = useState<'' | 'uploading' | 'failed'>('');
+
+  const chooseImage = (img: ChosenImage) => {
+    setFormData((prev) => ({ ...prev, image_url: img.url }));
+    if (!img.uploading) { pendingImage.current = null; setImageStatus(''); return; }
+    setImageStatus('uploading');
+    const job = img.uploading;
+    pendingImage.current = job;
+    job
+      .then((finalUrl) => {
+        if (pendingImage.current !== job) return; // entretanto escolheu outra foto
+        pendingImage.current = null;
+        setImageStatus('');
+        setFormData((prev) => (prev.image_url === img.url ? { ...prev, image_url: finalUrl } : prev));
+      })
+      .catch(() => { if (pendingImage.current === job) setImageStatus('failed'); });
+  };
   const [lockModifiedDate, setLockModifiedDate] = useState(false);
   // Cards da barra lateral recolhidos (a chave é o nome do card).
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -132,6 +151,11 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     setLoading(true);
 
     try {
+      // Se a foto ainda está a seguir para a biblioteca, espera só o que falta (normalmente já terminou).
+      let imageUrl = formData.image_url;
+      if (pendingImage.current) {
+        try { imageUrl = await pendingImage.current; } catch { throw new Error('A foto não chegou à biblioteca. Escolha-a de novo.'); }
+      } else if (imageUrl.startsWith('blob:')) throw new Error('A foto ainda não foi enviada. Escolha-a de novo.');
       // Buscar o usuário atual do Supabase para obter o ID real
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
@@ -141,6 +165,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          image_url: imageUrl,
           isEdit,
           site_id: SITE_ID,
           author_id: currentUser?.id || authUser?.id || null
@@ -319,6 +344,8 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
               {formData.image_url ? (
                 <div className="space-y-3">
                   <img src={formData.image_url} className="w-full h-auto border border-[#ccd0d4]" alt="" />
+                  {imageStatus === 'uploading' && <p className="text-[12px] text-[#50575e]">A enviar para a biblioteca…</p>}
+                  {imageStatus === 'failed' && <p className="text-[12px] text-[#d63638]">Não foi possível enviar esta foto para a biblioteca. Escolha-a de novo.</p>}
                   <button
                     type="button"
                     onClick={() => setIsImageSelectorOpen(true)}
@@ -329,7 +356,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
                   <br />
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, image_url: '' })}
+                    onClick={() => { pendingImage.current = null; setImageStatus(''); setFormData({ ...formData, image_url: '' }); }}
                     className="text-[#d63638] text-[13px] hover:underline underline-offset-2"
                   >
                     Remover imagem
@@ -363,15 +390,12 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
         </div>
       </form>
 
-      {/* Image Selector Modal */}
+      {/* Escolher a foto: Galeria ou Computador */}
       {isImageSelectorOpen && (
-        <ImageSelector
+        <ImageChooser
+          title="Imagem de destaque"
           onClose={() => setIsImageSelectorOpen(false)}
-          onSelect={(url) => {
-            setFormData(prev => ({ ...prev, image_url: url }));
-            setIsImageSelectorOpen(false);
-          }}
-          currentImageUrl={formData.image_url}
+          onChoose={chooseImage}
         />
       )}
     </div>
