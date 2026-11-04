@@ -53,8 +53,8 @@ function ZipRow({ file, onUnzipped }: { file: SharedFile; onUnzipped: (prefix: s
 }
 
 /** Conteúdo de uma pasta partilhada: as imagens são a galeria do painel; as outras pastas são listas de ficheiros. Mostra-se onde for pedido. */
-export default function PartilhadoPasta({ pasta, withTitle = false }: { pasta: string; withTitle?: boolean }) {
-  if (pasta === 'imagens') return <MediaGaleria initialSource="partilhado" embedded bare />;
+export default function PartilhadoPasta({ pasta, withTitle = false, bin = false }: { pasta: string; withTitle?: boolean; bin?: boolean }) {
+  if (pasta === 'imagens') return <MediaGaleria initialSource="partilhado" embedded bare binMode={bin} />;
   return <ListaPasta pasta={pasta} withTitle={withTitle} />;
 }
 

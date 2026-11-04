@@ -17,7 +17,7 @@ const TABS: { id: MediaSource; label: string; short: string }[] = [
  * Galeria principal. Junto ao título há um selector para ver também o arquivo de fotos (por pasta) e as fotos
  * partilhadas. Com `?escolher=ID` (aberta pelo formulário da notícia) clicar numa foto devolve-a ao formulário.
  */
-function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, uploadHere, bare }: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean }) {
+function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, uploadHere, bare, binMode }: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean; binMode?: boolean }) {
   const params = useSearchParams();
   const pickId = params.get('escolher');
   const [source, setSource] = useState<MediaSource>(initialSource);
@@ -55,8 +55,6 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
       const res = await fetch('/api/admin/partilhado/zip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ path }) });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Erro ao descompactar.');
-      const prefix = /^(\d+-[\d_]+)-/.exec(path.split('/').pop() ?? '')?.[1] ?? '';
-      setFilter(prefix ? `${prefix}-z` : '');
       setReloadKey((k) => k + 1);
       setUnzipMsg('');
     } catch (e) {
@@ -123,6 +121,7 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
         pick={pick}
         embedded={embedded}
         bare={bare}
+        binMode={binMode}
         // "Adicionar" só na galeria; o arquivo recebe fotos no seu próprio lugar (a página de cada pasta) e as partilhadas só chegam por e-mail.
         uploadDisabled={!(source === 'galeria' || (source === 'arquivo' && !!pasta && !!uploadHere))}
         reloadKey={reloadKey}
@@ -142,7 +141,7 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
 }
 
 /** A galeria principal, com selector Galeria | Arquivo de fotos | Fotos partilhadas. Pode abrir já numa origem/pasta. */
-export default function MediaGaleria(props: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean }) {
+export default function MediaGaleria(props: { initialSource?: MediaSource; initialPasta?: string; embedded?: boolean; uploadHere?: boolean; bare?: boolean; binMode?: boolean }) {
   return (
     <Suspense fallback={null}>
       <GaleriaInner {...props} />

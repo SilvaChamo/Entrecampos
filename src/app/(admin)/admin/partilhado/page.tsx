@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Archive, FileText, FolderOpen, Image as ImageIcon, Mail, RefreshCw } from 'lucide-react';
+import { Archive, FileText, FolderOpen, Image as ImageIcon, Mail, RefreshCw, Trash2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import Spinner from '@/components/Common/Spinner';
 import ArquivoTabs from '@/components/Admin/ArquivoTabs';
 import PartilhadoPasta from '@/components/Admin/PartilhadoPasta';
@@ -20,6 +21,8 @@ export default function PartilhadoPage() {
   const [error, setError] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [notice, setNotice] = useState('');
+  const { user } = useAuth();
+  const [bin, setBin] = useState(false); // reciclagem das fotos partilhadas (só administrador)
   const [aberta, setAberta] = useState<string | null>(null); // pasta aberta aqui mesmo, sem sair da página
 
   const load = useCallback(async () => {
@@ -65,11 +68,25 @@ export default function PartilhadoPage() {
 
       <ArquivoTabs
         active="partilhadas"
-        onPartilhadasClick={() => setAberta(null)}
+        onPartilhadasClick={() => { setAberta(null); setBin(false); }}
         right={
-          <button onClick={sync} disabled={syncing || !data?.configured} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white disabled:opacity-50">
-            <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'A sincronizar…' : 'Sincronizar agora'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={sync} disabled={syncing || !data?.configured} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white disabled:opacity-50">
+              <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'A sincronizar…' : 'Sincronizar agora'}
+            </button>
+            {user?.role === 'admin' && (
+              <button
+                type="button"
+                title="Reciclagem"
+                aria-label="Reciclagem"
+                aria-pressed={bin}
+                onClick={() => { if (!bin) setAberta('imagens'); setBin(!bin); }}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-[3px] border ${bin ? 'border-[#d63638] bg-[#d63638] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         }
       />
 
@@ -109,7 +126,7 @@ export default function PartilhadoPage() {
         </div>
       )}
 
-      {aberta && <PartilhadoPasta key={aberta} pasta={aberta} />}
+      {aberta && <PartilhadoPasta key={aberta} pasta={aberta} bin={bin && aberta === 'imagens'} />}
     </div>
   );
 }

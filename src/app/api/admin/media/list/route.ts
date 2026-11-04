@@ -55,7 +55,9 @@ export async function GET(req: Request) {
   // O lixo e as arquivadas só as veem administrador e editor.
   // O lixo e as arquivadas: administrador e editor. As fotos partilhadas (e-mail da redacção) têm as mesmas regras da área Partilhado.
   const guard = trash
-    ? await requireAuth('gerir_biblioteca', 'publicar_artigos')
+    ? source === 'partilhado'
+      ? await requireAuth('acesso_total') // a reciclagem das fotos partilhadas é só do administrador
+      : await requireAuth('gerir_biblioteca', 'publicar_artigos')
     : source === 'partilhado'
       ? await requireAuth('gerir_biblioteca', 'upload_imagens', 'publicar_artigos')
       : await requireAuth('usar_media', 'gerir_biblioteca', 'upload_imagens');

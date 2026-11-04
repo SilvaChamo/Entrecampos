@@ -32,8 +32,13 @@ const ARCHIVE = '_arquivo/';
  */
 export async function POST(req: NextRequest) {
   const { action = 'trash', names } = (await req.json().catch(() => ({}))) as { action?: string; names?: unknown };
-  const guard =
-    action === 'trash'
+  // Fotos partilhadas (e-mail da redacção): eliminar = quem tem acesso a essa área; a reciclagem (restaurar e eliminar para sempre) é só do administrador.
+  const shared = Array.isArray(names) && names.some((n) => /(^|\/)partilhado\//.test(String(n)));
+  const guard = shared
+    ? action === 'trash' || action === 'archive'
+      ? await requireAuth('gerir_biblioteca', 'upload_imagens', 'publicar_artigos')
+      : await requireAuth('acesso_total')
+    : action === 'trash'
       ? await requireAuth('usar_media', 'gerir_biblioteca', 'upload_imagens')
       : await requireAuth('gerir_biblioteca', 'publicar_artigos');
   if ('error' in guard) return guard.error;

@@ -88,9 +88,11 @@ export type MediaGalleryViewProps = {
   uploadDisabled?: boolean;
   /** Só a grelha de fotos (sem cabeçalho nem barra de menu): para mostrar dentro de outra página. */
   bare?: boolean;
+  /** Na grelha simples: mostrar a reciclagem (fotos eliminadas) em vez das fotos. */
+  binMode?: boolean;
 };
 
-export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder, uploadDisabled, bare }: MediaGalleryViewProps) {
+export default function MediaGalleryView({ source = 'galeria', pasta = '', title = 'Biblioteca multimédia', pick, embedded, tabsRow, reloadKey = 0, initialQuery = '', zipOptions, onPickZip, folders: folderList, onOpenFolder, uploadDisabled, bare, binMode }: MediaGalleryViewProps) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -160,6 +162,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   }, [view, source, pasta, reloadKey]);
 
   useEffect(() => { setSearchQuery(initialQuery); }, [initialQuery]);
+  useEffect(() => { if (bare) setView(binMode ? 'lixo' : 'galeria'); }, [bare, binMode]);
 
 
   // Extrair anos únicos dos ficheiros
@@ -714,8 +717,9 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
         ) : loading ? (
           <SkeletonMediaGrid count={14} />
         ) : bare && viewMode === 'grid' ? (
+          <>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
-            {(zipOptions ?? []).map((z) => (
+            {view !== 'lixo' && (zipOptions ?? []).map((z) => (
               <button
                 key={z.path}
                 type="button"
@@ -735,9 +739,20 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 className="aspect-square relative bg-white border border-[#ccd0d4] cursor-pointer overflow-hidden group"
               >
                 <FileThumb name={file.name} url={getPublicUrl(file.name)} />
+                <div className="absolute inset-x-1 bottom-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  {view === 'lixo' ? (
+                    <>
+                      <button type="button" onClick={(e) => { e.stopPropagation(); restore([file.name]); }} className="flex-1 rounded-[3px] bg-[#00a651] px-1 py-1 text-[11px] font-bold text-white shadow">Restaurar</button>
+                      <button type="button" onClick={(e) => { e.stopPropagation(); deleteSingle(file.name); }} className="flex-1 rounded-[3px] bg-[#d63638] px-1 py-1 text-[11px] font-bold text-white shadow">Eliminar</button>
+                    </>
+                  ) : (
+                    <button type="button" onClick={(e) => { e.stopPropagation(); deleteSingle(file.name); }} className="flex-1 rounded-[3px] bg-[#d63638] px-1 py-1 text-[11px] font-bold text-white shadow">Eliminar</button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
+          </>
         ) : viewMode === 'grid' ? (
           /* Grid View - 7 COLUNAS */
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
