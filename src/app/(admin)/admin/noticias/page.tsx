@@ -528,35 +528,35 @@ export default function NewsAdminPage() {
                     <tr className="bg-[#f6f7f7] border-b border-[#ccd0d4] max-md:block">
                       <td colSpan={6} className="p-6 max-md:block max-md:p-3">
                         <div className="w-full">
-                          <h4 className="text-[14px] font-bold uppercase text-[#1d2327] mb-4">Edição Rápida</h4>
+                          <h4 className="text-[13px] min-[1500px]:text-[14px] font-bold uppercase text-[#1d2327] mb-4">Edição Rápida</h4>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="space-y-4">
                               <div>
-                                <label className="block text-[12px] font-bold mb-1">Título</label>
+                                <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">Título</label>
                                 <input
                                   type="text"
                                   value={editForm.title || ''}
                                   onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                                  className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-sm"
+                                  className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[12px] min-[1500px]:text-sm"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[12px] font-bold mb-1">Slug</label>
+                                <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">Slug</label>
                                 <input
                                   type="text"
                                   value={editForm.slug || ''}
                                   onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
-                                  className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-sm"
+                                  className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[12px] min-[1500px]:text-sm"
                                 />
                               </div>
                             </div>
 
                             <div className="space-y-4">
                               <div>
-                                <label className="block text-[12px] font-bold mb-1">Categorias</label>
+                                <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">Categorias</label>
                                 <div className="max-h-32 overflow-y-auto p-2 border border-[#ccd0d4] bg-white rounded-[3px]">
                                   {CATEGORIES.map(cat => (
-                                    <label key={cat} className="flex items-center gap-2 text-sm py-0.5">
+                                    <label key={cat} className="flex items-center gap-2 text-[12px] min-[1500px]:text-sm py-0.5">
                                       <input
                                         type="checkbox"
                                         checked={editForm.category === cat}
@@ -571,20 +571,20 @@ export default function NewsAdminPage() {
 
                             <div className="space-y-4">
                               <div>
-                                <label className="block text-[12px] font-bold mb-1">Data</label>
+                                <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">Data</label>
                                 <input
                                   type="datetime-local"
                                   value={editForm.date ? new Date(editForm.date).toISOString().slice(0, 16) : ''}
                                   onChange={(e) => setEditForm({ ...editForm, date: new Date(e.target.value).toISOString() })}
-                                  className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-sm"
+                                  className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[12px] min-[1500px]:text-sm"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[12px] font-bold mb-1">Estado</label>
+                                <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">Estado</label>
                                 <select
                                   value={editForm.status || 'Published'}
                                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                                  className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-sm"
+                                  className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[12px] min-[1500px]:text-sm"
                                 >
                                   <option value="Published">Publicado</option>
                                   <option value="Draft">Rascunho</option>
@@ -594,36 +594,36 @@ export default function NewsAdminPage() {
                             </div>
 
                             <div className="space-y-4 col-span-1 md:col-span-3 border-t border-[#ccd0d4] pt-4 mt-2">
-                              <h5 className="text-[12px] font-bold uppercase text-gray-500">SEO Settings</h5>
+                              <h5 className="text-[11px] min-[1500px]:text-[12px] font-bold uppercase text-gray-500">SEO Settings</h5>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
-                                  <label className="block text-[12px] font-bold mb-1">SEO Description / Resumo</label>
+                                  <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">SEO Description / Resumo</label>
                                   <textarea
                                     value={editForm.summary || ''}
                                     onChange={(e) => setEditForm({ ...editForm, summary: e.target.value })}
-                                    className="w-full h-20 p-2 border border-[#ccd0d4] rounded-[3px] text-sm resize-none"
+                                    className="w-full h-20 p-2 border border-[#ccd0d4] rounded-[3px] text-[12px] min-[1500px]:text-sm resize-none"
                                     placeholder="Descrição para os motores de busca..."
                                   />
                                 </div>
                                 <div className="space-y-4">
                                   <div>
-                                    <label className="block text-[12px] font-bold mb-1">Palavra-chave Foco</label>
+                                    <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">Palavra-chave Foco</label>
                                     <input
                                       type="text"
-                                      className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-sm"
+                                      className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[12px] min-[1500px]:text-sm"
                                       placeholder="Ex: agricultura moçambique"
                                     />
                                   </div>
                                   <div className="pt-2 flex items-center gap-2 justify-end">
                                     <button
                                       onClick={saveQuickEdit}
-                                      className="h-8 px-6 bg-[#00a651] text-white rounded-[3px] text-sm font-bold hover:bg-[#008f45] transition-colors"
+                                      className="h-8 px-6 bg-[#00a651] text-white rounded-[3px] text-[12px] min-[1500px]:text-sm font-bold hover:bg-[#008f45] transition-colors"
                                     >
                                       {loading ? 'A guardar...' : 'Atualizar Notícia'}
                                     </button>
                                     <button
                                       onClick={() => setQuickEditId(null)}
-                                      className="h-8 px-6 border border-[#ccd0d4] text-[#1d2327] rounded-[3px] text-sm font-bold hover:bg-white transition-colors"
+                                      className="h-8 px-6 border border-[#ccd0d4] text-[#1d2327] rounded-[3px] text-[12px] min-[1500px]:text-sm font-bold hover:bg-white transition-colors"
                                     >
                                       Cancelar
                                     </button>
