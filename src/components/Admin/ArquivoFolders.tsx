@@ -34,10 +34,10 @@ function FolderCard({ f, href, onOpen, actions }: { f: FolderInfo; href?: string
   const label = (
     <>
       <Folder className="h-5 w-5 shrink-0" style={{ color: cor }} fill={cor} fillOpacity={0.15} />
-      <span className="truncate text-[12px] font-semibold text-[#2c3338]" title={`${f.nome} · ${f.count} ${f.count === 1 ? 'foto' : 'fotos'}`}>{f.nome}</span>
+      <span className="break-words text-[12px] font-semibold leading-snug text-[#2c3338]" title={`${f.nome} · ${f.count} ${f.count === 1 ? 'foto' : 'fotos'}`}>{f.nome}</span>
     </>
   );
-  const labelCls = 'flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 text-left';
+  const labelCls = 'flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 pr-1 text-left';
   const item = 'flex w-full items-center gap-3 px-4 py-2 text-left text-[13px] text-[#2c3338] hover:bg-[#f6f7f7] [&>svg]:text-[#50575e]';
 
   return (
