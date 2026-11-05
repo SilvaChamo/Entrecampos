@@ -291,14 +291,14 @@ export default function NewsAdminPage() {
           <h1 className="text-2xl font-normal w-full sm:w-auto max-sm:col-span-2">Notícias</h1>
           <Link
             href="/admin/noticias/reparar"
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-md text-sm font-bold hover:bg-amber-600 transition-colors max-sm:px-2 max-sm:h-11 max-sm:py-0"
+            className="flex items-center justify-center gap-1.5 whitespace-nowrap px-4 py-2 bg-amber-500 text-white rounded-md text-sm font-normal hover:bg-amber-600 transition-colors max-sm:px-2 max-sm:h-11 max-sm:py-0 max-sm:text-[12px]"
           >
             <Wrench className="w-4 h-4" />
             Reparar Imagens
           </Link>
           <Link
             href="/admin/noticias/nova"
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#00a651] text-[#00a651] rounded-md text-sm font-semibold hover:bg-[#f6f7f7] transition-all max-sm:px-2 max-sm:h-11 max-sm:py-0"
+            className="flex items-center justify-center gap-1.5 whitespace-nowrap px-4 py-2 bg-white border border-[#00a651] text-[#00a651] rounded-md text-sm font-normal hover:bg-[#f6f7f7] transition-all max-sm:px-2 max-sm:h-11 max-sm:py-0 max-sm:text-[12px]"
           >
             <Plus className="w-4 h-4" />
             Adicionar nova
@@ -391,7 +391,7 @@ export default function NewsAdminPage() {
 
         <button
           onClick={() => setFilterMissingImage(!filterMissingImage)}
-          className={`h-8 max-sm:h-11 max-sm:w-full max-sm:col-span-2 px-3 border rounded-md text-sm font-semibold transition-all ${filterMissingImage
+          className={`h-8 max-sm:h-11 max-sm:w-full max-sm:col-span-2 px-3 border rounded-md text-sm font-normal transition-all ${filterMissingImage
               ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-inner'
               : 'bg-white border-[#ccd0d4] text-[#2c3338] hover:bg-[#f6f7f7]'
             }`}
