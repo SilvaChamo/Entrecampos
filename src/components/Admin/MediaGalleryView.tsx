@@ -734,7 +734,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           folderList.length === 0 ? (
             <p className="py-6 text-sm text-[#50575e]">Ainda não há pastas no arquivo. Crie uma em “Arquivo de fotos”.</p>
           ) : (
-            <ArquivoFolders folders={folderList.filter((f) => f.nome.toLowerCase().includes(searchQuery.toLowerCase()))} onOpen={onOpenFolder} />
+            <ArquivoFolders folders={folderList.filter((f) => f.nome.toLowerCase().includes(searchQuery.toLowerCase()))} onOpen={onOpenFolder} fourCols />
           )
         ) : loading ? (
           <SkeletonMediaGrid count={14} />

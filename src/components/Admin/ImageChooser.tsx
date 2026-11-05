@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Upload, X } from 'lucide-react';
 import { STORAGE_BUCKET } from '@/lib/supabase';
 import { prepareImage } from '@/lib/client-image';
@@ -31,12 +32,13 @@ export async function uploadToLibrary(original: File): Promise<string> {
  */
 export default function ImageChooser({ title = 'Imagem', target = 'featured', onBeforeLeave, onChoose, onClose }: { title?: string; target?: 'featured' | 'editor'; onBeforeLeave?: () => void; onChoose: (img: ChosenImage) => void; onClose: () => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [tab, setTab] = useState<'upload' | 'library'>('upload');
+  const router = useRouter();
 
   const openGallery = () => {
     const id = Math.random().toString(36).slice(2);
     try { onBeforeLeave?.(); sessionStorage.setItem('ec-pick', JSON.stringify({ id, target })); } catch { /* sem armazenamento: a galeria abre na mesma */ }
-    window.location.href = `/admin/media?escolher=${id}&voltar=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+    // Navegação interna (sem recarregar a página): vai direto à galeria, sem ecrãs pelo meio.
+    router.push(`/admin/media?escolher=${id}&voltar=${encodeURIComponent(window.location.pathname + window.location.search)}`);
   };
 
   const fromComputer = (file: File) => {
@@ -56,13 +58,12 @@ export default function ImageChooser({ title = 'Imagem', target = 'featured', on
 
       {/* Tabs */}
       <div className="flex shrink-0 border-b border-[#ccd0d4] bg-white">
-        <button type="button" onClick={() => setTab('upload')} className={tabCls(tab === 'upload')}>Carregar ficheiros</button>
-        <button type="button" onClick={() => { setTab('library'); openGallery(); }} className={tabCls(tab === 'library')}>Biblioteca multimédia</button>
+        <button type="button" onClick={() => fileRef.current?.click()} className={tabCls(true)}>Carregar ficheiros</button>
+        <button type="button" onClick={openGallery} className={tabCls(false)}>Biblioteca multimédia</button>
       </div>
 
       {/* Content */}
       <div className="flex flex-1 flex-col items-center justify-center overflow-hidden bg-[#f0f0f1]">
-        {tab === 'upload' ? (
           <div
             className="w-full max-w-md text-center"
             onDragOver={(e) => e.preventDefault()}
@@ -79,9 +80,6 @@ export default function ImageChooser({ title = 'Imagem', target = 'featured', on
             </div>
             <p className="text-[12px] text-[#50575e]">Tamanho máximo do ficheiro: 1 GB.</p>
           </div>
-        ) : (
-          <p className="text-[15px] text-[#3c434a]">A abrir a galeria…</p>
-        )}
       </div>
     </div>
   );

@@ -94,9 +94,9 @@ function FolderCard({ f, href, onOpen, actions }: { f: FolderInfo; href?: string
 }
 
 /** Pastas do arquivo. Abre por ligação (`hrefBase`) ou por `onOpen`; com `actions` cada pasta tem o menu de gestão. */
-export default function ArquivoFolders({ folders, hrefBase, onOpen, actions }: { folders: FolderInfo[]; hrefBase?: string; onOpen?: (slug: string) => void; actions?: FolderActions }) {
+export default function ArquivoFolders({ folders, hrefBase, onOpen, actions, fourCols }: { folders: FolderInfo[]; hrefBase?: string; onOpen?: (slug: string) => void; actions?: FolderActions; fourCols?: boolean }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className={`grid gap-3 ${fourCols ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
       {folders.map((f) => (
         <FolderCard key={f.slug} f={f} href={hrefBase ? `${hrefBase}/${f.slug}` : undefined} onOpen={onOpen ? () => onOpen(f.slug) : undefined} actions={actions} />
       ))}
