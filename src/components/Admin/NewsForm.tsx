@@ -322,13 +322,21 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
               </div>
             </div>
 
-            <div className={`p-3 bg-[#f6f7f7] flex justify-end ${collapsed.publish ? '' : 'border-t border-[#ccd0d4]'}`}>
+            <div className={`p-3 bg-[#f6f7f7] flex items-center justify-between ${collapsed.publish ? '' : 'border-t border-[#ccd0d4]'}`}>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2 bg-[#00a651] text-white text-[14px] font-medium rounded-[4px] hover:bg-[#008f45] disabled:opacity-50"
+                className="h-10 px-6 bg-[#00a651] text-white text-[14px] font-medium rounded-[4px] hover:bg-[#008f45] disabled:opacity-50"
               >
                 {loading ? 'A guardar...' : (isEdit ? 'Atualizar' : 'Publicar')}
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => router.push('/admin/noticias')}
+                className="h-10 px-5 bg-white border border-[#ccd0d4] text-[#50575e] text-[14px] font-medium rounded-[4px] hover:bg-[#f0f0f1] disabled:opacity-50"
+              >
+                Cancelar
               </button>
             </div>
           </div>
