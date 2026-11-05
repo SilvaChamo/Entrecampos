@@ -451,24 +451,24 @@ export default function NewsAdminPage() {
                       />
                     </td>
                     <td className="p-3 align-top max-md:block max-md:p-0">
-                      <div className="flex items-start gap-3 max-md:flex-col max-md:gap-2">
+                      <div className="flex items-center gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2">
                         {item.image_url ? (
-                          <div className="w-14 h-14 flex-shrink-0 border border-[#ccd0d4] bg-gray-50 overflow-hidden mt-1 shadow-sm max-md:mt-0 max-md:h-44 max-md:w-full">
+                          <div className="w-14 h-14 flex-shrink-0 border border-[#ccd0d4] bg-gray-50 overflow-hidden shadow-sm max-md:h-44 max-md:w-full">
                             <img src={item.image_url} className="w-full h-full object-cover" alt="" />
                           </div>
                         ) : (
-                          <div className="w-14 h-14 flex-shrink-0 border border-dashed border-amber-300 bg-amber-50 rounded flex items-center justify-center mt-1 max-md:mt-0 max-md:h-24 max-md:w-full">
+                          <div className="w-14 h-14 flex-shrink-0 border border-dashed border-amber-300 bg-amber-50 rounded flex items-center justify-center max-md:h-24 max-md:w-full">
                             <AlertTriangle className="w-6 h-6 text-amber-500" />
                           </div>
                         )}
-                        <div className="flex flex-col gap-1 min-w-0 max-md:w-full">
+                        <div className="relative flex flex-col gap-1 min-w-0 max-md:w-full">
                           <div className="flex items-center gap-2">
                             {item.status === 'Archived' && <Recycle className="w-4 h-4 text-gray-400" />}
-                            <Link href={`/admin/noticias/editar/${item.id}`} title={item.title} className="text-[#2271b1] font-normal text-[12px] leading-snug hover:text-[#135e96] line-clamp-2 break-words">
+                            <Link href={`/admin/noticias/editar/${item.id}`} title={item.title} className="text-[#2271b1] font-medium text-[12px] leading-snug hover:text-[#135e96] line-clamp-2 break-words">
                               {item.title}
                             </Link>
                           </div>
-                          <div className="flex flex-nowrap items-center gap-x-1.5 whitespace-nowrap opacity-0 group-hover:opacity-100 max-lg:opacity-100 transition-opacity text-[11px] leading-none font-medium text-[#2271b1]">
+                          <div className="flex flex-nowrap items-center gap-x-1.5 whitespace-nowrap md:absolute md:left-0 md:top-full md:z-10 md:mt-0.5 md:hidden md:group-hover:flex [@media(hover:none)]:md:!static [@media(hover:none)]:md:!flex text-[11px] leading-none font-medium text-[#2271b1]">
                             <Link href={`/admin/noticias/editar/${item.id}`} className="hover:text-[#135e96]">Editar</Link>
                             <span className="text-gray-300">|</span>
                             <button onClick={() => handleQuickEdit(item)} className="hover:text-[#135e96]">Edição rápida</button>
