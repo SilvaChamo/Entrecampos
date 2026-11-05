@@ -291,14 +291,14 @@ export default function NewsAdminPage() {
           <h1 className="text-2xl font-normal w-full sm:w-auto max-sm:col-span-2">Notícias</h1>
           <Link
             href="/admin/noticias/reparar"
-            className="flex items-center justify-center gap-1.5 whitespace-nowrap px-4 py-2 bg-amber-500 text-white rounded-md text-sm font-normal hover:bg-amber-600 transition-colors max-sm:px-2 max-sm:h-11 max-sm:py-0 max-sm:text-[12px]"
+            className="flex h-9 items-center justify-center gap-1.5 whitespace-nowrap px-4 py-0 bg-amber-500 text-white rounded-md text-sm font-normal hover:bg-amber-600 transition-colors max-sm:px-2 max-sm:h-11 max-sm:py-0 max-sm:text-[12px]"
           >
             <Wrench className="w-4 h-4" />
             Reparar Imagens
           </Link>
           <Link
             href="/admin/noticias/nova"
-            className="flex items-center justify-center gap-1.5 whitespace-nowrap px-4 py-2 bg-white border border-[#00a651] text-[#00a651] rounded-md text-sm font-normal hover:bg-[#f6f7f7] transition-all max-sm:px-2 max-sm:h-11 max-sm:py-0 max-sm:text-[12px]"
+            className="flex h-9 items-center justify-center gap-1.5 whitespace-nowrap px-4 py-0 bg-white border border-[#00a651] text-[#00a651] rounded-md text-sm font-normal hover:bg-[#f6f7f7] transition-all max-sm:px-2 max-sm:h-11 max-sm:py-0 max-sm:text-[12px]"
           >
             <Plus className="w-4 h-4" />
             Adicionar nova
@@ -461,7 +461,7 @@ export default function NewsAdminPage() {
                             <AlertTriangle className="w-6 h-6 text-amber-500" />
                           </div>
                         )}
-                        <div className="relative flex flex-col gap-1 min-w-0 max-md:w-full">
+                        <div className="relative flex flex-col gap-1 min-w-0 max-md:w-full md:transition-transform md:duration-150 md:group-hover:-translate-y-[7px] [@media(hover:none)]:md:!translate-y-0">
                           <div className="flex items-center gap-2">
                             {item.status === 'Archived' && <Recycle className="w-4 h-4 text-gray-400" />}
                             <Link href={`/admin/noticias/editar/${item.id}`} title={item.title} className="text-[#2271b1] font-bold text-[12px] leading-snug hover:text-[#135e96] line-clamp-2 break-words">
