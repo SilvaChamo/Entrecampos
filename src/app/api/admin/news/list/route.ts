@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-guard';
-import { getAllPosts } from '@/lib/news-data';
+import { getAllPosts, notNewsSlugs } from '@/lib/news-data';
 
 const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos';
 
@@ -32,7 +32,8 @@ export async function GET() {
       if (!error || !/status|author_name/i.test(error.message)) break;
     }
     if (!error && data) {
-      const items = (data as any[]).map((r) => ({ ...r, status: r.status || 'Published' }));
+      const excluded = notNewsSlugs();
+      const items = (data as any[]).filter((r) => !excluded.has(r.slug)).map((r) => ({ ...r, status: r.status || 'Published' }));
       return NextResponse.json({ items, source: 'supabase' });
     }
     console.warn('[admin/news/list] Supabase recusou:', error?.message);

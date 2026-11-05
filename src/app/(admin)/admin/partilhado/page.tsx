@@ -125,11 +125,10 @@ export default function PartilhadoPage() {
               type="button"
               onClick={() => { setBin(false); setAberta((cur) => (cur === id ? null : id)); }}
               aria-pressed={aberta === id}
-              className={`rounded border bg-white p-5 text-left transition hover:border-[#00a651] ${aberta === id ? 'border-[#00a651] ring-1 ring-[#00a651]' : 'border-[#ccd0d4]'}`}
+              className={`rounded border bg-white p-[30px] text-left transition hover:border-[#00a651] ${aberta === id ? 'border-[#00a651] ring-1 ring-[#00a651]' : 'border-[#ccd0d4]'}`}
             >
-              <Icon className="mb-3 h-8 w-8 text-[#00a651]" />
-              <p className="mb-1 text-2xl">{data?.counts?.[id] ?? 0}</p>
-              <p className="text-base font-semibold">{label}</p>
+              <Icon className="mb-1 h-6 w-6 text-[#00a651]" />
+              <p className="text-base font-semibold"><span className="mr-2 text-2xl font-normal">{data?.counts?.[id] ?? 0}</span>{label}</p>
               <p className="text-xs text-[#50575e]">{hint}</p>
             </button>
           ))}

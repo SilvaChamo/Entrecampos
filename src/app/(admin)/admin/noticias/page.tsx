@@ -171,6 +171,21 @@ export default function NewsAdminPage() {
     </div>
   );
 
+  // Em cima só as duas setas; todas as informações da paginação ficam por baixo da lista.
+  const topPager = (
+    <div className="flex items-center gap-1 text-[13px] text-[#50575e]">
+      <button type="button" title="Anterior" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}
+        className="h-9 max-md:h-11 min-w-9 border border-[#ccd0d4] bg-white px-2 hover:border-[#00a651] hover:text-[#008f45] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
+        ‹
+      </button>
+      <span className="mx-1 whitespace-nowrap">{currentPage} de {totalPages}</span>
+      <button type="button" title="Seguinte" disabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}
+        className="h-9 max-md:h-11 min-w-9 border border-[#ccd0d4] bg-white px-2 hover:border-[#00a651] hover:text-[#008f45] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
+        ›
+      </button>
+    </div>
+  );
+
   const deleteNews = async (id: string, title: string) => {
     if (!(await confirmAsync(`Tem a certeza que deseja mover "${title}" para o lixo?`))) return;
     try {
@@ -418,7 +433,7 @@ export default function NewsAdminPage() {
         </button>
 
         {/* Paginação, na mesma linha dos botões de acção */}
-        <div className="ml-auto max-sm:ml-0 max-sm:col-span-2">{pager}</div>
+        <div className="ml-auto max-sm:ml-0 max-sm:col-span-2">{topPager}</div>
       </div>
 
       {localCopy && (

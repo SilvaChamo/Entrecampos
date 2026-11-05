@@ -355,7 +355,7 @@ function fromLocalData(): Post[] {
 }
 
 /** Documentos da base de dados agro que o site online também publica, mas que não são notícias (data/not-news.json). */
-function notNewsSlugs(): Set<string> {
+export function notNewsSlugs(): Set<string> {
   try {
     const file = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data', 'not-news.json'), 'utf-8')) as { slugs?: string[] };
     return new Set(file.slugs ?? []);

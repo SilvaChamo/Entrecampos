@@ -5,6 +5,7 @@ import { File as FileIcon, FileArchive, FileSpreadsheet, FileText, Presentation 
 import type { LucideIcon } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import MediaGaleria from '@/components/Admin/MediaGaleria';
+import DocViewer from '@/components/Admin/DocViewer';
 
 type SharedFile = { name: string; path: string; url: string; size: number; created_at: string; mime: string };
 
@@ -31,18 +32,23 @@ function formatOf(name: string): { ext: string; color: string; Icon: LucideIcon 
   return { ext, color: '#50575e', Icon: FileIcon };
 }
 
-const CARD = 'group relative flex aspect-[4/5] flex-col items-center justify-center gap-1 rounded border border-[#ccd0d4] bg-white p-1.5 text-center transition hover:border-[#00a651]';
+const CARD = 'group relative flex aspect-[4/3] flex-col items-center justify-center gap-1 rounded border border-[#ccd0d4] bg-white p-1.5 text-center transition hover:border-[#00a651]';
 
-/** Cartão pequeno de um documento (abre o ficheiro). */
+/** Cartão pequeno de um documento (abre-o dentro do painel; baixar fica no visualizador). */
 function DocCard({ file }: { file: SharedFile }) {
   const { ext, color, Icon } = formatOf(file.name);
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
   return (
-    <a href={file.url} target="_blank" rel="noreferrer" title={`${file.name} · ${kb(file.size)}${file.created_at ? ` · ${new Date(file.created_at).toLocaleDateString('pt-PT')}` : ''}`} className={CARD}>
+    <>
+    <button type="button" onClick={() => setOpen(true)} title={`${file.name} · ${kb(file.size)}${file.created_at ? ` · ${new Date(file.created_at).toLocaleDateString('pt-PT')}` : ''}`} className={CARD}>
       <Icon className="h-8 w-8" style={{ color }} strokeWidth={1.5} aria-hidden="true" />
       <span className="rounded-[2px] px-1 text-[8px] font-bold uppercase leading-4 text-white" style={{ backgroundColor: color }}>{ext || 'ficheiro'}</span>
       <span className="line-clamp-2 w-full break-words text-[10px] leading-tight text-[#2c3338]">{file.name}</span>
       <span className="text-[9px] leading-none text-[#8c8f94]">{kb(file.size)}</span>
-    </a>
+    </button>
+    {open && <DocViewer name={file.name} path={file.path} onClose={close} />}
+    </>
   );
 }
 

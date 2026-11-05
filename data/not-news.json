@@ -1,5 +1,5 @@
 {
-  "_nota": "Publicações do site online que são documentos da base de dados agro, não notícias: não aparecem no site (nem na sincronização).",
+  "_nota": "Publicações que são documentos, não notícias: não aparecem no site, na sincronização nem na lista de notícias do painel.",
   "slugs": [
     "politica-agraria-mocambique",
     "regulamento-pesticidas-2002",

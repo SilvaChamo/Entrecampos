@@ -17,7 +17,9 @@ import {
   CheckSquare,
   FileUp,
   CreditCard,
-  Eye
+  Eye,
+  BarChart3,
+  Share2
 } from 'lucide-react';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import Spinner from '@/components/Common/Spinner';
@@ -29,6 +31,7 @@ interface Stats {
   pending?: number;
   reviewed?: number;
   contributions?: number;
+  views?: number;
 }
 
 interface ActivityItem {
@@ -61,11 +64,28 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
         videoExtensions.some((ext: string) => f.name.toLowerCase().endsWith(ext))
       ).length || 0;
 
+      // Pendentes e leituras reais: o servidor vê todos os estados (o navegador só vê os publicados).
+      let pending = 0;
+      let views = 0;
+      let total = newsCount || 0;
+      try {
+        const res = await fetch('/api/admin/news/list', { credentials: 'include' });
+        if (res.ok) {
+          const items = ((await res.json()).items ?? []) as { status?: string; views?: number }[];
+          pending = items.filter((n) => String(n.status).toLowerCase() === 'pending').length;
+          total = items.length;
+          views = items.reduce((sum, n) => sum + (Number(n.views) || 0), 0);
+        }
+      } catch {
+        /* sem lista: os cartões ficam a zero */
+      }
+
       setStats({
-        news: newsCount || 0,
+        news: total,
         media: mediaFiles?.length || 0,
         videos: videoCount,
-        pending: 3,
+        pending,
+        views,
         reviewed: 12,
         contributions: 5
       });
@@ -103,7 +123,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
     <div className="min-h-screen text-[#2c3338] font-sans pb-8 p-4">
       <section className="bg-white border border-[#ccd0d4] p-4 mb-4 shadow-sm rounded-none">
         <div className="w-full">
-          <h1 className="text-[23px] font-[800] text-[#1d2327] mb-2">
+          <h1 className="text-[23px] font-[800] text-[#0b5c2e] mb-2">
             Bem-vindo ao painel de administração
           </h1>
           <p className="text-[14px] text-[#50575e] mb-3">
@@ -114,7 +134,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <h3 className="text-[16px] font-bold mb-3">
+              <h3 className="text-[16px] font-bold mb-3 text-[#0b5c2e]">
                 {role === 'editor' ? 'Revisão' : role === 'contribuidor' ? 'Produção' : 'Introdução'}
               </h3>
               <p className="text-[13px] text-gray-500 mb-4">
@@ -129,7 +149,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
             </div>
             
             <div className="space-y-3">
-              <h3 className="text-[16px] font-bold">Próximos passos</h3>
+              <h3 className="text-[16px] font-bold text-[#0b5c2e]">Próximos passos</h3>
               <ul className="space-y-2 text-[13px] text-[#2271b1]">
                 {role === 'guest' ? (
                   <>
@@ -144,7 +164,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                 ) : (
                   <>
                     {role === 'editor' && <li className="flex items-center gap-2 hover:underline cursor-pointer"><CheckSquare className="w-4 h-4 text-gray-400" /> Ver notícias revistas</li>}
-                    <li className="flex items-center gap-2 hover:underline cursor-pointer"><Activity className="w-4 h-4 text-gray-400" /> Ver o seu site</li>
+                    <li><Link href="/admin/partilhado" className="flex items-center gap-2 hover:underline"><FileUp className="w-4 h-4 text-gray-400" /> Arquivos partilhados</Link></li>
                     <li className="flex items-center gap-2 hover:underline cursor-pointer"><MessageSquare className="w-4 h-4 text-gray-400" /> Gerir comentários</li>
                   </>
                 )}
@@ -152,38 +172,37 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-[16px] font-bold">Mais acções</h3>
+              <h3 className="text-[16px] font-bold text-[#0b5c2e]">Mais acções</h3>
               <ul className="space-y-2 text-[13px] text-[#2271b1]">
                 <li className="flex items-center gap-2 hover:underline cursor-pointer"><Plus className="w-4 h-4 text-gray-400" /> Adicionar multimédia</li>
                 <li className="flex items-center gap-2 hover:underline cursor-pointer"><Video className="w-4 h-4 text-gray-400" /> Gerir vídeos</li>
               </ul>
             </div>
 
-            <div className="space-y-3 bg-gray-50 rounded-md p-4 border border-gray-200">
-              <h3 className="text-[16px] font-bold flex items-center gap-2 text-[#1d2327]">
-                <Clock className="w-4 h-4 text-[#00a651]" />
+            <div className="space-y-3">
+              <h3 className="text-[16px] font-bold text-[#0b5c2e]">
                 {role === 'guest' ? 'Acesso Limitado' : 'Resumo do Site'}
               </h3>
               <div className="space-y-2 text-[13px]">
                 {role === 'editor' ? (
                   <>
-                    <div className="flex items-center justify-between py-1 border-b border-[#f9f9f9]">
-                      <span className="text-[#50575e]">Para Revisar</span>
+                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
+                      <span className="flex items-center gap-2 text-[#2271b1]"><Clock className="w-4 h-4 text-gray-400" /> Para Revisar</span>
                       <span className="font-bold text-[#ff3333]">{stats.pending}</span>
                     </div>
-                    <div className="flex items-center justify-between py-1 border-b border-[#f9f9f9]">
-                      <span className="text-[#50575e]">Revistas</span>
+                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
+                      <span className="flex items-center gap-2 text-[#2271b1]"><CheckSquare className="w-4 h-4 text-gray-400" /> Revistas</span>
                       <span className="font-bold text-[#1d2327]">{stats.reviewed}</span>
                     </div>
                   </>
                 ) : role === 'contribuidor' ? (
                   <>
-                    <div className="flex items-center justify-between py-1 border-b border-[#f9f9f9]">
-                      <span className="text-[#50575e]">Minhas Notícias</span>
+                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
+                      <span className="flex items-center gap-2 text-[#2271b1]"><Newspaper className="w-4 h-4 text-gray-400" /> Minhas Notícias</span>
                       <span className="font-bold text-[#1d2327]">{stats.news}</span>
                     </div>
-                    <div className="flex items-center justify-between py-1 border-b border-[#f9f9f9]">
-                      <span className="text-[#50575e]">Contribuições</span>
+                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
+                      <span className="flex items-center gap-2 text-[#2271b1]"><FileUp className="w-4 h-4 text-gray-400" /> Contribuições</span>
                       <span className="font-bold text-[#1d2327]">{stats.contributions}</span>
                     </div>
                   </>
@@ -193,20 +212,23 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between py-1 border-b border-[#f9f9f9]">
-                      <span className="text-[#50575e]">Notícias</span>
-                      <span className="font-bold text-[#1d2327]">{stats.news}</span>
+                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
+                      <span className="flex items-center gap-2 text-[#2271b1]"><Eye className="w-4 h-4 text-gray-400" /> Cliques</span>
+                      <span className="font-bold text-[#1d2327]">{stats.views}</span>
                     </div>
-                    <div className="flex items-center justify-between py-1 border-b border-[#f9f9f9]">
-                      <span className="text-[#50575e]">Multimédia</span>
-                      <span className="font-bold text-[#1d2327]">{stats.media}</span>
+                    {/* Ainda não há contagem de partilhas: os botões de partilha do site são ligações simples. */}
+                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
+                      <span className="flex items-center gap-2 text-[#2271b1]"><Share2 className="w-4 h-4 text-gray-400" /> Partilhas</span>
+                      <span className="font-bold text-[#1d2327]">—</span>
                     </div>
                   </>
                 )}
-                <div className="flex items-center justify-between py-1 border-b border-[#f9f9f9]">
-                  <span className="text-[#50575e]">Vídeos</span>
-                  <span className="font-bold text-[#1d2327]">{stats.videos}</span>
-                </div>
+                {(role === 'editor' || role === 'contribuidor') && (
+                  <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
+                    <span className="flex items-center gap-2 text-[#2271b1]"><Video className="w-4 h-4 text-gray-400" /> Vídeos</span>
+                    <span className="font-bold text-[#1d2327]">{stats.videos}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -218,7 +240,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
           <div className="h-full">
             <div className="bg-white border border-[#ccd0d4] rounded-md shadow-sm overflow-hidden h-full">
               <div className="p-3 border-b border-[#f0f0f1] bg-white flex items-center justify-between">
-                <h2 className="font-bold text-[14px] text-[#1d2327] flex items-center gap-2">
+                <h2 className="font-bold text-[14px] text-[#0b5c2e] flex items-center gap-2">
                   <Activity className="w-4 h-4 text-gray-400" />
                   Actividades Recentes
                 </h2>
@@ -260,30 +282,30 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                 </div>
               </Link>
 
-              <Link href={role === 'editor' ? "/admin/noticias/revistas" : "/admin/noticias/nova"} className="group h-full">
+              <Link href={role === 'editor' ? "/admin/noticias/revistas" : role === 'admin' ? "/admin/noticias/pendentes" : "/admin/noticias/nova"} className="group h-full">
                 <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#00a651] transition-all h-full flex flex-col items-center justify-center text-center">
                   <div className="w-11 h-11 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    {role === 'editor' ? <CheckSquare className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                    {role === 'editor' ? <CheckSquare className="w-5 h-5" /> : role === 'admin' ? <Clock className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                   </div>
                   <span className="text-[22px] font-bold text-[#1d2327] mb-0.5">
-                    {role === 'editor' ? stats.reviewed : '+'}
+                    {role === 'editor' ? stats.reviewed : role === 'admin' ? stats.pending : '+'}
                   </span>
                   <span className="text-[12px] text-[#50575e] font-medium uppercase tracking-wider">
-                    {role === 'editor' ? 'Revistas' : 'Nova Notícia'}
+                    {role === 'editor' ? 'Revistas' : role === 'admin' ? 'Pendentes' : 'Nova Notícia'}
                   </span>
                 </div>
               </Link>
 
-              <Link href="/admin/media" className="group h-full">
+              <Link href={role === 'admin' ? "/admin/trafego" : "/admin/media"} className="group h-full">
                 <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#00a651] transition-all h-full flex flex-col items-center justify-center text-center">
                   <div className="w-11 h-11 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <ImageIcon className="w-5 h-5" />
+                    {role === 'admin' ? <BarChart3 className="w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}
                   </div>
                   <span className="text-[22px] font-bold text-[#1d2327] mb-0.5">
-                    {role === 'contribuidor' ? stats.contributions : stats.media}
+                    {role === 'contribuidor' ? stats.contributions : role === 'admin' ? stats.views : stats.media}
                   </span>
                   <span className="text-[12px] text-[#50575e] font-medium uppercase tracking-wider">
-                    {role === 'contribuidor' ? 'Contribuições' : 'Galeria'}
+                    {role === 'contribuidor' ? 'Contribuições' : role === 'admin' ? 'Leituras' : 'Galeria'}
                   </span>
                 </div>
               </Link>
