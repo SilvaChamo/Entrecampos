@@ -156,7 +156,7 @@ body {
 .ec-editor .ProseMirror {
   min-height: 400px;
   padding: 1rem 1.25rem;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   line-height: 1.7;
   color: #1d2327;
   background: #fff;
@@ -167,9 +167,9 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.ec-editor .ProseMirror h1 { margin: 1rem 0 0.5rem; font-size: 1.875rem; font-weight: 700; line-height: 1.2; }
-.ec-editor .ProseMirror h2 { margin: 1rem 0 0.5rem; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
-.ec-editor .ProseMirror h3 { margin: 1rem 0 0.5rem; font-size: 1.25rem; font-weight: 700; line-height: 1.4; }
+.ec-editor .ProseMirror h1 { margin: 1rem 0 0.5rem; font-size: 1.625rem; font-weight: 700; line-height: 1.2; }
+.ec-editor .ProseMirror h2 { margin: 1rem 0 0.5rem; font-size: 1.3125rem; font-weight: 700; line-height: 1.2; }
+.ec-editor .ProseMirror h3 { margin: 1rem 0 0.5rem; font-size: 1.125rem; font-weight: 700; line-height: 1.4; }
 
 .ec-editor .ProseMirror ul { margin-bottom: 0.5rem; padding-left: 1.5rem; list-style: disc; }
 .ec-editor .ProseMirror ol { margin-bottom: 0.5rem; padding-left: 1.5rem; list-style: decimal; }

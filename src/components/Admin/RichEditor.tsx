@@ -14,7 +14,6 @@ import {
   Link2,
   List,
   ListOrdered,
-  Plus,
   Quote,
   StickyNote,
   Strikethrough,
@@ -138,7 +137,16 @@ const Divider = () => <span className="mx-1 h-5 w-px bg-gray-300" />;
 /** Editor de texto da notícia, por blocos: texto, títulos, imagens com legenda e caixas de destaque. */
 export default function RichEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
   const [picking, setPicking] = useState(false);
-  const [blocksOpen, setBlocksOpen] = useState(false);
+  // "+ bloco": aparece depois do fim do texto do bloco onde está o rato (ou o toque). `end` é o fim do bloco onde se insere.
+  type Hover = { top: number; left: number; end: number; wrapW: number };
+  const [hover, setHover] = useState<Hover | null>(null);
+  const [menu, setMenu] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const hoverRef = useRef<Hover | null>(null);
+  const overBtn = useRef(false); // o rato está em cima do botão: ele não muda de sítio
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pending = useRef<number | null>(null);
   const lastEmitted = useRef(value);
 
   const editor = useEditor({
@@ -153,6 +161,62 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
       onChange(html);
     },
   });
+
+  useEffect(() => { hoverRef.current = hover; }, [hover]);
+
+  /** Bloco (de topo) sob o rato e o sítio onde cabe o "+ bloco": logo depois do último carácter do bloco. */
+  const blockAt = (clientX: number, clientY: number): Hover | null => {
+    if (!editor || !wrapRef.current) return null;
+    const dom = editor.view.dom as HTMLElement;
+    const box = dom.getBoundingClientRect();
+    const hit = editor.view.posAtCoords({ left: Math.min(Math.max(clientX, box.left + 24), box.right - 24), top: clientY });
+    if (!hit) return null;
+    const $pos = editor.state.doc.resolve(hit.pos);
+    if ($pos.depth < 1) return null;
+    const end = $pos.after(1);
+    const wrap = wrapRef.current.getBoundingClientRect();
+    const c = editor.view.coordsAtPos(Math.max(1, end - 1));
+    return { top: c.top - wrap.top + (c.bottom - c.top - 18) / 2, left: Math.min(c.right - wrap.left + 8, wrap.width - 72), end, wrapW: wrap.width };
+  };
+
+  /** Segue o rato. Mudar para outro bloco só acontece se o rato lá ficar um instante, e nunca enquanto está no botão: ele não foge. */
+  const trackBlock = (clientX: number, clientY: number) => {
+    if (!editor || menu || overBtn.current) return;
+    const c = blockAt(clientX, clientY);
+    if (!c) return;
+    const cur = hoverRef.current;
+    if (!cur) { setHover(c); return; }
+    if (c.end === cur.end) {
+      if (timer.current) { clearTimeout(timer.current); timer.current = null; pending.current = null; }
+      if (Math.abs(c.top - cur.top) > 1 || Math.abs(c.left - cur.left) > 1) setHover(c);
+      return;
+    }
+    if (pending.current === c.end) return;
+    pending.current = c.end;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      pending.current = null;
+      if (!overBtn.current) setHover(c);
+    }, 250);
+  };
+
+  // Menu aberto: clicar fora fecha-o.
+  useEffect(() => {
+    if (!menu) return;
+    const close = (e: MouseEvent) => { if (!boxRef.current?.contains(e.target as globalThis.Node)) { setMenu(false); setHover(null); } };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [menu]);
+
+  /** Põe o cursor no fim do bloco escolhido: o bloco novo entra logo a seguir a ele. */
+  const placeAfterHovered = () => {
+    if (!editor || !hover) return;
+    editor.commands.command(({ tr }) => {
+      tr.setSelection(Selection.near(tr.doc.resolve(Math.max(1, Math.min(hover.end - 1, tr.doc.content.size))), -1));
+      return true;
+    });
+  };
 
   // Volta da galeria com uma foto escolhida para dentro do texto: insere-a no fim, depois de o rascunho estar reposto.
   useEffect(() => {
@@ -251,50 +315,74 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
         >
           <Eraser className="h-4 w-4" />
         </Btn>
-        <Divider />
-        <div className="relative">
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setBlocksOpen((o) => !o)}
-            className="flex h-8 items-center gap-1 rounded bg-[#00a651] px-3 text-[13px] font-medium text-white hover:bg-[#008f45]"
+      </div>
+
+      <div
+        ref={wrapRef}
+        className="relative"
+        onMouseMove={(e) => trackBlock(e.clientX, e.clientY)}
+        onClick={(e) => trackBlock(e.clientX, e.clientY)}
+        onMouseLeave={() => {
+          if (timer.current) { clearTimeout(timer.current); timer.current = null; pending.current = null; }
+          if (!menu && !overBtn.current) setHover(null);
+        }}
+      >
+        <EditorContent editor={editor} />
+        {hover && (
+          <div
+            ref={boxRef}
+            className="absolute z-10"
+            style={{ top: hover.top, left: hover.left }}
+            onMouseEnter={() => { overBtn.current = true; if (timer.current) { clearTimeout(timer.current); timer.current = null; pending.current = null; } }}
+            onMouseLeave={() => { overBtn.current = false; }}
           >
-            <Plus className="h-4 w-4" />
-            Adicionar bloco
-          </button>
-          {blocksOpen && (
-            <div className="absolute left-0 top-9 z-20 w-52 border border-[#ccd0d4] bg-white py-1 shadow-lg">
-              {BLOCKS.map((b) => (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setMenu((o) => !o)}
+              aria-expanded={menu}
+              className="rounded px-1.5 text-[11px] leading-[18px] text-[#8c8f94] hover:bg-[#f0f0f1] hover:text-[#008f45]"
+            >
+              + bloco
+            </button>
+            {menu && (
+              <div className={`absolute top-5 z-20 w-44 border border-[#ccd0d4] bg-white py-0.5 shadow-lg ${hover.left > hover.wrapW - 230 ? 'right-0' : 'left-0'}`}>
+                {BLOCKS.map((b) => (
+                  <button
+                    key={b.label}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      placeAfterHovered();
+                      insertBlock(editor, b.node);
+                      setMenu(false);
+                      overBtn.current = false;
+                      setHover(null);
+                    }}
+                    className="block w-full px-3 py-1 text-left text-[12px] leading-snug text-[#1d2327] hover:bg-gray-100"
+                  >
+                    {b.label}
+                  </button>
+                ))}
                 <button
-                  key={b.label}
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
-                    insertBlock(editor, b.node);
-                    setBlocksOpen(false);
+                    placeAfterHovered();
+                    setMenu(false);
+                    overBtn.current = false;
+                    setHover(null);
+                    setPicking(true);
                   }}
-                  className="block w-full px-4 py-2 text-left text-[13px] text-[#1d2327] hover:bg-gray-100"
+                  className="block w-full px-3 py-1 text-left text-[12px] leading-snug text-[#1d2327] hover:bg-gray-100"
                 >
-                  {b.label}
+                  Imagem com legenda
                 </button>
-              ))}
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  setBlocksOpen(false);
-                  setPicking(true);
-                }}
-                className="block w-full px-4 py-2 text-left text-[13px] text-[#1d2327] hover:bg-gray-100"
-              >
-                Imagem com legenda
-              </button>
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      <EditorContent editor={editor} />
 
       {picking && (
         <ImageChooser

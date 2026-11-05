@@ -245,7 +245,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value.replace(/\s*\n+\s*/g, ' ') })}
             onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
-            className="block w-full min-h-[50px] resize-y overflow-auto px-3 py-2.5 text-[1.4rem] leading-snug bg-white border border-[#8c8f94] rounded-[6px] outline-none focus:border-[#00a651] focus:ring-1 focus:ring-[#00a651] shadow-[inset_0_1px_2px_rgba(0,0,0,0.07)]"
+            className="block w-full min-h-[50px] resize-y overflow-auto px-3 py-2.5 text-[1.25rem] leading-snug bg-white border border-[#8c8f94] rounded-[6px] outline-none focus:border-[#00a651] focus:ring-1 focus:ring-[#00a651] shadow-[inset_0_1px_2px_rgba(0,0,0,0.07)]"
           />
 
           <div className="bg-white border border-[#ccd0d4] rounded-[8px] overflow-hidden">
