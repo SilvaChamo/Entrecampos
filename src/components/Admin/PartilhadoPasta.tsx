@@ -32,6 +32,18 @@ function formatOf(name: string): { ext: string; color: string; Icon: LucideIcon 
   return { ext, color: '#50575e', Icon: FileIcon };
 }
 
+/** Ícone de ficheiro PDF (página com faixa vermelha, como o do Adobe Acrobat). */
+function PdfIcon() {
+  return (
+    <svg viewBox="0 0 32 32" className="h-8 w-8" aria-hidden="true">
+      <path d="M7 2h13l6 6v22H7z" fill="#fff" stroke="#8c8f94" strokeWidth="1" />
+      <path d="M20 2v6h6" fill="#f0f0f1" stroke="#8c8f94" strokeWidth="1" />
+      <rect x="3" y="14" width="22" height="10" rx="1.5" fill="#d63638" />
+      <text x="14" y="21.8" textAnchor="middle" fontSize="7.5" fontWeight="700" fontFamily="Arial, Helvetica, sans-serif" fill="#fff">PDF</text>
+    </svg>
+  );
+}
+
 const CARD = 'group relative flex aspect-[4/3] flex-col items-center justify-center gap-1 rounded border border-[#ccd0d4] bg-white p-1.5 text-center transition hover:border-[#00a651]';
 
 /** Cartão pequeno de um documento (abre-o dentro do painel; baixar fica no visualizador). */
@@ -42,8 +54,8 @@ function DocCard({ file }: { file: SharedFile }) {
   return (
     <>
     <button type="button" onClick={() => setOpen(true)} title={`${file.name} · ${kb(file.size)}${file.created_at ? ` · ${new Date(file.created_at).toLocaleDateString('pt-PT')}` : ''}`} className={CARD}>
-      <Icon className="h-8 w-8" style={{ color }} strokeWidth={1.5} aria-hidden="true" />
-      <span className="rounded-[2px] px-1 text-[8px] font-bold uppercase leading-4 text-white" style={{ backgroundColor: color }}>{ext || 'ficheiro'}</span>
+      {ext === 'pdf' ? <PdfIcon /> : <Icon className="h-8 w-8" style={{ color }} strokeWidth={1.5} aria-hidden="true" />}
+      {ext !== 'pdf' && <span className="rounded-[2px] px-1 text-[8px] font-bold uppercase leading-4 text-white" style={{ backgroundColor: color }}>{ext || 'ficheiro'}</span>}
       <span className="line-clamp-2 w-full break-words text-[10px] leading-tight text-[#2c3338]">{file.name}</span>
       <span className="text-[9px] leading-none text-[#8c8f94]">{kb(file.size)}</span>
     </button>
@@ -105,7 +117,7 @@ function ListaPasta({ pasta, withTitle }: { pasta: string; withTitle: boolean })
       {files && files.length === 0 && <p className="py-10 text-center text-sm text-[#50575e]">Esta pasta ainda está vazia. Use “Sincronizar agora” na página Partilhado.</p>}
 
       {files && files.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 xl:grid-cols-10">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
           {files.map((f) => (isZip(f) ? <ZipCard key={f.path} file={f} onDone={load} /> : <DocCard key={f.path} file={f} />))}
         </div>
       )}

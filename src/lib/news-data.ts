@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import sanitizeHtml from 'sanitize-html';
 import { normalizeSpaces } from '@/lib/normalize-spaces';
 
@@ -322,7 +323,13 @@ async function fromSupabase(): Promise<{ published: Post[]; known: Set<string>; 
  * Fallback local: instantâneo do site online (scripts/sync-live-news.mjs), com texto completo e imagem
  * de cada notícia. Se não existir, usa a importação antiga (posts.json), cujo texto vem cortado.
  */
+let localMemo: Post[] | null = null;
 function fromLocalData(): Post[] {
+  // O instantâneo é um ficheiro que só muda com um novo deploy: lê-se e limpa-se uma vez por instância.
+  return (localMemo ??= readLocalData());
+}
+
+function readLocalData(): Post[] {
   const dir = path.join(process.cwd(), 'data');
   try {
     const live = JSON.parse(fs.readFileSync(path.join(dir, 'live-posts.json'), 'utf-8')) as Array<Record<string, string>>;
@@ -364,7 +371,9 @@ export function notNewsSlugs(): Set<string> {
   }
 }
 
-export const getAllPosts = cache(async (): Promise<{ posts: Post[]; source: 'supabase' | 'local' }> => {
+type AllPosts = { posts: Post[]; source: 'supabase' | 'local' };
+
+async function computeAllPosts(): Promise<AllPosts> {
   const remote = await fromSupabase();
   const excluded = notNewsSlugs();
   const local = fromLocalData().filter((p) => !excluded.has(p.slug));
@@ -388,7 +397,28 @@ export const getAllPosts = cache(async (): Promise<{ posts: Post[]; source: 'sup
   posts.push(...remote.base.filter((p) => !localKey(p).some((k) => have.has(k))));
   posts.sort((a, b) => b.date.localeCompare(a.date));
   return { posts, source: 'supabase' };
+}
+
+// Notícias já processadas (limpeza do HTML, junção das fontes) ficam na cache de dados, com a etiqueta `news`: gravar no
+// painel limpa-a (lib/refresh-site.ts). Só o resultado vindo do Supabase é guardado; o plano B local nunca fica em cache.
+const cachedAllPosts = unstable_cache(
+  async () => {
+    const result = await computeAllPosts();
+    if (result.source !== 'supabase') throw new Error('sem-supabase');
+    return result;
+  },
+  ['all-posts'],
+  { tags: ['news'], revalidate: 604800 },
+);
+
+export const getAllPosts = cache(async (): Promise<AllPosts> => {
+  try {
+    return await cachedAllPosts();
+  } catch {
+    return computeAllPosts();
+  }
 });
+
 
 /** Uma notícia por imagem e só com imagem: usado nas homes, onde a foto manda. */
 export function uniqueWithImage(posts: Post[]) {

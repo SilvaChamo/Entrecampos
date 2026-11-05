@@ -155,6 +155,21 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     }
   }, [loading, user, router]);
 
+  // Sinal de vida: o Dashboard conta com ele quem está logado agora (só com o separador visível).
+  useEffect(() => {
+    if (!user) return;
+    const ping = () => {
+      if (document.visibilityState === 'visible') fetch('/api/admin/presence', { method: 'POST', credentials: 'include' }).catch(() => {});
+    };
+    ping();
+    const timer = setInterval(ping, 60_000);
+    document.addEventListener('visibilitychange', ping);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', ping);
+    };
+  }, [user]);
+
   // Mobile: cada célula das tabelas de listas ganha o nome da sua coluna (o CSS mostra-o quando a tabela vira cartões).
   useEffect(() => {
     let frame = 0;

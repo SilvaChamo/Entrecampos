@@ -17,9 +17,8 @@ import {
   CheckSquare,
   FileUp,
   CreditCard,
-  Eye,
   BarChart3,
-  Share2
+  UserPlus
 } from 'lucide-react';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import Spinner from '@/components/Common/Spinner';
@@ -31,7 +30,7 @@ interface Stats {
   pending?: number;
   reviewed?: number;
   contributions?: number;
-  views?: number;
+  online?: number;
 }
 
 interface ActivityItem {
@@ -50,52 +49,45 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { count: newsCount } = await supabase
-        .from('news')
-        .select('*', { count: 'exact', head: true })
-        .eq('site_id', SITE_ID);
+      // Tudo em paralelo: o painel espera pelo pedido mais lento e não pela soma de todos.
+      const [countRes, mediaRes, listRes, onlineRes, latestRes] = await Promise.allSettled([
+        supabase.from('news').select('*', { count: 'exact', head: true }).eq('site_id', SITE_ID),
+        supabase.storage.from(BUCKET_NAME).list('', { limit: 1000 }),
+        fetch('/api/admin/news/list', { credentials: 'include' }),
+        fetch('/api/admin/users/online', { credentials: 'include' }),
+        supabase.from('news').select('id, title, date').eq('site_id', SITE_ID).order('date', { ascending: false }).limit(5),
+      ]);
 
-          const { data: mediaFiles } = await supabase.storage.from(BUCKET_NAME).list('', {
-        limit: 1000
-      });
-
+      const mediaFiles = mediaRes.status === 'fulfilled' ? mediaRes.value.data : null;
       const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
       const videoCount = mediaFiles?.filter((f: any) => 
         videoExtensions.some((ext: string) => f.name.toLowerCase().endsWith(ext))
       ).length || 0;
 
-      // Pendentes e leituras reais: o servidor vê todos os estados (o navegador só vê os publicados).
+      // Pendentes e total reais: o servidor vê todos os estados (o navegador só vê os publicados).
       let pending = 0;
-      let views = 0;
-      let total = newsCount || 0;
-      try {
-        const res = await fetch('/api/admin/news/list', { credentials: 'include' });
-        if (res.ok) {
-          const items = ((await res.json()).items ?? []) as { status?: string; views?: number }[];
-          pending = items.filter((n) => String(n.status).toLowerCase() === 'pending').length;
-          total = items.length;
-          views = items.reduce((sum, n) => sum + (Number(n.views) || 0), 0);
-        }
-      } catch {
-        /* sem lista: os cartões ficam a zero */
+      let total = (countRes.status === 'fulfilled' && countRes.value.count) || 0;
+      if (listRes.status === 'fulfilled' && listRes.value.ok) {
+        const items = ((await listRes.value.json()).items ?? []) as { status?: string }[];
+        pending = items.filter((n) => String(n.status).toLowerCase() === 'pending').length;
+        total = items.length;
       }
+
+      // Utilizadores logados agora (sinal de vida do painel nos últimos minutos).
+      let online = 0;
+      if (onlineRes.status === 'fulfilled' && onlineRes.value.ok) online = Number((await onlineRes.value.json()).count) || 0;
 
       setStats({
         news: total,
         media: mediaFiles?.length || 0,
         videos: videoCount,
         pending,
-        views,
+        online,
         reviewed: 12,
         contributions: 5
       });
 
-      const { data: latestNews } = await supabase
-        .from('news')
-        .select('id, title, date')
-        .eq('site_id', SITE_ID)
-        .order('date', { ascending: false })
-        .limit(5);
+      const latestNews = latestRes.status === 'fulfilled' ? latestRes.value.data : null;
 
       const activities: ActivityItem[] = (latestNews || []).map((item: any) => ({
         id: item.id,
@@ -121,7 +113,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
 
   return (
     <div className="min-h-screen text-[#2c3338] font-sans pb-8 p-4">
-      <section className="bg-white border border-[#ccd0d4] p-4 mb-4 shadow-sm rounded-none">
+      <section className="bg-white border border-[#ccd0d4] p-4 pb-[30px] mb-4 shadow-sm rounded-none">
         <div className="w-full">
           <h1 className="text-[23px] font-[800] text-[#0b5c2e] mb-2">
             Bem-vindo ao painel de administração
@@ -180,53 +172,31 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               <h3 className="text-[16px] font-bold text-[#0b5c2e]">
                 {role === 'guest' ? 'Acesso Limitado' : 'Resumo do Site'}
               </h3>
-              <div className="space-y-2 text-[13px]">
+              <ul className="space-y-2 text-[13px] text-[#008f45]">
                 {role === 'editor' ? (
                   <>
-                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#008f45]"><Clock className="w-4 h-4 text-gray-400" /> Para Revisar</span>
-                      <span className="font-bold text-[#ff3333]">{stats.pending}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#008f45]"><CheckSquare className="w-4 h-4 text-gray-400" /> Revistas</span>
-                      <span className="font-bold text-[#1d2327]">{stats.reviewed}</span>
-                    </div>
+                    <li className="flex items-center gap-2"><Clock className="w-4 h-4 text-gray-400" /> Para Revisar <span className="font-bold text-[#ff3333]">{stats.pending}</span></li>
+                    <li className="flex items-center gap-2"><CheckSquare className="w-4 h-4 text-gray-400" /> Revistas <span className="font-bold text-[#1d2327]">{stats.reviewed}</span></li>
                   </>
                 ) : role === 'contribuidor' ? (
                   <>
-                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#008f45]"><Newspaper className="w-4 h-4 text-gray-400" /> Minhas Notícias</span>
-                      <span className="font-bold text-[#1d2327]">{stats.news}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#008f45]"><FileUp className="w-4 h-4 text-gray-400" /> Contribuições</span>
-                      <span className="font-bold text-[#1d2327]">{stats.contributions}</span>
-                    </div>
+                    <li className="flex items-center gap-2"><Newspaper className="w-4 h-4 text-gray-400" /> Minhas Notícias <span className="font-bold text-[#1d2327]">{stats.news}</span></li>
+                    <li className="flex items-center gap-2"><FileUp className="w-4 h-4 text-gray-400" /> Contribuições <span className="font-bold text-[#1d2327]">{stats.contributions}</span></li>
                   </>
                 ) : role === 'guest' ? (
-                  <div className="bg-amber-50 p-2 text-amber-800 text-[12px] border-l-2 border-amber-400">
+                  <li className="bg-amber-50 p-2 text-amber-800 text-[12px] border-l-2 border-amber-400">
                     Inscreva-se como Contribuidor para partilhar ficheiros e gerir a sua galeria.
-                  </div>
+                  </li>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#008f45]"><Eye className="w-4 h-4 text-gray-400" /> Cliques</span>
-                      <span className="font-bold text-[#1d2327]">{stats.views}</span>
-                    </div>
-                    {/* Ainda não há contagem de partilhas: os botões de partilha do site são ligações simples. */}
-                    <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#008f45]"><Share2 className="w-4 h-4 text-gray-400" /> Partilhas</span>
-                      <span className="font-bold text-[#1d2327]">—</span>
-                    </div>
+                    <li><Link href="/admin/trafego" className="flex items-center gap-2 hover:underline"><BarChart3 className="w-4 h-4 text-gray-400" /> Ver estatísticas</Link></li>
+                    <li><Link href="/admin/utilizadores/novo" className="flex items-center gap-2 hover:underline"><UserPlus className="w-4 h-4 text-gray-400" /> Adicionar utilizador</Link></li>
                   </>
                 )}
                 {(role === 'editor' || role === 'contribuidor') && (
-                  <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                    <span className="flex items-center gap-2 text-[#008f45]"><Video className="w-4 h-4 text-gray-400" /> Vídeos</span>
-                    <span className="font-bold text-[#1d2327]">{stats.videos}</span>
-                  </div>
+                  <li className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" /> Vídeos <span className="font-bold text-[#1d2327]">{stats.videos}</span></li>
                 )}
-              </div>
+              </ul>
             </div>
           </div>
         </div>
@@ -249,8 +219,8 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                   <ul className="space-y-3">
                     {recentActivities.slice(0, 4).map(activity => (
                       <li key={activity.id} className="border-b border-[#f0f0f1] pb-2 last:border-0 last:pb-0">
-                        <p className="text-[13px] text-gray-400 mb-0.5">{new Date(activity.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
-                        <Link href={`/admin/noticias/editar/${activity.id}`} className="text-[13px] text-[#008f45] font-medium hover:underline">
+                        <p className="text-[13px] text-[#d63638] mb-0.5">{new Date(activity.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
+                        <Link href={`/admin/noticias/editar/${activity.id}`} className="text-[13px] text-[#50575e] font-semibold hover:underline">
                           {activity.title}
                         </Link>
                       </li>
@@ -293,16 +263,16 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                 </div>
               </Link>
 
-              <Link href={role === 'admin' ? "/admin/trafego" : "/admin/media"} className="group h-full">
+              <Link href={role === 'admin' ? "/admin/utilizadores" : "/admin/media"} className="group h-full">
                 <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#00a651] transition-all h-full flex flex-col items-center justify-center text-center">
                   <div className="w-11 h-11 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    {role === 'admin' ? <BarChart3 className="w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}
+                    {role === 'admin' ? <Users className="w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}
                   </div>
                   <span className="text-[22px] font-bold text-[#1d2327] mb-0.5">
-                    {role === 'contribuidor' ? stats.contributions : role === 'admin' ? stats.views : stats.media}
+                    {role === 'contribuidor' ? stats.contributions : role === 'admin' ? stats.online : stats.media}
                   </span>
                   <span className="text-[12px] text-[#50575e] font-medium uppercase tracking-wider">
-                    {role === 'contribuidor' ? 'Contribuições' : role === 'admin' ? 'Leituras' : 'Galeria'}
+                    {role === 'contribuidor' ? 'Contribuições' : role === 'admin' ? 'Utilizadores logados' : 'Galeria'}
                   </span>
                 </div>
               </Link>
