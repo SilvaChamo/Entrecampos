@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase, SITE_ID } from '@/lib/supabase';
 import Link from 'next/link';
 import {
   Search,
@@ -53,6 +52,9 @@ const LBL = "max-md:before:font-normal max-md:before:text-gray-500 max-md:before
 
 export default function NewsAdminPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
+  // Confirmação na própria página: os diálogos nativos do navegador podem não aparecer e a ação ficava sem efeito.
+  const [ask, setAsk] = useState<{ text: string; done: (ok: boolean) => void } | null>(null);
+  const confirmAsync = (text: string) => new Promise<boolean>((done) => setAsk({ text, done }));
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -170,7 +172,7 @@ export default function NewsAdminPage() {
   );
 
   const deleteNews = async (id: string, title: string) => {
-    if (!confirm(`Tem a certeza que deseja mover "${title}" para o lixo?`)) return;
+    if (!(await confirmAsync(`Tem a certeza que deseja mover "${title}" para o lixo?`))) return;
     try {
       const res = await fetch('/api/admin/news/status', {
         method: 'POST',
@@ -185,7 +187,7 @@ export default function NewsAdminPage() {
   };
 
   const archiveNews = async (id: string, title: string) => {
-    if (!confirm(`Tem a certeza que deseja arquivar "${title}"?`)) return;
+    if (!(await confirmAsync(`Tem a certeza que deseja arquivar "${title}"?`))) return;
     try {
       const res = await fetch('/api/admin/news/status', {
         method: 'POST',
@@ -217,7 +219,7 @@ export default function NewsAdminPage() {
 
   const deleteSelected = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Tem a certeza que deseja mover ${selectedIds.size} notícia(s) para o lixo?`)) return;
+    if (!(await confirmAsync(`Tem a certeza que deseja mover ${selectedIds.size} notícia(s) para o lixo?`))) return;
     try {
       const idsArray = Array.from(selectedIds);
       const res = await fetch('/api/admin/news/status', {
@@ -236,7 +238,7 @@ export default function NewsAdminPage() {
 
   const archiveSelected = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Tem a certeza que deseja arquivar ${selectedIds.size} notícia(s)?`)) return;
+    if (!(await confirmAsync(`Tem a certeza que deseja arquivar ${selectedIds.size} notícia(s)?`))) return;
     try {
       const idsArray = Array.from(selectedIds);
       const res = await fetch('/api/admin/news/status', {
@@ -262,20 +264,35 @@ export default function NewsAdminPage() {
     if (!quickEditId || !editForm) return;
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('news')
-        .update({
+      // Grava no servidor: com a chave pública do navegador a base recusa a alteração sem dar erro, e a notícia ficava na
+      // categoria antiga. A categoria nova passa a ser a única (deixa de pertencer à antiga).
+      const res = await fetch('/api/admin/news/save', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          isEdit: true,
+          id: quickEditId,
           title: editForm.title,
           slug: editForm.slug,
           category: editForm.category,
-          status: editForm.status,
+          categories: editForm.category ? [editForm.category] : undefined,
           date: editForm.date,
-          summary: editForm.summary // Usado como meta description
-        })
-        .eq('id', quickEditId)
-        .eq('site_id', SITE_ID);
-
-      if (error) throw error;
+          summary: editForm.summary, // Usado como meta description
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Erro ${res.status}`);
+      const before = news.find(n => n.id === quickEditId);
+      if (editForm.status && before && editForm.status !== before.status) {
+        const st = await fetch('/api/admin/news/status', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: quickEditId, status: editForm.status }),
+        });
+        if (!st.ok) throw new Error((await st.json().catch(() => ({}))).error || `Erro ${st.status}`);
+      }
       setNews(news.map(n => n.id === quickEditId ? { ...n, ...editForm } : n));
       setQuickEditId(null);
     } catch (err: any) {
@@ -673,6 +690,18 @@ export default function NewsAdminPage() {
 
       {/* Paginação (em baixo) */}
       <div className="mt-3">{pager}</div>
+
+      {ask && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Confirmar">
+          <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-2xl">
+            <p className="text-center text-sm text-[#3c434a]">{ask.text}</p>
+            <div className="mt-5 flex justify-center gap-2">
+              <button type="button" onClick={() => { ask.done(false); setAsk(null); }} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm font-semibold text-[#50575e] hover:bg-[#f6f7f7]">Cancelar</button>
+              <button type="button" onClick={() => { ask.done(true); setAsk(null); }} className="rounded-[3px] bg-[#d63638] px-5 py-1.5 text-sm font-semibold text-white hover:bg-[#b32d2e]">Sim</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

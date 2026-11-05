@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { EditorContent, useEditor, type Editor } from '@tiptap/react';
 import { Node, mergeAttributes } from '@tiptap/core';
-import { Selection } from '@tiptap/pm/state';
+import { NodeSelection, Selection } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import {
@@ -21,14 +21,29 @@ import {
 } from 'lucide-react';
 import ImageChooser from '@/components/Admin/ImageChooser';
 
-/** Imagem com legenda editável: <figure><img><figcaption>…</figcaption></figure>. */
+type Align = 'center' | 'left' | 'right';
+
+/** Classe e largura (em % do texto) com que a figura vai para o HTML: `ec-fig-left|right` + `style="width:NN%"`. */
+function figureAttrs(align: Align, width: number | null) {
+  const out: Record<string, string> = {};
+  if (align !== 'center') out.class = `ec-fig-${align}`;
+  if (width) out.style = `width: ${width}%`;
+  return out;
+}
+
+/**
+ * Imagem com legenda editável: <figure><img><figcaption>…</figcaption></figure>.
+ * Pode ficar à esquerda ou à direita (o texto contorna-a), ter a largura mudada puxando o canto e ser movida
+ * (arrastar, ou os botões ↑ ↓ que aparecem sobre a foto).
+ */
 const Figure = Node.create({
   name: 'figure',
   group: 'block',
   content: 'inline*',
   isolating: true,
+  draggable: true,
   addAttributes() {
-    return { src: { default: null }, alt: { default: '' } };
+    return { src: { default: null }, alt: { default: '' }, align: { default: 'center' }, width: { default: null } };
   },
   parseHTML() {
     return [
@@ -36,14 +51,158 @@ const Figure = Node.create({
         tag: 'figure',
         contentElement: 'figcaption',
         getAttrs: (el) => {
-          const img = (el as HTMLElement).querySelector('img');
-          return img?.getAttribute('src') ? { src: img.getAttribute('src'), alt: img.getAttribute('alt') || '' } : false;
+          const fig = el as HTMLElement;
+          const img = fig.querySelector('img');
+          if (!img?.getAttribute('src')) return false;
+          const align: Align = fig.classList.contains('ec-fig-left') ? 'left' : fig.classList.contains('ec-fig-right') ? 'right' : 'center';
+          const w = /width:\s*(\d+(?:\.\d+)?)%/.exec(fig.getAttribute('style') || '');
+          return { src: img.getAttribute('src'), alt: img.getAttribute('alt') || '', align, width: w ? Number(w[1]) : null };
         },
       },
     ];
   },
   renderHTML({ node }) {
-    return ['figure', {}, ['img', { src: node.attrs.src, alt: node.attrs.alt }], ['figcaption', 0]];
+    return ['figure', figureAttrs(node.attrs.align, node.attrs.width), ['img', { src: node.attrs.src, alt: node.attrs.alt }], ['figcaption', 0]];
+  },
+  addKeyboardShortcuts() {
+    return {
+      // Enter na legenda: sai dela para um parágrafo novo logo a seguir à foto (a legenda é de uma só linha e não se divide).
+      Enter: ({ editor }) => {
+        const { $from, empty } = editor.state.selection;
+        if (!empty || $from.parent.type.name !== this.name) return false;
+        const after = $from.after();
+        const next = editor.state.doc.nodeAt(after);
+        const chain = editor.chain();
+        if (!(next && next.type.name === 'paragraph' && next.content.size === 0)) chain.insertContentAt(after, { type: 'paragraph' });
+        chain
+          .command(({ tr }) => {
+            tr.setSelection(Selection.near(tr.doc.resolve(after + 1), 1));
+            return true;
+          })
+          .focus()
+          .scrollIntoView()
+          .run();
+        return true;
+      },
+    };
+  },
+  addNodeView() {
+    return ({ node, editor, getPos }) => {
+      let current = node;
+      const dom = document.createElement('figure');
+      const media = document.createElement('div');
+      media.className = 'ec-fig-media';
+      media.contentEditable = 'false';
+      const img = document.createElement('img');
+      const caption = document.createElement('figcaption');
+      const bar = document.createElement('div');
+      bar.className = 'ec-fig-bar';
+      const grip = document.createElement('span');
+      grip.className = 'ec-fig-grip';
+      grip.textContent = '⠿ Mover';
+      grip.title = 'Arraste para mudar a foto de sítio';
+      grip.draggable = true;
+      const resize = document.createElement('span');
+      resize.className = 'ec-fig-resize';
+      resize.title = 'Puxe para mudar o tamanho';
+      media.append(img, bar, resize);
+      dom.append(media, caption);
+
+      const pos = () => getPos() as number;
+      const setAttrs = (attrs: Record<string, unknown>) => {
+        editor.view.dispatch(editor.state.tr.setNodeMarkup(pos(), undefined, { ...current.attrs, ...attrs }));
+      };
+      const move = (dir: -1 | 1) => {
+        const { state, view } = editor;
+        const at = pos();
+        const sibling = dir < 0 ? state.doc.resolve(at).nodeBefore : state.doc.resolve(at + current.nodeSize).nodeAfter;
+        if (!sibling) return;
+        const target = dir < 0 ? at - sibling.nodeSize : at + sibling.nodeSize;
+        const tr = state.tr.delete(at, at + current.nodeSize).insert(target, current);
+        tr.setSelection(NodeSelection.create(tr.doc, target));
+        view.dispatch(tr.scrollIntoView());
+      };
+      const remove = () => editor.view.dispatch(editor.state.tr.delete(pos(), pos() + current.nodeSize));
+
+      const button = (label: string, title: string, on: () => void, key?: Align) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.title = title;
+        b.dataset.align = key || '';
+        b.addEventListener('mousedown', (e) => e.preventDefault());
+        b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); on(); });
+        return b;
+      };
+      bar.append(
+        grip,
+        button('◧ Esquerda', 'Foto à esquerda, com o texto a contornar', () => setAttrs({ align: 'left' }), 'left'),
+        button('▣ Centro', 'Foto sozinha, centrada', () => setAttrs({ align: 'center' }), 'center'),
+        button('Direita ◨', 'Foto à direita, com o texto a contornar', () => setAttrs({ align: 'right' }), 'right'),
+        button('↑', 'Subir um bloco', () => move(-1)),
+        button('↓', 'Descer um bloco', () => move(1)),
+        button('✕', 'Apagar a foto', remove),
+      );
+
+      // Clicar na foto seleciona-a (para a poder arrastar e mostrar os botões).
+      img.addEventListener('click', () => editor.commands.setNodeSelection(pos()));
+
+      // Mudar o tamanho: puxar o canto. A largura guarda-se em % da largura do texto.
+      resize.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resize.setPointerCapture(e.pointerId);
+        const box = editor.view.dom as HTMLElement;
+        const cs = getComputedStyle(box);
+        const full = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        const startW = dom.getBoundingClientRect().width;
+        const startX = e.clientX;
+        const sign = current.attrs.align === 'right' ? -1 : 1;
+        let pct = Math.round((startW / full) * 100);
+        const onMove = (m: PointerEvent) => {
+          pct = Math.min(100, Math.max(10, Math.round(((startW + sign * (m.clientX - startX)) / full) * 100)));
+          dom.style.width = `${pct}%`;
+        };
+        const onUp = () => {
+          resize.removeEventListener('pointermove', onMove);
+          resize.removeEventListener('pointerup', onUp);
+          resize.removeEventListener('pointercancel', onUp);
+          setAttrs({ width: pct >= 100 ? null : pct });
+        };
+        resize.addEventListener('pointermove', onMove);
+        resize.addEventListener('pointerup', onUp);
+        resize.addEventListener('pointercancel', onUp);
+      });
+
+      const sync = (n: typeof node) => {
+        current = n;
+        if (img.getAttribute('src') !== n.attrs.src) img.setAttribute('src', n.attrs.src || '');
+        img.setAttribute('alt', n.attrs.alt || '');
+        dom.className = n.attrs.align !== 'center' ? `ec-fig-${n.attrs.align}` : '';
+        dom.style.width = n.attrs.width ? `${n.attrs.width}%` : '';
+        bar.querySelectorAll('button[data-align]').forEach((b) => {
+          const on = (b as HTMLElement).dataset.align === n.attrs.align;
+          b.classList.toggle('is-on', on);
+        });
+      };
+      sync(node);
+
+      return {
+        dom,
+        contentDOM: caption,
+        update(updated) {
+          if (updated.type !== current.type) return false;
+          sync(updated);
+          return true;
+        },
+        // Cliques e arrastos nos botões e no canto são da foto; o resto (incluindo arrastar o "Mover") segue para o editor.
+        stopEvent: (e) => {
+          const t = e.target as HTMLElement;
+          return !!t.closest?.('.ec-fig-bar, .ec-fig-resize') && e.type !== 'dragstart' && e.type !== 'dragend';
+        },
+        ignoreMutation: (m) => (m.type === 'selection' ? false : !caption.contains(m.target)),
+      };
+    };
   },
 });
 
@@ -77,6 +236,35 @@ function insertBlock(editor: Editor, node: Json) {
   const at = emptyHere ? $to.before(1) : $to.depth === 0 ? $to.pos : $to.after(1);
   const chain = editor.chain();
   if (emptyHere) chain.deleteRange({ from: $to.before(1), to: $to.after(1) });
+  chain
+    .insertContentAt(at, node)
+    .command(({ tr }) => {
+      tr.setSelection(Selection.near(tr.doc.resolve(Math.min(at + 1, tr.doc.content.size)), 1));
+      return true;
+    })
+    .focus()
+    .scrollIntoView()
+    .run();
+}
+
+/** Posição do bloco de topo onde o cursor está, para a foto escolhida na galeria voltar a cair nele (-1 = no início). */
+function cursorBlockIndex(editor: Editor) {
+  const { $to } = editor.state.selection;
+  return $to.depth >= 1 ? $to.index(0) : $to.index(0) - 1;
+}
+
+/** Insere um bloco depois do bloco de topo `index` (ou no lugar dele, se estiver vazio). */
+function insertBlockAtIndex(editor: Editor, index: number, node: Json) {
+  const doc = editor.state.doc;
+  const last = doc.childCount - 1;
+  const i = Math.min(index, last);
+  let before = 0;
+  for (let k = 0; k < i; k++) before += doc.child(k).nodeSize;
+  const child = i >= 0 ? doc.child(i) : null;
+  const emptyHere = !!child && child.isTextblock && child.content.size === 0;
+  const at = !child ? 0 : emptyHere ? before : before + child.nodeSize;
+  const chain = editor.chain();
+  if (emptyHere && child) chain.deleteRange({ from: before, to: before + child.nodeSize });
   chain
     .insertContentAt(at, node)
     .command(({ tr }) => {
@@ -218,9 +406,15 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
     });
   };
 
-  // Volta da galeria com uma foto escolhida para dentro do texto: insere-a no fim, depois de o rascunho estar reposto.
+  // O texto da notícia chega depois de o editor abrir (edição, ou rascunho reposto ao voltar da galeria): carrega-o sem
+  // contar como alteração. Só depois de o texto assentar (sem mudar por um instante) entra a foto escolhida na galeria,
+  // no bloco onde estava o cursor ao sair.
   useEffect(() => {
     if (!editor) return;
+    if (value !== lastEmitted.current) {
+      lastEmitted.current = value;
+      editor.commands.setContent(value || '', { emitUpdate: false });
+    }
     const t = setTimeout(() => {
       try {
         const res = sessionStorage.getItem('ec-pick-result');
@@ -228,18 +422,16 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
         const r = JSON.parse(res) as { target?: string; url?: string };
         if (r.target !== 'editor' || !r.url) return;
         sessionStorage.removeItem('ec-pick-result');
-        editor.commands.focus('end');
-        insertBlock(editor, { type: 'figure', attrs: { src: r.url, alt: '' } });
+        let index = editor.state.doc.childCount - 1;
+        try {
+          const p = JSON.parse(sessionStorage.getItem('ec-pick-pos') || 'null') as { index?: number } | null;
+          if (p && Number.isInteger(p.index)) index = p.index as number;
+        } catch { /* sem posição guardada: vai para o fim */ }
+        sessionStorage.removeItem('ec-pick-pos');
+        insertBlockAtIndex(editor, index, { type: 'figure', attrs: { src: r.url, alt: '' } });
       } catch { /* ignora */ }
-    }, 800);
+    }, 600);
     return () => clearTimeout(t);
-  }, [editor]);
-
-  // O texto da notícia chega depois de o editor abrir (edição): carrega-o sem contar como alteração.
-  useEffect(() => {
-    if (!editor || value === lastEmitted.current) return;
-    lastEmitted.current = value;
-    editor.commands.setContent(value || '', { emitUpdate: false });
   }, [editor, value]);
 
   if (!editor) return <div className="min-h-[400px] bg-white" />;
@@ -388,7 +580,10 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
         <ImageChooser
           title="Inserir imagem"
           target="editor"
-          onBeforeLeave={() => window.dispatchEvent(new Event('ec-news-save-draft'))}
+          onBeforeLeave={() => {
+            try { sessionStorage.setItem('ec-pick-pos', JSON.stringify({ index: cursorBlockIndex(editor) })); } catch { /* sem armazenamento */ }
+            window.dispatchEvent(new Event('ec-news-save-draft'));
+          }}
           onClose={() => setPicking(false)}
           onChoose={async (img) => {
             // Na imagem dentro do texto espera-se o endereço final (curto): assim o texto nunca guarda um endereço temporário.

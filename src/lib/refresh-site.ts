@@ -7,8 +7,9 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 export function refreshSite() {
   revalidatePath('/', 'layout');
   try {
-    revalidateTag('news', 'max');
-    revalidateTag('comments', 'max');
+    // Expira já (e não "max", que serve a versão velha ao 1.º visitante): a notícia publicada aparece logo no site.
+    revalidateTag('news', { expire: 0 });
+    revalidateTag('comments', { expire: 0 });
   } catch {
     /* fora de um pedido (ex.: scripts): o revalidatePath acima já chega */
   }

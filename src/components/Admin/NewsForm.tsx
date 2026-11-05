@@ -116,32 +116,42 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
   }, []);
 
 
-  useEffect(() => {
-    if (initialData) {
-      const list = Array.isArray(initialData.categories) && initialData.categories.length ? initialData.categories : [initialData.category || 'agricultura'];
-      setFormData({ ...initialData, categories: list });
-    }
-  }, [initialData]);
-
-  // Volta da galeria: repõe o rascunho e, se escolheu a foto de destaque, aplica-a (a foto do texto é tratada pelo editor).
-  useEffect(() => {
-    if (isEdit && !initialData) return;
+  // Volta da galeria: o rascunho lê-se uma só vez (o React em desenvolvimento corre os efeitos duas vezes: se o rascunho
+  // se perdesse na 1.ª, a 2.ª repunha a notícia gravada e as alterações por gravar desapareciam).
+  const draftRef = useRef<{ formData?: Record<string, unknown>; pick?: { target?: string; url?: string } } | null | undefined>(undefined);
+  const readDraft = () => {
+    if (draftRef.current !== undefined) return draftRef.current;
+    draftRef.current = null;
     try {
       const raw = sessionStorage.getItem('ec-news-draft');
-      if (!raw) return;
+      if (!raw) return null;
       const d = JSON.parse(raw) as { path?: string; ts?: number; formData?: Record<string, unknown> };
       sessionStorage.removeItem('ec-news-draft');
-      if (d.path !== window.location.pathname || !d.formData || Date.now() - (d.ts ?? 0) > 3600_000) return;
-      setFormData((prev) => ({ ...prev, ...(d.formData as object) }));
+      if (d.path !== window.location.pathname || !d.formData || Date.now() - (d.ts ?? 0) > 3600_000) return null;
+      let pick: { target?: string; url?: string } | undefined;
       const res = sessionStorage.getItem('ec-pick-result');
       if (res) {
         const r = JSON.parse(res) as { target?: string; url?: string };
-        if (r.target === 'featured' && r.url) {
-          sessionStorage.removeItem('ec-pick-result');
-          setFormData((prev) => ({ ...prev, image_url: r.url as string }));
-        }
+        if (r.target === 'featured' && r.url) { sessionStorage.removeItem('ec-pick-result'); pick = r; }
       }
+      draftRef.current = { formData: d.formData, pick };
     } catch { /* rascunho inválido: ignora */ }
+    return draftRef.current;
+  };
+
+  // Notícia aberta para edição, ou rascunho reposto ao voltar da galeria (se escolheu a foto de destaque, aplica-a; a foto
+  // do texto é tratada pelo editor).
+  useEffect(() => {
+    if (isEdit && !initialData) return;
+    let next: Record<string, unknown> = {};
+    if (initialData) {
+      const list = Array.isArray(initialData.categories) && initialData.categories.length ? initialData.categories : [initialData.category || 'agricultura'];
+      next = { ...initialData, categories: list };
+    }
+    const d = readDraft();
+    if (d?.formData) next = { ...next, ...d.formData };
+    if (d?.pick?.url) next.image_url = d.pick.url;
+    if (Object.keys(next).length) setFormData((prev) => ({ ...prev, ...next }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, isEdit]);
 

@@ -157,6 +157,10 @@ export async function POST(request: Request) {
       );
 
       if (error) throw error;
+      // Nenhuma linha atualizada (id errado ou de outro site): não se diz que gravou.
+      if (!updateData || updateData.length === 0) {
+        return NextResponse.json({ error: 'Notícia não encontrada: nada foi atualizado.' }, { status: 404 });
+      }
       refreshPublicPages();
       return NextResponse.json({ success: true, data: updateData, warning });
     } else {

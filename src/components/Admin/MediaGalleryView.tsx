@@ -656,7 +656,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
               {!isBulkMode ? (
                 <button 
                   onClick={() => setIsBulkMode(true)}
-                  className="ml-2 max-md:ml-0 h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
+                  className="ml-2 max-md:ml-0 h-8 px-4 text-sm font-normal border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
                 >
                   Seleção em massa
                 </button>

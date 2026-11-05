@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
@@ -139,9 +139,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { user, loading, logout, setRole, realRole, viewAs, setViewAs } = useAuth();
 
-  // Galeria aberta só para escolher uma foto (a partir da notícia): sem a barra lateral.
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).has('escolher')) setIsSidebarOpen(false);
+  // Galeria aberta só para escolher uma foto (a partir da notícia): já abre sem a barra lateral, sem a ver encolher.
+  const [snapSidebar, setSnapSidebar] = useState(false);
+  useLayoutEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('escolher')) return;
+    setSnapSidebar(true);
+    setIsSidebarOpen(false);
+    const frame = requestAnimationFrame(() => requestAnimationFrame(() => setSnapSidebar(false)));
+    return () => cancelAnimationFrame(frame);
   }, [pathname]);
 
   useEffect(() => {
@@ -472,7 +477,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <aside
           className={`bg-[#1d2327] flex-shrink-0 transition-transform duration-200 max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-12 max-lg:z-[95] max-lg:w-72 max-lg:max-w-[85vw] max-lg:overflow-y-auto ${
             mobileMenuOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'
-          } lg:transition-all ${isSidebarOpen ? 'lg:w-56' : 'lg:w-0 lg:overflow-hidden'}`}
+          } ${snapSidebar ? '' : 'lg:transition-all'} ${isSidebarOpen ? 'lg:w-56' : 'lg:w-0 lg:overflow-hidden'}`}
         >
           <nav className="mt-0">
             {menuItems.map((item) => {

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase, SITE_ID } from '@/lib/supabase';
 import Link from 'next/link';
 import { RefreshCw, RotateCcw, Trash2, AlertTriangle } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
@@ -23,13 +22,12 @@ export default function LixoPage() {
 
   const loadNews = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('news')
-      .select('*')
-      .eq('site_id', SITE_ID)
-      .eq('status', 'Trash')
-      .order('date', { ascending: false });
-    if (!error) setNews(data || []);
+    // Lê no servidor: com a chave pública do navegador as notícias que não estão publicadas não aparecem.
+    try {
+      const res = await fetch('/api/admin/news/list', { credentials: 'include' });
+      const body = await res.json().catch(() => ({}));
+      if (res.ok) setNews(((body.items || []) as NewsItem[]).filter((n) => String(n.status || '').toLowerCase() === 'trash'));
+    } catch { /* mantém a lista */ }
     setLoading(false);
   };
 
@@ -45,8 +43,12 @@ export default function LixoPage() {
     setSelectedIds(selectedIds.size === news.length ? new Set() : new Set(news.map(n => n.id)));
   };
 
-  const restore = async (ids: string[]) => {
-    if (!confirm(`Restaurar ${ids.length} notícia(s)?`)) return;
+  // Confirmação na própria página: os diálogos nativos do navegador podem não aparecer e a ação ficava sem efeito.
+  const [ask, setAsk] = useState<{ text: string; run: () => void } | null>(null);
+
+  const restore = (ids: string[]) => setAsk({ text: `Restaurar ${ids.length} notícia(s)?`, run: () => doRestore(ids) });
+
+  const doRestore = async (ids: string[]) => {
     const res = await fetch('/api/admin/news/status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -61,8 +63,10 @@ export default function LixoPage() {
     }
   };
 
-  const deletePermanently = async (ids: string[]) => {
-    if (!confirm(`Eliminar permanentemente ${ids.length} notícia(s)? Esta ação não pode ser revertida.`)) return;
+  const deletePermanently = (ids: string[]) =>
+    setAsk({ text: `Eliminar permanentemente ${ids.length} notícia(s)? Esta ação não pode ser revertida.`, run: () => doDelete(ids) });
+
+  const doDelete = async (ids: string[]) => {
     const res = await fetch('/api/admin/news/delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -77,10 +81,10 @@ export default function LixoPage() {
     }
   };
 
-  const emptyTrash = async () => {
+  const emptyTrash = () => {
     if (news.length === 0) return;
-    if (!confirm(`Esvaziar o lixo? Todas as ${news.length} notícia(s) serão eliminadas permanentemente.`)) return;
-    await deletePermanently(news.map(n => n.id));
+    const ids = news.map(n => n.id);
+    setAsk({ text: `Esvaziar o lixo? Todas as ${ids.length} notícia(s) serão eliminadas permanentemente.`, run: () => doDelete(ids) });
   };
 
   return (
@@ -173,6 +177,18 @@ export default function LixoPage() {
           </tbody>
         </table>
       </div>
+
+      {ask && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Confirmar">
+          <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-2xl">
+            <p className="text-center text-sm text-[#3c434a]">{ask.text}</p>
+            <div className="mt-5 flex justify-center gap-2">
+              <button type="button" onClick={() => setAsk(null)} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm font-semibold text-[#50575e] hover:bg-[#f6f7f7]">Cancelar</button>
+              <button type="button" onClick={() => { const run = ask.run; setAsk(null); run(); }} className="rounded-[3px] bg-[#d63638] px-5 py-1.5 text-sm font-semibold text-white hover:bg-[#b32d2e]">Sim</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

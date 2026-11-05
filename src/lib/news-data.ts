@@ -140,8 +140,11 @@ function cleanContent(html: string) {
       img: ['src', 'alt', 'title', 'width', 'height'],
       th: ['colspan', 'rowspan'],
       td: ['colspan', 'rowspan'],
+      figure: ['class', 'style'],
     },
-    allowedClasses: { div: ['ec-callout'] },
+    allowedClasses: { div: ['ec-callout'], figure: ['ec-fig-left', 'ec-fig-right'] },
+    // Só a largura em % que o editor põe nas fotos do texto.
+    allowedStyles: { figure: { width: [/^\d{1,3}(?:\.\d+)?%$/] } },
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     allowedSchemesByTag: { img: ['http', 'https'] },
     transformTags: {
