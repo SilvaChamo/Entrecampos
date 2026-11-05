@@ -498,7 +498,7 @@ export default function NewsAdminPage() {
                       </div>
                     </td>
                     <td className="p-3 align-top text-[#50575e] max-md:hidden">
-                      <div className="flex flex-col items-center">
+                      <div className="flex flex-col items-start">
                         <svg className="w-5 h-5 text-green-600 mb-1" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M5 19h14V5H5v14zm2-2v-4h2v4H7zm4 0v-8h2v8h-2zm4 0v-6h2v6h-2z" />
                         </svg>
@@ -511,14 +511,17 @@ export default function NewsAdminPage() {
                         const ok = checks.filter((c) => c.ok).length;
                         const tone = ok === checks.length ? 'border-[#00a651] text-[#008f45]' : ok >= 2 ? 'border-[#dba617] text-[#996800]' : 'border-[#d63638] text-[#d63638]';
                         return (
+                          <>
                           <button
                             type="button"
                             onClick={() => setSeoItem(item)}
                             title="Ver os detalhes de SEO"
                             className={`inline-flex h-6 items-center rounded border bg-white px-2 text-[11px] font-bold ${tone}`}
                           >
-                            {ok}/{checks.length}
+                            {ok >= 3 ? 'Bom' : ok === 2 ? 'Razoável' : 'Fraco'}
                           </button>
+                          <Link href={`/admin/noticias/editar/${item.id}`} className="mt-1 block text-[10px] leading-none text-[#2271b1] hover:underline">Editar</Link>
+                          </>
                         );
                       })()}
                     </td>
