@@ -216,12 +216,9 @@ body {
 /* Ponto activo do slide principal: enche durante o tempo da notícia. */
 @keyframes ec-dot-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .ec-dot-fill { animation-name: ec-dot-fill; animation-timing-function: linear; animation-fill-mode: forwards; }
-/* O mesmo, na vertical (quadrados do slide principal em coluna): enche de cima para baixo. */
-@keyframes ec-dot-fill-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-.ec-dot-fill-y { animation-name: ec-dot-fill-y; animation-timing-function: linear; animation-fill-mode: forwards; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ec-dot-fill, .ec-dot-fill-y { animation: none; }
+  .ec-dot-fill { animation: none; }
 }
 
 /* Entrada dos cards em slide up (RevealOnView): cada card arranca quando chega ao ecrã e sobe até ao fim de uma só vez,
