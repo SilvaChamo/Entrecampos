@@ -329,6 +329,9 @@ body {
   .ec-admin input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
   .ec-admin select,
   .ec-admin textarea { min-height: 2.75rem; }
+  /* Campos de pesquisa: têm a altura do botão ao lado (h-8), não os 2.75rem dos outros campos. */
+  .ec-admin input:not([type="checkbox"]):not([type="radio"]):not([type="file"])[placeholder^="Procurar"],
+  .ec-admin input:not([type="checkbox"]):not([type="radio"]):not([type="file"])[placeholder^="Pesquisar"] { min-height: 0; }
 }
 
 /* Spinner único do site (components/Common/Spinner.tsx): dois arcos em sentidos opostos + ponto que pulsa. */

@@ -191,9 +191,9 @@ export default function ArquivoPage() {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar pasta…" aria-label="Procurar pasta" className="h-8 w-72 max-w-full rounded-[3px] border border-[#ccd0d4] pl-8 pr-2 text-sm outline-none focus:border-[#00a651]" />
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <div className="relative min-w-0 flex-1 sm:flex-none">
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar pasta…" aria-label="Procurar pasta" className="h-8 w-full min-w-0 sm:w-72 rounded-[3px] border border-[#ccd0d4] pl-8 pr-2 text-sm outline-none focus:border-[#00a651]" />
                 <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[#50575e]" />
               </div>
               <button onClick={() => setCreating((c) => !c)} className="inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white">
