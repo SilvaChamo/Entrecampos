@@ -137,9 +137,6 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
               <h3 className="text-[16px] font-bold mb-3 text-[#0b5c2e]">
                 {role === 'editor' ? 'Revisão' : role === 'contribuidor' ? 'Produção' : 'Introdução'}
               </h3>
-              <p className="text-[13px] text-gray-500 mb-4">
-                Veja todas as notícias ou
-              </p>
               <Link 
                 href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias/nova"} 
                 className="inline-block px-4 py-2 bg-[#00a651] text-white rounded-md text-[14px] hover:bg-[#008f45] transition-all shadow-sm whitespace-nowrap max-md:py-3"
@@ -150,7 +147,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
             
             <div className="space-y-3">
               <h3 className="text-[16px] font-bold text-[#0b5c2e]">Próximos passos</h3>
-              <ul className="space-y-2 text-[13px] text-[#2271b1]">
+              <ul className="space-y-2 text-[13px] text-[#008f45]">
                 {role === 'guest' ? (
                   <>
                     <li className="flex items-center gap-2 hover:underline cursor-pointer"><Users className="w-4 h-4 text-gray-400" /> Registe-se para mais funções</li>
@@ -173,7 +170,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
 
             <div className="space-y-3">
               <h3 className="text-[16px] font-bold text-[#0b5c2e]">Mais acções</h3>
-              <ul className="space-y-2 text-[13px] text-[#2271b1]">
+              <ul className="space-y-2 text-[13px] text-[#008f45]">
                 <li className="flex items-center gap-2 hover:underline cursor-pointer"><Plus className="w-4 h-4 text-gray-400" /> Adicionar multimédia</li>
                 <li className="flex items-center gap-2 hover:underline cursor-pointer"><Video className="w-4 h-4 text-gray-400" /> Gerir vídeos</li>
               </ul>
@@ -187,22 +184,22 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                 {role === 'editor' ? (
                   <>
                     <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#2271b1]"><Clock className="w-4 h-4 text-gray-400" /> Para Revisar</span>
+                      <span className="flex items-center gap-2 text-[#008f45]"><Clock className="w-4 h-4 text-gray-400" /> Para Revisar</span>
                       <span className="font-bold text-[#ff3333]">{stats.pending}</span>
                     </div>
                     <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#2271b1]"><CheckSquare className="w-4 h-4 text-gray-400" /> Revistas</span>
+                      <span className="flex items-center gap-2 text-[#008f45]"><CheckSquare className="w-4 h-4 text-gray-400" /> Revistas</span>
                       <span className="font-bold text-[#1d2327]">{stats.reviewed}</span>
                     </div>
                   </>
                 ) : role === 'contribuidor' ? (
                   <>
                     <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#2271b1]"><Newspaper className="w-4 h-4 text-gray-400" /> Minhas Notícias</span>
+                      <span className="flex items-center gap-2 text-[#008f45]"><Newspaper className="w-4 h-4 text-gray-400" /> Minhas Notícias</span>
                       <span className="font-bold text-[#1d2327]">{stats.news}</span>
                     </div>
                     <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#2271b1]"><FileUp className="w-4 h-4 text-gray-400" /> Contribuições</span>
+                      <span className="flex items-center gap-2 text-[#008f45]"><FileUp className="w-4 h-4 text-gray-400" /> Contribuições</span>
                       <span className="font-bold text-[#1d2327]">{stats.contributions}</span>
                     </div>
                   </>
@@ -213,19 +210,19 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                 ) : (
                   <>
                     <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#2271b1]"><Eye className="w-4 h-4 text-gray-400" /> Cliques</span>
+                      <span className="flex items-center gap-2 text-[#008f45]"><Eye className="w-4 h-4 text-gray-400" /> Cliques</span>
                       <span className="font-bold text-[#1d2327]">{stats.views}</span>
                     </div>
                     {/* Ainda não há contagem de partilhas: os botões de partilha do site são ligações simples. */}
                     <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                      <span className="flex items-center gap-2 text-[#2271b1]"><Share2 className="w-4 h-4 text-gray-400" /> Partilhas</span>
+                      <span className="flex items-center gap-2 text-[#008f45]"><Share2 className="w-4 h-4 text-gray-400" /> Partilhas</span>
                       <span className="font-bold text-[#1d2327]">—</span>
                     </div>
                   </>
                 )}
                 {(role === 'editor' || role === 'contribuidor') && (
                   <div className="flex items-center justify-between py-1 border-b border-[#c3c4c7]">
-                    <span className="flex items-center gap-2 text-[#2271b1]"><Video className="w-4 h-4 text-gray-400" /> Vídeos</span>
+                    <span className="flex items-center gap-2 text-[#008f45]"><Video className="w-4 h-4 text-gray-400" /> Vídeos</span>
                     <span className="font-bold text-[#1d2327]">{stats.videos}</span>
                   </div>
                 )}
@@ -253,7 +250,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
                     {recentActivities.slice(0, 4).map(activity => (
                       <li key={activity.id} className="border-b border-[#f0f0f1] pb-2 last:border-0 last:pb-0">
                         <p className="text-[13px] text-gray-400 mb-0.5">{new Date(activity.date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
-                        <Link href={`/admin/noticias/editar/${activity.id}`} className="text-[13px] text-[#2271b1] font-medium hover:underline">
+                        <Link href={`/admin/noticias/editar/${activity.id}`} className="text-[13px] text-[#008f45] font-medium hover:underline">
                           {activity.title}
                         </Link>
                       </li>
@@ -270,7 +267,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
             <div className="grid grid-cols-2 gap-4 flex-1">
               <Link href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias"} className="group h-full">
                 <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#00a651] transition-all h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-11 h-11 bg-green-50 text-[#2271b1] rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                  <div className="w-11 h-11 bg-green-50 text-[#008f45] rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                     {role === 'editor' ? <Clock className="w-5 h-5" /> : <Newspaper className="w-5 h-5" />}
                   </div>
                   <span className="text-[22px] font-bold text-[#1d2327] mb-0.5">
