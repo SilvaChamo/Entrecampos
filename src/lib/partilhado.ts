@@ -21,7 +21,13 @@ type Row = { name: string; id: string | null; created_at?: string; metadata?: { 
 async function listFolderRows(folder: FolderId): Promise<Row[]> {
   const out: Row[] = [];
   for (let offset = 0; ; offset += 1000) {
-    const { data, error } = await supabase().storage.from(BUCKET()).list(`${ROOT}/${folder}`, { limit: 1000, offset, sortBy: { column: 'created_at', order: 'desc' } });
+    // A ligação ao Supabase (self-hosted) falha de vez em quando ("fetch failed"): tenta de novo antes de dar erro.
+    let res = await supabase().storage.from(BUCKET()).list(`${ROOT}/${folder}`, { limit: 1000, offset, sortBy: { column: 'created_at', order: 'desc' } });
+    for (let attempt = 1; res.error && /fetch failed/i.test(res.error.message) && attempt <= 3; attempt++) {
+      await new Promise((r) => setTimeout(r, 400 * attempt));
+      res = await supabase().storage.from(BUCKET()).list(`${ROOT}/${folder}`, { limit: 1000, offset, sortBy: { column: 'created_at', order: 'desc' } });
+    }
+    const { data, error } = res;
     if (error) throw new Error(error.message);
     const rows = ((data ?? []) as unknown as Row[]).filter((r) => r.id && r.name !== '.emptyFolderPlaceholder');
     out.push(...rows);

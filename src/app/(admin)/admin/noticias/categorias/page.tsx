@@ -5,14 +5,14 @@ import { Folder, Plus, Edit2, Trash2, Save, X } from 'lucide-react';
 import { SkeletonContent, SkeletonHeader } from '@/components/Admin/Skeleton';
 
 const INITIAL_CATEGORIES = [
-  { id: 1, name: 'Agricultura', slug: 'agricultura', count: 45, description: 'Notícias sobre agricultura em geral' },
-  { id: 2, name: 'Agro-pecuária', slug: 'agro-pecuaria', count: 23, description: 'Criação de animais e pecuária' },
-  { id: 3, name: 'Agro-processamento', slug: 'agro-processamento', count: 12, description: 'Processamento de produtos agrícolas' },
-  { id: 4, name: 'Apicultura', slug: 'apicultura', count: 8, description: 'Criação de abelhas e produção de mel' },
-  { id: 5, name: 'Segurança Alimentar', slug: 'seguranca-alimentar', count: 15, description: 'Segurança e soberania alimentar' },
-  { id: 6, name: 'Agro-negócio', slug: 'agro-negocio', count: 19, description: 'Negócios e empreendedorismo agrícola' },
-  { id: 7, name: 'Ambiente', slug: 'ambiente', count: 31, description: 'Meio ambiente e sustentabilidade' },
-  { id: 8, name: 'Comunidade', slug: 'comunidade', count: 27, description: 'Notícias da comunidade rural' },
+  { id: 1, name: 'Agricultura', slug: 'agricultura', count: 0, description: 'Notícias sobre agricultura em geral' },
+  { id: 2, name: 'Agro-pecuária', slug: 'agro-pecuaria', count: 0, description: 'Criação de animais e pecuária' },
+  { id: 3, name: 'Agro-processamento', slug: 'agro-processamento', count: 0, description: 'Processamento de produtos agrícolas' },
+  { id: 4, name: 'Apicultura', slug: 'apicultura', count: 0, description: 'Criação de abelhas e produção de mel' },
+  { id: 5, name: 'Segurança Alimentar', slug: 'seguranca-alimentar', count: 0, description: 'Segurança e soberania alimentar' },
+  { id: 6, name: 'Agro-negócio', slug: 'agro-negocio', count: 0, description: 'Negócios e empreendedorismo agrícola' },
+  { id: 7, name: 'Ambiente', slug: 'ambiente', count: 0, description: 'Meio ambiente e sustentabilidade' },
+  { id: 8, name: 'Comunidade', slug: 'comunidade', count: 0, description: 'Notícias da comunidade rural' },
 ];
 
 export default function CategoriasPage() {
@@ -24,8 +24,31 @@ export default function CategoriasPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 0);
-    return () => clearTimeout(timer);
+    let alive = true;
+    // Contagens reais: vêm das notícias publicadas (as mesmas contas do site público).
+    fetch('/api/admin/categories', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : { items: [] }))
+      .then((data: { items?: { slug: string; label: string; count: number }[] }) => {
+        if (!alive) return;
+        const real = data.items ?? [];
+        setCategories((prev) => {
+          const known = new Map(prev.map((c) => [c.slug, c]));
+          const merged = real.map((r, i) => ({
+            id: known.get(r.slug)?.id ?? 1000 + i,
+            name: known.get(r.slug)?.name ?? r.label,
+            slug: r.slug,
+            count: r.count,
+            description: known.get(r.slug)?.description ?? '',
+          }));
+          const rest = prev.filter((c) => !real.some((r) => r.slug === c.slug)).map((c) => ({ ...c, count: 0 }));
+          return [...merged, ...rest];
+        });
+      })
+      .catch(() => {})
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const handleEdit = (category: typeof INITIAL_CATEGORIES[0]) => {

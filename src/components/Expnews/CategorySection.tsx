@@ -14,13 +14,14 @@ export type CategoryGroup = { slug: string; label: string; posts: SlimPost[] };
 // Quantas notícias por vista: destaque = 1 grande + 4 ao lado; grelha = 2 grandes + 4 pequenas.
 const pageSizeFor = (layout: 'destaque' | 'grelha') => (layout === 'grelha' ? 6 : 5);
 
-function BigCard({ post, imageHeight, reveal = false }: { post: SlimPost; imageHeight: string; reveal?: boolean }) {
+function BigCard({ post, imageHeight, reveal = false, fill = false }: { post: SlimPost; imageHeight: string; reveal?: boolean; fill?: boolean }) {
   return (
-    <article className={`${reveal ? 'ec-reveal ' : ''}bg-white shadow-sm`}>
+    // Com `fill`, o card acompanha a altura da lista ao lado (ecrã largo): a imagem ocupa o que sobra depois do texto.
+    <article className={`${reveal ? 'ec-reveal ' : ''}bg-white shadow-sm${fill ? ' md:flex md:h-full md:flex-col' : ''}`}>
       <Link href={`/noticias/${post.slug}`} className={`relative block overflow-hidden bg-gray-200 ${imageHeight}`}>
         <Thumb src={post.image} />
       </Link>
-      <div className="p-4">
+      <div className="p-4 md:shrink-0">
         <Tag label={post.category} slug={post.categorySlug} />
         <Link href={`/noticias/${post.slug}`}>
           <h4 className="mt-2 text-[18px] font-bold leading-snug hover:text-[#d6101c]">{post.title}</h4>
@@ -115,7 +116,7 @@ export default function CategorySection({
     }
     return (
       <div className="grid gap-3 md:grid-cols-[1.05fr_1fr]">
-        <BigCard post={visible[0]} imageHeight="h-[240px]" />
+        <BigCard post={visible[0]} imageHeight="h-[240px] md:h-auto md:min-h-[160px] md:flex-1" fill />
         {/* Lista junto ao topo do card, cada notícia com a sua altura (nunca esticada ao card todo) */}
         <div className="flex flex-col gap-3 self-start">
           {visible.slice(1, 5).map((p) => (

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { RefreshCw, RotateCcw, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, RotateCcw, Trash2, AlertTriangle } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 
 interface NewsItem {
@@ -94,14 +94,22 @@ export default function LixoPage() {
           <Trash2 className="w-5 h-5 text-gray-500" /> Lixo
         </h1>
         <span className="text-sm text-gray-400">({news.length} itens)</span>
-        {news.length > 0 && (
-          <button
-            onClick={emptyTrash}
-            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-[#d63638] text-white text-sm rounded-md hover:bg-[#b32d2e]"
+        <div className="ml-auto flex items-center gap-2">
+          {news.length > 0 && (
+            <button
+              onClick={emptyTrash}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#d63638] text-white text-sm rounded-md hover:bg-[#b32d2e]"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Esvaziar lixo
+            </button>
+          )}
+          <Link
+            href="/admin/noticias"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#ccd0d4] text-[#50575e] text-sm rounded-md hover:bg-[#f6f7f7]"
           >
-            <Trash2 className="w-3.5 h-3.5" /> Esvaziar lixo
-          </button>
-        )}
+            <ArrowLeft className="w-3.5 h-3.5" /> Voltar
+          </Link>
+        </div>
       </div>
 
       {selectedIds.size > 0 && (

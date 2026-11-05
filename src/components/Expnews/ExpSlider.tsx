@@ -76,7 +76,7 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
             type="button"
             onClick={() => go(active - 1)}
             aria-label="Notícia anterior"
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
+            className="flex h-7 w-7 items-center justify-center rounded-none border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -88,7 +88,7 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
                 onClick={() => setActive(i)}
                 aria-label={`Ir para a notícia ${i + 1}`}
                 aria-current={i === active}
-                className={`relative overflow-hidden rounded-full transition-all duration-300 ${
+                className={`relative overflow-hidden rounded-none transition-all duration-300 ${
                   i === active ? 'h-1.5 w-12 bg-white/40' : 'h-2 w-2 bg-white/55 hover:bg-white'
                 }`}
               >
@@ -109,7 +109,7 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
             type="button"
             onClick={() => go(active + 1)}
             aria-label="Notícia seguinte"
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
+            className="flex h-7 w-7 items-center justify-center rounded-none border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
           >
             <ChevronRight className="h-4 w-4" />
           </button>

@@ -117,7 +117,8 @@ export default async function HomePrincipal() {
   // As notícias do slide não se repetem nas secções abaixo.
   const inSlides = new Set(slides.map((p) => p.slug));
   const pool = makePool(posts.filter((p) => !inSlides.has(p.slug)));
-  const hot = pool.take(4);
+  // "Mais quente" já está no slide principal: este card da barra lateral mostra outra categoria.
+  const hot = pool.take(4, ['internacional']);
   const watch = pool.take(5);
   const food = pool.take(5, ['receitas', 'curiosidade']);
   const entertainment = pool.take(3, ['oportunidades']);
@@ -140,7 +141,7 @@ export default async function HomePrincipal() {
     slugs.map((slug) => ({ slug, label: categoryLabel(slug), posts: posts.filter((p) => p.categorySlug === slug).map(slim) }));
   const communityGroups = family(['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida']);
   const agroGroups = family(['agricultura', 'fruticultura', 'agro-negocio', 'mulher-agrario', 'sector-agrario']);
-  // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Agricultura que não estão no slide.
+  // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Oportunidades que não estão no slide.
   const heroLatest = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 5).map(slim);
   const newsletterBg = (slides[1] ?? slides[0] ?? posts[0]).image;
 
@@ -150,11 +151,11 @@ export default async function HomePrincipal() {
           <div className="mx-auto max-w-[1280px] space-y-3">
             <NewsTicker posts={tickerPosts} />
 
-            {/* Cabeçalho: slide das últimas notícias em destaque + 2 cards à direita (Comunidade e Agricultura) */}
+            {/* Cabeçalho: slide das últimas notícias em destaque + 2 cards à direita (Comunidade e Oportunidades) */}
             <div className="grid gap-3 md:auto-rows-[215px] md:grid-cols-[2fr_1fr]">
               <ExpSlider posts={slides} className="h-[340px] md:row-span-2 md:h-full" />
               <CategorySlide posts={heroLatest('comunidade')} label="Comunidade" className="h-[215px]" />
-              <CategorySlide posts={heroLatest('agricultura')} label="Agricultura" className="h-[215px]" />
+              <CategorySlide posts={heroLatest('oportunidades')} label="Oportunidades" className="h-[215px]" />
             </div>
 
             <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
@@ -232,7 +233,7 @@ export default async function HomePrincipal() {
 
               {/* Coluna secundária */}
               <StickyColumn className="min-w-0 space-y-3">
-                <Card title="Mais quente">
+                <Card title={categoryLabel('internacional')}>
                   <Overlay post={hot[0]} className="h-[200px]" titleClass="text-[13px]" />
                   <ul className="divide-y divide-gray-100">
                     {hot.slice(1).map((p) => (

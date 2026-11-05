@@ -128,9 +128,9 @@ export default function PartilhadoPage() {
               className={`rounded border bg-white p-5 text-left transition hover:border-[#00a651] ${aberta === id ? 'border-[#00a651] ring-1 ring-[#00a651]' : 'border-[#ccd0d4]'}`}
             >
               <Icon className="mb-3 h-8 w-8 text-[#00a651]" />
+              <p className="mb-1 text-2xl">{data?.counts?.[id] ?? 0}</p>
               <p className="text-base font-semibold">{label}</p>
               <p className="text-xs text-[#50575e]">{hint}</p>
-              <p className="mt-3 text-2xl">{data?.counts?.[id] ?? 0}</p>
             </button>
           ))}
         </div>
