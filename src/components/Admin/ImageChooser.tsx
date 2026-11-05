@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { FolderOpen, Upload, X } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Upload, X } from 'lucide-react';
 import { STORAGE_BUCKET } from '@/lib/supabase';
 import { prepareImage } from '@/lib/client-image';
 
@@ -25,36 +25,18 @@ export async function uploadToLibrary(original: File): Promise<string> {
 }
 
 /**
- * Escolher uma foto: “Galeria” abre a galeria principal noutro separador e a foto clicada volta para aqui;
- * “Computador” anexa logo a foto (pré-visualização imediata) e envia-a para a biblioteca em segundo plano.
+ * Escolher uma foto: "Carregar ficheiros" anexa logo a foto do computador (pré-visualização imediata, envio em segundo
+ * plano); "Biblioteca multimédia" leva à galeria principal no mesmo separador e, ao escolher a foto, volta a este ecrã
+ * com tudo o que já estava escrito (o rascunho guarda-se antes de sair).
  */
-export default function ImageChooser({ title = 'Imagem', onChoose, onClose }: { title?: string; onChoose: (img: ChosenImage) => void; onClose: () => void }) {
+export default function ImageChooser({ title = 'Imagem', target = 'featured', onBeforeLeave, onChoose, onClose }: { title?: string; target?: 'featured' | 'editor'; onBeforeLeave?: () => void; onChoose: (img: ChosenImage) => void; onClose: () => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [tab, setTab] = useState<'upload' | 'library'>('upload');
-  const [waiting, setWaiting] = useState(false);
-  const [blocked, setBlocked] = useState(false);
-  const pickId = useRef('');
-  const latest = useRef({ onChoose, onClose });
-  useEffect(() => { latest.current = { onChoose, onClose }; });
-
-  useEffect(() => {
-    if (!waiting) return;
-    const channel = new BroadcastChannel('ec-media-pick');
-    channel.onmessage = (e: MessageEvent<{ id?: string; url?: string }>) => {
-      if (e.data?.id === pickId.current && e.data.url) {
-        latest.current.onChoose({ url: e.data.url });
-        latest.current.onClose();
-      }
-    };
-    return () => channel.close();
-  }, [waiting]);
 
   const openGallery = () => {
-    pickId.current = Math.random().toString(36).slice(2);
-    const win = window.open(`/admin/media?escolher=${pickId.current}`, '_blank');
-    if (!win) { setBlocked(true); return; }
-    setBlocked(false);
-    setWaiting(true);
+    const id = Math.random().toString(36).slice(2);
+    try { onBeforeLeave?.(); sessionStorage.setItem('ec-pick', JSON.stringify({ id, target })); } catch { /* sem armazenamento: a galeria abre na mesma */ }
+    window.location.href = `/admin/media?escolher=${id}&voltar=${encodeURIComponent(window.location.pathname + window.location.search)}`;
   };
 
   const fromComputer = (file: File) => {
@@ -98,22 +80,8 @@ export default function ImageChooser({ title = 'Imagem', onChoose, onClose }: { 
             <p className="text-[12px] text-[#50575e]">Tamanho máximo do ficheiro: 1 GB.</p>
           </div>
         ) : (
-          <div className="max-w-md px-6 text-center">
-            <FolderOpen className="mx-auto mb-4 h-12 w-12 text-[#00a651]" />
-            {blocked ? (
-              <p className="text-sm text-[#d63638]">O navegador bloqueou o separador da galeria. Permita janelas para este site e tente de novo.</p>
-            ) : (
-              <p className="text-[15px] text-[#3c434a]">{waiting ? 'A galeria abriu noutro separador: clique na foto e ela volta para aqui.' : 'A abrir a galeria…'}</p>
-            )}
-            <button type="button" onClick={openGallery} className="mt-5 rounded-[4px] border border-[#00a651] bg-white px-5 py-2 text-[13px] font-bold text-[#008f45] hover:bg-[#f6f7f7]">Abrir a galeria de novo</button>
-          </div>
+          <p className="text-[15px] text-[#3c434a]">A abrir a galeria…</p>
         )}
-      </div>
-
-      {/* Footer */}
-      <div className="flex shrink-0 items-center justify-between border-t border-[#ccd0d4] bg-[#f6f7f7] p-4">
-        <div className="text-xs text-[#50575e]">{tab === 'upload' ? 'Os ficheiros carregados serão guardados permanentemente.' : 'Seleccione uma imagem da sua biblioteca.'}</div>
-        <button type="button" onClick={onClose} className="rounded-[4px] bg-[#00a651] px-6 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#008f45]">Fechar</button>
       </div>
     </div>
   );

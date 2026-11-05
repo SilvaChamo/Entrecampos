@@ -154,6 +154,23 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
     },
   });
 
+  // Volta da galeria com uma foto escolhida para dentro do texto: insere-a no fim, depois de o rascunho estar reposto.
+  useEffect(() => {
+    if (!editor) return;
+    const t = setTimeout(() => {
+      try {
+        const res = sessionStorage.getItem('ec-pick-result');
+        if (!res) return;
+        const r = JSON.parse(res) as { target?: string; url?: string };
+        if (r.target !== 'editor' || !r.url) return;
+        sessionStorage.removeItem('ec-pick-result');
+        editor.commands.focus('end');
+        insertBlock(editor, { type: 'figure', attrs: { src: r.url, alt: '' } });
+      } catch { /* ignora */ }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [editor]);
+
   // O texto da notícia chega depois de o editor abrir (edição): carrega-o sem contar como alteração.
   useEffect(() => {
     if (!editor || value === lastEmitted.current) return;
@@ -282,6 +299,8 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
       {picking && (
         <ImageChooser
           title="Inserir imagem"
+          target="editor"
+          onBeforeLeave={() => window.dispatchEvent(new Event('ec-news-save-draft'))}
           onClose={() => setPicking(false)}
           onChoose={async (img) => {
             // Na imagem dentro do texto espera-se o endereço final (curto): assim o texto nunca guarda um endereço temporário.

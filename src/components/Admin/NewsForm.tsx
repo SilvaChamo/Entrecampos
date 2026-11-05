@@ -100,12 +100,50 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     date: new Date().toISOString()
   });
 
+  // Ao ir à galeria escolher uma foto sai-se desta página: guarda-se o que já está escrito e repõe-se ao voltar.
+  const saveDraft = () => {
+    try {
+      sessionStorage.setItem('ec-news-draft', JSON.stringify({ path: window.location.pathname, ts: Date.now(), formData: { ...formData, image_url: formData.image_url.startsWith('blob:') ? '' : formData.image_url } }));
+    } catch { /* sem armazenamento */ }
+  };
+
+  const saveDraftRef = useRef(saveDraft);
+  useEffect(() => { saveDraftRef.current = saveDraft; });
+  useEffect(() => {
+    const h = () => saveDraftRef.current();
+    window.addEventListener('ec-news-save-draft', h); // o editor de texto pede-o antes de ir à galeria
+    return () => window.removeEventListener('ec-news-save-draft', h);
+  }, []);
+
+
   useEffect(() => {
     if (initialData) {
       const list = Array.isArray(initialData.categories) && initialData.categories.length ? initialData.categories : [initialData.category || 'agricultura'];
       setFormData({ ...initialData, categories: list });
     }
   }, [initialData]);
+
+  // Volta da galeria: repõe o rascunho e, se escolheu a foto de destaque, aplica-a (a foto do texto é tratada pelo editor).
+  useEffect(() => {
+    if (isEdit && !initialData) return;
+    try {
+      const raw = sessionStorage.getItem('ec-news-draft');
+      if (!raw) return;
+      const d = JSON.parse(raw) as { path?: string; ts?: number; formData?: Record<string, unknown> };
+      sessionStorage.removeItem('ec-news-draft');
+      if (d.path !== window.location.pathname || !d.formData || Date.now() - (d.ts ?? 0) > 3600_000) return;
+      setFormData((prev) => ({ ...prev, ...(d.formData as object) }));
+      const res = sessionStorage.getItem('ec-pick-result');
+      if (res) {
+        const r = JSON.parse(res) as { target?: string; url?: string };
+        if (r.target === 'featured' && r.url) {
+          sessionStorage.removeItem('ec-pick-result');
+          setFormData((prev) => ({ ...prev, image_url: r.url as string }));
+        }
+      }
+    } catch { /* rascunho inválido: ignora */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData, isEdit]);
 
   // Gerar slug automaticamente a partir do título (só se não for edição)
   useEffect(() => {
@@ -394,6 +432,8 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
       {isImageSelectorOpen && (
         <ImageChooser
           title="Imagem de destaque"
+          target="featured"
+          onBeforeLeave={saveDraft}
           onClose={() => setIsImageSelectorOpen(false)}
           onChoose={chooseImage}
         />

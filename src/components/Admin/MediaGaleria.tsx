@@ -23,7 +23,6 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
   const [source, setSource] = useState<MediaSource>(initialSource);
   const [folders, setFolders] = useState<FolderInfo[]>([]);
   const [pasta, setPasta] = useState(initialPasta);
-  const [done, setDone] = useState(false);
   const [zips, setZips] = useState<{ path: string; label: string }[]>([]);
   const [reloadKey, setReloadKey] = useState(0);
   const [filter, setFilter] = useState('');
@@ -65,30 +64,22 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
     }
   };
 
-  /** Fecha este separador e volta à notícia (se não o puder fechar, recua ou vai para a lista de notícias). */
-  const backToNews = () => {
-    window.close();
-    setTimeout(() => { if (!window.closed) { if (history.length > 1) history.back(); else window.location.href = '/admin/noticias'; } }, 250);
-  };
+  /** Para onde voltar: o ecrã de onde se veio escolher a foto (só caminhos do painel). */
+  const rawBack = params.get('voltar') || '';
+  const voltar = rawBack.startsWith('/admin/') && !rawBack.startsWith('//') ? rawBack : '/admin/noticias';
 
+  /** "Voltar à notícia": volta a esse ecrã no mesmo separador (o rascunho foi guardado antes de sair). */
+  const backToNews = () => { window.location.href = voltar; };
+
+  /** Foto escolhida: guarda-se o resultado e volta-se ao ecrã de origem, que a aplica. */
   const pick = pickId
     ? (url: string) => {
-        const channel = new BroadcastChannel('ec-media-pick');
-        channel.postMessage({ id: pickId, url });
-        channel.close();
-        setDone(true);
-        window.close();
+        let target = 'featured';
+        try { target = (JSON.parse(sessionStorage.getItem('ec-pick') || '{}') as { target?: string }).target || 'featured'; } catch { /* usa a foto de destaque */ }
+        try { sessionStorage.setItem('ec-pick-result', JSON.stringify({ id: pickId, url, target })); } catch { /* sem armazenamento */ }
+        window.location.href = voltar;
       }
     : undefined;
-
-  if (done) {
-    return (
-      <div className="p-10 text-center text-[#2c3338]">
-        <p className="text-lg font-semibold text-[#008f45]">Foto escolhida.</p>
-        <p className="mt-1 text-sm text-[#50575e]">Já pode fechar este separador e voltar à notícia.</p>
-      </div>
-    );
-  }
 
   const tabs = (
     <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2">
