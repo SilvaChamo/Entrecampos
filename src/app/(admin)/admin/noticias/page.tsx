@@ -132,7 +132,7 @@ export default function NewsAdminPage() {
             setPerPage(value);
             localStorage.setItem('ec-admin-news-perpage', String(value));
           }}
-          className="h-7 max-md:h-11 border border-[#ccd0d4] bg-white px-1.5 text-[13px] text-[#2c3338]"
+          className="h-9 max-md:h-11 border border-[#ccd0d4] bg-white px-1.5 text-[13px] text-[#2c3338]"
         >
           {PER_PAGE_OPTIONS.map((n) => (
             <option key={n} value={n}>
@@ -150,7 +150,7 @@ export default function NewsAdminPage() {
         { label: '‹', title: 'Anterior', to: currentPage - 1, off: currentPage === 1 },
       ].map((b) => (
         <button key={b.title} type="button" title={b.title} disabled={b.off} onClick={() => setPage(b.to)}
-          className="h-7 max-md:h-11 max-md:flex-1 min-w-7 border border-[#ccd0d4] bg-white px-2 hover:border-[#00a651] hover:text-[#008f45] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
+          className="h-9 max-md:h-11 max-md:flex-1 min-w-9 border border-[#ccd0d4] bg-white px-2 hover:border-[#00a651] hover:text-[#008f45] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
           {b.label}
         </button>
       ))}
@@ -160,7 +160,7 @@ export default function NewsAdminPage() {
         { label: '»', title: 'Última página', to: totalPages, off: currentPage >= totalPages },
       ].map((b) => (
         <button key={b.title} type="button" title={b.title} disabled={b.off} onClick={() => setPage(b.to)}
-          className="h-7 max-md:h-11 max-md:flex-1 min-w-7 border border-[#ccd0d4] bg-white px-2 hover:border-[#00a651] hover:text-[#008f45] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
+          className="h-9 max-md:h-11 max-md:flex-1 min-w-9 border border-[#ccd0d4] bg-white px-2 hover:border-[#00a651] hover:text-[#008f45] disabled:opacity-40 disabled:hover:border-[#ccd0d4] disabled:hover:text-inherit">
           {b.label}
         </button>
       ))}
@@ -310,18 +310,18 @@ export default function NewsAdminPage() {
             placeholder="Pesquisar artigos"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 pl-3 pr-3 border border-[#ccd0d4] rounded-md text-sm outline-none focus:border-[#00a651] w-full min-w-0 flex-1 md:w-64 md:flex-none max-md:h-11"
+            className="h-9 pl-3 pr-3 border border-[#ccd0d4] rounded-md text-sm outline-none focus:border-[#00a651] w-full min-w-0 flex-1 md:w-64 md:flex-none max-md:h-11"
           />
           <Link
             href="/admin/noticias/arquivadas"
-            className="p-2 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7] text-[#50575e] inline-flex items-center justify-center max-md:h-11 max-md:w-11 max-md:p-0"
+            className="h-9 w-9 p-0 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7] text-[#50575e] inline-flex items-center justify-center max-md:h-11 max-md:w-11 max-md:p-0"
             title="Arquivadas"
           >
             <Archive className="w-4 h-4" />
           </Link>
           <Link
             href="/admin/noticias/lixo"
-            className="p-2 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7] text-[#50575e] inline-flex items-center justify-center max-md:h-11 max-md:w-11 max-md:p-0"
+            className="h-9 w-9 p-0 bg-white border border-[#ccd0d4] rounded-md hover:bg-[#f6f7f7] text-[#50575e] inline-flex items-center justify-center max-md:h-11 max-md:w-11 max-md:p-0"
             title="Lixo"
           >
             <Trash2 className="w-4 h-4" />
@@ -332,7 +332,7 @@ export default function NewsAdminPage() {
       {/* Toolbar superior com Filtros */}
       <div className="flex flex-wrap items-center gap-2 mb-4 max-sm:grid max-sm:grid-cols-2">
         <select
-          className="h-8 max-sm:h-11 max-sm:w-full border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651]"
+          className="h-9 max-sm:h-11 max-sm:w-full border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651]"
           value={bulkAction}
           onChange={(e) => setBulkAction(e.target.value)}
         >
@@ -345,7 +345,7 @@ export default function NewsAdminPage() {
         {selectedIds.size > 0 && bulkAction === 'trash' && (
           <button
             onClick={deleteSelected}
-            className="h-8 px-4 bg-[#d63638] text-white rounded-md text-sm font-semibold hover:bg-[#b32d2e] flex items-center gap-2 max-sm:col-span-2 max-sm:h-11 max-sm:justify-center"
+            className="h-9 px-4 bg-[#d63638] text-white rounded-md text-sm font-semibold hover:bg-[#b32d2e] flex items-center gap-2 max-sm:col-span-2 max-sm:h-11 max-sm:justify-center"
           >
             <Trash2 className="w-4 h-4" />
             Eliminar ({selectedIds.size})
@@ -355,7 +355,7 @@ export default function NewsAdminPage() {
         {selectedIds.size > 0 && bulkAction === 'archive' && (
           <button
             onClick={archiveSelected}
-            className="h-8 px-4 bg-[#00a651] text-white rounded-md text-sm font-semibold hover:bg-[#008f45] flex items-center gap-2 max-sm:col-span-2 max-sm:h-11 max-sm:justify-center"
+            className="h-9 px-4 bg-[#00a651] text-white rounded-md text-sm font-semibold hover:bg-[#008f45] flex items-center gap-2 max-sm:col-span-2 max-sm:h-11 max-sm:justify-center"
           >
             <Archive className="w-4 h-4" />
             Arquivar ({selectedIds.size})
@@ -365,13 +365,13 @@ export default function NewsAdminPage() {
         {selectedIds.size > 0 && (
           <button
             onClick={() => { setSelectedIds(new Set()); setBulkAction(''); }}
-            className="h-8 px-4 border border-[#ccd0d4] bg-white text-[#50575e] rounded-md text-sm font-semibold hover:bg-[#f6f7f7] max-sm:col-span-2 max-sm:h-11 max-sm:justify-center"
+            className="h-9 px-4 border border-[#ccd0d4] bg-white text-[#50575e] rounded-md text-sm font-semibold hover:bg-[#f6f7f7] max-sm:col-span-2 max-sm:h-11 max-sm:justify-center"
           >
             Cancelar
           </button>
         )}
         <select
-          className="h-8 max-sm:h-11 max-sm:w-full max-sm:ml-0 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651] ml-2"
+          className="h-9 max-sm:h-11 max-sm:w-full max-sm:ml-0 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651] ml-2"
           value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
         >
@@ -381,7 +381,7 @@ export default function NewsAdminPage() {
           ))}
         </select>
         <select
-          className="h-8 max-sm:h-11 max-sm:w-full max-sm:col-span-2 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651]"
+          className="h-9 max-sm:h-11 max-sm:w-full max-sm:col-span-2 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651]"
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
         >
@@ -391,7 +391,7 @@ export default function NewsAdminPage() {
 
         <button
           onClick={() => setFilterMissingImage(!filterMissingImage)}
-          className={`h-8 max-sm:h-11 max-sm:w-full max-sm:col-span-2 px-3 border rounded-md text-sm font-normal transition-all ${filterMissingImage
+          className={`h-9 max-sm:h-11 max-sm:w-full max-sm:col-span-2 px-3 border rounded-md text-sm font-normal transition-all ${filterMissingImage
               ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-inner'
               : 'bg-white border-[#ccd0d4] text-[#2c3338] hover:bg-[#f6f7f7]'
             }`}
@@ -461,14 +461,14 @@ export default function NewsAdminPage() {
                             <AlertTriangle className="w-6 h-6 text-amber-500" />
                           </div>
                         )}
-                        <div className="relative flex flex-col gap-1 min-w-0 max-md:w-full md:transition-transform md:duration-150 md:group-hover:-translate-y-[7px] [@media(hover:none)]:md:!translate-y-0">
+                        <div className="flex flex-col gap-1 min-w-0 max-md:w-full">
                           <div className="flex items-center gap-2">
                             {item.status === 'Archived' && <Recycle className="w-4 h-4 text-gray-400" />}
                             <Link href={`/admin/noticias/editar/${item.id}`} title={item.title} className="text-[#2271b1] font-bold text-[12px] leading-snug hover:text-[#135e96] line-clamp-2 break-words">
                               {item.title}
                             </Link>
                           </div>
-                          <div className="flex flex-nowrap items-center gap-x-1.5 whitespace-nowrap md:absolute md:left-0 md:top-full md:z-10 md:mt-0.5 md:hidden md:group-hover:flex [@media(hover:none)]:md:!static [@media(hover:none)]:md:!flex text-[11px] leading-none font-medium text-[#2271b1]">
+                          <div className="flex flex-nowrap items-center gap-x-1.5 whitespace-nowrap md:invisible md:group-hover:visible [@media(hover:none)]:md:!visible text-[11px] leading-none font-medium text-[#2271b1]">
                             <Link href={`/admin/noticias/editar/${item.id}`} className="hover:text-[#135e96]">Editar</Link>
                             <span className="text-gray-300">|</span>
                             <button onClick={() => handleQuickEdit(item)} className="hover:text-[#135e96]">Edição rápida</button>
