@@ -430,7 +430,7 @@ export default function NewsAdminPage() {
               <th className="p-3 w-40">Categorias</th>
               <th className="p-3 w-48">Data</th>
               <th className="p-3 w-32">Hits</th>
-              <th className="p-3 w-24 text-center">SEO</th>
+              <th className="p-3 w-24">SEO</th>
             </tr>
           </thead>
           <tbody className="max-md:block">
@@ -505,11 +505,11 @@ export default function NewsAdminPage() {
                         <span className="font-bold text-[#1d2327]">{item.views || 0} leituras</span>
                       </div>
                     </td>
-                    <td className="p-3 align-top text-center max-md:hidden">
+                    <td className="p-3 align-top text-left max-md:hidden">
                       {(() => {
                         const checks = seoChecks(item);
                         const ok = checks.filter((c) => c.ok).length;
-                        const tone = ok === checks.length ? 'border-[#00a651] text-[#008f45]' : ok >= 2 ? 'border-[#dba617] text-[#996800]' : 'border-[#d63638] text-[#d63638]';
+                        const tone = ok >= 3 ? 'border-[#00a651] text-[#008f45]' : ok >= 2 ? 'border-[#dba617] text-[#996800]' : 'border-[#d63638] text-[#d63638]';
                         return (
                           <>
                           <button
@@ -520,7 +520,7 @@ export default function NewsAdminPage() {
                           >
                             {ok >= 3 ? 'Bom' : ok === 2 ? 'Razoável' : 'Fraco'}
                           </button>
-                          <Link href={`/admin/noticias/editar/${item.id}`} className="mt-1 block text-[10px] leading-none text-[#2271b1] hover:underline">Editar</Link>
+                          {ok < 3 && <Link href={`/admin/noticias/editar/${item.id}`} className="mt-1 block text-[10px] leading-none text-[#2271b1] hover:underline">Editar</Link>}
                           </>
                         );
                       })()}
