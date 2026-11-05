@@ -326,7 +326,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
               <button
                 type="submit"
                 disabled={loading}
-                className="h-10 px-6 bg-[#00a651] text-white text-[14px] font-medium rounded-[4px] hover:bg-[#008f45] disabled:opacity-50"
+                className="h-9 px-6 bg-[#00a651] text-white text-[14px] font-medium rounded-[4px] hover:bg-[#008f45] disabled:opacity-50"
               >
                 {loading ? 'A guardar...' : (isEdit ? 'Atualizar' : 'Publicar')}
               </button>
@@ -334,7 +334,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
                 type="button"
                 disabled={loading}
                 onClick={() => router.push('/admin/noticias')}
-                className="h-10 px-5 bg-white border border-[#ccd0d4] text-[#50575e] text-[14px] font-medium rounded-[4px] hover:bg-[#f0f0f1] disabled:opacity-50"
+                className="h-9 px-5 bg-white border border-[#ccd0d4] text-[#50575e] text-[14px] font-medium rounded-[4px] hover:bg-[#f0f0f1] disabled:opacity-50"
               >
                 Cancelar
               </button>
