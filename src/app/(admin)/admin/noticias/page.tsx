@@ -520,7 +520,7 @@ export default function NewsAdminPage() {
                           >
                             {ok >= 3 ? 'Bom' : ok === 2 ? 'Razoável' : 'Fraco'}
                           </button>
-                          {ok < 3 && <Link href={`/admin/noticias/editar/${item.id}`} className="mt-1 block text-[10px] leading-none text-[#2271b1] hover:underline">Editar</Link>}
+                          {ok < 3 && <button type="button" onClick={() => setSeoItem(item)} className="mt-1 block text-[10px] leading-none text-[#2271b1] hover:underline">Editar</button>}
                           </>
                         );
                       })()}
