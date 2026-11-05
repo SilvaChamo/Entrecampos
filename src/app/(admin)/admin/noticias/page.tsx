@@ -120,9 +120,9 @@ export default function NewsAdminPage() {
   }, [searchQuery, filterCategory, filterDate, filterMissingImage, perPage]);
 
   const pager = (
-    <div className="flex flex-col-reverse gap-2 md:flex-row md:flex-wrap md:items-center md:justify-end md:gap-1 text-[13px] text-[#50575e]">
+    <div className="flex flex-col-reverse gap-2 max-md:gap-0 md:flex-row md:flex-wrap md:items-center md:justify-end md:gap-1 text-[13px] text-[#50575e]">
       {/* Telemóvel: por baixo (por página e total). Ecrã grande: à esquerda dos botões, como sempre. */}
-      <div className="flex items-center gap-3 md:contents">
+      <div className="flex items-center gap-3 max-md:hidden md:contents">
       <label className="md:mr-3 flex items-center gap-1.5">
         Por página:
         <select
@@ -154,7 +154,7 @@ export default function NewsAdminPage() {
           {b.label}
         </button>
       ))}
-      <span className="mx-1 max-md:flex-[2] max-md:text-center">Página {currentPage} de {totalPages}</span>
+      <span className="mx-1 whitespace-nowrap max-md:flex-[2] max-md:text-center"><span className="md:hidden">pág. {currentPage}/{totalPages}</span><span className="hidden md:inline">Página {currentPage} de {totalPages}</span></span>
       {[
         { label: '›', title: 'Seguinte', to: currentPage + 1, off: currentPage >= totalPages },
         { label: '»', title: 'Última página', to: totalPages, off: currentPage >= totalPages },
