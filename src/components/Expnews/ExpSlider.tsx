@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Post } from '@/lib/news-data';
 import CategoryBadge from '@/components/Expnews/CategoryBadge';
 
@@ -52,69 +52,69 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
-          <div className="absolute inset-0 flex flex-col justify-end p-[30px] text-white max-sm:pb-[70px]">
-            <CategoryBadge label={p.category} slug={p.categorySlug} tabIndex={i === active ? 0 : -1} className="self-start text-[11px]" />
-            <Link href={`/noticias/${p.slug}`} tabIndex={i === active ? 0 : -1} className="block max-w-4xl">
-              <h2 className="mt-3 line-clamp-3 text-[22px] font-bold leading-tight hover:underline sm:text-[24px] lg:text-[30px]">
-                {p.title}
-              </h2>
-            </Link>
-            {p.excerpt && <p className="mt-3 line-clamp-2 max-w-3xl text-[13px] leading-relaxed text-white/85">{p.excerpt}</p>}
-            <span className="mt-2 flex h-7 items-center gap-2 text-[13px] font-normal text-[#39ff14] [text-shadow:0_1px_3px_rgba(0,0,0,0.7)]">
-              <CalendarCheck className="h-4 w-4" />
-              Publicado a {formatDate(p.date)}
-            </span>
+          <div className="absolute inset-0 flex items-end p-[30px] text-white">
+            <div className="flex w-full items-center justify-between gap-4">
+              <div className="flex min-w-0 flex-col">
+                <CategoryBadge label={p.category} slug={p.categorySlug} tabIndex={i === active ? 0 : -1} className="self-start text-[11px]" />
+                <Link href={`/noticias/${p.slug}`} tabIndex={i === active ? 0 : -1} className="block max-w-4xl">
+                  <h2 className="mt-3 line-clamp-3 text-[22px] font-bold leading-tight hover:underline sm:text-[24px] lg:text-[30px]">
+                    {p.title}
+                  </h2>
+                </Link>
+                {p.excerpt && <p className="mt-3 line-clamp-2 max-w-3xl text-[13px] leading-relaxed text-white/85">{p.excerpt}</p>}
+                <span className="mt-2 flex h-7 items-center gap-2 text-[13px] font-normal text-[#39ff14] [text-shadow:0_1px_3px_rgba(0,0,0,0.7)]">
+                  <CalendarCheck className="h-4 w-4" />
+                  Publicado a {formatDate(p.date)}
+                </span>
+              </div>
+              {/* Controlo à direita, em coluna: seta, quadrados (o activo alonga-se e enche) e seta, centrado na vertical com o título e a descrição */}
+              {total > 1 && i === active && (
+                <div className="flex shrink-0 flex-col items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => go(active - 1)}
+                    aria-label="Notícia anterior"
+                    className="flex h-6 w-6 items-center justify-center border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </button>
+                  <div className="flex flex-col items-center gap-2">
+                    {posts.map((q, k) => (
+                      <button
+                        key={q.slug}
+                        type="button"
+                        onClick={() => setActive(k)}
+                        aria-label={`Ir para a notícia ${k + 1}`}
+                        aria-current={k === active}
+                        className={`relative overflow-hidden transition-all duration-300 ${k === active ? 'h-10 w-2 bg-white/40' : 'h-2 w-2 bg-white/55 hover:bg-white'}`}
+                      >
+                        {/* O quadrado activo enche durante o tempo do slide; quando enche, passa para a notícia seguinte */}
+                        {k === active && ready && (
+                          <span
+                            key={active}
+                            className="ec-dot-fill-y absolute inset-x-0 top-0 h-full origin-top bg-[#d6101c]"
+                            style={{ animationDuration: `${SLIDE_MS}ms`, animationPlayState: paused ? 'paused' : 'running' }}
+                            onAnimationEnd={() => go(active + 1)}
+                          />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => go(active + 1)}
+                    aria-label="Notícia seguinte"
+                    className="flex h-6 w-6 items-center justify-center border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ))}
 
-      {total > 1 && (
-        // Controlo: seta, pontos (o activo alonga-se) e seta. Ecrã grande: canto direito, na linha da data.
-        // Telemóvel: em coluna, por baixo da data (o texto sobe para lhe dar lugar), tudo na horizontal.
-        <div className="absolute bottom-[30px] left-[30px] flex items-center gap-2.5 sm:left-auto sm:right-[30px]">
-          <button
-            type="button"
-            onClick={() => go(active - 1)}
-            aria-label="Notícia anterior"
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="flex items-center gap-2">
-            {posts.map((p, i) => (
-              <button
-                key={p.slug}
-                type="button"
-                onClick={() => setActive(i)}
-                aria-label={`Ir para a notícia ${i + 1}`}
-                aria-current={i === active}
-                className={`relative overflow-hidden rounded-full transition-all duration-300 ${
-                  i === active ? 'h-1.5 w-12 bg-white/40' : 'h-2 w-2 bg-white/55 hover:bg-white'
-                }`}
-              >
-                {/* O ponto activo enche durante o tempo do slide; quando enche, passa para a notícia seguinte */}
-                {i === active && total > 1 && ready && (
-                  <span
-                    key={active}
-                    className="ec-dot-fill absolute inset-y-0 left-0 w-full origin-left bg-[#d6101c]"
-                    style={{ animationDuration: `${SLIDE_MS}ms`, animationPlayState: paused ? 'paused' : 'running' }}
-                    onAnimationEnd={() => go(active + 1)}
-                  />
-                )}
-                {i === active && total <= 1 && <span className="absolute inset-0 bg-[#d6101c]" />}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => go(active + 1)}
-            aria-label="Notícia seguinte"
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      )}
     </section>
   );
 }
