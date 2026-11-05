@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { SESSION_COOKIE, verifySession } from '@/lib/local-session';
 import { hasPermission } from '@/lib/permissions';
+import { refreshSite } from '@/lib/refresh-site';
 
 const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos';
 
@@ -37,6 +38,8 @@ export async function repairNewsImage(newsId: string, newUrl: string) {
 
   if (error) throw new Error(`Erro na base de dados: ${error.message}`);
   if (!data || data.length === 0) throw new Error('A notícia não foi encontrada neste site.');
+  // A foto nova (ou removida) tem de aparecer já no site público.
+  refreshSite();
   return true;
 }
 

@@ -117,7 +117,7 @@ function ListaPasta({ pasta, withTitle }: { pasta: string; withTitle: boolean })
       {files && files.length === 0 && <p className="py-10 text-center text-sm text-[#50575e]">Esta pasta ainda está vazia. Use “Sincronizar agora” na página Partilhado.</p>}
 
       {files && files.length > 0 && (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 min-[1920px]:grid-cols-6 gap-2">
           {files.map((f) => (isZip(f) ? <ZipCard key={f.path} file={f} onDone={load} /> : <DocCard key={f.path} file={f} />))}
         </div>
       )}

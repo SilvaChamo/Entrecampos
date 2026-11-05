@@ -42,7 +42,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   'turismo-rural': '#589442',
   'mulher-agrario': '#8E0B13',
   fruticultura: '#225E3B',
-  oportunidades: '#C62828',
+  oportunidades: '#1BB35A', // verde vivo, distinto do da Agricultura
   receitas: '#A50F1A',
 };
 const DEFAULT_COLOR = '#D6101C';

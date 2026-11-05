@@ -1,4 +1,4 @@
-import { ARCHIVE_PAGE_SIZE, getAllPosts } from '@/lib/news-data';
+import { ARCHIVE_PAGE_SIZE, getAllPosts, searchSlugs } from '@/lib/news-data';
 import { Pagination } from '@/components/Site/parts';
 import InnerPage, { InnerSidebar } from '@/components/Expnews/InnerPage';
 import { NewsCard } from '@/components/Expnews/blocks';
@@ -15,9 +15,13 @@ export default async function ArquivoDeNoticias({
   const { q = '', pagina } = await searchParams;
   const query = q.trim().toLowerCase();
   const { posts } = await getAllPosts();
-  const found = query
-    ? posts.filter((p) => `${p.title} ${p.excerpt} ${p.category}`.toLowerCase().includes(query))
-    : posts;
+  // A pesquisa procura em todo o texto das notícias (título, resumo, categorias, autor e corpo), ignorando acentos.
+  const matches = query ? await searchSlugs(query) : null;
+  const found = !query
+    ? posts
+    : matches
+      ? posts.filter((p) => matches.has(p.slug))
+      : posts.filter((p) => `${p.title} ${p.excerpt} ${p.category}`.toLowerCase().includes(query));
 
   const pages = Math.max(1, Math.ceil(found.length / ARCHIVE_PAGE_SIZE));
   const page = Math.min(Math.max(parseInt(pagina || '1', 10) || 1, 1), pages);

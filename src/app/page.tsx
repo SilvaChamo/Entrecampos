@@ -122,7 +122,8 @@ export default async function HomePrincipal() {
   const watch = pool.take(5);
   const food = pool.take(5, ['receitas', 'curiosidade']);
   const entertainment = pool.take(3, ['oportunidades']);
-  const recent = pool.take(3);
+  // Publicações recentes da barra lateral: a Entrevista primeiro, depois as mais recentes.
+  const recent = pool.take(3, ['entrevista']);
   // Últimas notícias publicadas (carrossel), sem as do slide principal.
   // Últimas notícias: 6 cards parados (sem slide), sem as do slide principal.
   const latest = posts.filter((p) => !inSlides.has(p.slug)).slice(0, 6);
@@ -140,7 +141,7 @@ export default async function HomePrincipal() {
   const family = (slugs: string[]): CategoryGroup[] =>
     slugs.map((slug) => ({ slug, label: categoryLabel(slug), posts: posts.filter((p) => p.categorySlug === slug).map(slim) }));
   const communityGroups = family(['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida']);
-  const agroGroups = family(['agricultura', 'fruticultura', 'agro-negocio', 'mulher-agrario', 'sector-agrario']);
+  const agroGroups = family(['agricultura', 'fruticultura', 'agro-negocio', 'mulher-agrario', 'sector-agrario', 'entrevista']);
   // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Oportunidades que não estão no slide.
   const heroLatest = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 5).map(slim);
   const newsletterBg = (slides[1] ?? slides[0] ?? posts[0]).image;

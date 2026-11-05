@@ -28,7 +28,10 @@ const CATEGORIES = [
 ];
 
 // Compara categorias sem depender de maiúsculas, acentos ou hífenes ("agro-negocio" = "Agro-negócio").
-const catKey = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const catKey = (v: string) => {
+  const key = v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return key === 'entrevsta' ? 'entrevista' : key; // erro de escrita antigo na base: é a mesma categoria
+};
 
 /** Cabeçalho de um card da barra lateral: a seta recolhe/expande o conteúdo. */
 function CollapsibleHeader({ title, open, onToggle }: { title: string; open: boolean; onToggle: () => void }) {
@@ -182,6 +185,18 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     window.addEventListener('resize', fit);
     return () => window.removeEventListener('resize', fit);
   }, [formData.title]);
+
+  // Categorias reais (as do menu e as que já têm notícias): vêm do servidor; a lista fixa serve só de plano B.
+  const [categoryLabels, setCategoryLabels] = useState<string[]>(CATEGORIES);
+  useEffect(() => {
+    fetch('/api/admin/categories', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const labels = ((data?.options ?? []) as { label: string }[]).map((o) => o.label);
+        if (labels.length > 0) setCategoryLabels(labels);
+      })
+      .catch(() => {});
+  }, []);
 
   // Várias categorias: a primeira escolhida é a principal (`category`); tem de sobrar pelo menos uma.
   const toggleCategory = (cat: string) => {
@@ -377,7 +392,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
               <div className="p-3 bg-white max-h-80 overflow-y-auto">
                 <div className="space-y-1.5">
                   {/* Categorias da notícia que não estão na lista (ex.: vindas da Base) também aparecem, já marcadas. */}
-                  {[...CATEGORIES, ...formData.categories.filter((c) => !CATEGORIES.some((k) => catKey(k) === catKey(c))).map((c) => c.charAt(0).toUpperCase() + c.slice(1))].map(cat => (
+                  {[...categoryLabels, ...formData.categories.filter((c) => !categoryLabels.some((k) => catKey(k) === catKey(c))).map((c) => c.charAt(0).toUpperCase() + c.slice(1))].map(cat => (
                     <label key={cat} className="flex items-start gap-2 cursor-pointer">
                       <input
                         type="checkbox"

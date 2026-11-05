@@ -30,10 +30,13 @@ interface NewsItem {
   views?: number;
 }
 
-const CATEGORIES = [
-  'Agricultura', 'Agro-pecuaria', 'Agro-processamento',
-  'Apicultura', 'Seguranca-alimentar', 'Agro-negocio', 'Ambiente', 'Comunidade'
-];
+type CategoryOption = { slug: string; label: string };
+
+/** Mesma regra do site (lib/news-data.ts): é assim que "Sector agrário" e "sector-agrario" são a mesma categoria. */
+const slugOf = (value: string | undefined | null) => {
+  const slug = String(value ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return slug === 'entrevsta' ? 'entrevista' : slug; // erro de escrita antigo na base
+};
 
 /** Verificações de SEO com o que está realmente guardado na notícia (título, resumo, imagem, endereço). */
 function seoChecks(n: NewsItem) {
@@ -56,7 +59,17 @@ export default function NewsAdminPage() {
   const [ask, setAsk] = useState<{ text: string; done: (ok: boolean) => void } | null>(null);
   const confirmAsync = (text: string) => new Promise<boolean>((done) => setAsk({ text, done }));
   const [loading, setLoading] = useState(true);
+  // Categorias reais (as do menu e as que já têm notícias): vêm do servidor, não de uma lista fixa.
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
+  useEffect(() => {
+    fetch('/api/admin/categories', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data?.options && setCategoryOptions(data.options as CategoryOption[]))
+      .catch(() => {});
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
+  // Ids das notícias que contêm a pesquisa em qualquer parte do texto (o servidor procura no corpo, não só no título).
+  const [searchIds, setSearchIds] = useState<Set<string> | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState('Todas as categorias');
   const [filterDate, setFilterDate] = useState('Todas as datas');
@@ -100,13 +113,33 @@ export default function NewsAdminPage() {
     loadNews();
   }, []);
 
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setSearchIds(null);
+      return;
+    }
+    let alive = true;
+    setSearchIds(null);
+    const timer = setTimeout(() => {
+      fetch(`/api/admin/news/list?q=${encodeURIComponent(q)}&ids=1`, { credentials: 'include' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => alive && data && setSearchIds(new Set((data.ids as string[]).map(String))))
+        .catch(() => {});
+    }, 300);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
   // Extrair anos únicos das notícias
   const years = Array.from(new Set(news.map(item => new Date(item.date).getFullYear()))).sort((a, b) => b - a);
 
   const filteredNews = news.filter(item => {
     if (item.status === 'Archived' || item.status === 'Trash') return false;
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === 'Todas as categorias' || item.category === filterCategory;
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || !!searchIds?.has(String(item.id));
+    const matchesCategory = filterCategory === 'Todas as categorias' || slugOf(item.category) === filterCategory;
     const matchesDate = filterDate === 'Todas as datas' || new Date(item.date).getFullYear().toString() === filterDate;
     const matchesMissingImage = !filterMissingImage || !item.image_url;
     return matchesSearch && matchesCategory && matchesDate && matchesMissingImage;
@@ -419,7 +452,7 @@ export default function NewsAdminPage() {
           onChange={(e) => setFilterCategory(e.target.value)}
         >
           <option>Todas as categorias</option>
-          {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          {categoryOptions.map((cat) => <option key={cat.slug} value={cat.slug}>{cat.label}</option>)}
         </select>
 
         <button
@@ -590,14 +623,14 @@ export default function NewsAdminPage() {
                               <div>
                                 <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">Categorias</label>
                                 <div className="max-h-32 overflow-y-auto p-2 border border-[#ccd0d4] bg-white rounded-[3px]">
-                                  {CATEGORIES.map(cat => (
-                                    <label key={cat} className="flex items-center gap-2 text-[12px] min-[1500px]:text-sm py-0.5">
+                                  {categoryOptions.map((cat) => (
+                                    <label key={cat.slug} className="flex items-center gap-2 text-[12px] min-[1500px]:text-sm py-0.5">
                                       <input
                                         type="checkbox"
-                                        checked={editForm.category === cat}
-                                        onChange={() => setEditForm({ ...editForm, category: cat })}
+                                        checked={slugOf(editForm.category) === cat.slug}
+                                        onChange={() => setEditForm({ ...editForm, category: cat.slug })}
                                       />
-                                      {cat}
+                                      {cat.label}
                                     </label>
                                   ))}
                                 </div>

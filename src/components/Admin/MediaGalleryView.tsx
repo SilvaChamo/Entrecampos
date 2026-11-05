@@ -770,7 +770,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
             ),
             bulkSlot,
           )}
-          <div className={`grid ${fourCols ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2'}`}>
+          <div className={`grid ${fourCols ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 min-[1920px]:grid-cols-6 gap-2'}`}>
             {view !== 'lixo' && (zipOptions ?? []).map((z) => (
               <button
                 key={z.path}
@@ -807,7 +807,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           </>
         ) : viewMode === 'grid' ? (
           /* Grid View - 7 COLUNAS */
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 min-[1920px]:grid-cols-6 gap-2">
             {paginatedFiles.map((file) => (
               <div 
                 key={file.name}

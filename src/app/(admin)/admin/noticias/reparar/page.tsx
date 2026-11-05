@@ -176,7 +176,7 @@ export default function NewsRepairPage() {
     
     setLoading(true);
     try {
-      const fileName = action.newUrl.split('/').pop();
+      const fileName = decodeURIComponent(action.newUrl.split(`/${BUCKET_NAME}/`).pop() || '');
       await repairNews(action.item.id, fileName, true);
       
       setHistory(prev => [...prev, action]);
@@ -197,21 +197,32 @@ export default function NewsRepairPage() {
     });
   };
 
+  // Eliminar a partir do navegador (chave pública) falha sem avisar: vai pelo servidor, para o lixo da galeria.
+  const trashImages = async (names: string[]) => {
+    const res = await fetch('/api/admin/media/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action: 'trash', names }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error || 'Não foi possível eliminar.');
+  };
+
   const deleteSelectedImages = async () => {
     if (selectedImages.size === 0) return;
-    if (!confirm(`Deseja eliminar permanentemente as ${selectedImages.size} imagens selecionadas?`)) return;
+    if (!confirm(`Enviar as ${selectedImages.size} imagens selecionadas para o lixo?`)) return;
 
     setLoading(true);
     try {
       const names = Array.from(selectedImages);
-      const { error } = await supabase.storage.from(BUCKET_NAME).remove(names);
-      if (error) throw error;
+      await trashImages(names);
 
-      alert(`${names.length} imagens eliminadas com sucesso.`);
+      alert(`${names.length} imagens enviadas para o lixo.`);
       setSelectedImages(new Set());
       loadData();
     } catch (err) {
-      alert('Erro ao eliminar em massa');
+      alert(err instanceof Error ? err.message : 'Erro ao eliminar em massa');
     } finally {
       setLoading(false);
     }
@@ -342,7 +353,10 @@ export default function NewsRepairPage() {
                       <div className="flex flex-wrap gap-2">
                         <button 
                           onClick={() => {
-                            const word = extractWordFromUrl(currentItem.image_url);
+                            // Sem ligação (notícia sem foto) procura-se pela palavra mais comprida do título.
+                            const word = extractWordFromUrl(currentItem.image_url)
+                              || (currentItem.title || '').split(/\s+/).sort((a: string, b: string) => b.length - a.length)[0]
+                              || '';
                             setManualFilter(word);
                           }}
                           className="flex-[2] min-w-[150px] py-2.5 bg-[#00a651] text-white text-sm font-bold rounded hover:bg-[#008f45] flex items-center justify-center gap-2 transition-all"
@@ -445,12 +459,12 @@ export default function NewsRepairPage() {
                           <button 
                             onClick={async (e) => {
                               e.stopPropagation();
-                              if (confirm(`Eliminar "${file.name}" permanentemente?`)) {
+                              if (confirm(`Enviar "${file.name}" para o lixo?`)) {
                                 setLoading(true);
                                 try {
-                                  await supabase.storage.from(BUCKET_NAME).remove([file.name]);
+                                  await trashImages([file.name]);
                                   loadData();
-                                } catch (err) { alert('Erro ao eliminar'); }
+                                } catch (err) { alert(err instanceof Error ? err.message : 'Erro ao eliminar'); }
                                 finally { setLoading(false); }
                               }
                             }}

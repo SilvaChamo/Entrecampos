@@ -88,7 +88,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   recursos: 'Recursos',
 };
 
+// Erros de escrita antigos que já estão na base: a mesma categoria com um só endereço.
+const CATEGORY_ALIASES: Record<string, string> = { entrevsta: 'entrevista' };
+
 export function slugify(value: string) {
+  const slug = rawSlugify(value);
+  return CATEGORY_ALIASES[slug] ?? slug;
+}
+
+function rawSlugify(value: string) {
   return value
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
@@ -399,6 +407,9 @@ async function computeAllPosts(): Promise<AllPosts> {
   return { posts, source: 'supabase' };
 }
 
+// Versão da cache: mudar quando muda a forma de processar as notícias (a cache de dados sobrevive aos deploys).
+const CACHE_VERSION = 'v2';
+
 // Notícias já processadas (limpeza do HTML, junção das fontes) ficam na cache de dados, com a etiqueta `news`: gravar no
 // painel limpa-a (lib/refresh-site.ts). Só o resultado vindo do Supabase é guardado; o plano B local nunca fica em cache.
 const cachedAllPosts = unstable_cache(
@@ -407,7 +418,7 @@ const cachedAllPosts = unstable_cache(
     if (result.source !== 'supabase') throw new Error('sem-supabase');
     return result;
   },
-  ['all-posts'],
+  ['all-posts', CACHE_VERSION],
   { tags: ['news'], revalidate: 604800 },
 );
 
@@ -419,6 +430,47 @@ export const getAllPosts = cache(async (): Promise<AllPosts> => {
   }
 });
 
+
+/** Texto para pesquisar: sem etiquetas, sem acentos, minúsculas. */
+export function searchText(value: unknown) {
+  return stripTags(String(value ?? '')).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+/** Todas as palavras da pesquisa (em qualquer ordem) têm de aparecer no texto; a frase exacta também serve. */
+export function matchesSearch(query: string, haystack: string) {
+  const q = searchText(query).trim();
+  if (!q) return true;
+  return haystack.includes(q) || q.split(/\s+/).every((word) => haystack.includes(word));
+}
+
+type SearchRow = { slug: string; hay: string };
+
+/** Índice de pesquisa: título, resumo, categorias, autor e TODO o texto de cada notícia publicada (cache `news`). */
+const searchIndex = unstable_cache(
+  async (): Promise<SearchRow[]> => {
+    const rows = (await querySupabase('news', `site_id=eq.${encodeURIComponent(SITE_ID)}`, 'slug,title,summary,content,category,categories,author_name,status')) ?? [];
+    const out: SearchRow[] = rows
+      .filter((r) => !r.status || String(r.status).toLowerCase() === 'published')
+      .map((r) => ({ slug: String(r.slug), hay: searchText([r.title, r.summary, r.category, r.categories, r.author_name, r.content].join(' ')) }));
+    // Notícias que só existem no instantâneo local (texto completo) também se encontram.
+    const have = new Set(out.map((r) => r.slug));
+    for (const p of fromLocalData()) if (!have.has(p.slug)) out.push({ slug: p.slug, hay: searchText([p.title, p.excerpt, p.category, p.content].join(' ')) });
+    return out;
+  },
+  ['search-index', CACHE_VERSION],
+  { tags: ['news'], revalidate: 604800 },
+);
+
+/** Slugs das notícias publicadas que contêm a pesquisa em qualquer parte; `null` se o índice não estiver disponível. */
+export async function searchSlugs(query: string): Promise<Set<string> | null> {
+  try {
+    const rows = await searchIndex();
+    if (rows.length === 0) return null;
+    return new Set(rows.filter((r) => matchesSearch(query, r.hay)).map((r) => r.slug));
+  } catch {
+    return null;
+  }
+}
 
 /** Uma notícia por imagem e só com imagem: usado nas homes, onde a foto manda. */
 export function uniqueWithImage(posts: Post[]) {
@@ -452,6 +504,13 @@ export async function getPost(slug: string) {
 export async function getCategoryPosts(categorySlug: string) {
   const { posts } = await getAllPosts();
   return posts.filter((p) => p.categorySlug === categorySlug || p.extraCategories.some((c) => c.slug === categorySlug));
+}
+
+/** Todas as categorias que se podem escolher no painel: as do menu e as que já têm notícias. */
+export async function getCategoryOptions(): Promise<{ slug: string; label: string }[]> {
+  const used = await getCategories();
+  const slugs = new Set([...Object.keys(CATEGORY_LABELS), ...used.map((c) => c.slug)].map((slug) => CATEGORY_ALIASES[slug] ?? slug));
+  return [...slugs].map((slug) => ({ slug, label: categoryLabel(slug) })).sort((a, b) => a.label.localeCompare(b.label, 'pt'));
 }
 
 export async function getCategories(): Promise<Category[]> {
