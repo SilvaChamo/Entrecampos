@@ -48,7 +48,8 @@ function seoChecks(n: NewsItem) {
   ];
 }
 
-const LBL = "max-md:before:font-bold max-md:before:text-gray-500 max-md:before:content-[attr(data-label)_':_']";
+const SEP = "max-md:before:content-['·_'] max-md:before:text-gray-400";
+const LBL = "max-md:before:font-normal max-md:before:text-gray-500 max-md:before:content-[attr(data-label)_':_']";
 
 export default function NewsAdminPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -482,7 +483,7 @@ export default function NewsAdminPage() {
                         </div>
                       </div>
                     </td>
-                    <td data-label="Categoria" className={`p-3 align-top max-md:block max-md:p-0 max-md:pt-2 ${LBL}`}>
+                    <td data-label="Categoria" className={`p-3 align-top max-md:inline-block max-md:p-0 max-md:pt-2 max-md:pr-1 max-md:text-[11px] ${LBL}`}>
                       <button
                         onClick={() => setFilterCategory(item.category)}
                         className="text-[#2271b1] hover:text-[#135e96] capitalize text-left"
@@ -490,10 +491,10 @@ export default function NewsAdminPage() {
                         {item.category}
                       </button>
                     </td>
-                    <td className="p-3 align-top text-[#50575e] max-md:block max-md:p-0 max-md:pt-1">
-                      <div className="flex flex-col leading-tight">
-                        <span data-label="Estado" className={LBL}>{item.status === 'Draft' ? 'Rascunho' : item.status === 'Archived' ? 'Arquivado' : 'Publicado'}</span>
-                        <span data-label="Data" className={`max-md:pt-1 ${LBL}`}>{new Date(item.date).toLocaleDateString('pt-PT')}<span className="max-md:hidden"> às {new Date(item.date).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span></span>
+                    <td className="p-3 align-top text-[#50575e] max-md:inline-block max-md:p-0 max-md:pt-2 max-md:text-[11px]">
+                      <div className="flex flex-col leading-tight max-md:flex-row max-md:gap-1">
+                        <span className={SEP}>{item.status === 'Draft' ? 'Rascunho' : item.status === 'Archived' ? 'Arquivado' : 'Publicado'}</span>
+                        <span className={SEP}>{new Date(item.date).toLocaleDateString('pt-PT')}<span className="max-md:hidden"> às {new Date(item.date).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span></span>
                       </div>
                     </td>
                     <td className="p-3 align-top text-[#50575e] max-md:hidden">
