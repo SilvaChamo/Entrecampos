@@ -7,13 +7,13 @@ const SidebarContext = createContext<{ open: boolean; toggle: () => void }>({ op
 
 /**
  * Estrutura da home: barra lateral escura + conteúdo.
- * Em ecrã grande a barra entra expandida (220px). Se o utilizador a recolher (só ícones, 64px), a escolha fica
- * guardada e ela só volta a expandir quando ele a expandir. No telemóvel abre só com um clique em "Menu".
+ * A barra entra sempre fechada (em ecrã grande só ícones, 64px). Se o utilizador a abrir com o botão Menu (220px),
+ * a escolha fica guardada e ela só volta a fechar quando ele a fechar. No telemóvel abre só com um clique em "Menu".
  */
-const STORAGE_KEY = 'ec-sidebar';
+const STORAGE_KEY = 'ec-sidebar-v2';
 const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
 
-/** Estado inicial da barra: expandida em ecrã grande, a não ser que o utilizador a tenha recolhido. */
+/** Estado inicial da barra: fechada, a não ser que o utilizador a tenha aberto. */
 function wantedOpen() {
   let saved: string | null = null;
   try {
@@ -21,14 +21,14 @@ function wantedOpen() {
   } catch {
     /* sem armazenamento */
   }
-  return isDesktop() && saved !== 'closed';
+  return isDesktop() && saved === 'open';
 }
 
 // Na primeira carga da página o HTML do servidor não sabe qual é a preferência. Este script corre antes de a página
 // ser pintada e põe a barra já no estado certo (sem a ver abrir ou fechar). Nas navegações dentro do site
 // o estado já nasce certo (ver `booted`).
 const INIT_SCRIPT = `(function(s){try{var a=s.previousElementSibling,f=a&&a.closest('[data-ec-frame]');
-var o=window.matchMedia('(min-width: 1024px)').matches&&localStorage.getItem('${STORAGE_KEY}')!=='closed';
+var o=window.matchMedia('(min-width: 1024px)').matches&&localStorage.getItem('${STORAGE_KEY}')==='open';
 if(a)a.setAttribute('data-open',o);if(f)f.setAttribute('data-open',o)}catch(e){}})(document.currentScript)`;
 let booted = false;
 
@@ -50,7 +50,7 @@ export default function ExpFrame({ sidebar, topBar, children }: { sidebar: React
 
   const toggle = useCallback(() => choose(!open), [choose, open]);
 
-  // Ecrã grande: expandida, a não ser que o utilizador a tenha recolhido. Ecrã pequeno: sempre fechada
+  // Ecrã grande: fechada, a não ser que o utilizador a tenha aberto. Ecrã pequeno: sempre fechada
   // (abre por cima do conteúdo). Acompanha também o redimensionamento da janela.
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');

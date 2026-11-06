@@ -153,7 +153,10 @@ export default async function HomePrincipal() {
     <ExpShell backdrop={newsletterBg}>
         <main className="mx-3 space-y-3 pb-3">
           <div className="mx-auto max-w-[1280px] space-y-3">
-            <NewsTicker posts={tickerPosts} />
+            {/* -mt-3 anula o espaço do cabeçalho: o card fica colado à barra de menu. */}
+            <div className="-mt-3">
+              <NewsTicker posts={tickerPosts} />
+            </div>
 
             {/* Cabeçalho: slide das últimas notícias em destaque + 2 cards à direita (Comunidade e Oportunidades) */}
             <div className="grid gap-3 md:auto-rows-[215px] md:grid-cols-[2fr_1fr]">
