@@ -12,7 +12,7 @@ export default async function PublicidadePage({ searchParams }: { searchParams: 
   const site = (await searchParams).ver === 'site';
   const { prices } = await loadAds();
   const link = (
-    <Link href={site ? '/newsletter/publicidade' : '/newsletter/publicidade?ver=site'} className="flex h-9 items-center justify-center border border-[#ccd0d4] bg-white px-4 text-[13px] text-[#1d2327] hover:text-[#d6101c]">
+    <Link href={site ? '/espacos-de-publicidade' : '/espacos-de-publicidade?ver=site'} className="flex h-9 items-center justify-center border border-[#ccd0d4] bg-white px-4 text-[13px] text-[#1d2327] hover:text-[#d6101c]">
       {site ? 'Publicidade na newsletter' : 'Publicidade no site'}
     </Link>
   );

@@ -137,7 +137,7 @@ export function EmailPreview({ item, editable, onRemove, onMove, onlyAds }: { it
         {headerAd ? (
           <a href={headerAd.link} target="_blank" rel="noopener noreferrer" className="shrink-0 self-center px-[10px] pb-3 sm:py-[10px] sm:pl-0"><img src={headerAd.image} alt={headerAd.advertiser} className="block h-[120px] w-[230px] max-w-full object-cover" /></a>
         ) : (
-          <a href="/newsletter/publicidade" target="_blank" rel="noopener noreferrer" className="shrink-0 self-center px-[10px] pb-3 sm:py-[10px] sm:pl-0"><span className="flex h-[120px] w-[230px] max-w-full items-center justify-center bg-[#e4e6e8] text-[11px] text-[#50575e] sm:text-[13px]">Publicite aqui</span></a>
+          <a href="/espacos-de-publicidade" target="_blank" rel="noopener noreferrer" className="shrink-0 self-center px-[10px] pb-3 sm:py-[10px] sm:pl-0"><span className="flex h-[120px] w-[230px] max-w-full items-center justify-center bg-[#e4e6e8] text-[11px] text-[#50575e] sm:text-[13px]">Publicite aqui</span></a>
         )}
       </div>
 
