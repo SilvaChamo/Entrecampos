@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-guard';
-import { getQueue, listSubscribers, loadState, mailConfigured, removeSubscriber } from '@/lib/newsletter';
+import { getAllPosts } from '@/lib/news-data';
+import { getCategoryColors } from '@/lib/category-colors';
+import { defaultCategoryColor } from '@/lib/category-palette';
+import { getQueue, listSubscribers, loadSchedules, loadState, mailConfigured, removeSubscriber } from '@/lib/newsletter';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,12 +13,16 @@ export async function GET() {
   if ('error' in guard) return guard.error;
   try {
     const state = await loadState();
-    const [subscribers, queue] = await Promise.all([listSubscribers(), getQueue(state)]);
+    const [subscribers, queue, schedules, all, colors] = await Promise.all([listSubscribers(), getQueue(state), loadSchedules(), getAllPosts(), getCategoryColors()]);
+    const card = (p: (typeof all.posts)[number]) => ({ slug: p.slug, title: p.title, category: p.category, categorySlug: p.categorySlug, color: colors[p.categorySlug] ?? defaultCategoryColor(p.categorySlug), date: p.date, image: p.image ?? null, excerpt: p.excerpt ?? '' });
     return NextResponse.json({
       subscribers,
-      queue: queue.map((p) => ({ slug: p.slug, title: p.title, category: p.category, date: p.date, image: p.image ?? null, excerpt: p.excerpt ?? '' })),
+      queue: queue.map((p) => ({ slug: p.slug, title: p.title, category: p.category, categorySlug: p.categorySlug, date: p.date, image: p.image ?? null, excerpt: p.excerpt ?? '' })),
+      schedules: schedules
+        .sort((a, b) => a.at.localeCompare(b.at))
+        .map((x) => ({ ...x, posts: x.slugs.map((slug) => all.posts.find((p) => p.slug === slug)).filter((p): p is (typeof all.posts)[number] => Boolean(p)).map(card) })),
       lastSentAt: state.lastSentAt ?? null,
-      history: state.history,
+      history: state.history.map((h) => ({ ...h, posts: (h.slugs ?? []).map((slug) => all.posts.find((p) => p.slug === slug)).filter((p): p is (typeof all.posts)[number] => Boolean(p)).map(card) })),
       smtp: mailConfigured(),
     });
   } catch (err: any) {

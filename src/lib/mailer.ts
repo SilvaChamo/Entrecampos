@@ -8,7 +8,7 @@ export function mailConfigured() {
   return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
-type Mail = { to: string; subject: string; html: string; text: string };
+type Mail = { to: string; subject: string; html: string; text: string; headers?: Record<string, string> };
 
 /** Ligação SMTP reutilizável (envios em série, como a newsletter): abre-se uma vez e fecha-se no fim. */
 export function openMailer() {
@@ -23,7 +23,7 @@ export function openMailer() {
   });
   const from = process.env.SITE_EMAIL_FROM || 'EntreCAMPOS <noreply@entrecamposblog.com>';
   return {
-    send: ({ to, subject, html, text }: Mail) => transport.sendMail({ from, to, subject, html, text }),
+    send: ({ to, subject, html, text, headers }: Mail) => transport.sendMail({ from, to, subject, html, text, headers }),
     close: () => transport.close(),
   };
 }

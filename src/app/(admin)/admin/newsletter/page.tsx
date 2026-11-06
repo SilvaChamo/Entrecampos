@@ -1,24 +1,30 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Download, FileUp, Send, Trash2, Upload, UserPlus, X } from 'lucide-react';
+import { ArrowLeft, Download, Eye, FileUp, Save, Send, Trash2, UserPlus, X } from 'lucide-react';
 import { SkeletonContent, SkeletonHeader } from '@/components/Admin/Skeleton';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
 import AdminSelect from '@/components/Admin/AdminSelect';
+import NewsletterAgenda, { EmailPreview, NewsletterPreviews, type AgendaItem } from '@/components/Admin/NewsletterAgenda';
+import NewsletterAds from '@/components/Admin/NewsletterAds';
 
 type Subscriber = { id: string; email: string; created_at: string };
 type QueueItem = { slug: string; title: string; category: string; date: string; image: string | null; excerpt: string };
-type SendRecord = { at: string; recipients: number; sent: number; failed: number; news: number };
-type Summary = { subscribers: Subscriber[]; queue: QueueItem[]; lastSentAt: string | null; history: SendRecord[]; smtp: boolean };
+type SendRecord = { at: string; recipients: number; sent: number; failed: number; news: number; posts?: AgendaItem['posts']; ads?: string[] };
+type Summary = { subscribers: Subscriber[]; queue: QueueItem[]; schedules: AgendaItem[]; lastSentAt: string | null; history: SendRecord[]; smtp: boolean };
 
 const PAGE_SIZE = 50;
 const fmt = (iso: string) => new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' });
 // Botões e campos desta página: 36px de altura e letra de 13px.
+/** Dia da semana + data e hora (ex.: Sexta-feira, 06/11/2026, 15:51). */
+const fmtDay = (iso: string) => {
+  const w = new Date(iso).toLocaleDateString('pt-PT', { weekday: 'long', timeZone: 'Africa/Maputo' });
+  return `${w.charAt(0).toUpperCase()}${w.slice(1)}, ${fmt(iso)}`;
+};
 const btn = 'flex h-9 items-center gap-2 px-4 rounded-md whitespace-nowrap text-[13px]';
 const field = 'h-9 px-3 border border-[#ccd0d4] rounded-md bg-white text-[13px]';
-// Barra de pesquisa e descarregar da lista: um pouco mais baixa (32px).
-const btnLow = btn.replace('h-9', 'h-8');
-const fieldLow = field.replace('h-9', 'h-8');
+const btnLow = btn;
+const fieldLow = field;
 
 export default function NewsletterPage() {
   const [data, setData] = useState<Summary | null>(() => adminCacheGet<Summary>('newsletter') ?? null);
@@ -30,7 +36,8 @@ export default function NewsletterPage() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [tab, setTab] = useState<'news' | 'subscribers'>('news');
+  const [tab, setTab] = useState<'news' | 'agenda' | 'sent' | 'ads' | 'subscribers'>('news');
+  const [viewAt, setViewAt] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -79,7 +86,7 @@ export default function NewsletterPage() {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `Erro ${res.status} ao importar.`);
-      setNotice(`Importados ${body.added} contactos novos. ${body.duplicates} já estavam na lista${body.invalid ? ` e ${body.invalid} não eram e-mails válidos` : ''}.`);
+      setNotice(`Gravados ${body.added} contactos novos na lista. ${body.duplicates} já estavam na lista${body.invalid ? ` e ${body.invalid} não eram e-mails válidos` : ''}.`);
       setPaste('');
       await load();
     } catch (err: any) {
@@ -139,6 +146,14 @@ export default function NewsletterPage() {
     );
   }
 
+  const pending = (data?.schedules ?? []).filter((x) => x.status === 'pending' || x.status === 'sending');
+  const tabList = [
+    ['news', `Notícias em fila (${data?.queue.length ?? 0})`],
+    ['agenda', `Agendamento (${pending.length})`],
+    ['sent', `Newsletters enviados (${data?.history.length ?? 0})`],
+    ['ads', 'Publicidade'],
+    ['subscribers', `Lista de subscritores (${data?.subscribers.length ?? 0})`],
+  ] as const;
   return (
     <div className="ec-page text-[#2c3338]">
       <div className="mb-6">
@@ -160,7 +175,7 @@ export default function NewsletterPage() {
             {[
               ['Subscritores', String(data.subscribers.length)],
               ['Notícias na fila', String(data.queue.length)],
-              ['Último envio', data.lastSentAt ? fmt(data.lastSentAt) : 'Ainda nenhum'],
+              ['Último envio', data.history[0] ? fmt(data.history[0].at) : data.lastSentAt ? fmt(data.lastSentAt) : 'Ainda nenhum'],
             ].map(([label, value]) => (
               <div key={label} className="rounded-lg border border-[#ccd0d4] bg-white px-4 py-3">
                 <div className="text-[12px] text-[#50575e]">{label}</div>
@@ -169,24 +184,36 @@ export default function NewsletterPage() {
             ))}
           </div>
 
+          {viewAt && data.history.find((h) => h.at === viewAt) ? (() => {
+            const rec = data.history.find((h) => h.at === viewAt)!;
+            const posts = rec.posts ?? [];
+            return (
+              <div className="rounded-lg border border-[#ccd0d4] bg-white p-4">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-[18px] text-[#1d2327]">Newsletter enviada</h2>
+                    <p className="mt-1 text-[13px] text-[#50575e]">{fmtDay(rec.at)} · {rec.news} {rec.news === 1 ? 'notícia' : 'notícias'} · Enviados: {rec.sent} de {rec.recipients} · Falhas: {rec.failed}</p>
+                  </div>
+                  <button onClick={() => setViewAt(null)} className={`${btn} border border-[#ccd0d4] bg-white text-[#50575e] hover:text-[#00a651] max-sm:w-full max-sm:justify-center`}><ArrowLeft className="h-4 w-4" /> Voltar</button>
+                </div>
+                {posts.length === 0 ? (
+                  <p className="rounded-lg border border-[#ccd0d4] p-6 text-center text-[13px] text-[#50575e]">O conteúdo deste envio não ficou guardado.</p>
+                ) : (
+                  <div className="bg-[#f0f0f1] p-3 sm:p-5">
+                    <EmailPreview item={{ id: rec.at, at: rec.at, slugs: posts.map((p) => p.slug), status: 'sent', posts }} editable={false} onRemove={() => {}} onMove={() => {}} onlyAds={rec.ads ?? []} />
+                  </div>
+                )}
+              </div>
+            );
+          })() : (
+            <>
           {/* Separadores */}
           <div className="flex flex-wrap items-end justify-between gap-2">
-          {(() => {
-            const tabList = [
-              ['news', `Notícias em fila (${data.queue.length})`],
-              ['subscribers', `Lista de subscritores (${data.subscribers.length})`],
-            ] as const;
-            return (
-              <AdminSelect value={tab} onChange={(e) => setTab(e.target.value as 'news' | 'subscribers')} className="h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none md:hidden">
-                {tabList.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-              </AdminSelect>
-            );
-          })()}
+          <AdminSelect value={tab} onChange={(e) => setTab(e.target.value as 'news' | 'agenda' | 'sent' | 'ads' | 'subscribers')} className="h-11 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none md:hidden">
+            {tabList.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+          </AdminSelect>
           <div role="tablist" className="hidden gap-1 md:flex">
-            {([
-              ['news', `Notícias em fila (${data.queue.length})`],
-              ['subscribers', `Lista de subscritores (${data.subscribers.length})`],
-            ] as const).map(([key, label]) => (
+            {tabList.map(([key, label]) => (
               <button
                 key={key}
                 role="tab"
@@ -209,9 +236,8 @@ export default function NewsletterPage() {
           {tab === 'news' && (
             <>
           {/* Fila: notícias novas que seguem na próxima newsletter */}
-          <div className="mb-6">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-[#1d2327]">Fila de hoje: seguem na newsletter das 20h</h3>
+          <div className={data.queue.length === 0 && data.schedules.some((x) => x.status === 'pending' && x.posts.length > 0) ? 'hidden' : 'mb-6'}>
+            <div className="mb-3 flex flex-wrap items-center justify-end gap-3">
               {confirmSend ? (
                 <div className="flex items-center gap-2 text-[13px]">
                   <span>Enviar já a {data.subscribers.length} subscritores?</span>
@@ -222,14 +248,14 @@ export default function NewsletterPage() {
                 <button
                   onClick={() => setConfirmSend(true)}
                   disabled={busy !== null || data.queue.length === 0 || data.subscribers.length === 0 || !data.smtp}
-                  className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651] disabled:opacity-50`}
+                  className={`${btn} justify-center border border-[#ccd0d4] bg-white hover:text-[#00a651] disabled:opacity-50 max-sm:w-full max-sm:border-[#d6101c] max-sm:bg-[#d6101c] max-sm:text-white max-sm:hover:text-white`}
                 >
                   <Send className="h-4 w-4" /> {busy === 'send' ? 'A enviar...' : 'Enviar agora'}
                 </button>
               )}
             </div>
             {data.queue.length === 0 ? (
-              <div className="rounded-lg border border-[#ccd0d4] bg-white p-6 text-center text-[13px] text-[#50575e]">Sem notícias novas desde o último envio.</div>
+              data.schedules.some((x) => x.status === 'pending' && x.posts.length > 0) ? null : <div className="rounded-lg border border-[#ccd0d4] bg-white p-6 text-center text-[13px] text-[#50575e]">Sem notícias novas desde o último envio.</div>
             ) : (
               <ul className="grid grid-flow-dense gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
                 {data.queue.map((n, idx) => (
@@ -256,36 +282,38 @@ export default function NewsletterPage() {
             )}
           </div>
 
-          {/* Envios anteriores */}
-          {data.history.length > 0 && (
-            <div>
-              <h3 className="mb-2 text-[#1d2327]">Envios anteriores</h3>
-              <div className="overflow-hidden rounded-lg border border-[#ccd0d4] bg-white">
-                <table className="w-full border-collapse text-[13px]">
-                  <thead>
-                    <tr className="border-b border-[#ccd0d4] bg-[#f6f7f7] text-left font-bold">
-                      <th className="p-4">Data</th>
-                      <th className="p-4">Notícias</th>
-                      <th className="p-4">Enviados</th>
-                      <th className="p-4">Falhas</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.history.map((h, idx) => (
-                      <tr key={h.at} className={`border-b border-[#f0f0f1] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
-                        <td className="px-4 py-1.5">{fmt(h.at)}</td>
-                        <td className="px-4 py-1.5">{h.news}</td>
-                        <td className="px-4 py-1.5">{h.sent} de {h.recipients}</td>
-                        <td className="px-4 py-1.5">{h.failed}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          <NewsletterPreviews schedules={data.schedules} subscribers={data.subscribers.length} smtp={data.smtp} onChange={load} setNotice={setNotice} setError={setError} />
+
             </>
           )}
+
+          {tab === 'sent' && (
+            data.history.length === 0 ? (
+              <div className="rounded-lg border border-[#ccd0d4] bg-white p-6 text-center text-[13px] text-[#50575e]">Ainda não foi enviada nenhuma newsletter.</div>
+            ) : (
+              <ul className="space-y-3">
+                {data.history.map((h) => (
+                  <li key={h.at} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg border border-[#ccd0d4] bg-white p-4 text-[13px]">
+                    <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                      <span className="text-[15px] text-[#1d2327]">{fmtDay(h.at)}</span>
+                      <span className="text-[#50575e]">{h.news} {h.news === 1 ? 'notícia' : 'notícias'}</span>
+                      <span className="text-[#50575e]">Enviados: {h.sent} de {h.recipients}</span>
+                      <span className={h.failed > 0 ? 'text-[#d63638]' : 'text-[#50575e]'}>Falhas: {h.failed}</span>
+                    </div>
+                    <button onClick={() => setViewAt(h.at)} className={`${btn} border border-[#ccd0d4] bg-white text-[#50575e] hover:text-[#00a651] max-sm:w-full max-sm:justify-center`}>
+                      <Eye className="h-4 w-4" /> Ver
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )
+          )}
+
+          {tab === 'agenda' && (
+            <NewsletterAgenda schedules={data.schedules} subscribers={data.subscribers.length} smtp={data.smtp} onChange={load} setNotice={setNotice} setError={setError} />
+          )}
+
+          {tab === 'ads' && <NewsletterAds setNotice={setNotice} setError={setError} />}
 
           {tab === 'subscribers' && (
             <>
@@ -302,7 +330,7 @@ export default function NewsletterPage() {
               />
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <button onClick={() => importEmails(emailsIn(paste))} disabled={busy !== null || !paste.trim()} className={`${btn} bg-[#00a651] text-white disabled:opacity-50`}>
-                  <Upload className="h-4 w-4" /> {busy === 'import' ? 'A importar...' : 'Importar'}
+                  <Save className="h-4 w-4" /> {busy === 'import' ? 'A gravar...' : 'Gravar'}
                 </button>
                 <input ref={fileInput} type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
                 <button onClick={() => fileInput.current?.click()} disabled={busy !== null} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651] disabled:opacity-50`}>
@@ -330,25 +358,25 @@ export default function NewsletterPage() {
               </div>
             </div>
             <div className="overflow-hidden rounded-lg border border-[#ccd0d4] bg-white">
-              <table className="w-full border-collapse text-[13px]">
-                <thead>
+              <table className="ec-cards w-full border-collapse text-[13px] max-md:block">
+                <thead className="max-md:hidden">
                   <tr className="border-b border-[#ccd0d4] bg-[#f6f7f7] text-left font-bold">
                     <th className="p-4">E-mail</th>
                     <th className="p-4">Subscrito em</th>
                     <th className="p-4 text-right">Acções</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="max-md:block">
                   {visible.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className="p-4 text-center text-[#50575e]">Ainda não há subscritores.</td>
+                    <tr className="max-md:block">
+                      <td colSpan={3} className="p-4 text-center text-[#50575e] max-md:block">Ainda não há subscritores.</td>
                     </tr>
                   ) : (
                     visible.map((s, idx) => (
-                      <tr key={s.id} className={`group border-b border-[#f0f0f1] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
-                        <td className="px-4 py-1.5 text-[#1d2327] group-hover:text-[#00a651]">{s.email}</td>
-                        <td className="px-4 py-1.5 text-[#50575e] group-hover:text-[#00a651]">{fmt(s.created_at)}</td>
-                        <td className="px-4 py-1.5 text-right">
+                      <tr key={s.id} className={`group border-b border-[#f0f0f1] max-md:relative max-md:block max-md:px-3 max-md:py-0.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
+                        <td className="px-4 py-1.5 text-[#1d2327] group-hover:text-[#00a651] max-md:block max-md:px-0 max-md:pb-2 max-md:pt-0 max-md:text-[12px] max-md:[overflow-wrap:anywhere] max-md:before:block max-md:before:font-bold max-md:before:leading-7 max-md:before:text-[#646970] max-md:before:content-['E-mail:']">{s.email}</td>
+                        <td className="px-4 py-1.5 text-[#50575e] group-hover:text-[#00a651] max-md:hidden">{fmt(s.created_at)}</td>
+                        <td className="px-4 py-1.5 text-right max-md:absolute max-md:right-3 max-md:top-0.5 max-md:p-0">
                           {confirmDelete === s.id ? (
                             <span className="inline-flex items-center gap-2 text-[12px]">
                               Remover?
@@ -356,7 +384,7 @@ export default function NewsletterPage() {
                               <button onClick={() => setConfirmDelete(null)} className="rounded px-2 py-1 text-[#50575e] hover:text-[#00a651]">Não</button>
                             </span>
                           ) : (
-                            <button onClick={() => setConfirmDelete(s.id)} aria-label={`Remover ${s.email}`} className="rounded p-2 text-red-600 hover:text-[#00a651]">
+                            <button onClick={() => setConfirmDelete(s.id)} aria-label={`Remover ${s.email}`} className="inline-flex h-9 w-9 items-center justify-center rounded text-red-600 hover:text-[#00a651] max-md:h-7 max-md:w-7">
                               <Trash2 className="h-4 w-4" />
                             </button>
                           )}
@@ -379,6 +407,8 @@ export default function NewsletterPage() {
             </>
           )}
           </div>
+            </>
+          )}
         </>
       )}
     </div>

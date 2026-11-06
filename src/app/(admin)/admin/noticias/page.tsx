@@ -19,6 +19,7 @@ import {
 import { SkeletonTableRow, SkeletonHeader } from '@/components/Admin/Skeleton';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
 import AdminSelect from '@/components/Admin/AdminSelect';
+import { useAuth } from '@/context/AuthContext';
 
 interface NewsItem {
   id: string;
@@ -58,6 +59,31 @@ const LBL = "max-md:before:font-normal max-md:before:text-gray-500 max-md:before
 export default function NewsAdminPage() {
   const [news, setNews] = useState<NewsItem[]>(() => adminCacheGet<NewsItem[]>('news') ?? []);
   // Confirmação na própria página: os diálogos nativos do navegador podem não aparecer e a acção ficava sem efeito.
+  const { user } = useAuth();
+  // Agendar na newsletter: escolher a que envio agendado se junta a notícia (só o administrador).
+  const [sched, setSched] = useState<{ item: NewsItem; slots: { id: string; at: string; slugs: string[] }[] | null; msg: string | null; err: boolean } | null>(null);
+  const openSchedule = async (item: NewsItem) => {
+    setSched({ item, slots: null, msg: null, err: false });
+    try {
+      const res = await fetch('/api/admin/newsletter/agenda', { credentials: 'include', cache: 'no-store' });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Erro ${res.status}.`);
+      setSched({ item, slots: body.schedules, msg: null, err: false });
+    } catch (e) {
+      setSched({ item, slots: [], msg: e instanceof Error ? e.message : 'Não foi possível carregar os horários.', err: true });
+    }
+  };
+  const attachToSchedule = async (slotId: string) => {
+    if (!sched) return;
+    try {
+      const res = await fetch('/api/admin/newsletter/agenda', { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: slotId, add: sched.item.slug }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Erro ${res.status}.`);
+      setSched({ ...sched, slots: sched.slots?.map((x) => (x.id === slotId ? body.schedule : x)) ?? null, msg: 'Notícia juntada a este envio.', err: false });
+    } catch (e) {
+      setSched({ ...sched, msg: e instanceof Error ? e.message : 'Não foi possível juntar a notícia.', err: true });
+    }
+  };
   const [ask, setAsk] = useState<{ text: string; done: (ok: boolean) => void } | null>(null);
   const confirmAsync = (text: string) => new Promise<boolean>((done) => setAsk({ text, done }));
   const [loading, setLoading] = useState(() => adminCacheGet('news') === undefined);
@@ -563,6 +589,12 @@ export default function NewsAdminPage() {
                             <button onClick={() => archiveNews(item.id, item.title)} className="hover:text-[#135e96]">Arquivar</button>
                             <span className="text-gray-300">|</span>
                             <Link href={`/noticias/${item.slug}`} target="_blank" className="hover:text-[#135e96]">Ver</Link>
+                            {user?.role === 'admin' && item.status !== 'Archived' && item.status !== 'Draft' && (
+                              <>
+                                <span className="text-gray-300">|</span>
+                                <button onClick={() => openSchedule(item)} className="hover:text-[#135e96]">Agendar</button>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -757,6 +789,38 @@ export default function NewsAdminPage() {
 
       {/* Paginação (em baixo) */}
       <div className="mt-3">{pager}</div>
+
+      {sched && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Agendar na newsletter" onClick={() => setSched(null)}>
+          <div className="w-full max-w-md border border-[#ccd0d4] bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="border-b border-[#ccd0d4] bg-[#f6f7f7] px-4 py-3">
+              <div className="text-[13px] text-[#1d2327]">Agendar na newsletter</div>
+              <div className="mt-0.5 line-clamp-2 text-[12px] text-[#50575e]">{sched.item.title}</div>
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              {sched.slots === null ? (
+                <p className="p-4 text-center text-[13px] text-[#50575e]">A carregar os horários...</p>
+              ) : sched.slots.length === 0 ? (
+                <p className="p-4 text-center text-[13px] text-[#50575e]">Ainda não há envios agendados. Crie um horário em <Link href="/admin/newsletter" className="text-[#008f45] hover:underline">Newsletter › Agendamento</Link>.</p>
+              ) : (
+                sched.slots.map((x) => {
+                  const joined = x.slugs.includes(sched.item.slug);
+                  return (
+                    <button key={x.id} type="button" disabled={joined} onClick={() => attachToSchedule(x.id)} className="flex h-11 w-full items-center justify-between gap-3 border-b border-[#f0f0f1] px-4 text-left text-[13px] hover:text-[#00a651] disabled:text-[#008f45]">
+                      <span>{new Date(x.at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' })}</span>
+                      <span className="text-[12px] text-[#50575e]">{joined ? 'Já está neste envio' : `${x.slugs.length} ${x.slugs.length === 1 ? 'notícia' : 'notícias'}`}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+            {sched.msg && <p className={`border-t border-[#ccd0d4] px-4 py-2 text-[13px] ${sched.err ? 'text-red-700' : 'text-green-800'}`}>{sched.msg}</p>}
+            <div className="flex justify-end border-t border-[#ccd0d4] p-3">
+              <button type="button" onClick={() => setSched(null)} className="h-9 border border-[#ccd0d4] bg-white px-4 text-[13px] hover:text-[#00a651]">Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {ask && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Confirmar">

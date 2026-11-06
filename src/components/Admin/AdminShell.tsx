@@ -440,9 +440,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </Link>
           
           <div className="flex items-center gap-3 lg:gap-4">
-            {/* "Novo" só na página inicial do painel */}
+            {/* "Novo" só na página inicial do painel e só no computador (no telemóvel não aparece) */}
             {PANEL_HOME.includes(pathname) && (
-              <Link href="/admin/noticias/nova" className="flex items-center gap-1.5 hover:text-[#72aee6] max-lg:bg-[#00a651] max-lg:px-3 max-lg:py-2 max-lg:rounded max-lg:text-white">
+              <Link href="/admin/noticias/nova" className="flex items-center gap-1.5 hover:text-[#72aee6] max-lg:hidden">
                 <Plus className="w-4 h-4" />
                 <span>Novo</span>
               </Link>

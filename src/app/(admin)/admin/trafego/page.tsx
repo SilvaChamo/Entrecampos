@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BarChart3, Database, FileText, Globe, Monitor, RefreshCw, Search, Users } from 'lucide-react';
+import { BarChart3, Database, FileText, Globe, Megaphone, Monitor, RefreshCw, Search, Users } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import AdminSelect from '@/components/Admin/AdminSelect';
+import { slotLabel } from '@/lib/newsletter-brand';
 
 type Daily = { day: string; views: number; visitors: number };
 type Stats = {
@@ -61,7 +62,11 @@ function BarList({ title, icon: Icon, rows }: { title: string; icon: typeof Glob
   );
 }
 
+type AdRow = { id: string; slot: string; advertiser: string; active: boolean };
+type AdStat = { sent: number; clicks: number; people: number };
+
 export default function TrafegoPage() {
+  const [ads, setAds] = useState<{ ads: AdRow[]; stats: Record<string, AdStat> } | null>(null); // publicidade da newsletter
   const [stats, setStats] = useState<Stats | null>(null); // últimos 30 dias: páginas, países, dispositivos, origens
   const [year, setYear] = useState<Daily[] | null>(null); // dia a dia, até 365 dias
   const [error, setError] = useState('');
@@ -87,6 +92,12 @@ export default function TrafegoPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    fetch('/api/admin/newsletter/ads', { credentials: 'include', cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setAds(d))
+      .catch(() => {});
+  }, []);
 
   const byDay = useMemo(() => new Map((year ?? stats?.daily ?? []).map((d) => [d.day, d])), [year, stats]);
   const dayKey = useCallback((offset: number) => {
@@ -290,6 +301,41 @@ export default function TrafegoPage() {
             />
             <BarList title="Origem do tráfego (30 dias)" icon={Search} rows={stats.referrers.map((r) => ({ label: r.referrer, views: r.views }))} />
           </div>
+
+          <section className={`${card} mt-3 md:mt-8`}>
+            <h2 className="mb-1 flex items-center gap-2 text-lg font-normal text-gray-700"><Megaphone className="h-5 w-5 text-[#00a651]" /> Publicidade na newsletter</h2>
+            <p className="mb-4 text-[13px] text-[#50575e]">Quem recebeu o anúncio e quem reagiu (clicou). As partilhas não se medem num e-mail, por isso não aparecem.</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className={th}>Anúncio</th>
+                    <th className={`${th} text-right`}>Receberam</th>
+                    <th className={`${th} text-right`}>Cliques</th>
+                    <th className={`${th} text-right`}>Pessoas que reagiram</th>
+                    <th className={`${th} text-right`}>Reação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {(ads?.ads.length ?? 0) === 0 && (
+                    <tr><td colSpan={5} className="px-4 py-3 text-gray-500">Ainda não há anúncios.</td></tr>
+                  )}
+                  {ads?.ads.map((a) => {
+                    const st = ads.stats[a.id] ?? { sent: 0, clicks: 0, people: 0 };
+                    return (
+                      <tr key={a.id}>
+                        <td className="px-4 py-3 text-gray-700">{a.advertiser}<div className="text-[12px] text-gray-500">{slotLabel(a.slot)}{a.active ? '' : ' · desligado'}</div></td>
+                        <td className="px-4 py-3 text-right text-gray-600">{st.sent}</td>
+                        <td className="px-4 py-3 text-right text-gray-600">{st.clicks}</td>
+                        <td className="px-4 py-3 text-right text-gray-600">{st.people}</td>
+                        <td className="px-4 py-3 text-right text-gray-600">{st.sent ? `${((st.people / st.sent) * 100).toFixed(1).replace('.', ',')}%` : '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </>
       )}
     </div>
