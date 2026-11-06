@@ -4,7 +4,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
-import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, Menu, X, Clock, CheckSquare, MessageSquare } from 'lucide-react';
+import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, Menu, X, Clock, CheckSquare, MessageSquare, Mail } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 
 interface SidebarItemProps {
@@ -43,7 +43,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
             className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
               active 
                 ? 'bg-[#00a651] text-white border-[#00a651]' 
-                : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338] hover:border-[#00a651]'
+                : 'text-[#f0f0f1] hover:text-white hover:bg-[#1f3a2b] hover:border-[#00a651]'
             }`}
           >
             <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1">
@@ -65,7 +65,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
           <div className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
             active 
               ? 'bg-[#00a651] text-white border-[#00a651]' 
-              : 'text-[#f0f0f1] hover:text-white hover:bg-[#2c3338] hover:border-[#00a651]'
+              : 'text-[#f0f0f1] hover:text-white hover:bg-[#1f3a2b] hover:border-[#00a651]'
           }`}>
             <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1">
               <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
@@ -86,8 +86,8 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
 
         {/* Hover Flyout Submenu (WordPress style) */}
         {submenu && isHovered && !isOpen && (
-          <div className="absolute left-full top-0 w-48 bg-[#2c3338] shadow-xl z-[1000] border-l border-[#3c434a] py-2">
-            <div className="px-4 py-1 mb-1 text-[13px] font-bold text-[#f0f0f1] border-b border-[#3c434a] pb-2">
+          <div className="absolute left-full top-0 w-48 bg-[#1f3a2b] shadow-xl z-[1000] border-l border-[#2b4a39] py-2">
+            <div className="px-4 py-1 mb-1 text-[13px] font-bold text-[#f0f0f1] border-b border-[#2b4a39] pb-2">
               {label}
             </div>
             {submenu.map((item) => (
@@ -108,7 +108,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
       
       {/* Inline Expanded Submenu */}
       {submenu && isOpen && (
-        <div className="bg-[#0d1214] py-1 border-b border-[#2c3338]">
+        <div className="bg-[#0c1b13] py-1 border-b border-[#1f3a2b]">
           {submenu.map((item) => (
             <Link
               key={item.href}
@@ -293,6 +293,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           ]
         },
         { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
+        { href: '/admin/newsletter', icon: Mail, label: 'Newsletter' },
         { 
           href: '/admin/media', 
           icon: ImageIcon, 
@@ -392,7 +393,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   return (
     <div className={`ec-admin flex flex-col h-[100dvh] bg-[#f0f0f1] ${viewAs ? 'ec-viewing-as' : ''}`}>
       {/* Admin Bar (Barra Superior Preta) */}
-      <header className="sticky top-0 z-[100] h-12 lg:h-8 bg-[#1d2327] text-[#f0f0f1] flex items-center justify-between gap-2 px-3 lg:px-4 text-[13px]">
+      <header className="sticky top-0 z-[100] h-12 lg:h-8 bg-[#0c1b13] text-[#f0f0f1] flex items-center justify-between gap-2 px-3 lg:px-4 text-[13px]">
         <div className="flex min-w-0 items-center gap-3 lg:gap-6">
           {/* Telemóvel: botão do menu lateral (gaveta) */}
           <button
@@ -400,7 +401,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             onClick={() => setMobileMenuOpen((o) => !o)}
             aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
             aria-expanded={mobileMenuOpen}
-            className="lg:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded hover:bg-[#2c3338]"
+            className="lg:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded hover:bg-[#1f3a2b]"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -433,22 +434,22 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             className="flex h-10 items-center gap-2 px-1 lg:h-8"
           >
             <span className="capitalize max-sm:hidden">Olá, {user?.name || 'Visitante'} ({user?.role || 'guest'})</span>
-            <UserIcon className="w-8 h-8 lg:w-6 lg:h-6 bg-[#2c3338] p-1.5 lg:p-1 rounded-full" />
+            <UserIcon className="w-8 h-8 lg:w-6 lg:h-6 bg-[#1f3a2b] p-1.5 lg:p-1 rounded-full" />
           </button>
 
-          <div className={`absolute right-0 top-full w-56 bg-[#2c3338] shadow-lg border border-[#3c434a] p-1 rounded-md lg:group-hover:block ${userMenuOpen ? 'block' : 'hidden'}`}>
-            <div className="sm:hidden px-3 py-1.5 text-[12px] text-gray-300 border-b border-[#3c434a] mb-1 capitalize break-words">{user?.name || 'Visitante'} · {user?.role || 'guest'}</div>
+          <div className={`absolute right-0 top-full w-56 bg-[#1f3a2b] shadow-lg border border-[#2b4a39] p-1 rounded-md lg:group-hover:block ${userMenuOpen ? 'block' : 'hidden'}`}>
+            <div className="sm:hidden px-3 py-1.5 text-[12px] text-gray-300 border-b border-[#2b4a39] mb-1 capitalize break-words">{user?.name || 'Visitante'} · {user?.role || 'guest'}</div>
             <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[12px] rounded-md transition-colors">
               <UserIcon className="w-4 h-4" /> Ver Perfil
             </Link>
             {/* Quick role switch for testing */}
-            <div className="border-t border-[#3c434a] mt-1 px-3 pb-1 pt-2 text-[13px] font-semibold tracking-wide text-gray-300 uppercase">Trocar papel</div>
-            <div className="divide-y divide-[#3c434a] border-y border-[#3c434a]">
+            <div className="border-t border-[#2b4a39] mt-1 px-3 pb-1 pt-2 text-[13px] font-semibold tracking-wide text-gray-300 uppercase">Trocar papel</div>
+            <div className="divide-y divide-[#2b4a39] border-y border-[#2b4a39]">
             {(['admin', 'editor', 'contribuidor', 'guest'] as UserRole[]).map(r => (
               <button 
                 key={r}
                 onClick={() => setRole(r)}
-                className={`w-full rounded-md px-3 py-1.5 text-left text-[12px] capitalize hover:bg-[#3c434a] hover:text-[#72aee6] ${user?.role === r ? 'font-medium text-[#72aee6]' : 'text-gray-200'}`}
+                className={`w-full rounded-md px-3 py-1.5 text-left text-[12px] capitalize hover:bg-[#2b4a39] hover:text-[#72aee6] ${user?.role === r ? 'font-medium text-[#72aee6]' : 'text-gray-200'}`}
               >
                 {r === 'guest' ? 'Visitante' : r}
               </button>
@@ -456,7 +457,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             </div>
             <button 
               onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[12px] border-t border-[#3c434a] mt-2 rounded-md transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[12px] border-t border-[#2b4a39] mt-2 rounded-md transition-colors"
             >
               <LogOut className="w-4 h-4" /> Sair
             </button>
@@ -476,7 +477,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               setViewAs(null);
               router.push('/admin/dashboard');
             }}
-            className="bg-[#1d2327] px-3 py-1 font-semibold text-white hover:bg-black"
+            className="bg-[#14281d] px-3 py-1 font-semibold text-white hover:bg-black"
           >
             Voltar a Administrador
           </button>
@@ -490,7 +491,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         )}
         {/* Sidebar (Menu Lateral): no telemóvel é uma gaveta (fechada ao entrar); no ecrã grande, a barra de sempre */}
         <aside
-          className={`bg-[#1d2327] flex-shrink-0 transition-transform duration-200 max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-12 max-lg:z-[95] max-lg:w-72 max-lg:max-w-[85vw] max-lg:overflow-y-auto ${
+          className={`bg-[#14281d] flex-shrink-0 transition-transform duration-200 max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-12 max-lg:z-[95] max-lg:w-72 max-lg:max-w-[85vw] max-lg:overflow-y-auto ${
             mobileMenuOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'
           } ${snapSidebar ? '' : 'lg:transition-all'} ${isSidebarOpen ? 'lg:w-56' : 'lg:w-0 lg:overflow-hidden'}`}
         >
@@ -522,7 +523,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           {/* Toggle Sidebar Button */}
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="max-lg:hidden fixed bottom-4 left-4 z-50 p-2 bg-[#1d2327] text-[#f0f0f1] rounded-full shadow-lg hover:bg-[#2c3338]"
+            className="max-lg:hidden fixed bottom-4 left-4 z-50 p-2 bg-[#14281d] text-[#f0f0f1] rounded-full shadow-lg hover:bg-[#1f3a2b]"
           >
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>

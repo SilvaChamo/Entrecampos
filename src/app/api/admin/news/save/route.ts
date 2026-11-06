@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { refreshSite } from '@/lib/refresh-site';
+import { setSuggestion } from '@/lib/suggestions';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { SESSION_COOKIE, verifySession } from '@/lib/local-session';
@@ -74,6 +75,16 @@ async function saveWithColumnFallback(
 /** Faz a home, as categorias e a página de leitura mostrarem logo a notícia nova/editada. */
 function refreshPublicPages() {
   refreshSite();
+}
+
+/** "Sugestão de leitura": só quem publica a activa; falhar aqui não impede de gravar a notícia. */
+async function applySuggestion(flag: unknown, canPublish: boolean, slug: unknown) {
+  if (!canPublish || typeof flag !== 'boolean' || typeof slug !== 'string' || !slug) return;
+  try {
+    await setSuggestion(slug, flag);
+  } catch (e) {
+    console.error('[sugestoes] não foi possível gravar:', e instanceof Error ? e.message : e);
+  }
 }
 
 export async function POST(request: Request) {
@@ -161,6 +172,7 @@ export async function POST(request: Request) {
       if (!updateData || updateData.length === 0) {
         return NextResponse.json({ error: 'Notícia não encontrada: nada foi atualizado.' }, { status: 404 });
       }
+      await applySuggestion(data.suggest, canPublish, updateData?.[0]?.slug);
       refreshPublicPages();
       return NextResponse.json({ success: true, data: updateData, warning });
     } else {
@@ -179,6 +191,7 @@ export async function POST(request: Request) {
       );
 
       if (error) throw error;
+      await applySuggestion(data.suggest, canPublish, insertData?.[0]?.slug);
       refreshPublicPages();
       return NextResponse.json({ success: true, data: insertData, warning });
     }

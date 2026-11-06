@@ -6,8 +6,13 @@ import ShareLink from '@/components/Expnews/ShareLink';
 import { CardTitle, ListItem, Meta, NewsCard, Tag, Thumb, longDate } from '@/components/Expnews/blocks';
 import CategorySection, { type CategoryGroup } from '@/components/Expnews/CategorySection';
 import CategorySlide from '@/components/Expnews/CategorySlide';
+import CategoryStrip from '@/components/Expnews/CategoryStrip';
+import ReadingSuggestions from '@/components/Expnews/ReadingSuggestions';
+import OpportunityList from '@/components/Expnews/OpportunityList';
+import NewsletterForm from '@/components/Forms/NewsletterForm';
 import NewsTicker from '@/components/Expnews/NewsTicker';
 import StickyColumn from '@/components/Expnews/StickyColumn';
+import { getSuggestionSlugs } from '@/lib/suggestions';
 import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
@@ -95,16 +100,8 @@ function Overlay({
   );
 }
 
-function AdBand() {
-  return (
-    <div className="flex h-[88px] items-center justify-center bg-[#dcdcdc] text-[15px] font-bold uppercase italic tracking-[0.25em] text-gray-400">
-      Espaço publicitário
-    </div>
-  );
-}
-
 export default async function HomePrincipal() {
-  const [slides, { posts }] = await Promise.all([getFeatured(), getHomePosts()]);
+  const [slides, { posts }, suggestSlugs] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs()]);
 
   if (posts.length === 0) {
     return (
@@ -121,7 +118,6 @@ export default async function HomePrincipal() {
   const hot = pool.take(4, ['internacional']);
   const watch = pool.take(5);
   const food = pool.take(5, ['receitas', 'curiosidade']);
-  const entertainment = pool.take(3, ['oportunidades']);
   // Publicações recentes da barra lateral: a Entrevista primeiro, depois as mais recentes.
   const recent = pool.take(3, ['entrevista']);
   // Últimas notícias publicadas (carrossel), sem as do slide principal.
@@ -144,6 +140,12 @@ export default async function HomePrincipal() {
   const agroGroups = family(['agricultura', 'fruticultura', 'agro-negocio', 'mulher-agrario', 'sector-agrario', 'entrevista']);
   // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Oportunidades que não estão no slide.
   const heroLatest = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 5).map(slim);
+  const agroStrip = posts.filter((p) => p.categorySlug === 'agro-negocio' || p.extraCategories.some((c) => c.slug === 'agro-negocio')).slice(0, 12).map(slim);
+  // Oportunidades: todas as notícias da categoria (fora do slide principal), 6 por página.
+  const opportunities = posts.filter((p) => p.categorySlug === 'oportunidades' && !inSlides.has(p.slug)).slice(0, 60).map(slim);
+  // Sugestões de leitura (fim da página): as notícias activadas no painel; enquanto nenhuma estiver activada, as mais recentes. O navegador escolhe 8 à sorte.
+  const activated = posts.filter((p) => suggestSlugs.has(p.slug));
+  const suggestions = (activated.length > 0 ? activated : posts.slice(0, 60)).map(slim);
   const newsletterBg = (slides[1] ?? slides[0] ?? posts[0]).image;
 
   return (
@@ -173,66 +175,9 @@ export default async function HomePrincipal() {
                 </Card>
 
                 <CategorySection groups={agroGroups} layout="grelha" arrowsOnTop reveal />
-
-                <AdBand />
-
-                <Card title="Ver agora">
-                  <div className="grid bg-black md:grid-cols-[1.75fr_1fr]">
-                    <Link href={`/noticias/${watch[0].slug}`} className="group relative block h-[260px] md:h-auto md:min-h-[330px]">
-                      <Thumb src={watch[0].image} />
-                      <div className="absolute inset-0 bg-black/25" />
-                      <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#d6101c] text-white transition-transform group-hover:scale-110">
-                        <Play className="ml-0.5 h-6 w-6 fill-white" />
-                      </span>
-                    </Link>
-                    <div className="flex flex-col bg-[#1a1a1a] text-white">
-                      <Link href={`/noticias/${watch[0].slug}`} className={`${RED} flex items-start gap-3 p-4 text-[11px] font-bold leading-snug`}>
-                        <Play className="mt-0.5 h-4 w-4 shrink-0 fill-white" />
-                        <span className="line-clamp-3">{watch[0].title}</span>
-                      </Link>
-                      <ul className="flex-1 divide-y divide-white/10">
-                        {watch.slice(1).map((p) => (
-                          <li key={p.slug}>
-                            <Link href={`/noticias/${p.slug}`} className="flex gap-3 p-3 hover:bg-white/5">
-                              <span className="relative h-[46px] w-[60px] shrink-0 overflow-hidden bg-gray-700">
-                                <Thumb src={p.image} />
-                              </span>
-                              <span className="min-w-0">
-                                <span className="line-clamp-2 text-[10px] font-bold leading-snug">{p.title}</span>
-                                <span className="mt-1 block text-[9px] text-gray-400">{p.category}</span>
-                              </span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card title="Oportunidades" plain>
-                  <ul className="space-y-3">
-                    {entertainment.map((p) => (
-                      <li key={p.slug} className="ec-reveal grid gap-4 bg-white p-4 shadow-sm sm:grid-cols-[210px_1fr]">
-                        <Link href={`/noticias/${p.slug}`} className="relative block h-[150px] overflow-hidden bg-gray-200 sm:h-auto sm:min-h-[140px]">
-                          <Thumb src={p.image} />
-                        </Link>
-                        <div>
-                          <Tag label={p.category} slug={p.categorySlug} />
-                          <Link href={`/noticias/${p.slug}`}>
-                            <h4 className="mt-2 text-[19px] font-bold leading-snug hover:text-[#d6101c]">{p.title}</h4>
-                          </Link>
-                          <div className="mt-2">
-                            <Meta post={p} />
-                          </div>
-                          {p.excerpt && <p className="mt-2 line-clamp-2 text-[11px] leading-relaxed text-gray-500">{p.excerpt}</p>}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
               </div>
 
-              {/* Coluna secundária */}
+              {/* Coluna secundária (1.ª parte): termina em "Publicações recentes", por cima da faixa Agro-negócio */}
               <StickyColumn className="min-w-0 space-y-3">
                 <Card title={categoryLabel('internacional')}>
                   <Overlay post={hot[0]} className="h-[200px]" titleClass="text-[13px]" />
@@ -274,7 +219,54 @@ export default async function HomePrincipal() {
                     ))}
                   </ul>
                 </Card>
+              </StickyColumn>
+            </div>
 
+            {/* Faixa Agro-negócio: atravessa a barra lateral (no lugar do antigo espaço publicitário) */}
+            <CategoryStrip posts={agroStrip} label={categoryLabel('agro-negocio')} />
+
+            <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
+              <div className="min-w-0 space-y-3">
+                <Card title="Ver agora">
+                  <div className="grid bg-black md:grid-cols-[1.75fr_1fr]">
+                    <Link href={`/noticias/${watch[0].slug}`} className="group relative block h-[260px] md:h-auto md:min-h-[330px]">
+                      <Thumb src={watch[0].image} />
+                      <div className="absolute inset-0 bg-black/25" />
+                      <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#d6101c] text-white transition-transform group-hover:scale-110">
+                        <Play className="ml-0.5 h-6 w-6 fill-white" />
+                      </span>
+                    </Link>
+                    <div className="flex flex-col bg-[#1a1a1a] text-white">
+                      <Link href={`/noticias/${watch[0].slug}`} className={`${RED} flex items-start gap-3 p-4 text-[11px] font-bold leading-snug`}>
+                        <Play className="mt-0.5 h-4 w-4 shrink-0 fill-white" />
+                        <span className="line-clamp-3">{watch[0].title}</span>
+                      </Link>
+                      <ul className="flex-1 divide-y divide-white/10">
+                        {watch.slice(1).map((p) => (
+                          <li key={p.slug}>
+                            <Link href={`/noticias/${p.slug}`} className="flex gap-3 p-3 hover:bg-white/5">
+                              <span className="relative h-[46px] w-[60px] shrink-0 overflow-hidden bg-gray-700">
+                                <Thumb src={p.image} />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="line-clamp-2 text-[10px] font-bold leading-snug">{p.title}</span>
+                                <span className="mt-1 block text-[9px] text-gray-400">{p.category}</span>
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card title="Oportunidades" plain>
+                  <OpportunityList posts={opportunities} />
+                </Card>
+              </div>
+
+              {/* Coluna secundária (2.ª parte) */}
+              <StickyColumn className="min-w-0 space-y-3">
                 <Card title="Mais lidas">
                   <ul className="space-y-3">
                     {popular.map((p) => (
@@ -294,10 +286,18 @@ export default async function HomePrincipal() {
                     ))}
                   </ul>
                 </Card>
+
+                <Card title="Newsletter">
+                  <p className="mb-3 text-[12px] leading-relaxed text-gray-600">
+                    Receba no seu e-mail as notícias do dia, todas as noites às 20h.
+                  </p>
+                  <NewsletterForm variant="light" />
+                </Card>
               </StickyColumn>
             </div>
 
-            <AdBand />
+            {/* Sugestões de leitura (no lugar do último espaço publicitário) */}
+            <ReadingSuggestions posts={suggestions} />
           </div>
         </main>
 

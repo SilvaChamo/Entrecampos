@@ -95,8 +95,8 @@ export default function PendingNewsPage() {
                 Não existem notícias pendentes de momento.
               </td></tr>
             ) : (
-              news.map((item) => (
-                <tr key={item.id} className="border-b border-[#f0f0f1] hover:bg-[#f6f7f7] group">
+              news.map((item, idx) => (
+                <tr key={item.id} className={`border-b border-[#f0f0f1] hover:bg-[#f6f7f7] group ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
                   <td className="p-4">
                     <div className="flex items-center gap-4">
                       {item.image_url ? (

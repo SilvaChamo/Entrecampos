@@ -17,6 +17,7 @@ import {
   Recycle
 } from 'lucide-react';
 import { SkeletonTableRow, SkeletonHeader } from '@/components/Admin/Skeleton';
+import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
 
 interface NewsItem {
   id: string;
@@ -54,17 +55,21 @@ const SEP = "max-md:before:content-['·_'] max-md:before:text-gray-400";
 const LBL = "max-md:before:font-normal max-md:before:text-gray-500 max-md:before:content-[attr(data-label)_':_']";
 
 export default function NewsAdminPage() {
-  const [news, setNews] = useState<NewsItem[]>([]);
+  const [news, setNews] = useState<NewsItem[]>(() => adminCacheGet<NewsItem[]>('news') ?? []);
   // Confirmação na própria página: os diálogos nativos do navegador podem não aparecer e a ação ficava sem efeito.
   const [ask, setAsk] = useState<{ text: string; done: (ok: boolean) => void } | null>(null);
   const confirmAsync = (text: string) => new Promise<boolean>((done) => setAsk({ text, done }));
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => adminCacheGet('news') === undefined);
   // Categorias reais (as do menu e as que já têm notícias): vêm do servidor, não de uma lista fixa.
-  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>(() => adminCacheGet<CategoryOption[]>('category-options') ?? []);
   useEffect(() => {
     fetch('/api/admin/categories', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data?.options && setCategoryOptions(data.options as CategoryOption[]))
+      .then((data) => {
+        if (!data?.options) return;
+        adminCacheSet('category-options', data.options);
+        setCategoryOptions(data.options as CategoryOption[]);
+      })
       .catch(() => {});
   }, []);
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +77,17 @@ export default function NewsAdminPage() {
   const [searchIds, setSearchIds] = useState<Set<string> | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState('Todas as categorias');
+  // Vindo da página de Categorias (?categoria=<slug>) a lista abre já filtrada; o menu "Todas as Notícias" volta a mostrá-las todas.
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get('categoria');
+    if (fromUrl) setFilterCategory(fromUrl);
+    const onNav = (e: Event) => {
+      const href = String((e as CustomEvent).detail || '');
+      if (href === '/admin/noticias') setFilterCategory('Todas as categorias');
+    };
+    window.addEventListener('ec-nav', onNav);
+    return () => window.removeEventListener('ec-nav', onNav);
+  }, []);
   const [filterDate, setFilterDate] = useState('Todas as datas');
   const [quickEditId, setQuickEditId] = useState<string | null>(null);
   const [seoItem, setSeoItem] = useState<NewsItem | null>(null); // popup com o SEO desta notícia
@@ -92,12 +108,14 @@ export default function NewsAdminPage() {
   }, []);
 
   const loadNews = async () => {
-    setLoading(true);
+    // Já há cópia guardada: mostra-se logo e actualiza-se em segundo plano, sem voltar ao ecrã de espera.
+    if (adminCacheGet('news') === undefined) setLoading(true);
     try {
       // O servidor decide quem pode ver (sessão + permissão) e lê do Supabase; sem Supabase usa a cópia local.
       const res = await fetch('/api/admin/news/list', { credentials: 'include' });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `Erro ${res.status} ao carregar notícias.`);
+      adminCacheSet('news', body.items || []);
       setNews(body.items || []);
       setLocalCopy(body.source === 'local');
       setErrorMsg(null);

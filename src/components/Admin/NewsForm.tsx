@@ -99,6 +99,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     category: 'agricultura',
     categories: ['agricultura'] as string[],
     featured: false,
+    suggest: false,
     image_url: '',
     date: new Date().toISOString()
   });
@@ -157,6 +158,20 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     if (Object.keys(next).length) setFormData((prev) => ({ ...prev, ...next }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, isEdit]);
+
+  // Ao editar, a caixa "Sugestão de leitura" abre marcada se a notícia já está activada nas sugestões.
+  useEffect(() => {
+    const slug = initialData?.slug;
+    if (!isEdit || !slug) return;
+    let alive = true;
+    fetch('/api/admin/news/suggestions', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { slugs?: string[] } | null) => alive && body?.slugs && setFormData((prev) => ({ ...prev, suggest: body.slugs!.includes(slug) })))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [initialData?.slug, isEdit]);
 
   // Gerar slug automaticamente a partir do título (só se não for edição)
   useEffect(() => {
@@ -383,6 +398,20 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
                   <strong>Destaque</strong>
                   <span className="block text-[12px] text-[#646970]">
                     Aparece no slide da página inicial (as 5 últimas). Quando entra uma nova, a mais antiga volta só à sua categoria.
+                  </span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2 border-b border-[#ccd0d4] bg-[#f0f6fc] p-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 rounded border-[#8c8f94] text-[#2271b1] focus:ring-[#2271b1]"
+                  checked={!!formData.suggest}
+                  onChange={(e) => setFormData({ ...formData, suggest: e.target.checked })}
+                />
+                <span className="text-[#2c3338]">
+                  <strong>Sugestão de leitura</strong>
+                  <span className="block text-[12px] text-[#646970]">
+                    Activa esta notícia nas sugestões de leitura, no fim da página inicial.
                   </span>
                 </span>
               </label>

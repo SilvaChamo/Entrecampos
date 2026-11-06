@@ -13,6 +13,7 @@ import {
   Utensils,
   type LucideIcon,
 } from 'lucide-react';
+import { defaultCategoryColor } from '@/lib/category-palette';
 
 const ICONS: Record<string, LucideIcon> = {
   agricultura: Sprout,
@@ -27,25 +28,6 @@ const ICONS: Record<string, LucideIcon> = {
   'mulher-agrario': Flower2,
   receitas: Utensils,
 };
-
-/**
- * Cores das etiquetas: verdes do site EntreCAMPOS (Elementor/tema) e vermelhos da marca,
- * em várias tonalidades, alternados para categorias vizinhas se distinguirem.
- */
-const CATEGORY_COLORS: Record<string, string> = {
-  agricultura: '#3F9B1E', // verde claro
-  comunidade: '#D6101C', // vermelho da marca
-  'agro-negocio': '#037E02',
-  curiosidade: '#B00D17',
-  'sector-agrario': '#2E7C04',
-  ambiente: '#E53935',
-  'turismo-rural': '#589442',
-  'mulher-agrario': '#8E0B13',
-  fruticultura: '#225E3B',
-  oportunidades: '#1BB35A', // verde vivo, distinto do da Agricultura
-  receitas: '#A50F1A',
-};
-const DEFAULT_COLOR = '#D6101C';
 
 function toSlug(value: string) {
   return value
@@ -73,7 +55,8 @@ export default function CategoryBadge({
 }) {
   const key = slug || toSlug(label);
   const Icon = ICONS[key] ?? Tag;
-  const color = CATEGORY_COLORS[key] ?? DEFAULT_COLOR;
+  // A cor escolhida no painel chega por variável CSS (--cat-<slug>), posta pelo layout; sem ela vale a cor de origem.
+  const color = `var(--cat-${key}, ${defaultCategoryColor(key)})`;
   return (
     // Clicável: abre a categoria. Não colocar dentro de outro <a>.
     <Link

@@ -64,8 +64,8 @@ export default function ReviewedNewsPage() {
             ) : news.length === 0 ? (
               <tr><td colSpan={4} className="p-10 text-center text-gray-500">Ainda não há notícias publicadas.</td></tr>
             ) : (
-              news.map((item) => (
-                <tr key={item.id} className="border-b border-[#f0f0f1] hover:bg-[#f6f7f7]">
+              news.map((item, idx) => (
+                <tr key={item.id} className={`border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
                   <td className="p-4">
                     <div className="flex items-center gap-4">
                       {item.image_url ? (

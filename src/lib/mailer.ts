@@ -8,7 +8,10 @@ export function mailConfigured() {
   return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
-export async function sendMail({ to, subject, html, text }: { to: string; subject: string; html: string; text: string }) {
+type Mail = { to: string; subject: string; html: string; text: string };
+
+/** Ligação SMTP reutilizável (envios em série, como a newsletter): abre-se uma vez e fecha-se no fim. */
+export function openMailer() {
   if (!mailConfigured()) throw new Error('SMTP não configurado.');
   const transport = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -18,7 +21,20 @@ export async function sendMail({ to, subject, html, text }: { to: string; subjec
     connectionTimeout: 10_000,
     socketTimeout: 15_000,
   });
-  await transport.sendMail({ from: process.env.SITE_EMAIL_FROM || 'EntreCAMPOS <noreply@entrecamposblog.com>', to, subject, html, text });
+  const from = process.env.SITE_EMAIL_FROM || 'EntreCAMPOS <noreply@entrecamposblog.com>';
+  return {
+    send: ({ to, subject, html, text }: Mail) => transport.sendMail({ from, to, subject, html, text }),
+    close: () => transport.close(),
+  };
+}
+
+export async function sendMail(mail: Mail) {
+  const mailer = openMailer();
+  try {
+    await mailer.send(mail);
+  } finally {
+    mailer.close();
+  }
 }
 
 const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

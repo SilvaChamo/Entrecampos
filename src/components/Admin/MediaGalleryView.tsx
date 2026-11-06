@@ -860,8 +860,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 </tr>
               </thead>
               <tbody>
-                {paginatedFiles.map((file) => (
-                  <tr key={file.name} className="border-b border-[#f0f0f1] hover:bg-[#f6f7f7] text-[13px]">
+                {paginatedFiles.map((file, idx) => (
+                  <tr key={file.name} className={`border-b border-[#f0f0f1] hover:bg-[#f6f7f7] text-[13px] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
                     <td className="p-2">
                       <input 
                         type="checkbox" 

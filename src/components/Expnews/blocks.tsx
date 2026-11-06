@@ -51,10 +51,10 @@ export function Meta({ post, share = true, light = false, spread = false }: { po
   );
 }
 
-export function Thumb({ src, className = '' }: { src: string; className?: string }) {
+export function Thumb({ src, className = '', eager = false }: { src: string; className?: string; eager?: boolean }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" loading="lazy" decoding="async" className={`absolute inset-0 h-full w-full object-cover ${className}`} />
+    <img src={src} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" className={`absolute inset-0 h-full w-full object-cover ${className}`} />
   );
 }
 
