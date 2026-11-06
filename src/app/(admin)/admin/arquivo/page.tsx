@@ -145,7 +145,7 @@ export default function ArquivoPage() {
   const shown = useMemo(() => (folders ?? []).filter((f) => f.nome.toLowerCase().includes(query.toLowerCase())), [folders, query]);
 
   return (
-    <div className="min-h-screen p-6 text-[#2c3338]">
+    <div className="ec-page min-h-screen text-[#2c3338]">
       <h1 className="mb-1 text-2xl font-normal">Arquivo de fotos</h1>
       <p className="mb-3 text-sm text-[#50575e]">Arquivo de fotos do EntreCAMPOS.{aberta && <> Pasta: <strong>{pastaAberta?.nome ?? aberta}</strong>.</>}</p>
 

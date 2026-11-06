@@ -198,7 +198,7 @@ export default function MeuPerfilPage() {
 
   if (!user) {
     return (
-      <div className="p-6 text-[#2c3338]">
+      <div className="ec-page text-[#2c3338]">
         <p className="text-red-500">Perfil não encontrado.</p>
       </div>
     );
@@ -209,7 +209,7 @@ export default function MeuPerfilPage() {
     : [form.firstName, form.lastName].filter(Boolean).join(' ') || form.email?.split('@')[0] || 'user';
 
   return (
-    <div className="p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>

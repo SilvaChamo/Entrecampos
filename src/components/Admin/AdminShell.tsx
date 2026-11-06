@@ -549,7 +549,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </nav>
 
           {/* Conta com sessão iniciada: foto, e-mail e tipo de conta, no fundo escuro dos submenus. O botão de recolher fica fora da barra, na mesma linha. */}
-          <div className="flex shrink-0 items-center gap-2.5 bg-[#0c1b13] px-4 py-3" title={user?.email || ''}>
+          <div className="flex h-14 shrink-0 items-center gap-2.5 bg-[#0c1b13] px-4" title={user?.email || ''}>
             {photo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={photo} alt="" referrerPolicy="no-referrer" onError={() => setPhotoFailed(true)} className="h-8 w-8 shrink-0 rounded-full object-cover" />
@@ -570,7 +570,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             aria-label={isSidebarOpen ? 'Recolher a barra lateral' : 'Expandir a barra lateral'}
             title={isSidebarOpen ? 'Recolher a barra lateral' : 'Expandir a barra lateral'}
-            className={`max-lg:hidden fixed bottom-[10px] z-50 rounded-r-md bg-[#1a3326] p-2 text-[#f0f0f1] shadow-lg transition-[left] duration-200 hover:text-[#39ff14] ${isSidebarOpen ? 'left-56' : 'left-0'}`}
+            className={`max-lg:hidden fixed bottom-0 z-50 flex h-14 w-10 items-center justify-center rounded-r-md bg-[#0c1b13] text-[#f0f0f1] shadow-lg transition-[left] duration-200 hover:text-[#39ff14] ${isSidebarOpen ? 'left-56' : 'left-0'}`}
           >
             {/* Expandir: seta a entrar; recolher: o mesmo ícone virado ao contrário */}
             <LogIn className={`h-5 w-5 ${isSidebarOpen ? '-scale-x-100' : ''}`} />

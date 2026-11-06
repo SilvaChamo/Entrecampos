@@ -490,23 +490,23 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   };
 
   return (
-    <div className={embedded ? 'text-[#2c3338]' : 'min-h-screen text-[#2c3338] p-6'}>
+    <div className={embedded ? 'text-[#2c3338]' : 'ec-page min-h-screen text-[#2c3338]'}>
       <div className="w-full">
         {!bare && (
         <>
         {/* Header Estilo WP */}
-        <div className="pt-0 pb-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:flex-nowrap">
+        <div className="pt-0 pb-4 max-md:pb-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-md:gap-2">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 max-md:gap-y-1 md:flex-nowrap max-md:w-full">
             <h1 className="whitespace-nowrap text-2xl font-normal">{title}</h1>
-            <div className="flex max-w-full flex-nowrap items-center gap-1.5 overflow-x-auto sm:gap-2">
+            <div className="flex max-w-full flex-nowrap items-center gap-1.5 overflow-x-auto sm:gap-2 max-md:w-full max-md:overflow-visible">
             {/* O botão está sempre na linha; fica inutilizado onde não serve (arquivo fora da pasta e fotos partilhadas). */}
             <label
               aria-disabled={uploadDisabled || !!folderList}
               title={uploadDisabled || folderList ? (source === 'partilhado' ? 'As fotos partilhadas chegam por e-mail.' : 'No Arquivo, as fotos adicionam-se dentro de cada pasta (menu Arquivo de fotos).') : undefined}
-              className={`inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-2 2xl:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-xs 2xl:text-sm transition-all ${uploadDisabled || folderList ? 'cursor-not-allowed opacity-40' : 'hover:bg-[#f6f7f7] cursor-pointer'}`}
+              className={`inline-flex h-8 max-md:h-9 max-md:px-3 max-md:text-[13px] shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-2 2xl:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-xs 2xl:text-sm transition-all ${uploadDisabled || folderList ? 'cursor-not-allowed opacity-40' : 'hover:bg-[#f6f7f7] cursor-pointer'}`}
             >
-              {uploading ? 'A carregar...' : (<><span className="2xl:hidden">Adicionar</span><span className="hidden 2xl:inline">Adicionar ficheiros multimédia</span></>)}
+              {uploading ? 'A carregar...' : (<><span className="md:hidden">Adicionar multimédia</span><span className="max-md:hidden 2xl:hidden">Adicionar</span><span className="hidden 2xl:inline">Adicionar ficheiros multimédia</span></>)}
               <input
                 type="file"
                 className="hidden"
@@ -569,9 +569,9 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
               placeholder="Procurar itens multimédia..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 pr-2 border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#00a651] focus:ring-1 focus:ring-[#00a651] w-40 lg:w-48 2xl:w-64 max-md:w-full"
+              className="h-8 max-md:h-9 max-md:text-[13px] pl-8 pr-2 border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#00a651] focus:ring-1 focus:ring-[#00a651] w-40 lg:w-48 2xl:w-64 max-md:w-full"
             />
-            <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-[#50575e]" />
+            <Search className="absolute left-2.5 top-2 max-md:top-2.5 w-3.5 h-3.5 text-[#50575e]" />
           </div>
           {canSeeTrash && (
             <div className="flex items-center gap-2">
@@ -579,7 +579,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 onClick={() => setView((v) => (v === 'arquivo' ? 'galeria' : 'arquivo'))}
                 title={view === 'arquivo' ? 'Voltar à galeria' : 'Arquivadas'}
                 aria-pressed={view === 'arquivo'}
-                className={`inline-flex h-8 w-8 items-center justify-center rounded-md border ${view === 'arquivo' ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+                className={`inline-flex h-8 w-8 max-md:h-9 max-md:w-9 items-center justify-center rounded-md border ${view === 'arquivo' ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
               >
                 <Archive className="w-4 h-4" />
               </button>
@@ -587,7 +587,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 onClick={() => setView((v) => (v === 'lixo' ? 'galeria' : 'lixo'))}
                 title={view === 'lixo' ? 'Voltar à galeria' : 'Lixo'}
                 aria-pressed={view === 'lixo'}
-                className={`inline-flex h-8 w-8 items-center justify-center rounded-md border ${view === 'lixo' ? 'border-[#d63638] bg-[#d63638] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+                className={`inline-flex h-8 w-8 max-md:h-9 max-md:w-9 items-center justify-center rounded-md border ${view === 'lixo' ? 'border-[#d63638] bg-[#d63638] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -598,7 +598,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
       </div>
 
         {/* Toolbar de Filtros - AGORA FIXA */}
-        <div className="ec-sticky-bar sticky z-40 bg-[#f0f0f1] pt-4 pb-4">
+        <div className="ec-sticky-bar sticky z-40 bg-[#f0f0f1] pt-4 pb-4 max-md:py-2">
           <div className="flex flex-col md:flex-row items-center justify-between bg-white border border-[#ccd0d4] p-2 gap-2 shadow-sm">
             <div className="flex flex-wrap items-center gap-2 max-md:w-full">
               {isBulkMode && (

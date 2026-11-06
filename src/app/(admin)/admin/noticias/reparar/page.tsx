@@ -251,7 +251,7 @@ export default function NewsRepairPage() {
   const suggestions = currentItem ? getSuggestions(currentItem.title) : [];
 
   return (
-    <div className="min-h-screen text-[#2c3338] p-6">
+    <div className="ec-page min-h-screen text-[#2c3338]">
       <div className="w-full">
         <div className="py-4 md:py-8">
           

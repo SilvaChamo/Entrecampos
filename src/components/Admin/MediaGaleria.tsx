@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import MediaGalleryView, { type MediaSource } from '@/components/Admin/MediaGalleryView';
 import { useAuth } from '@/context/AuthContext';
 import { type FolderInfo } from '@/components/Admin/ArquivoFolders';
+import MobileSelect from '@/components/Admin/MobileSelect';
 
 const TABS: { id: MediaSource; label: string; short: string }[] = [
   { id: 'galeria', label: 'Galeria', short: 'Galeria' },
@@ -84,13 +85,13 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
   const visibleTabs = TABS.filter((t) => t.id !== 'partilhado' || canSeeShared);
   const tabs = (
     <>
-    <select
+    <MobileSelect
       value={source}
-      onChange={(e) => { setSource(e.target.value as MediaSource); setPasta(''); }}
-      className="h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none md:hidden"
-    >
-      {visibleTabs.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
-    </select>
+      onChange={(v) => { setSource(v as MediaSource); setPasta(''); }}
+      options={visibleTabs.map((t) => ({ value: t.id, label: t.label }))}
+      ariaLabel="Origem das fotos"
+      className="min-w-0 flex-1 md:hidden"
+    />
     <div className="hidden flex-nowrap items-center gap-1.5 sm:gap-2 md:flex">
       {visibleTabs.map((t) => (
         <button

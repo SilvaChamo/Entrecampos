@@ -67,7 +67,7 @@ export default function EtiquetasPage() {
   };
 
   return (
-    <div className="p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
       {loading ? (
         <>
           <SkeletonHeader />

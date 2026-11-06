@@ -131,7 +131,7 @@ export default function NewsletterPage() {
 
   if (!data && !error) {
     return (
-      <div className="p-6">
+      <div className="ec-page">
         <SkeletonHeader />
         <SkeletonContent />
       </div>
@@ -139,7 +139,7 @@ export default function NewsletterPage() {
   }
 
   return (
-    <div className="p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#1d2327]">Newsletter</h1>
         <p className="mt-1 text-[#50575e]">Subscritores do site, fila de notícias e envio diário às 20h (hora de Maputo)</p>

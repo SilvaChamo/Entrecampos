@@ -369,7 +369,7 @@ export default function NewsAdminPage() {
   };
 
   return (
-    <div className="p-3 sm:p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
         <div className="flex flex-wrap items-center gap-3 md:gap-4 max-sm:grid max-sm:grid-cols-2">
           <h1 className="text-2xl font-normal w-full sm:w-auto max-sm:col-span-2">Notícias</h1>

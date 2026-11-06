@@ -72,7 +72,7 @@ export default function PartilhadoPage() {
   };
 
   return (
-    <div className="min-h-screen p-6 text-[#2c3338]">
+    <div className="ec-page min-h-screen text-[#2c3338]">
       <h1 className="mb-1 text-2xl font-normal">Arquivo de fotos</h1>
       <p className="mb-3 text-sm text-[#50575e]">Arquivos partilhados por email: <strong>{data?.address ?? 'redaccao@entrecamposblog.com'}</strong>.</p>
 
