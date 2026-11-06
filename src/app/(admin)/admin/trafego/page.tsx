@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BarChart3, Database, FileText, Globe, Monitor, RefreshCw, Search, Users } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 type Daily = { day: string; views: number; visitors: number };
 type Stats = {
@@ -190,7 +191,7 @@ export default function TrafegoPage() {
           <div className={`${card} mb-8`}>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h2 className="flex items-center gap-2 text-lg font-normal text-gray-700"><BarChart3 className="h-5 w-5 text-[#00a651]" /> Relatório de visitas</h2>
-              <select
+              <AdminSelect
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
                 className="h-9 rounded-md border border-gray-300 bg-white px-3 text-[13px] focus:border-green-600 focus:outline-none"
@@ -198,7 +199,7 @@ export default function TrafegoPage() {
                 <option value="7">Últimos 7 dias</option>
                 <option value="14">Últimos 14 dias</option>
                 <option value="30">Últimos 30 dias</option>
-              </select>
+              </AdminSelect>
             </div>
 
             <div className="flex justify-between gap-2 overflow-x-auto px-2 md:px-4">

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Check, ExternalLink, MessageSquare, RefreshCw, RotateCcw, ShieldAlert, Trash2, X } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 type Status = 'pending' | 'approved' | 'spam' | 'trash';
 interface Comment {
@@ -96,7 +97,7 @@ export default function ComentariosPage() {
       </div>
 
       {/* Telemóvel: os separadores passam a um selector */}
-      <select
+      <AdminSelect
         value={tab}
         onChange={(e) => setTab(e.target.value as Status)}
         className="mb-3 h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none md:hidden"
@@ -104,7 +105,7 @@ export default function ComentariosPage() {
         {TABS.map((t) => (
           <option key={t.key} value={t.key}>{t.label} ({counts[t.key] ?? 0})</option>
         ))}
-      </select>
+      </AdminSelect>
 
       <ul className="hidden flex-wrap gap-1 border-b border-[#ccd0d4] text-[13px] md:flex">
         {TABS.map((t) => (

@@ -26,6 +26,7 @@ import {
 import { SkeletonMediaGrid } from '@/components/Admin/Skeleton';
 import { prepareImage } from '@/lib/client-image';
 import ArquivoFolders, { type FolderInfo } from '@/components/Admin/ArquivoFolders';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 interface StorageFile {
   name: string;
@@ -629,7 +630,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 <LayoutGrid className="w-5 h-5" />
               </button>
 
-              <select 
+              <AdminSelect 
                 className="ml-2 max-md:ml-0 h-8 max-md:min-w-[130px] max-md:flex-1 text-sm border-[#ccd0d4] rounded-md bg-white px-2"
                 value={fileTypeFilter}
                 onChange={(e) => {
@@ -648,9 +649,9 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                     {zipOptions.map((z) => <option key={z.path} value={`zip:${z.path}`}>{z.label}</option>)}
                   </optgroup>
                 )}
-              </select>
+              </AdminSelect>
               
-              <select 
+              <AdminSelect 
                 className="h-8 max-md:min-w-[130px] max-md:flex-1 text-sm border-[#ccd0d4] rounded-md bg-white px-2"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
@@ -659,7 +660,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                 {years.map(year => (
                   <option key={year} value={year.toString()}>{year}</option>
                 ))}
-              </select>
+              </AdminSelect>
 
               {!isBulkMode ? (
                 <button 

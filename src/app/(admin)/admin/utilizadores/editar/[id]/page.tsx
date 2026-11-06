@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Camera, Trash2, Shield, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Spinner from '@/components/Common/Spinner';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 const ROLES = ['Administrador', 'Editor', 'Actor', 'Subscritor', 'Contribuidor'];
 
@@ -288,7 +289,7 @@ export default function EditUserPage() {
             <tr className="border-b border-[#f0f0f1]">
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Exibir o nome publicamente como</th>
               <td className="p-3">
-                <select 
+                <AdminSelect 
                   value={form.displayNameType} 
                   onChange={e => setForm({...form, displayNameType: e.target.value})}
                   className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651] bg-white"
@@ -297,7 +298,7 @@ export default function EditUserPage() {
                   <option value="last_name">{form.lastName || 'Apelido'}</option>
                   <option value="full_name">{`${form.firstName} ${form.lastName}`.trim() || 'Nome e Apelido'}</option>
                   <option value="alcunha">{form.alcunha || 'Alcunha'}</option>
-                </select>
+                </AdminSelect>
               </td>
             </tr>
 
@@ -369,11 +370,11 @@ export default function EditUserPage() {
             <tr className="border-b border-[#f0f0f1]">
               <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Papel</th>
               <td className="p-3">
-                <select value={form.role || 'Subscritor'} onChange={e => setForm({...form, role: e.target.value})}
+                <AdminSelect value={form.role || 'Subscritor'} onChange={e => setForm({...form, role: e.target.value})}
                   disabled={form.isAdmin}
                   className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] bg-white outline-none focus:border-[#00a651] disabled:opacity-60 disabled:cursor-not-allowed">
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
+                </AdminSelect>
                 {form.isAdmin && <p className="text-[11px] text-[#50575e] mt-1">O papel do administrador não pode ser alterado.</p>}
               </td>
             </tr>

@@ -25,7 +25,6 @@ export default function EtiquetasPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', slug: '' });
   const [newForm, setNewForm] = useState({ name: '', slug: '' });
-  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,10 +32,7 @@ export default function EtiquetasPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const filteredTags = tags.filter(t => 
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.slug.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTags = tags;
 
   const handleEdit = (tag: typeof INITIAL_TAGS[0]) => {
     setIsEditing(tag.id);
@@ -82,21 +78,10 @@ export default function EtiquetasPage() {
         </div>
           <button 
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
+            className="flex h-9 items-center justify-center gap-2 bg-[#00a651] px-4 text-[13px] text-white hover:bg-[#008f45] max-md:w-full"
           >
             <Plus className="w-4 h-4" /> Adicionar Etiqueta
           </button>
-        </div>
-
-        {/* Search */}
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Pesquisar etiquetas..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9 px-3 border border-[#ccd0d4] rounded-md w-full max-w-md"
-          />
         </div>
 
         {/* Add New Form */}
@@ -128,7 +113,7 @@ export default function EtiquetasPage() {
             <div className="flex gap-2 mt-4">
               <button 
                 onClick={handleAdd}
-                className="flex items-center gap-2 px-4 py-2 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
+                className="flex h-9 items-center justify-center gap-2 bg-[#00a651] px-4 text-[13px] text-white hover:bg-[#008f45] max-md:w-full"
               >
                 <Save className="w-4 h-4" /> Guardar
               </button>
@@ -144,7 +129,7 @@ export default function EtiquetasPage() {
 
         {/* Tags Cloud/List */}
         <div className="bg-white border border-[#ccd0d4] rounded-lg p-6">
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
             {filteredTags.map((tag) => (
               <div 
                 key={tag.id} 
@@ -180,7 +165,7 @@ export default function EtiquetasPage() {
                   <>
                     <Tag className="w-3 h-3 text-[#2271b1]" />
                     <span className="text-sm font-medium text-[#1d2327]">{tag.name}</span>
-                    <span className="text-xs text-[#50575e] bg-white px-1.5 py-0.5 rounded-full">
+                    <span className="text-xs text-[#50575e] bg-white px-1.5 py-0.5 rounded-full max-md:ml-auto">
                       {tag.count}
                     </span>
                     <div className="hidden group-hover:flex items-center gap-1 ml-1">
@@ -205,13 +190,13 @@ export default function EtiquetasPage() {
           
           {filteredTags.length === 0 && (
             <div className="text-center py-8 text-[#50575e]">
-              Nenhuma etiqueta encontrada.
+              Ainda não há etiquetas.
             </div>
           )}
         </div>
 
       <div className="mt-4 text-[13px] text-[#50575e]">
-        {filteredTags.length} de {tags.length} etiquetas
+        {tags.length} etiquetas
       </div>
         </>
       )}

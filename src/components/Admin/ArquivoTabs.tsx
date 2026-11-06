@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 /** Separadores do Arquivo de fotos (a janela principal é o arquivo); `right` fica à direita na mesma linha (ex.: pesquisa). */
 /** No telemóvel, `mobileAction` fica ao lado do selector e `mobileBelow` ocupa a linha de baixo (a largura toda); `right` só se vê no computador. */
@@ -18,7 +19,7 @@ export default function ArquivoTabs({ active, right, mobileAction, mobileBelow, 
       <div className={`flex items-end ${mobileAction ? 'max-md:w-full max-md:items-center max-md:gap-2' : ''}`}>
         {withSlots && <div id="ec-bulk-check" className="mr-3 flex items-center self-center empty:hidden" />}
         {/* Telemóvel: os separadores passam a um selector */}
-        <select
+        <AdminSelect
           value={active}
           onChange={(e) => {
             const v = e.target.value;
@@ -29,7 +30,7 @@ export default function ArquivoTabs({ active, right, mobileAction, mobileBelow, 
         >
           <option value="arquivo">Arquivo</option>
           <option value="partilhadas">Arquivos partilhados</option>
-        </select>
+        </AdminSelect>
         <Link href="/admin/arquivo" onClick={(e) => { if (onArquivoClick) { e.preventDefault(); onArquivoClick(); } }} className={`${tab(active === 'arquivo', true)} max-md:hidden`}>Arquivo{active === 'arquivo' && line(true)}</Link>
         <Link href="/admin/partilhado" onClick={(e) => { if (onPartilhadasClick) { e.preventDefault(); onPartilhadasClick(); } }} className={`${tab(active === 'partilhadas')} max-md:hidden`}>Arquivos partilhados{active === 'partilhadas' && line()}</Link>
         {mobileAction && <div className="shrink-0 md:hidden">{mobileAction}</div>}

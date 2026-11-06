@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { SkeletonTableRow, SkeletonHeader } from '@/components/Admin/Skeleton';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 interface NewsItem {
   id: string;
@@ -179,7 +180,7 @@ export default function NewsAdminPage() {
       <div className="flex items-center gap-3 max-md:hidden md:contents">
       <label className="md:mr-3 flex items-center gap-1.5">
         Por página:
-        <select
+        <AdminSelect
           value={perPage}
           onChange={(e) => {
             const value = Number(e.target.value);
@@ -193,7 +194,7 @@ export default function NewsAdminPage() {
               {n === 0 ? 'Todas' : n}
             </option>
           ))}
-        </select>
+        </AdminSelect>
       </label>
       <span className="md:mr-2">{filteredNews.length} itens</span>
       </div>
@@ -415,7 +416,7 @@ export default function NewsAdminPage() {
 
       {/* Toolbar superior com Filtros */}
       <div className="flex flex-wrap items-center gap-2 mb-4 max-sm:grid max-sm:grid-cols-2">
-        <select
+        <AdminSelect
           className="h-9 max-sm:h-11 max-sm:w-full border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651]"
           value={bulkAction}
           onChange={(e) => setBulkAction(e.target.value)}
@@ -424,7 +425,7 @@ export default function NewsAdminPage() {
           <option value="edit">Editar</option>
           <option value="archive">Arquivar</option>
           <option value="trash">Mover para o lixo</option>
-        </select>
+        </AdminSelect>
 
         {selectedIds.size > 0 && bulkAction === 'trash' && (
           <button
@@ -454,7 +455,7 @@ export default function NewsAdminPage() {
             Cancelar
           </button>
         )}
-        <select
+        <AdminSelect
           className="h-9 max-sm:h-11 max-sm:w-full max-sm:ml-0 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651] ml-2"
           value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
@@ -463,15 +464,15 @@ export default function NewsAdminPage() {
           {years.map(year => (
             <option key={year} value={year.toString()}>{year}</option>
           ))}
-        </select>
-        <select
+        </AdminSelect>
+        <AdminSelect
           className="h-9 max-sm:h-11 max-sm:w-full max-sm:col-span-2 border-[#ccd0d4] rounded-md text-sm bg-white px-2 outline-none focus:border-[#00a651]"
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
         >
           <option>Todas as categorias</option>
           {categoryOptions.map((cat) => <option key={cat.slug} value={cat.slug}>{cat.label}</option>)}
-        </select>
+        </AdminSelect>
 
         <button
           onClick={() => setFilterMissingImage(!filterMissingImage)}
@@ -667,7 +668,7 @@ export default function NewsAdminPage() {
                               </div>
                               <div>
                                 <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">Estado</label>
-                                <select
+                                <AdminSelect
                                   value={editForm.status || 'Published'}
                                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                                   className="w-full h-8 px-2 border border-[#ccd0d4] rounded-[3px] text-[12px] min-[1500px]:text-sm"
@@ -675,7 +676,7 @@ export default function NewsAdminPage() {
                                   <option value="Published">Publicado</option>
                                   <option value="Draft">Rascunho</option>
                                   <option value="Archived">Arquivado</option>
-                                </select>
+                                </AdminSelect>
                               </div>
                             </div>
 

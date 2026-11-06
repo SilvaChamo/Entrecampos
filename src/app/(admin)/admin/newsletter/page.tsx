@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Download, FileUp, Send, Trash2, Upload, UserPlus, X } from 'lucide-react';
 import { SkeletonContent, SkeletonHeader } from '@/components/Admin/Skeleton';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 type Subscriber = { id: string; email: string; created_at: string };
 type QueueItem = { slug: string; title: string; category: string; date: string; image: string | null; excerpt: string };
@@ -142,7 +143,7 @@ export default function NewsletterPage() {
     <div className="ec-page text-[#2c3338]">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#1d2327]">Newsletter</h1>
-        <p className="mt-1 text-[#50575e]">Subscritores do site, fila de notícias e envio diário às 20h (hora de Maputo)</p>
+        <p className="mt-1 text-[13px] text-[#50575e]">Subscritores do site, fila de notícias e envio diário às 20h (hora de Maputo)</p>
       </div>
 
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-[13px] text-red-700">{error}</div>}
@@ -176,9 +177,9 @@ export default function NewsletterPage() {
               ['subscribers', `Lista de subscritores (${data.subscribers.length})`],
             ] as const;
             return (
-              <select value={tab} onChange={(e) => setTab(e.target.value as 'news' | 'subscribers')} className="h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none md:hidden">
+              <AdminSelect value={tab} onChange={(e) => setTab(e.target.value as 'news' | 'subscribers')} className="h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none md:hidden">
                 {tabList.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-              </select>
+              </AdminSelect>
             );
           })()}
           <div role="tablist" className="hidden gap-1 md:flex">

@@ -20,6 +20,7 @@ import {
   Underline as UnderlineIcon,
 } from 'lucide-react';
 import ImageChooser from '@/components/Admin/ImageChooser';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 type Align = 'center' | 'left' | 'right';
 
@@ -450,7 +451,7 @@ export default function RichEditor({ value, onChange, newsTitle = '' }: { value:
   return (
     <div className="ec-editor">
       <div className="flex flex-wrap items-center gap-0.5 border-b border-[#ccd0d4] bg-white px-2 py-1.5">
-        <select
+        <AdminSelect
           value={headingValue}
           onChange={(e) => {
             const level = Number(e.target.value);
@@ -464,7 +465,7 @@ export default function RichEditor({ value, onChange, newsTitle = '' }: { value:
           <option value={1}>Título 1</option>
           <option value={2}>Título 2</option>
           <option value={3}>Título 3</option>
-        </select>
+        </AdminSelect>
         <Divider />
         <Btn title="Negrito" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
           <Bold className="h-4 w-4" />

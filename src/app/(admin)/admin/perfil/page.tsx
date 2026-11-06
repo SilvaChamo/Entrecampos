@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Camera, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Spinner from '@/components/Common/Spinner';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 const ROLES = ['Administrador', 'Editor', 'Actor', 'Subscritor', 'Contribuidor'];
 
@@ -442,7 +443,7 @@ export default function MeuPerfilPage() {
                 <div className="py-3 border-b border-[#f0f0f1]">
                   <dt className="text-[13px] font-semibold text-[#1d2327] mb-1">Exibir nome como</dt>
                   <dd>
-                    <select 
+                    <AdminSelect 
                       value={form.displayNameType} 
                       onChange={e => setForm({...form, displayNameType: e.target.value})}
                       className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651] bg-white"
@@ -451,7 +452,7 @@ export default function MeuPerfilPage() {
                       <option value="last_name">{form.lastName || 'Apelido'}</option>
                       <option value="full_name">{`${form.firstName} ${form.lastName}`.trim() || 'Nome completo'}</option>
                       <option value="alcunha">{form.alcunha || 'Alcunha'}</option>
-                    </select>
+                    </AdminSelect>
                   </dd>
                 </div>
               </div>

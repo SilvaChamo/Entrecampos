@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Shield } from 'lucide-react';
 import { SkeletonTableRow } from '@/components/Admin/Skeleton';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
+import AdminSelect from '@/components/Admin/AdminSelect';
 
 interface UserItem {
   id: string;
@@ -149,16 +150,16 @@ export default function UsersAdminPage() {
       {/* Barra de ferramentas: no telemóvel cada par (campo + botão) ocupa uma linha, todos com a mesma altura (36px) */}
       <div className="flex flex-col gap-2 mb-4 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 md:flex md:flex-wrap md:items-center">
-          <select className="h-9 min-w-0 border-[#ccd0d4] rounded-[3px] text-[13px] bg-white px-2 outline-none focus:border-[#00a651]">
+          <AdminSelect className="h-9 min-w-0 border-[#ccd0d4] rounded-[3px] text-[13px] bg-white px-2 outline-none focus:border-[#00a651]">
             <option>Acções por lotes</option>
             <option>Eliminar</option>
             <option>Enviar reposição de palavra-passe</option>
-          </select>
+          </AdminSelect>
           <button className="h-9 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-[13px] hover:text-[#00a651]">Aplicar</button>
-          <select className="h-9 min-w-0 border-[#ccd0d4] rounded-[3px] text-[13px] bg-white px-2 outline-none focus:border-[#00a651] md:ml-2">
+          <AdminSelect className="h-9 min-w-0 border-[#ccd0d4] rounded-[3px] text-[13px] bg-white px-2 outline-none focus:border-[#00a651] md:ml-2">
             <option>Mudar papel para...</option>
             {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
+          </AdminSelect>
           <button className="h-9 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-[13px] hover:text-[#00a651]">Alterar</button>
         </div>
         <div className="flex w-full md:w-auto">
