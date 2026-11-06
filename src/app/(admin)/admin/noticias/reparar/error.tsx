@@ -12,7 +12,7 @@ export default function ErrorBoundary({
 }) {
   useEffect(() => {
     // Registar o erro silenciosamente
-    console.error("Erro capturado pela proteção de sistema:", error);
+    console.error("Erro capturado pela protecção de sistema:", error);
   }, [error]);
 
   return (

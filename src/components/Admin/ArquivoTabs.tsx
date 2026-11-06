@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 /** Separadores do Arquivo de fotos (a janela principal é o arquivo); `right` fica à direita na mesma linha (ex.: pesquisa). */
 export default function ArquivoTabs({ active, right, onPartilhadasClick, onArquivoClick, slots }: { active: 'arquivo' | 'partilhadas'; right?: ReactNode; onPartilhadasClick?: () => void; onArquivoClick?: () => void; slots?: boolean }) {
-  const withSlots = slots ?? active === 'partilhadas'; // caixa de seleção antes e contador depois dos separadores
+  const withSlots = slots ?? active === 'partilhadas'; // caixa de selecção antes e contador depois dos separadores
   // A linha verde do separador activo fica só por baixo das letras (com uma pequena folga nos lados).
   const tab = (on: boolean, first = false) =>
     `relative ${first ? 'pl-0 pr-3' : 'px-3'} py-2 text-sm ${on ? 'text-[#008f45]' : 'text-[#50575e] hover:text-[#008f45]'}`;

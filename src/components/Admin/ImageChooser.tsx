@@ -38,7 +38,7 @@ export default function ImageChooser({ title = 'Imagem', newsTitle = '', target 
   const openGallery = () => {
     const id = Math.random().toString(36).slice(2);
     try { onBeforeLeave?.(); sessionStorage.setItem('ec-pick', JSON.stringify({ id, target })); } catch { /* sem armazenamento: a galeria abre na mesma */ }
-    // Navegação interna (sem recarregar a página): vai direto à galeria, sem ecrãs pelo meio.
+    // Navegação interna (sem recarregar a página): vai directo à galeria, sem ecrãs pelo meio.
     router.push(`/admin/media?escolher=${id}&voltar=${encodeURIComponent(window.location.pathname + window.location.search)}`);
   };
 

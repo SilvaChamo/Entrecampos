@@ -11,7 +11,7 @@ type View = { kind: 'frame'; src: string } | { kind: 'html'; html: string } | { 
 /** O ficheiro passa pelo próprio painel (mesma origem): abre inline ou baixa com `download=1`. */
 const fileUrl = (path: string, download = false) => `/api/admin/partilhado/file?path=${encodeURIComponent(path)}${download ? '&download=1' : ''}`;
 
-/** Abre um documento dentro do painel (PDF, Word, Excel, texto); baixar é uma opção à parte. */
+/** Abre um documento dentro do painel (PDF, Word, Excel, texto); descarregar é uma opção à parte. */
 export default function DocViewer({ name, path, onClose }: Props) {
   const [view, setView] = useState<View | null>(null);
   const [error, setError] = useState('');
@@ -55,7 +55,7 @@ export default function DocViewer({ name, path, onClose }: Props) {
         <div className="flex items-center gap-3 border-b border-[#ccd0d4] px-4 py-2">
           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#1d2327]">{name}</span>
           <a href={fileUrl(path, true)} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] border border-[#ccd0d4] bg-white px-3 text-sm text-[#2c3338] hover:bg-[#f6f7f7]">
-            <Download className="h-3.5 w-3.5" /> Baixar
+            <Download className="h-3.5 w-3.5" /> Descarregar
           </a>
           <button type="button" onClick={onClose} aria-label="Fechar" className="inline-flex h-8 w-8 items-center justify-center rounded-[3px] hover:bg-[#f6f7f7]">
             <X className="h-4 w-4" />
@@ -82,7 +82,7 @@ export default function DocViewer({ name, path, onClose }: Props) {
               </tbody>
             </table>
           ) : (
-            <p className="p-6 text-sm text-[#50575e]">Este formato não tem pré-visualização no painel. Use “Baixar” para o abrir no computador.</p>
+            <p className="p-6 text-sm text-[#50575e]">Este formato não tem pré-visualização no painel. Use “Descarregar” para o abrir no computador.</p>
           )}
         </div>
       </div>

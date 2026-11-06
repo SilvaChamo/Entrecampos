@@ -27,7 +27,7 @@ export default async function RootLayout({
     .map(([slug, color]) => `--cat-${slug}:${color};`)
     .join('');
   return (
-    <html lang="pt" data-scroll-behavior="smooth">
+    <html lang="pt-PT" data-scroll-behavior="smooth">
       <head>
         {/* Abre já a ligação ao Supabase (imagens das notícias e dados) e ao serviço do clima */}
         {process.env.NEXT_PUBLIC_SUPABASE_URL && <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="" />}

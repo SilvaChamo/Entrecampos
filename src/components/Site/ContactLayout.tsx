@@ -16,7 +16,7 @@ const ITEMS = [
   },
   {
     icon: Mail,
-    title: 'Email',
+    title: 'E-mail',
     links: [
       { text: 'suporte@entrecamposblog.com', href: 'mailto:suporte@entrecamposblog.com' },
       { text: 'redação@entrecamposblog.com' },

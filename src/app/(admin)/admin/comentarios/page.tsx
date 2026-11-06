@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Check, ExternalLink, MessageSquare, RefreshCw, RotateCcw, ShieldAlert, Trash2, X } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
+import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
 
 type Status = 'pending' | 'approved' | 'spam' | 'trash';
 interface Comment {
@@ -27,19 +28,27 @@ const TABS: { key: Status; label: string }[] = [
 /** Moderação dos comentários das notícias: só os aprovados aparecem no site. */
 export default function ComentariosPage() {
   const [tab, setTab] = useState<Status>('pending');
-  const [items, setItems] = useState<Comment[]>([]);
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
+  // Cópia guardada da última visita: mostra-se logo e a página actualiza-se em segundo plano.
+  const first = adminCacheGet<{ items: Comment[]; counts: Record<string, number> }>('comments:pending');
+  const [items, setItems] = useState<Comment[]>(first?.items ?? []);
+  const [counts, setCounts] = useState<Record<string, number>>(first?.counts ?? {});
+  const [loading, setLoading] = useState(!first);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    const saved = adminCacheGet<{ items: Comment[]; counts: Record<string, number> }>(`comments:${tab}`);
+    if (saved) {
+      setItems(saved.items);
+      setCounts(saved.counts);
+      setLoading(false);
+    } else setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/admin/comments?status=${tab}`, { credentials: 'include' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erro ao carregar os comentários.');
+      adminCacheSet(`comments:${tab}`, { items: data.items, counts: data.counts || {} });
       setItems(data.items);
       setCounts(data.counts || {});
     } catch (err) {
@@ -64,10 +73,10 @@ export default function ComentariosPage() {
         body: JSON.stringify({ ids: [id], ...body }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erro ao atualizar.');
+      if (!res.ok) throw new Error(data.error || 'Erro ao actualizar.');
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao atualizar.');
+      setError(err instanceof Error ? err.message : 'Erro ao actualizar.');
     } finally {
       setBusy(false);
     }
@@ -76,17 +85,28 @@ export default function ComentariosPage() {
   const btn = 'flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium disabled:opacity-60';
 
   return (
-    <div className="p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
       <div className="mb-4 flex items-center gap-4">
         <h1 className="flex items-center gap-2 text-[23px] font-normal text-[#1d2327]">
           <MessageSquare className="h-5 w-5 text-gray-500" /> Comentários
         </h1>
         <button onClick={load} className="ml-auto flex items-center gap-1.5 text-sm text-[#2271b1] hover:underline">
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Atualizar
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Actualizar
         </button>
       </div>
 
-      <ul className="flex flex-wrap gap-1 border-b border-[#ccd0d4] text-[13px]">
+      {/* Telemóvel: os separadores passam a um selector */}
+      <select
+        value={tab}
+        onChange={(e) => setTab(e.target.value as Status)}
+        className="mb-3 h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none md:hidden"
+      >
+        {TABS.map((t) => (
+          <option key={t.key} value={t.key}>{t.label} ({counts[t.key] ?? 0})</option>
+        ))}
+      </select>
+
+      <ul className="hidden flex-wrap gap-1 border-b border-[#ccd0d4] text-[13px] md:flex">
         {TABS.map((t) => (
           <li key={t.key}>
             <button
@@ -101,7 +121,7 @@ export default function ComentariosPage() {
 
       {error && <p className="mb-4 border-l-4 border-[#d63638] bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
 
-      <div className="border border-t-0 border-[#ccd0d4] bg-white">
+      <div className="border border-[#ccd0d4] bg-white md:border-t-0">
         {loading && items.length === 0 ? (
           <div className="p-10 text-center"><Spinner size={40} className="mx-auto" /></div>
         ) : items.length === 0 ? (

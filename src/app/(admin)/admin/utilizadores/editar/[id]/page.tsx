@@ -156,7 +156,7 @@ export default function EditUserPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       
-      // Após salvar, redireciona de volta para a lista
+      // Após guardar, redirecciona de volta para a lista
       router.push('/admin/utilizadores');
     } catch (err: any) {
       alert('Erro ao guardar: ' + err.message);
@@ -195,7 +195,7 @@ export default function EditUserPage() {
         </div>
         {saved && (
           <div className="px-4 py-2 bg-green-50 border border-green-300 text-green-700 text-sm rounded-md">
-            ✓ Utilizador atualizado com sucesso.
+            ✓ Utilizador actualizado com sucesso.
           </div>
         )}
       </div>
@@ -242,7 +242,7 @@ export default function EditUserPage() {
                   {/* Botões */}
                   <div className="flex flex-col gap-2">
                     <button type="button" onClick={() => fileInputRef.current?.click()} className="h-8 px-3 border border-[#ccd0d4] bg-white text-[13px] font-semibold rounded-md hover:bg-[#f6f7f7] flex items-center gap-1.5">
-                      <Camera className="w-3.5 h-3.5" /> Selecionar foto
+                      <Camera className="w-3.5 h-3.5" /> Seleccionar foto
                     </button>
                     {avatarPreview && (
                       <button type="button" onClick={() => { setAvatarPreview(null); setAvatarFile(null); }} className="h-8 px-3 border border-[#ccd0d4] bg-white text-[#d63638] text-[13px] font-semibold rounded-md hover:bg-red-50 flex items-center gap-1.5">
@@ -409,10 +409,10 @@ export default function EditUserPage() {
               <td className="p-3">
                 <button
                   type="button"
-                  onClick={() => alert(`Email de reposição enviado para ${form.email}`)}
+                  onClick={() => alert(`E-mail de reposição enviado para ${form.email}`)}
                   className="h-8 px-4 border border-[#00a651] text-[#008f45] text-[13px] rounded-md hover:bg-[#f6f7f7] transition-all"
                 >
-                  Enviar email de reposição de senha
+                  Enviar e-mail de reposição de palavra-passe
                 </button>
               </td>
             </tr>
@@ -420,14 +420,14 @@ export default function EditUserPage() {
           </tbody>
         </table>
 
-        {/* Botões de ação */}
+        {/* Botões de acção */}
         <div className="mt-6 flex items-center gap-3">
           <button
             type="submit"
             disabled={saving}
             className="h-9 px-5 bg-[#00a651] text-white text-[13px] font-semibold rounded-md hover:bg-[#008f45] transition-all disabled:opacity-60"
           >
-            {saving ? 'A guardar...' : 'Atualizar utilizador'}
+            {saving ? 'A guardar...' : 'Actualizar utilizador'}
           </button>
           <Link href="/admin/utilizadores" className="h-9 px-4 flex items-center text-[13px] text-[#50575e] hover:text-[#135e96]">
             Cancelar

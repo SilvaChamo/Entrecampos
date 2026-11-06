@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { adminCacheGet, adminCacheSet, cachedNewsWithStatus } from '@/lib/admin-cache';
 import Link from 'next/link';
 import { CheckSquare, RefreshCw, Edit2, ExternalLink } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
@@ -20,8 +21,8 @@ const LIMIT = 30;
 
 /** Últimas notícias revistas: as mais recentes que já passaram a revisão e estão publicadas. */
 export default function ReviewedNewsPage() {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [news, setNews] = useState<NewsItem[]>(() => cachedNewsWithStatus<NewsItem>('published').slice(0, LIMIT));
+  const [loading, setLoading] = useState(() => adminCacheGet('news') === undefined);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function ReviewedNewsPage() {
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Não foi possível carregar as notícias.');
+        adminCacheSet('news', data.items);
         const published = (data.items as NewsItem[]).filter((n) => String(n.status).toLowerCase() === 'published');
         setNews(published.slice(0, LIMIT));
       })
@@ -37,7 +39,7 @@ export default function ReviewedNewsPage() {
   }, []);
 
   return (
-    <div className="p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
       <div className="mb-8">
         <h1 className="text-2xl font-normal flex items-center gap-3">
           <CheckSquare className="w-6 h-6 text-green-600" />

@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
-import { SkeletonTableRow, SkeletonHeader } from '@/components/Admin/Skeleton';
+import { SkeletonTableRow } from '@/components/Admin/Skeleton';
+import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
 
 interface UserItem {
   id: string;
@@ -42,18 +43,20 @@ const EntrecamposSymbol = () => (
 );
 
 export default function UsersAdminPage() {
-  const [users, setUsers] = useState<UserItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<UserItem[]>(() => adminCacheGet<UserItem[]>('users') ?? []);
+  const [loading, setLoading] = useState(() => adminCacheGet('users') === undefined);
   const [filter, setFilter] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadUsers = async () => {
-    setLoading(true);
+    // Já há cópia guardada: mostra-se logo e actualiza-se em segundo plano.
+    if (adminCacheGet('users') === undefined) setLoading(true);
     try {
       const res = await fetch('/api/admin/users/list');
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+      adminCacheSet('users', data.users || []);
       setUsers(data.users || []);
     } catch (err: any) {
       console.error('Erro ao carregar utilizadores:', err.message);
@@ -79,7 +82,7 @@ export default function UsersAdminPage() {
   };
 
   const handleDelete = async (user: UserItem) => {
-    if (!confirm(`Tem a certeza que deseja eliminar o utilizador "${user.username}"? Esta ação não pode ser revertida.`)) return;
+    if (!confirm(`Tem a certeza que deseja eliminar o utilizador "${user.username}"? Esta acção não pode ser revertida.`)) return;
     setDeletingId(user.id);
     try {
       const res = await fetch('/api/admin/users/delete', {
@@ -100,7 +103,7 @@ export default function UsersAdminPage() {
   };
 
   const handleResetPassword = async (user: UserItem) => {
-    if (!confirm(`Enviar email de reposição de senha para "${user.email}"?`)) return;
+    if (!confirm(`Enviar e-mail de reposição de palavra-passe para "${user.email}"?`)) return;
     try {
       const res = await fetch('/api/admin/users/reset-password', {
         method: 'POST',
@@ -116,58 +119,57 @@ export default function UsersAdminPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
+      {/* Título, botão de adicionar e, logo a seguir, os filtros (Todos, papéis) */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-6">
         <h1 className="text-[23px] font-normal text-[#1d2327]">Utilizadores</h1>
         <Link
           href="/admin/utilizadores/novo"
-          className="px-3 py-1 bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-sm font-semibold hover:bg-[#f6f7f7] transition-all"
+          className="px-3 py-1 bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-sm hover:bg-[#f6f7f7] transition-all"
         >
           Adicionar utilizador
         </Link>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px]">
+          {['Todos', ...ROLES].map((role) => {
+            const count = getRoleCount(role);
+            if (count === 0 && role !== 'Todos') return null;
+            return (
+              <button
+                key={role}
+                onClick={() => setFilter(role)}
+                className={`hover:text-[#2271b1] transition-colors ${filter === role ? 'text-black' : 'text-[#2271b1]'}`}
+              >
+                {role} <span className="text-gray-400">({count})</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Tabs / Filtros */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-4 text-[13px]">
-        {['Todos', ...ROLES].map((role) => {
-          const count = getRoleCount(role);
-          if (count === 0 && role !== 'Todos') return null;
-          return (
-            <button
-              key={role}
-              onClick={() => setFilter(role)}
-              className={`hover:text-[#2271b1] transition-colors ${filter === role ? 'font-bold text-black' : 'text-[#2271b1]'}`}
-            >
-              {role} <span className="text-gray-400 font-normal">({count})</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Barra de ferramentas */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <div className="flex flex-wrap items-center gap-2 max-md:w-full">
-          <select className="h-8 border-[#ccd0d4] rounded-[3px] text-sm bg-white px-2 outline-none focus:border-[#00a651]">
-            <option>Ações por lotes</option>
+      {/* Barra de ferramentas: no telemóvel cada par (campo + botão) ocupa uma linha, todos com a mesma altura (36px) */}
+      <div className="flex flex-col gap-2 mb-4 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 md:flex md:flex-wrap md:items-center">
+          <select className="h-9 min-w-0 border-[#ccd0d4] rounded-[3px] text-[13px] bg-white px-2 outline-none focus:border-[#00a651]">
+            <option>Acções por lotes</option>
             <option>Eliminar</option>
             <option>Enviar reposição de palavra-passe</option>
           </select>
-          <button className="h-8 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-sm font-semibold hover:bg-[#f6f7f7]">Aplicar</button>
-          <select className="h-8 border-[#ccd0d4] rounded-[3px] text-sm bg-white px-2 outline-none focus:border-[#00a651] ml-2">
+          <button className="h-9 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-[13px] hover:text-[#00a651]">Aplicar</button>
+          <select className="h-9 min-w-0 border-[#ccd0d4] rounded-[3px] text-[13px] bg-white px-2 outline-none focus:border-[#00a651] md:ml-2">
             <option>Mudar papel para...</option>
             {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <button className="h-8 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-sm font-semibold hover:bg-[#f6f7f7]">Alterar</button>
+          <button className="h-9 px-3 border border-[#ccd0d4] rounded-[3px] bg-white text-[13px] hover:text-[#00a651]">Alterar</button>
         </div>
-        <div className="flex items-center gap-1 max-md:w-full">
+        <div className="flex w-full md:w-auto">
           <input
             type="text"
             placeholder="Pesquisar utilizadores"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 pl-3 pr-2 border border-[#ccd0d4] rounded-l-[3px] text-sm outline-none focus:border-[#00a651] w-48 max-md:w-full max-md:min-w-0 max-md:flex-1"
+            className="h-9 min-w-0 flex-1 pl-3 pr-2 border border-[#ccd0d4] rounded-l-[3px] text-[13px] outline-none focus:border-[#00a651] md:w-56 md:flex-none"
           />
-          <button className="h-8 px-3 border border-[#ccd0d4] border-l-0 bg-white text-[#008f45] hover:bg-[#f6f7f7] rounded-r-[3px] text-sm font-semibold max-md:shrink-0 max-md:px-2">
+          <button className="h-9 shrink-0 px-3 border border-[#ccd0d4] border-l-0 bg-white text-[13px] text-[#008f45] hover:text-[#00a651] rounded-r-[3px]">
             Pesquisar
           </button>
         </div>
@@ -189,9 +191,9 @@ export default function UsersAdminPage() {
           </thead>
           <tbody>
             {loading ? (
-              <SkeletonTableRow columns={6} />
+              <SkeletonTableRow columns={7} />
             ) : filteredUsers.length === 0 ? (
-              <tr><td colSpan={6} className="p-10 text-center text-gray-500">Nenhum utilizador encontrado.</td></tr>
+              <tr><td colSpan={7} className="p-10 text-center text-gray-500">Nenhum utilizador encontrado.</td></tr>
             ) : (
               filteredUsers.map((user, idx) => (
                 <tr key={user.id} className={`group border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
@@ -214,7 +216,7 @@ export default function UsersAdminPage() {
                         />
                       )}
                       <div className="flex flex-col">
-                        <Link href={`/admin/utilizadores/editar/${user.id}`} className="text-[#2271b1] font-bold text-[14px] hover:text-[#135e96]">
+                        <Link href={`/admin/utilizadores/editar/${user.id}`} className="text-[#2271b1] text-[14px] hover:text-[#135e96]">
                           {user.username}
                         </Link>
                         {/* Hover actions (visible on row hover) */}
@@ -239,7 +241,7 @@ export default function UsersAdminPage() {
                             onClick={() => handleResetPassword(user)}
                             className="text-[#2271b1] hover:text-[#135e96]"
                           >
-                            Enviar reposição de senha
+                            Enviar reposição de palavra-passe
                           </button>
                         </div>
                       </div>
@@ -252,7 +254,7 @@ export default function UsersAdminPage() {
                   </td>
                   <td className="p-3 text-[#50575e]">{user.role}</td>
                   <td className="p-3 text-center">
-                    <Link href={`/admin/noticias?autor=${user.username}`} className="text-[#2271b1] font-bold hover:underline">
+                    <Link href={`/admin/noticias?autor=${user.username}`} className="text-[#2271b1] hover:underline">
                       {user.articles}
                     </Link>
                   </td>
@@ -263,18 +265,7 @@ export default function UsersAdminPage() {
         </table>
       </div>
 
-      {loading ? (
-        <>
-          <SkeletonHeader />
-          <div className="bg-white border border-[#ccd0d4] rounded-lg overflow-hidden">
-            <table className="w-full">
-              <tbody>
-                <SkeletonTableRow columns={6} />
-              </tbody>
-            </table>
-          </div>
-        </>
-      ) : (
+      {!loading && (
         <>
           <div className="mt-4 text-[13px] text-[#50575e]">
             {filteredUsers.length} itens

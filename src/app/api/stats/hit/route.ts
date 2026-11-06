@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { tooManyAttempts } from '@/lib/rate-limit';
+import { isForeignPath, isLocalHost } from '@/lib/site-hits';
 
 const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos';
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|headless|lighthouse|pingdom|uptime|monitor|curl|wget|python|axios|go-http/i;
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   const body = (await req.json().catch(() => null)) as { path?: string; slug?: string; ref?: string } | null;
   const path = typeof body?.path === 'string' ? body.path.split('?')[0].slice(0, 200) : '';
-  if (!path.startsWith('/') || path.startsWith('/admin') || path.startsWith('/api') || path.startsWith('/partilha/')) return new NextResponse(null, { status: 204 });
+  if (!path.startsWith('/') || isForeignPath(path) || isLocalHost(req.headers.get('host') || '')) return new NextResponse(null, { status: 204 });
 
   const slug = typeof body?.slug === 'string' && /^[a-z0-9-]{1,200}$/i.test(body.slug) ? body.slug : null;
   let referrer: string | null = null;

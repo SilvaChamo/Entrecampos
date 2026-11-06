@@ -129,7 +129,7 @@ export default function MediaCleanupPage() {
 
   const deleteSelected = async () => {
     if (selectedNames.size === 0) return;
-    if (!confirm(`Deseja eliminar permanentemente os ${selectedNames.size} ficheiros selecionados? Esta ação não pode ser revertida.`)) return;
+    if (!confirm(`Deseja eliminar permanentemente os ${selectedNames.size} ficheiros seleccionados? Esta acção não pode ser revertida.`)) return;
 
     setDeleting(true);
     try {
@@ -148,7 +148,7 @@ export default function MediaCleanupPage() {
   };
 
   return (
-    <div className="p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-normal text-[#1d2327]">Auditoria de Media</h1>
@@ -159,7 +159,7 @@ export default function MediaCleanupPage() {
             className="flex items-center gap-2 px-4 py-2 bg-white border border-[#ccd0d4] rounded-[3px] text-sm font-semibold hover:bg-[#f6f7f7]"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Atualizar
+            Actualizar
           </button>
         </div>
 
@@ -199,12 +199,12 @@ export default function MediaCleanupPage() {
               }}
               className="text-sm text-[#2271b1] hover:underline font-medium whitespace-nowrap"
             >
-              {selectedNames.size === orphans.length ? 'Desmarcar Tudo' : 'Selecionar Tudo'}
+              {selectedNames.size === orphans.length ? 'Desmarcar Tudo' : 'Seleccionar Tudo'}
             </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <span className="text-sm text-[#50575e]">{selectedNames.size} selecionados</span>
+            <span className="text-sm text-[#50575e]">{selectedNames.size} seleccionados</span>
             <button 
               onClick={deleteSelected}
               disabled={selectedNames.size === 0 || deleting}

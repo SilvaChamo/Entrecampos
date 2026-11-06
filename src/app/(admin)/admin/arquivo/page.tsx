@@ -22,7 +22,7 @@ export default function ArquivoPage() {
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState('');
   const [aberta, setAberta] = useState<string | null>(null); // pasta aberta aqui mesmo, sem sair da página
-  const [selCount, setSelCount] = useState(0); // fotos selecionadas na grelha (a lixeira elimina-as, com confirmação)
+  const [selCount, setSelCount] = useState(0); // fotos seleccionadas na grelha (a lixeira elimina-as, com confirmação)
   const [refresh, setRefresh] = useState(0);
   const [uploadMsg, setUploadMsg] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -181,8 +181,8 @@ export default function ArquivoPage() {
               {selCount > 0 && (
                 <button
                   type="button"
-                  title="Eliminar as fotos selecionadas"
-                  aria-label="Eliminar as fotos selecionadas"
+                  title="Eliminar as fotos seleccionadas"
+                  aria-label="Eliminar as fotos seleccionadas"
                   onClick={() => window.dispatchEvent(new Event('ec-bulk-delete'))}
                   className="inline-flex h-8 w-8 items-center justify-center rounded-[3px] border border-[#d63638] bg-[#d63638] text-white"
                 >

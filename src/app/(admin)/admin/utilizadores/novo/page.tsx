@@ -66,7 +66,7 @@ export default function AddUserPage() {
           canvas.height = finalSize;
           const ctx = canvas.getContext('2d');
           
-          // Desenha apenas o recorte quadrado selecionado
+          // Desenha apenas o recorte quadrado seleccionado
           ctx?.drawImage(img, sx, sy, sourceSize, sourceSize, 0, 0, finalSize, finalSize);
 
           // Comprimir para garantir que NÃO EXCEDE 100KB (usamos qualidade 0.6)
@@ -135,7 +135,7 @@ export default function AddUserPage() {
   };
 
   return (
-    <div className="p-6 text-[#2c3338] w-full">
+    <div className="ec-page text-[#2c3338] w-full">
       <div className="mb-6">
         <h1 className="text-[23px] font-normal text-[#1d2327]">Adicionar novo utilizador</h1>
         <p className="text-[13px] text-[#50575e] mt-1">
@@ -271,7 +271,7 @@ export default function AddUserPage() {
                   </div>
                   <div className="flex flex-col gap-2">
                     <button type="button" onClick={() => fileInputRef.current?.click()} className="h-8 px-3 border border-[#ccd0d4] bg-white text-[13px] font-semibold rounded-md hover:bg-[#f6f7f7] flex items-center gap-1.5">
-                      <Camera className="w-3.5 h-3.5" /> Selecionar foto
+                      <Camera className="w-3.5 h-3.5" /> Seleccionar foto
                     </button>
                     {avatarPreview && (
                       <button type="button" onClick={() => { setAvatarPreview(null); setAvatarFile(null); }} className="h-8 px-3 border border-[#ccd0d4] bg-white text-[#d63638] text-[13px] font-semibold rounded-md hover:bg-red-50 flex items-center gap-1.5">

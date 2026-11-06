@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     refreshSite();
     return NextResponse.json({ success: true, updated: targetIds.length });
   } catch (err: any) {
-    console.error('Erro ao atualizar status:', err);
+    console.error('Erro ao actualizar status:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

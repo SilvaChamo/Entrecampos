@@ -106,7 +106,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [busyMsg, setBusyMsg] = useState('');
-  // Na grelha simples, a seleção em massa sobe para a linha dos separadores da página (se existir).
+  // Na grelha simples, a selecção em massa sobe para a linha dos separadores da página (se existir).
   const [bulkSlot, setBulkSlot] = useState<HTMLElement | null>(null);
   const [checkSlot, setCheckSlot] = useState<HTMLElement | null>(null);
   // Confirmação de eliminar (popup da própria página: os diálogos nativos do navegador podem não aparecer).
@@ -179,7 +179,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
 
   useEffect(() => { setSearchQuery(initialQuery); }, [initialQuery]);
   useEffect(() => { if (bare) setView(binMode ? 'lixo' : 'galeria'); }, [bare, binMode]);
-  // A lixeira da página avisa-se por eventos: a página sabe quantas fotos estão selecionadas e pede a confirmação de eliminar.
+  // A lixeira da página avisa-se por eventos: a página sabe quantas fotos estão seleccionadas e pede a confirmação de eliminar.
   useEffect(() => {
     if (!bare) return;
     window.dispatchEvent(new CustomEvent('ec-bulk-count', { detail: selectedIds.size }));
@@ -229,7 +229,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
     return filteredFiles.slice(start, start + itemsPerPage);
   }, [filteredFiles, currentPage]);
 
-  // Ações de Seleção
+  // Acções de Selecção
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
     if (newSelected.has(id)) newSelected.delete(id);
@@ -449,7 +449,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
       const extension = editFormat === 'webp' ? '.webp' : editFormat === 'jpeg' ? '.jpg' : '.' + selectedFile.name.split('.').pop();
 
       const blob: Blob = await new Promise((resolve, reject) => {
-        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Não foi possível processar a imagem.'))), mimeType, 0.85); // 0.85 qualidade otimizada
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Não foi possível processar a imagem.'))), mimeType, 0.85); // 0.85 qualidade optimizada
       });
 
       const newFileName = selectedFile.name.replace(/\.[^/.]+$/, "") + (editFormat !== 'original' ? `_edited${extension}` : extension);
@@ -666,7 +666,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   onClick={() => setIsBulkMode(true)}
                   className="ml-2 max-md:ml-0 h-8 px-4 text-sm font-normal border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
                 >
-                  Seleção em massa
+                  Selecção em massa
                 </button>
               ) : (
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2 ml-2 max-md:ml-0">
@@ -751,8 +751,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           {checkSlot && createPortal(
             <input
               type="checkbox"
-              aria-label="Seleção em massa"
-              title="Seleção em massa"
+              aria-label="Selecção em massa"
+              title="Selecção em massa"
               checked={isBulkMode}
               onChange={() => { if (isBulkMode) { setIsBulkMode(false); setSelectedIds(new Set()); } else setIsBulkMode(true); }}
               className="h-4 w-4 cursor-pointer accent-[#00a651]"
@@ -762,7 +762,15 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           {bulkSlot && createPortal(
             isBulkMode ? (
               <>
-                <span className="text-sm whitespace-nowrap text-[#50575e]">{selectedIds.size} {selectedIds.size === 1 ? 'selecionada' : 'selecionadas'}</span>
+                <span className="text-sm whitespace-nowrap text-[#50575e]">{selectedIds.size} {selectedIds.size === 1 ? 'seleccionada' : 'seleccionadas'}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set(filteredFiles.map((f) => f.name)))}
+                  disabled={filteredFiles.length === 0 || selectedIds.size === filteredFiles.length}
+                  className="text-sm whitespace-nowrap text-[#006b33] hover:text-[#00a651] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-[#006b33]"
+                >
+                  Seleccionar tudo
+                </button>
                 {special && (
                   <span
                     onClick={selectedIds.size > 0 ? () => restore(Array.from(selectedIds)) : undefined}
@@ -856,7 +864,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   <th className="p-3">Autor</th>
                   <th className="p-3">Carregado em</th>
                   <th className="p-3">Data</th>
-                  <th className="p-3 text-right">Ações</th>
+                  <th className="p-3 text-right">Acções</th>
                 </tr>
               </thead>
               <tbody>
@@ -993,14 +1001,14 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                           </div>
                           
                           <div className="bg-[#f6f7f7] p-2 border border-[#ccd0d4] rounded-[2px] mt-2">
-                            <p className="text-[11px] text-gray-600">Tamanho atual: <strong>{formatSize(selectedFile.metadata?.size || 0)}</strong></p>
+                            <p className="text-[11px] text-gray-600">Tamanho actual: <strong>{formatSize(selectedFile.metadata?.size || 0)}</strong></p>
                             <p className="text-[11px] text-[#2271b1]">Tamanho final estimado: <strong>{estimatedSize ? formatSize(estimatedSize) : 'A calcular...'}</strong></p>
                           </div>
                         </div>
 
                         {/* Conversão */}
                         <div className="space-y-3">
-                          <h4 className="font-bold text-sm border-b pb-1">Formato e Otimização</h4>
+                          <h4 className="font-bold text-sm border-b pb-1">Formato e Optimização</h4>
                           <div className="flex flex-col gap-2">
                             <label className="flex items-center gap-2 text-sm cursor-pointer">
                               <input type="radio" checked={editFormat === 'original'} onChange={() => setEditFormat('original')} />
@@ -1008,7 +1016,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                             </label>
                             <label className="flex items-center gap-2 text-sm cursor-pointer">
                               <input type="radio" checked={editFormat === 'webp'} onChange={() => setEditFormat('webp')} />
-                              <span className="font-medium text-green-700">Converter para WebP (Otimizado para Web)</span>
+                              <span className="font-medium text-green-700">Converter para WebP (Optimizado para Web)</span>
                             </label>
                             <label className="flex items-center gap-2 text-sm cursor-pointer">
                               <input type="radio" checked={editFormat === 'jpeg'} onChange={() => setEditFormat('jpeg')} />
@@ -1108,7 +1116,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                     disabled={savingMetadata}
                     className="px-4 py-1.5 bg-[#00a651] text-white text-sm rounded-[3px] hover:bg-[#008f45] disabled:opacity-50"
                   >
-                    {savingMetadata ? 'A guardar...' : 'Salvar'}
+                    {savingMetadata ? 'A guardar...' : 'Guardar'}
                   </button>
                 </div>
               </div>
@@ -1122,7 +1130,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-2xl">
             <h3 className="text-center text-[16px] font-semibold text-[#1d2327]">Eliminar fotos</h3>
             <p className="mt-2 text-center text-sm text-[#3c434a]">
-              Quer mesmo eliminar {pendingDel.single ? 'esta foto' : pendingDel.names.length === 1 ? 'a foto selecionada' : `as ${pendingDel.names.length} fotos selecionadas`}?
+              Quer mesmo eliminar {pendingDel.single ? 'esta foto' : pendingDel.names.length === 1 ? 'a foto seleccionada' : `as ${pendingDel.names.length} fotos seleccionadas`}?
             </p>
             <div className="mt-5 flex justify-center gap-2">
               <button type="button" onClick={() => setPendingDel(null)} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm text-[#50575e] hover:bg-[#f6f7f7]">Cancelar</button>

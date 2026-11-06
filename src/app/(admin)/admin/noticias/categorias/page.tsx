@@ -282,7 +282,7 @@ export default function CategoriasPage() {
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div>
               <h1 className="text-2xl font-bold text-[#1d2327]">Categorias</h1>
-              <p className="text-[#50575e] mt-1">Gerencie as categorias das notícias</p>
+              <p className="text-[#50575e] mt-1">Faça a gestão das categorias das notícias</p>
             </div>
             <button
               onClick={() => setIsAdding(true)}
@@ -309,7 +309,7 @@ export default function CategoriasPage() {
                   <th className="p-4">Slug</th>
                   <th className="p-4">Descrição</th>
                   <th className="p-4 text-center">Artigos</th>
-                  <th className="p-4 text-right">Ações</th>
+                  <th className="p-4 text-right">Acções</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { adminCacheGet, adminCacheSet, cachedNewsWithStatus } from '@/lib/admin-cache';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, RotateCcw, Trash2, AlertTriangle } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
@@ -16,16 +17,18 @@ interface NewsItem {
 }
 
 export default function LixoPage() {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [news, setNews] = useState<NewsItem[]>(() => cachedNewsWithStatus<NewsItem>('trash'));
+  const [loading, setLoading] = useState(() => adminCacheGet('news') === undefined);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const loadNews = async () => {
-    setLoading(true);
+    // Já há cópia guardada: mostra-se logo e actualiza-se em segundo plano.
+    if (adminCacheGet('news') === undefined) setLoading(true);
     // Lê no servidor: com a chave pública do navegador as notícias que não estão publicadas não aparecem.
     try {
       const res = await fetch('/api/admin/news/list', { credentials: 'include' });
       const body = await res.json().catch(() => ({}));
+      if (res.ok) adminCacheSet('news', body.items || []);
       if (res.ok) setNews(((body.items || []) as NewsItem[]).filter((n) => String(n.status || '').toLowerCase() === 'trash'));
     } catch { /* mantém a lista */ }
     setLoading(false);
@@ -43,7 +46,7 @@ export default function LixoPage() {
     setSelectedIds(selectedIds.size === news.length ? new Set() : new Set(news.map(n => n.id)));
   };
 
-  // Confirmação na própria página: os diálogos nativos do navegador podem não aparecer e a ação ficava sem efeito.
+  // Confirmação na própria página: os diálogos nativos do navegador podem não aparecer e a acção ficava sem efeito.
   const [ask, setAsk] = useState<{ text: string; run: () => void } | null>(null);
 
   const restore = (ids: string[]) => setAsk({ text: `Restaurar ${ids.length} notícia(s)?`, run: () => doRestore(ids) });
@@ -64,7 +67,7 @@ export default function LixoPage() {
   };
 
   const deletePermanently = (ids: string[]) =>
-    setAsk({ text: `Eliminar permanentemente ${ids.length} notícia(s)? Esta ação não pode ser revertida.`, run: () => doDelete(ids) });
+    setAsk({ text: `Eliminar permanentemente ${ids.length} notícia(s)? Esta acção não pode ser revertida.`, run: () => doDelete(ids) });
 
   const doDelete = async (ids: string[]) => {
     const res = await fetch('/api/admin/news/delete', {
@@ -88,7 +91,7 @@ export default function LixoPage() {
   };
 
   return (
-    <div className="p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
       <div className="flex items-center gap-4 mb-6">
         <h1 className="text-[23px] font-normal text-[#1d2327] flex items-center gap-2">
           <Trash2 className="w-5 h-5 text-gray-500" /> Lixo
@@ -114,7 +117,7 @@ export default function LixoPage() {
 
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-          <span className="text-sm font-medium text-blue-700">{selectedIds.size} selecionado(s)</span>
+          <span className="text-sm font-medium text-blue-700">{selectedIds.size} seleccionado(s)</span>
           <button
             onClick={() => restore(Array.from(selectedIds))}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#00a651] text-white text-sm rounded-md hover:bg-[#008f46]"
@@ -139,7 +142,7 @@ export default function LixoPage() {
               <th className="p-3">Título</th>
               <th className="p-3 w-40">Categoria</th>
               <th className="p-3 w-44">Data</th>
-              <th className="p-3 w-48 text-center">Ações</th>
+              <th className="p-3 w-48 text-center">Acções</th>
             </tr>
           </thead>
           <tbody>

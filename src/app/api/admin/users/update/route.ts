@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     const { error } = await supabaseAdmin.auth.admin.updateUserById(id, updateData);
 
     if (error) {
-      console.error('Erro ao atualizar utilizador:', error.message);
+      console.error('Erro ao actualizar utilizador:', error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

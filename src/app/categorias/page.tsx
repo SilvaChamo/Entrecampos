@@ -40,7 +40,7 @@ const categoriesData: Category[] = [
   {
     name: 'Agro-negócio',
     slug: 'agro-negocio',
-    description: 'Informações sobre o setor agrário, negócios e oportunidades de investimento.',
+    description: 'Informações sobre o sector agrário, negócios e oportunidades de investimento.',
     count: 0,
     icon: <Briefcase className="w-8 h-8" />,
     color: 'bg-blue-600',
@@ -72,7 +72,7 @@ const categoriesData: Category[] = [
   {
     name: 'Mulher Agrário',
     slug: 'mulher-agrario',
-    description: 'Histórias inspiradoras de mulheres no setor agrário e suas contribuições.',
+    description: 'Histórias inspiradoras de mulheres no sector agrário e suas contribuições.',
     count: 0,
     icon: <Flower2 className="w-8 h-8" />,
     color: 'bg-pink-600',
@@ -206,11 +206,11 @@ export default function CategoriasPage() {
                   Newsletter
                 </h3>
                 <p className="text-xs text-gray-400 mb-4">
-                  Receba as últimas notícias no seu email
+                  Receba as últimas notícias no seu e-mail
                 </p>
                 <input
                   type="email"
-                  placeholder="Seu email"
+                  placeholder="O seu e-mail"
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm mb-2 focus:outline-none focus:border-green-500"
                 />
                 <button className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">

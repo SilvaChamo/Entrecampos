@@ -107,9 +107,9 @@ export default function ShareLink({ path, title, className = '' }: { path: strin
                   {n.label}
                 </a>
               ))}
-              <a href={`mailto:?subject=${text}&body=${enc}`} aria-label="Partilhar por email" className={row} style={rowStyle}>
+              <a href={`mailto:?subject=${text}&body=${enc}`} aria-label="Partilhar por e-mail" className={row} style={rowStyle}>
                 <Mail className="h-3 w-3 shrink-0 text-gray-500" />
-                Email
+                E-mail
               </a>
               <button type="button" onClick={copy} aria-label="Copiar ligação" className={row} style={rowStyle}>
                 <Link2 className="h-3 w-3 shrink-0 text-gray-500" />

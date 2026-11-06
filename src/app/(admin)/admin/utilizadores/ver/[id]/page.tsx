@@ -184,7 +184,7 @@ export default function ViewUserPage() {
         </table>
       </div>
 
-      {/* Ações */}
+      {/* Acções */}
       <div className="mt-4 flex items-center gap-3">
         <Link href={`/admin/utilizadores/editar/${user.id}`} className="h-8 px-4 flex items-center bg-[#00a651] text-white text-[13px] font-semibold rounded-md hover:bg-[#008f45] transition-all">
           Editar utilizador

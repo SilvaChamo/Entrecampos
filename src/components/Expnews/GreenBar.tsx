@@ -116,7 +116,7 @@ function now() {
 }
 
 /**
- * Barra escura do topo: email da empresa, data com dia da semana e, à direita, a temperatura atual de Maputo | hora.
+ * Barra escura do topo: email da empresa, data com dia da semana e, à direita, a temperatura actual de Maputo | hora.
  */
 export default function GreenBar() {
   const [date, setDate] = useState('');

@@ -22,7 +22,7 @@ export default function PartilhadoPage() {
   const [syncing, setSyncing] = useState(false);
   const [notice, setNotice] = useState('');
   const { user } = useAuth();
-  const [selCount, setSelCount] = useState(0); // fotos selecionadas na grelha (a lixeira elimina-as, com confirmação)
+  const [selCount, setSelCount] = useState(0); // fotos seleccionadas na grelha (a lixeira elimina-as, com confirmação)
   const [bin, setBin] = useState(false); // reciclagem das fotos partilhadas (só administrador)
   const [aberta, setAberta] = useState<string | null>(null); // pasta aberta aqui mesmo, sem sair da página
 
@@ -87,8 +87,8 @@ export default function PartilhadoPage() {
             {aberta === 'imagens' && (user?.role === 'admin' || selCount > 0) && (
               <button
                 type="button"
-                title={selCount > 0 ? 'Eliminar as fotos selecionadas' : 'Reciclagem'}
-                aria-label={selCount > 0 ? 'Eliminar as fotos selecionadas' : 'Reciclagem'}
+                title={selCount > 0 ? 'Eliminar as fotos seleccionadas' : 'Reciclagem'}
+                aria-label={selCount > 0 ? 'Eliminar as fotos seleccionadas' : 'Reciclagem'}
                 aria-pressed={bin}
                 onClick={() => (selCount > 0 ? window.dispatchEvent(new Event('ec-bulk-delete')) : setBin(!bin))}
                 className={`inline-flex h-8 w-8 items-center justify-center rounded-[3px] border ${bin || selCount > 0 ? 'border-[#d63638] bg-[#d63638] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}

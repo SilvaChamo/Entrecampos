@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
     try {
       revalidateTag('comments', 'max');
     } catch {
-      /* a lista pública atualiza-se sozinha em 30 s */
+      /* a lista pública actualiza-se sozinha em 30 s */
     }
     return NextResponse.json({ ok: true, updated: list.length });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : 'Erro ao atualizar.' }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Erro ao actualizar.' }, { status: 500 });
   }
 }

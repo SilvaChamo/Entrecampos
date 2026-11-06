@@ -13,7 +13,7 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
 );
 
-// Função para determinar o nome de exibição baseado nas preferências do usuário
+// Função para determinar o nome de exibição baseado nas preferências do utilizador
 function getDisplayName(user: any): string {
   if (!user) return 'Administrador';
   
@@ -168,9 +168,9 @@ export async function POST(request: Request) {
       );
 
       if (error) throw error;
-      // Nenhuma linha atualizada (id errado ou de outro site): não se diz que gravou.
+      // Nenhuma linha actualizada (id errado ou de outro site): não se diz que gravou.
       if (!updateData || updateData.length === 0) {
-        return NextResponse.json({ error: 'Notícia não encontrada: nada foi atualizado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Notícia não encontrada: nada foi actualizado.' }, { status: 404 });
       }
       await applySuggestion(data.suggest, canPublish, updateData?.[0]?.slug);
       refreshPublicPages();

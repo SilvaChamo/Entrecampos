@@ -323,7 +323,7 @@ export default function NewsletterPage() {
                   <tr className="border-b border-[#ccd0d4] bg-[#f6f7f7] text-left font-bold">
                     <th className="p-4">E-mail</th>
                     <th className="p-4">Subscrito em</th>
-                    <th className="p-4 text-right">Ações</th>
+                    <th className="p-4 text-right">Acções</th>
                   </tr>
                 </thead>
                 <tbody>

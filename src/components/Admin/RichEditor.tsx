@@ -144,7 +144,7 @@ const Figure = Node.create({
         button('✕', 'Apagar a foto', remove),
       );
 
-      // Clicar na foto seleciona-a (para a poder arrastar e mostrar os botões).
+      // Clicar na foto selecciona-a (para a poder arrastar e mostrar os botões).
       img.addEventListener('click', () => editor.commands.setNodeSelection(pos()));
 
       // Mudar o tamanho: puxar o canto. A largura guarda-se em % da largura do texto.
@@ -342,7 +342,8 @@ export default function RichEditor({ value, onChange, newsTitle = '' }: { value:
     content: value,
     immediatelyRender: false,
     shouldRerenderOnTransaction: true,
-    editorProps: { attributes: { class: 'ProseMirror' } },
+    // lang pt-PT: o corrector ortográfico do navegador usa o dicionário de português de Portugal.
+    editorProps: { attributes: { class: 'ProseMirror', lang: 'pt-PT', spellcheck: 'true' } },
     onUpdate: ({ editor: e }) => {
       const html = e.getHTML();
       lastEmitted.current = html;
@@ -495,7 +496,7 @@ export default function RichEditor({ value, onChange, newsTitle = '' }: { value:
           <ImageIcon className="h-4 w-4" />
         </Btn>
         <Btn
-          title="Caixa de destaque (põe o texto selecionado numa caixa; clique outra vez para tirar)"
+          title="Caixa de destaque (põe o texto seleccionado numa caixa; clique outra vez para tirar)"
           active={editor.isActive('callout')}
           onClick={() => editor.chain().focus().toggleWrap('callout').run()}
         >

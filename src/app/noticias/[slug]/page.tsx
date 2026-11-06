@@ -106,7 +106,7 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
                 ))}
                 <a
                   href={`mailto:?subject=${text}&body=${url}`}
-                  aria-label="Partilhar por email"
+                  aria-label="Partilhar por e-mail"
                   className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ea4335] text-white hover:opacity-90"
                 >
                   <Mail className="h-4 w-4" />

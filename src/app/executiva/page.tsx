@@ -58,7 +58,7 @@ export default async function Home() {
             </div>
             <h3 className="text-lg font-bold text-gray-800 mb-2">Inovação</h3>
             <p className="text-gray-600 text-sm">
-              Tecnologias e práticas inovadoras no setor agrário.
+              Tecnologias e práticas inovadoras no sector agrário.
             </p>
           </div>
 
@@ -109,7 +109,7 @@ export default async function Home() {
                 <Settings className="w-6 h-6 text-green-600" />
               </div>
               <p className="text-gray-600 text-sm pt-2">
-                Configurações otimizadas para diferentes tipos de cultivo.
+                Configurações optimizadas para diferentes tipos de cultivo.
               </p>
             </div>
 

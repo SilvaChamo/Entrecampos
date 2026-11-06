@@ -126,7 +126,7 @@ export default function NewsRepairPage() {
 
       // Gravar no histórico ANTES de remover da lista
       if (!isRedo) {
-        // Se estivermos a re-reparar algo no histórico, atualizamos esse item no histórico
+        // Se estivermos a re-reparar algo no histórico, actualizamos esse item no histórico
         if (viewingHistoryIndex !== null) {
           const updatedHistory = [...history];
           updatedHistory[viewingHistoryIndex].newUrl = newUrl;
@@ -145,7 +145,7 @@ export default function NewsRepairPage() {
       setSelectedImageToApply(null);
       setManualFilter(null);
     } catch (err: any) {
-      alert(err.message || 'Erro ao salvar a imagem.');
+      alert(err.message || 'Erro ao guardar a imagem.');
     } finally {
       setSavingId(null);
     }
@@ -211,7 +211,7 @@ export default function NewsRepairPage() {
 
   const deleteSelectedImages = async () => {
     if (selectedImages.size === 0) return;
-    if (!confirm(`Enviar as ${selectedImages.size} imagens selecionadas para o lixo?`)) return;
+    if (!confirm(`Enviar as ${selectedImages.size} imagens seleccionadas para o lixo?`)) return;
 
     setLoading(true);
     try {
@@ -246,7 +246,7 @@ export default function NewsRepairPage() {
   const safeCurrentNewsIndex = Math.min(currentNewsIndex, Math.max(0, news.length - 1));
   const currentItem = viewingHistoryIndex !== null ? history[viewingHistoryIndex].item : news[safeCurrentNewsIndex];
   
-  // Se estivermos no histórico, o URL atual é o que gravámos no histórico
+  // Se estivermos no histórico, o URL actual é o que gravámos no histórico
   const currentImageUrl = viewingHistoryIndex !== null ? history[viewingHistoryIndex].newUrl : currentItem?.image_url;
   const suggestions = currentItem ? getSuggestions(currentItem.title) : [];
 
@@ -259,7 +259,7 @@ export default function NewsRepairPage() {
           <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
             <div>
               <h1 className="text-2xl font-normal text-[#1d2327]">Reparação de Imagens</h1>
-              <p className="text-[13px] text-[#50575e]">Associe as imagens corretas às notícias com links partidos.</p>
+              <p className="text-[13px] text-[#50575e]">Associe as imagens correctas às notícias com links partidos.</p>
             </div>
             <div className="flex items-center gap-3">
               <button 
@@ -269,7 +269,7 @@ export default function NewsRepairPage() {
                 title="Recarregar dados"
               >
                 <RefreshCw className={`w-4 h-4 text-[#2271b1] ${loading ? 'animate-spin' : ''}`} />
-                Atualizar
+                Actualizar
               </button>
               <div className="bg-white px-4 py-2 border border-[#ccd0d4] rounded text-sm font-bold">
                 {news.length} Notícias a Reparar
@@ -321,7 +321,7 @@ export default function NewsRepairPage() {
                         <div className="aspect-video border rounded-lg overflow-hidden relative group">
                           <img src={currentImageUrl} className="w-full h-full object-cover" alt="" />
                           <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p className="text-white text-xs font-bold">Imagem Atual</p>
+                            <p className="text-white text-xs font-bold">Imagem Actual</p>
                           </div>
                         </div>
                       ) : (
@@ -383,7 +383,7 @@ export default function NewsRepairPage() {
                             className="flex-[1.5] min-w-[130px] py-2.5 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 flex items-center justify-center gap-2 shadow-md transition-all animate-in slide-in-from-right-2 duration-200"
                           >
                             <Save className="w-4 h-4" />
-                            {savingId === currentItem.id ? '...' : 'Salvar'}
+                            {savingId === currentItem.id ? '...' : 'Guardar'}
                           </button>
                         )}
                       </div>
@@ -430,7 +430,7 @@ export default function NewsRepairPage() {
                             : 'border-[#ccd0d4] hover:ring-4 hover:ring-[#00a651]'
                         }`}
                       >
-                        {/* Imagem Principal (Botão de Selecionar) */}
+                        {/* Imagem Principal (Botão de Seleccionar) */}
                         <div 
                           onClick={() => setSelectedImageToApply(file.name)}
                           className="w-full h-full cursor-pointer"

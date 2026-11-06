@@ -56,7 +56,7 @@ export default function RolePreviewPanel({ role }: RolePreviewPanelProps) {
     return items;
   };
 
-  // Renderiza o conteúdo baseado na view atual
+  // Renderiza o conteúdo baseado na view actual
   // Usa os mesmos componentes do painel admin, apenas com forcedRole diferente
   const renderContent = () => {
     if (currentView === 'dashboard') {
@@ -142,7 +142,7 @@ export default function RolePreviewPanel({ role }: RolePreviewPanelProps) {
             <span className="text-[#8c8f94]">Página: {currentView}</span>
           </div>
           <div className="text-[11px] text-[#8c8f94] bg-yellow-50 px-2 py-1 rounded border border-yellow-200">
-            Modo de teste - ações simuladas
+            Modo de teste - acções simuladas
           </div>
         </div>
         

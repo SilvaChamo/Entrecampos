@@ -78,7 +78,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'infra-estruturas': 'Infra-estruturas',
   inovacao: 'Inovação',
   'sem-categoria': 'Sem categoria',
-  'voce-sabiaa': 'Você sabia?',
+  'voce-sabiaa': 'Sabia que?',
   // Categorias que chegam da Base de Dados Agro (vista `noticias_base`).
   noticia: 'Notícia',
   evento: 'Evento',

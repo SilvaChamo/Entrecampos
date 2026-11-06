@@ -42,7 +42,7 @@ export default function NewsletterForm({ variant = 'dark' }: { variant?: 'dark' 
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="O seu email..."
+          placeholder="O seu e-mail..."
           className={`min-w-0 flex-1 bg-white px-3 text-[12px] text-gray-800 outline-none ${light ? 'h-10 border border-gray-300 focus:border-[#d6101c]' : 'py-2 text-[11px]'}`}
         />
         <button type="submit" aria-label="Enviar" disabled={state.kind === 'sending'} className={`bg-[#d6101c] px-5 text-white hover:opacity-90 disabled:opacity-60 ${light ? 'h-10' : ''}`}>

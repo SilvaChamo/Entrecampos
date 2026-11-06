@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, Menu, X, Clock, CheckSquare, MessageSquare, Mail } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
+import { prefetchAdminNews } from '@/lib/admin-cache';
 
 interface SidebarItemProps {
   href: string;
@@ -40,14 +41,14 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
       <div className="relative">
         {isDashboard ? (
           <div 
-            className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
+            className={`group/slide flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
               active 
                 ? 'bg-[#00a651] text-white border-[#00a651]' 
-                : 'text-[#f0f0f1] hover:text-white hover:bg-[#25442f] hover:border-[#00a651]'
+                : 'text-[#f0f0f1] hover:text-[#39ff14] hover:bg-[#25442f] hover:border-[#00a651]'
             }`}
           >
-            <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1">
-              <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
+            <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1 transition-transform duration-300 ease-out group-hover/slide:translate-x-1.5 motion-reduce:group-hover/slide:translate-x-0">
+              <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-[#39ff14]'}`} />
               <span className="font-medium">{label}</span>
             </Link>
             {submenu && (
@@ -62,13 +63,13 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
             )}
           </div>
         ) : (
-          <div className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
+          <div className={`group/slide flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
             active 
               ? 'bg-[#00a651] text-white border-[#00a651]' 
-              : 'text-[#f0f0f1] hover:text-white hover:bg-[#25442f] hover:border-[#00a651]'
+              : 'text-[#f0f0f1] hover:text-[#39ff14] hover:bg-[#25442f] hover:border-[#00a651]'
           }`}>
-            <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1">
-              <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
+            <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1 transition-transform duration-300 ease-out group-hover/slide:translate-x-1.5 motion-reduce:group-hover/slide:translate-x-0">
+              <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-[#39ff14]'}`} />
               <span className="font-medium">{label}</span>
             </Link>
             {submenu && (
@@ -95,11 +96,11 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
                 key={item.href}
                 href={item.href}
                 onClick={() => avisarNavegacao(item.href)}
-                className={`block px-4 py-1.5 text-[13px] hover:text-[#00a651] transition-colors border-l-[3px] border-transparent ml-[10px] ${
+                className={`group/sub block px-4 py-1.5 text-[13px] hover:text-[#39ff14] transition-colors border-l-[3px] border-transparent ml-[10px] ${
                   pathname === item.href ? 'text-[#00a651] border-[#00a651]' : 'text-[#f0f0f1] hover:border-[#00a651]'
                 }`}
               >
-                {item.label}
+                <span className="inline-block transition-transform duration-300 ease-out group-hover/sub:translate-x-1.5 motion-reduce:group-hover/sub:translate-x-0">{item.label}</span>
               </Link>
             ))}
           </div>
@@ -114,11 +115,11 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
               key={item.href}
               href={item.href}
               onClick={() => avisarNavegacao(item.href)}
-              className={`block px-4 py-1.5 text-[13px] hover:text-[#00a651] transition-colors border-l-[3px] border-transparent ml-[10px] ${
+              className={`group/sub block px-4 py-1.5 text-[13px] hover:text-[#39ff14] transition-colors border-l-[3px] border-transparent ml-[10px] ${
                 pathname === item.href ? 'text-[#00a651] border-[#00a651]' : 'text-[#f0f0f1] hover:border-[#00a651]'
               }`}
             >
-              {item.label}
+              <span className="inline-block transition-transform duration-300 ease-out group-hover/sub:translate-x-1.5 motion-reduce:group-hover/sub:translate-x-0">{item.label}</span>
             </Link>
           ))}
         </div>
@@ -137,6 +138,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // telemóvel: gaveta, sempre fechada ao entrar
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  // Depois de o utilizador abrir/fechar um submenu à mão, só fica aberto o que ele escolheu (os outros fecham-se);
+  // ao mudar de página volta a abrir-se só o submenu da página onde está.
+  const [pickedByHand, setPickedByHand] = useState(false);
   const { user, loading, logout, setRole, realRole, viewAs, setViewAs } = useAuth();
 
   // Galeria aberta só para escolher uma foto (a partir da notícia): já abre sem a barra lateral, sem a ver encolher.
@@ -154,6 +158,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       router.replace('/login');
     }
   }, [loading, user, router]);
+
+  // Ao entrar no painel, a lista de notícias (a mesma de Notícias, Pendentes, Revistas, Arquivadas e Lixo) vai buscar-se logo
+  // em segundo plano: quando se abre uma dessas páginas, já está pronta.
+  useEffect(() => {
+    if (!user) return;
+    const timer = window.setTimeout(() => void prefetchAdminNews(), 1200);
+    return () => window.clearTimeout(timer);
+  }, [user]);
 
   // Sinal de vida: o Dashboard conta com ele quem está logado agora (só com o separador visível).
   useEffect(() => {
@@ -243,16 +255,16 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     }
   };
 
-  const handleToggleSubmenu = (label: string) => {
-    setOpenSubmenu(prev => prev === label ? null : label);
+  const handleToggleSubmenu = (label: string, isOpen: boolean) => {
+    setPickedByHand(true);
+    setOpenSubmenu(isOpen ? null : label);
   };
 
-  // Fechar submenu quando navegar para página fora do multimídia
+  // Ao mudar de página, só o submenu dessa página fica aberto.
   useEffect(() => {
-    if (openSubmenu === 'Multimédia' && !pathname.startsWith('/admin/media')) {
-      setOpenSubmenu(null);
-    }
-  }, [pathname, openSubmenu]);
+    setPickedByHand(false);
+    setOpenSubmenu(null);
+  }, [pathname]);
 
   if (loading || !user) {
     return (
@@ -292,8 +304,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Reparar Imagens', href: '/admin/noticias/reparar' },
           ]
         },
-        { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
-        { href: '/admin/newsletter', icon: Mail, label: 'Newsletter' },
         { 
           href: '/admin/media', 
           icon: ImageIcon, 
@@ -303,19 +313,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Limpeza de Media', href: '/admin/media/limpeza' },
           ]
         },
-        {
-          href: '/admin/arquivo',
-          icon: FolderOpen,
-          label: 'Arquivo de fotos',
-          submenu: [
-            { label: 'Arquivo de fotos', href: '/admin/arquivo' },
-            { label: 'Arquivos partilhados', href: '/admin/partilhado' },
-            { label: 'PDF', href: '/admin/partilhado/pdf' },
-            { label: 'Arquivos ZIP', href: '/admin/partilhado/zip' },
-            { label: 'Documentos', href: '/admin/partilhado/documentos' },
-          ]
-        },
-        { href: '/admin/trafego', icon: BarChart3, label: 'Estatísticas' },
         { 
           href: '/admin/utilizadores', 
           icon: Users, 
@@ -326,6 +323,21 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'O seu perfil', href: '/admin/perfil' },
           ]
         },
+        {
+          href: '/admin/arquivo',
+          icon: FolderOpen,
+          label: 'Arquivo do site',
+          submenu: [
+            { label: 'Arquivo de fotos', href: '/admin/arquivo' },
+            { label: 'Arquivos partilhados', href: '/admin/partilhado' },
+            { label: 'PDF', href: '/admin/partilhado/pdf' },
+            { label: 'Arquivos ZIP', href: '/admin/partilhado/zip' },
+            { label: 'Documentos', href: '/admin/partilhado/documentos' },
+          ]
+        },
+        { href: '/admin/newsletter', icon: Mail, label: 'Newsletter' },
+        { href: '/admin/trafego', icon: BarChart3, label: 'Estatísticas' },
+        { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
       );
     }
 
@@ -333,14 +345,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       items[0].href = '/admin/editor';
       items.push(
         { href: '/admin/noticias/pendentes', icon: Clock, label: 'Notícias Pendentes' },
-        { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
         { href: '/admin/noticias/revistas', icon: CheckSquare, label: 'Últimos Revistos' },
         { href: '/admin/noticias', icon: Newspaper, label: 'Todas as Notícias' },
         { href: '/admin/media', icon: ImageIcon, label: 'Multimédia' },
+        { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
         {
           href: '/admin/arquivo',
           icon: FolderOpen,
-          label: 'Arquivo de fotos',
+          label: 'Arquivo do site',
           submenu: [
             { label: 'Arquivo de fotos', href: '/admin/arquivo' },
             { label: 'Arquivos partilhados', href: '/admin/partilhado' },
@@ -374,7 +386,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Limpeza de Media', href: '/admin/media/limpeza' },
           ]
         },
-        { href: '/admin/arquivo', icon: FolderOpen, label: 'Arquivo de fotos' },
+        { href: '/admin/arquivo', icon: FolderOpen, label: 'Arquivo do site' },
       );
     }
 
@@ -500,7 +512,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               const isChildActive = (item as any).submenu?.some((sub: any) => pathname === sub.href);
               const isParentActive = pathname === item.href;
               const isActive = isParentActive || isChildActive;
-              const shouldBeOpen = openSubmenu === item.label || isChildActive;
+              const shouldBeOpen = pickedByHand ? openSubmenu === item.label : isChildActive;
               
               return (
                 <SidebarItem 
@@ -511,7 +523,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                   submenu={(item as any).submenu}
                   active={isActive}
                   isOpen={shouldBeOpen}
-                  onToggle={() => handleToggleSubmenu(item.label)}
+                  onToggle={() => handleToggleSubmenu(item.label, shouldBeOpen)}
                 />
               );
             })}

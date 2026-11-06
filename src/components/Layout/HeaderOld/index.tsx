@@ -341,12 +341,12 @@ const HeaderOld: React.FC = () => {
                     <form className="space-y-2">
                       <input
                         type="email"
-                        placeholder="Email"
+                        placeholder="E-mail"
                         className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                       />
                       <input
                         type="password"
-                        placeholder="Senha"
+                        placeholder="Palavra-passe"
                         className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                       />
                       <button
@@ -374,12 +374,12 @@ const HeaderOld: React.FC = () => {
                       />
                       <input
                         type="email"
-                        placeholder="Email"
+                        placeholder="E-mail"
                         className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                       />
                       <input
                         type="password"
-                        placeholder="Senha"
+                        placeholder="Palavra-passe"
                         className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                       />
                       <button
@@ -516,7 +516,7 @@ const HeaderOld: React.FC = () => {
                       />
                       <input
                         type="email"
-                        placeholder="Email"
+                        placeholder="E-mail"
                         className="w-full px-3 py-3 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                       />
                       <textarea

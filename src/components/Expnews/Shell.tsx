@@ -201,7 +201,7 @@ export default function ExpShell({
             <div>
               <h4 className={footTitle}>Newsletter</h4>
               <p className="text-[13px] leading-6">
-                Receba as melhores notícias do sector agrário em Moçambique diretamente no seu email. Deixe o seu endereço e entraremos em contacto.
+                Receba as melhores notícias do sector agrário em Moçambique directamente no seu e-mail. Deixe o seu endereço e entraremos em contacto.
               </p>
               <div className="[&_form]:mx-0 [&_form]:mt-3 [&_form]:max-w-none [&_form>div:nth-child(2)]:mb-[30px] [&_form>div:nth-child(2)]:mt-1 [&_input]:py-2 [&_input]:text-[13px] [&_button]:px-6 [&_p]:mt-1 [&_p]:leading-5">
                 <NewsletterForm />

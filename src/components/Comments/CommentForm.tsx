@@ -12,7 +12,7 @@ export default function CommentForm({ slug }: { slug: string }) {
   const [remember, setRemember] = useState(false);
   const [state, setState] = useState<{ kind: 'idle' | 'sending' | 'ok' | 'error'; text?: string }>({ kind: 'idle' });
 
-  // "Guardar o meu nome, email e site neste navegador" (como no WordPress).
+  // "Guardar o meu nome, e-mail e site neste navegador" (como no WordPress).
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(REMEMBER_KEY) || 'null') as { name?: string; email?: string; website?: string } | null;
@@ -54,7 +54,7 @@ export default function CommentForm({ slug }: { slug: string }) {
   return (
     <form onSubmit={submit} className="mt-4 space-y-4" noValidate={false}>
       <p className="text-[13px] text-gray-500">
-        O seu endereço de email não será publicado. Campos obrigatórios marcados com <span className="text-[#d6101c]">*</span>
+        O seu endereço de e-mail não será publicado. Campos obrigatórios marcados com <span className="text-[#d6101c]">*</span>
       </p>
 
       <div>
@@ -73,7 +73,7 @@ export default function CommentForm({ slug }: { slug: string }) {
         </div>
         <div>
           <label htmlFor="c-email" className="mb-1 block text-[13px] font-semibold text-gray-700">
-            Email <span className="text-[#d6101c]">*</span>
+            E-mail <span className="text-[#d6101c]">*</span>
           </label>
           <input id="c-email" required type="email" maxLength={254} autoComplete="email" value={values.email} onChange={set('email')} className={input} />
         </div>
@@ -88,7 +88,7 @@ export default function CommentForm({ slug }: { slug: string }) {
 
       <label className="flex items-start gap-2 text-[13px] text-gray-600">
         <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="mt-0.5" />
-        Guardar o meu nome, email e site neste navegador para a próxima vez que eu comentar.
+        Guardar o meu nome, e-mail e site neste navegador para a próxima vez que eu comentar.
       </label>
 
       <AntiSpamFields />

@@ -38,14 +38,14 @@ export default function ContactForm({ embedded = false }: { embedded?: boolean }
       <h2 className={embedded ? 'text-[22px] font-extrabold text-[#0c1f08]' : 'text-[18px] font-bold text-[#1a3d0c]'}>
         {embedded ? 'Pronto para começar?' : 'Enviar mensagem'}
       </h2>
-      {embedded && <p className="-mt-2 text-[12px] text-gray-500">O seu email não será publicado. Os campos com <span className="text-[#d6101c]">*</span> são obrigatórios.</p>}
+      {embedded && <p className="-mt-2 text-[12px] text-gray-500">O seu e-mail não será publicado. Os campos com <span className="text-[#d6101c]">*</span> são obrigatórios.</p>}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="m-name" className="mb-1 block text-[13px] font-semibold text-gray-700">Nome <span className="text-[#d6101c]">*</span></label>
           <input id="m-name" required maxLength={80} autoComplete="name" value={values.name} onChange={set('name')} className={input} />
         </div>
         <div>
-          <label htmlFor="m-email" className="mb-1 block text-[13px] font-semibold text-gray-700">Email <span className="text-[#d6101c]">*</span></label>
+          <label htmlFor="m-email" className="mb-1 block text-[13px] font-semibold text-gray-700">E-mail <span className="text-[#d6101c]">*</span></label>
           <input id="m-email" required type="email" maxLength={254} autoComplete="email" value={values.email} onChange={set('email')} className={input} />
         </div>
       </div>

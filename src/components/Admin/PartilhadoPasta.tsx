@@ -46,7 +46,7 @@ function PdfIcon() {
 
 const CARD = 'group relative flex aspect-[4/3] flex-col items-center justify-center gap-1 rounded border border-[#ccd0d4] bg-white p-1.5 text-center transition hover:border-[#00a651]';
 
-/** Cartão pequeno de um documento (abre-o dentro do painel; baixar fica no visualizador). */
+/** Cartão pequeno de um documento (abre-o dentro do painel; descarregar fica no visualizador). */
 function DocCard({ file }: { file: SharedFile }) {
   const { ext, color, Icon } = formatOf(file.name);
   const [open, setOpen] = useState(false);

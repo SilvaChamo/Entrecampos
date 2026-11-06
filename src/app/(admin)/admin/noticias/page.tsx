@@ -56,7 +56,7 @@ const LBL = "max-md:before:font-normal max-md:before:text-gray-500 max-md:before
 
 export default function NewsAdminPage() {
   const [news, setNews] = useState<NewsItem[]>(() => adminCacheGet<NewsItem[]>('news') ?? []);
-  // Confirmação na própria página: os diálogos nativos do navegador podem não aparecer e a ação ficava sem efeito.
+  // Confirmação na própria página: os diálogos nativos do navegador podem não aparecer e a acção ficava sem efeito.
   const [ask, setAsk] = useState<{ text: string; done: (ok: boolean) => void } | null>(null);
   const confirmAsync = (text: string) => new Promise<boolean>((done) => setAsk({ text, done }));
   const [loading, setLoading] = useState(() => adminCacheGet('news') === undefined);
@@ -267,7 +267,7 @@ export default function NewsAdminPage() {
     }
   };
 
-  // Ações em massa
+  // Acções em massa
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
     if (newSelected.has(id)) newSelected.delete(id);
@@ -420,7 +420,7 @@ export default function NewsAdminPage() {
           value={bulkAction}
           onChange={(e) => setBulkAction(e.target.value)}
         >
-          <option value="">Ações em massa</option>
+          <option value="">Acções em massa</option>
           <option value="edit">Editar</option>
           <option value="archive">Arquivar</option>
           <option value="trash">Mover para o lixo</option>
@@ -705,7 +705,7 @@ export default function NewsAdminPage() {
                                       onClick={saveQuickEdit}
                                       className="h-8 px-6 bg-[#00a651] text-white rounded-[3px] text-[12px] min-[1500px]:text-sm font-bold hover:bg-[#008f45] transition-colors"
                                     >
-                                      {loading ? 'A guardar...' : 'Atualizar Notícia'}
+                                      {loading ? 'A guardar...' : 'Actualizar Notícia'}
                                     </button>
                                     <button
                                       onClick={() => setQuickEditId(null)}

@@ -79,7 +79,7 @@ const Footer = () => {
           <div>
             <Titulo>Newsletter</Titulo>
             <p className="text-gray-400 text-sm leading-relaxed mb-4">
-              Receba as notícias do mundo rural diretamente no seu e-mail.
+              Receba as notícias do mundo rural directamente no seu e-mail.
             </p>
             <form className="flex flex-col gap-3" aria-label="Subscrever newsletter">
               <label htmlFor="footer-newsletter" className="sr-only">E-mail</label>

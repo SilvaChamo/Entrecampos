@@ -234,7 +234,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
       if (pendingImage.current) {
         try { imageUrl = await pendingImage.current; } catch { throw new Error('A foto não chegou à biblioteca. Escolha-a de novo.'); }
       } else if (imageUrl.startsWith('blob:')) throw new Error('A foto ainda não foi enviada. Escolha-a de novo.');
-      // Buscar o usuário atual do Supabase para obter o ID real
+      // Buscar o utilizador actual do Supabase para obter o ID real
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       // Usar a nossa nova action server-side para contornar problemas de RLS na view/tabela
@@ -256,7 +256,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
       }
 
       const result = await response.json().catch(() => ({}));
-      alert(`Notícia ${isEdit ? 'atualizada' : 'criada'} com sucesso!${result.warning ? `\n\n${result.warning}` : ''}`);
+      alert(`Notícia ${isEdit ? 'actualizada' : 'criada'} com sucesso!${result.warning ? `\n\n${result.warning}` : ''}`);
       router.push('/admin/noticias');
     } catch (err: any) {
       alert('Erro ao guardar: ' + err.message);
@@ -369,7 +369,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
                 disabled={loading}
                 className="h-9 px-6 bg-[#00a651] text-white text-[14px] font-medium rounded-[4px] hover:bg-[#008f45] disabled:opacity-50"
               >
-                {loading ? 'A guardar...' : (isEdit ? 'Atualizar' : 'Publicar')}
+                {loading ? 'A guardar...' : (isEdit ? 'Actualizar' : 'Publicar')}
               </button>
               <button
                 type="button"
@@ -485,7 +485,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
             disabled={loading}
             className="shrink-0 px-6 py-3 bg-[#00a651] text-white text-[15px] font-medium rounded-[4px] hover:bg-[#008f45] disabled:opacity-50"
           >
-            {loading ? 'A guardar...' : (isEdit ? 'Atualizar' : 'Publicar')}
+            {loading ? 'A guardar...' : (isEdit ? 'Actualizar' : 'Publicar')}
           </button>
           <span className="ml-auto min-w-0 truncate text-[13px] text-[#50575e]">{isEdit ? 'Publicado' : 'Rascunho'}</span>
         </div>

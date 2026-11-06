@@ -78,7 +78,7 @@ export default function EtiquetasPage() {
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div>
               <h1 className="text-2xl font-bold text-[#1d2327]">Etiquetas</h1>
-          <p className="text-[#50575e] mt-1">Gerencie as etiquetas para organizar as notícias</p>
+          <p className="text-[#50575e] mt-1">Faça a gestão das etiquetas para organizar as notícias</p>
         </div>
           <button 
             onClick={() => setIsAdding(true)}

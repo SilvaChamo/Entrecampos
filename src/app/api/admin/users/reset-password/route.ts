@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const { email } = await req.json();
 
     if (!email) {
-      return NextResponse.json({ error: 'Email obrigatório' }, { status: 400 });
+      return NextResponse.json({ error: 'E-mail obrigatório' }, { status: 400 });
     }
 
     // Só contas deste site; para as outras não se faz nada (e a resposta é a mesma).

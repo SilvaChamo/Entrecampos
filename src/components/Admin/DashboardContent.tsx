@@ -112,8 +112,8 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
   const role = forcedRole || user?.role || 'guest';
 
   return (
-    <div className="min-h-screen text-[#2c3338] font-sans pb-8 p-4">
-      <section className="bg-white border border-[#ccd0d4] p-4 pb-[30px] mb-4 shadow-sm rounded-none">
+    <div className="ec-page min-h-screen text-[#2c3338] font-sans">
+      <section className="bg-white border border-[#ccd0d4] p-4 pb-[30px] mb-4 shadow-sm rounded-none max-md:pb-4">
         <div className="w-full">
           <h1 className="text-[23px] font-[800] text-[#0b5c2e] mb-2">
             Bem-vindo ao painel de administração
@@ -203,7 +203,7 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
       </section>
 
       <div className="w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 items-stretch">
           <div className="h-full">
             <div className="bg-white border border-[#ccd0d4] rounded-md shadow-sm overflow-hidden h-full">
               <div className="p-3 border-b border-[#f0f0f1] bg-white flex items-center justify-between">
@@ -233,8 +233,8 @@ export default function DashboardContent({ forcedRole }: { forcedRole?: UserRole
             </div>
           </div>
 
-          <div className="flex flex-col h-full gap-4">
-            <div className="grid grid-cols-2 gap-4 flex-1">
+          <div className="flex flex-col h-full gap-3 md:gap-4">
+            <div className="grid grid-cols-2 gap-3 md:gap-4 flex-1">
               <Link href={role === 'editor' ? "/admin/noticias/pendentes" : "/admin/noticias"} className="group h-full">
                 <div className="bg-white border border-[#ccd0d4] p-4 rounded-md shadow-sm hover:border-[#00a651] transition-all h-full flex flex-col items-center justify-center text-center">
                   <div className="w-11 h-11 bg-green-50 text-[#008f45] rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { adminCacheGet, adminCacheSet, cachedNewsWithStatus } from '@/lib/admin-cache';
 import Link from 'next/link';
 import { CheckCircle, Trash2, RefreshCw, AlertTriangle, Clock, Eye } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
@@ -16,18 +17,19 @@ interface NewsItem {
 }
 
 export default function PendingNewsPage() {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [news, setNews] = useState<NewsItem[]>(() => cachedNewsWithStatus<NewsItem>('pending'));
+  const [loading, setLoading] = useState(() => adminCacheGet('news') === undefined);
   const [busy, setBusy] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    if (adminCacheGet('news') === undefined) setLoading(true);
     setErrorMsg(null);
     try {
       const res = await fetch('/api/admin/news/list', { credentials: 'include' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Não foi possível carregar as notícias.');
+      adminCacheSet('news', data.items);
       setNews((data.items as NewsItem[]).filter((n) => String(n.status).toLowerCase() === 'pending'));
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Erro ao carregar.');
@@ -63,7 +65,7 @@ export default function PendingNewsPage() {
   };
 
   return (
-    <div className="p-6 text-[#2c3338]">
+    <div className="ec-page text-[#2c3338]">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-normal flex items-center gap-3">
