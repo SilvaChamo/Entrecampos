@@ -276,6 +276,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
           <div className="bg-white border border-[#ccd0d4] rounded-[8px] overflow-hidden">
             <RichEditor
               value={formData.content}
+              newsTitle={formData.title}
               onChange={(val) => setFormData((prev) => ({ ...prev, content: val }))}
             />
           </div>
@@ -465,6 +466,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
       {isImageSelectorOpen && (
         <ImageChooser
           title="Imagem de destaque"
+          newsTitle={formData.title}
           target="featured"
           onBeforeLeave={saveDraft}
           onClose={() => setIsImageSelectorOpen(false)}

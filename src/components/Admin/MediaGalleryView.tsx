@@ -534,8 +534,16 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                       if (res.ok) successCount++;
                       else lastError = (await res.json().catch(() => ({}))).error || 'Erro ao carregar.';
                     } else {
-                      const cleanName = `${Date.now()}-${original.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\.-]/g, '_')}`;
-                      const { error } = await supabase.storage.from(BUCKET_NAME).upload(cleanName, original);
+                      // Mantém o nome original; se já existir, acrescenta -2, -3… (nunca substitui uma foto)
+                      const safe = original.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\.-]/g, '_');
+                      const dot = safe.lastIndexOf('.');
+                      const stem = dot > 0 ? safe.slice(0, dot) : safe;
+                      const ext = dot > 0 ? safe.slice(dot) : '';
+                      let error: { message: string } | null = null;
+                      for (let n = 1; n <= 30; n++) {
+                        ({ error } = await supabase.storage.from(BUCKET_NAME).upload(`${stem}${n > 1 ? `-${n}` : ''}${ext}`, original));
+                        if (!error || !/exist|duplicate|409/i.test(error.message)) break;
+                      }
                       if (!error) successCount++;
                       else lastError = error.message;
                     }

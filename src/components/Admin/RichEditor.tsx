@@ -323,7 +323,7 @@ function Btn({
 const Divider = () => <span className="mx-1 h-5 w-px bg-gray-300" />;
 
 /** Editor de texto da notícia, por blocos: texto, títulos, imagens com legenda e caixas de destaque. */
-export default function RichEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
+export default function RichEditor({ value, onChange, newsTitle = '' }: { value: string; onChange: (html: string) => void; newsTitle?: string }) {
   const [picking, setPicking] = useState(false);
   // "+ bloco": aparece depois do fim do texto do bloco onde está o rato (ou o toque). `end` é o fim do bloco onde se insere.
   type Hover = { top: number; left: number; end: number; wrapW: number };
@@ -579,6 +579,7 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
       {picking && (
         <ImageChooser
           title="Inserir imagem"
+          newsTitle={newsTitle}
           target="editor"
           onBeforeLeave={() => {
             try { sessionStorage.setItem('ec-pick-pos', JSON.stringify({ index: cursorBlockIndex(editor) })); } catch { /* sem armazenamento */ }

@@ -14,11 +14,12 @@ export type ChosenImage = {
 };
 
 /** Envia a foto (já reduzida) para a biblioteca geral; devolve o endereço público. */
-export async function uploadToLibrary(original: File): Promise<string> {
+export async function uploadToLibrary(original: File, newsTitle = ''): Promise<string> {
   const file = await prepareImage(original);
   const form = new FormData();
   form.append('file', file);
   form.append('bucket', STORAGE_BUCKET);
+  if (newsTitle) form.append('title', newsTitle); // nome da foto quando ela não tem nome próprio
   const res = await fetch('/api/admin/upload', { method: 'POST', credentials: 'include', body: form });
   const body = await res.json().catch(() => ({}));
   if (!res.ok || !body.url) throw new Error(body.error || 'Não foi possível enviar a foto.');
@@ -30,7 +31,7 @@ export async function uploadToLibrary(original: File): Promise<string> {
  * plano); "Biblioteca multimédia" leva à galeria principal no mesmo separador e, ao escolher a foto, volta a este ecrã
  * com tudo o que já estava escrito (o rascunho guarda-se antes de sair).
  */
-export default function ImageChooser({ title = 'Imagem', target = 'featured', onBeforeLeave, onChoose, onClose }: { title?: string; target?: 'featured' | 'editor'; onBeforeLeave?: () => void; onChoose: (img: ChosenImage) => void; onClose: () => void }) {
+export default function ImageChooser({ title = 'Imagem', newsTitle = '', target = 'featured', onBeforeLeave, onChoose, onClose }: { title?: string; newsTitle?: string; target?: 'featured' | 'editor'; onBeforeLeave?: () => void; onChoose: (img: ChosenImage) => void; onClose: () => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -42,7 +43,7 @@ export default function ImageChooser({ title = 'Imagem', target = 'featured', on
   };
 
   const fromComputer = (file: File) => {
-    onChoose({ url: URL.createObjectURL(file), uploading: uploadToLibrary(file) });
+    onChoose({ url: URL.createObjectURL(file), uploading: uploadToLibrary(file, newsTitle) });
     onClose();
   };
 
