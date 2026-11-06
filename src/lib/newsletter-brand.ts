@@ -25,6 +25,8 @@ export const RED = '#d6101c';
 export const categoryColor = (slug: string) => defaultCategoryColor(slug || '');
 
 /** Largura do e-mail, em píxeis. */
+/** Altura fixa da foto da notícia em destaque (todas iguais, cortadas ao centro). */
+export const LEAD_IMAGE_HEIGHT = 340;
 export const EMAIL_WIDTH = 680;
 
 /** Data por extenso, como nos cards do site (hora de Maputo). */
@@ -53,7 +55,7 @@ export function darken(hex: string, amount = 0.25) {
   return `#${ch(16)}${ch(8)}${ch(0)}`;
 }
 
-/** Espaços de publicidade da newsletter: posição + tamanho (em píxeis), peso máximo da imagem (KB) e o nome de cada um. O preço define-se no painel. */
+/** Espaços de publicidade da newsletter: cada um tem uma única medida (píxeis) e um peso máximo da imagem (KB). O preço define-se no painel. */
 export const AD_POSITIONS = {
   topo: 'Em cima do cabeçalho',
   cabecalho: 'No cabeçalho',
@@ -63,27 +65,18 @@ export const AD_POSITIONS = {
 } as const;
 export type AdPosition = keyof typeof AD_POSITIONS;
 export const AD_LETTER: Record<AdPosition, string> = { topo: 'A', cabecalho: 'B', depois: 'C', meio: 'D', rodape: 'E' };
-export const AD_SIZES = {
-  faixa: 'Faixa (altura de um cartão de notícia)',
-  destaque: 'Grande (altura máxima de 200 px)',
-  caixa: 'Caixa (ao lado dos contactos)',
-} as const;
-export type AdSize = keyof typeof AD_SIZES;
-/** Nome curto do tamanho, sem a explicação. */
-export const adSizeName = (size: AdSize) => AD_SIZES[size].split(' (')[0];
-export const AD_SLOTS: { key: string; position: AdPosition; size: AdSize; w: number; h: number; kb: number }[] = [
-  { key: 'topo:faixa', position: 'topo', size: 'faixa', w: 680, h: 150, kb: 100 },
-  { key: 'topo:destaque', position: 'topo', size: 'destaque', w: 680, h: 200, kb: 120 },
-  { key: 'cabecalho:caixa', position: 'cabecalho', size: 'caixa', w: 200, h: 92, kb: 30 },
-  { key: 'depois:faixa', position: 'depois', size: 'faixa', w: 680, h: 150, kb: 100 },
-  { key: 'depois:destaque', position: 'depois', size: 'destaque', w: 680, h: 200, kb: 120 },
-  { key: 'meio:faixa', position: 'meio', size: 'faixa', w: 680, h: 150, kb: 100 },
-  { key: 'meio:destaque', position: 'meio', size: 'destaque', w: 680, h: 200, kb: 120 },
-  { key: 'rodape:faixa', position: 'rodape', size: 'faixa', w: 680, h: 150, kb: 100 },
-  { key: 'rodape:destaque', position: 'rodape', size: 'destaque', w: 680, h: 200, kb: 120 },
+/** `key` é a própria posição. O espaço do meio é o mais alto (500 px). */
+export const AD_SLOTS: { key: AdPosition; position: AdPosition; w: number; h: number; kb: number }[] = [
+  { key: 'topo', position: 'topo', w: 680, h: 200, kb: 120 },
+  { key: 'cabecalho', position: 'cabecalho', w: 230, h: 120, kb: 30 },
+  { key: 'depois', position: 'depois', w: 680, h: 200, kb: 120 },
+  { key: 'meio', position: 'meio', w: 680, h: 500, kb: 300 },
+  { key: 'rodape', position: 'rodape', w: 680, h: 200, kb: 120 },
 ];
+/** Medida e peso de um espaço, como se mostra depois do nome: «Medida: 680x120px, Tamanho: 80kb». */
+export const adMeasure = (s: { w: number; h: number; kb: number }) => `Medida: ${s.w}x${s.h}px, Tamanho: ${s.kb}kb`;
 export const slotLabel = (key: string) => {
   const s = AD_SLOTS.find((x) => x.key === key);
-  return s ? `${AD_POSITIONS[s.position]} · ${adSizeName(s.size)} (${s.w} × ${s.h}, até ${s.kb} KB)` : key;
+  return s ? `${AD_POSITIONS[s.position]} — ${adMeasure(s)}` : key;
 };
 export const formatPrice = (n: number | undefined) => (typeof n === 'number' && n > 0 ? `${n.toLocaleString('pt-PT')} MT` : 'Sob consulta');

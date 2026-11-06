@@ -2,9 +2,10 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { getAllPosts, type Post } from '@/lib/news-data';
 import { mailConfigured, openMailer } from '@/lib/mailer';
-import { AD_SLOTS, BRAND, EMAIL_WIDTH, GREEN, RED, categoryColor, categoryIcon, darken, longDate } from '@/lib/newsletter-brand';
+import { AD_SLOTS, BRAND, EMAIL_WIDTH, LEAD_IMAGE_HEIGHT, GREEN, RED, categoryColor, categoryIcon, darken, longDate } from '@/lib/newsletter-brand';
 import { getCategoryColors } from '@/lib/category-colors';
 import { activeBySlot, loadAds, recordSent, type Ad } from '@/lib/newsletter-ads';
+import { removeReads } from '@/lib/newsletter-reads';
 
 /**
  * Newsletter do EntreCAMPOS. Subscritores: tabela `entrecampos_newsletter`. Fila: as notícias publicadas desde o último
@@ -22,7 +23,7 @@ const db = () =>
   });
 
 export type Subscriber = { id: string; email: string; created_at: string };
-export type SendRecord = { at: string; recipients: number; sent: number; failed: number; news: number; /** Envio escolhido à mão ou agendado: as notícias que levou. */ slugs?: string[]; /** Anúncios que seguiram neste envio. */ ads?: string[] };
+export type SendRecord = { at: string; recipients: number; sent: number; failed: number; news: number; /** Envio escolhido à mão ou agendado: as notícias que levou. */ slugs?: string[]; /** Anúncios que seguiram neste envio. */ ads?: string[]; /** As ligações deste envio contam leituras. */ tracked?: boolean };
 export type NewsletterState = { lastSentAt?: string; history: SendRecord[] };
 
 export async function loadState(): Promise<NewsletterState> {
@@ -39,6 +40,15 @@ export async function loadState(): Promise<NewsletterState> {
 async function saveState(state: NewsletterState) {
   const { error } = await db().storage.from(BUCKET()).upload(STATE_FILE, Buffer.from(JSON.stringify(state)), { upsert: true, contentType: 'application/json' });
   if (error) throw new Error(error.message);
+}
+
+/** Tira um envio da lista de newsletters enviadas (não mexe na fila nem no último envio da fila diária). */
+export async function removeSendRecord(at: string) {
+  const state = await loadState();
+  const history = state.history.filter((h) => h.at !== at);
+  if (history.length === state.history.length) throw new Error('Envio não encontrado.');
+  await saveState({ ...state, history });
+  await removeReads(at).catch(() => {});
 }
 
 /** Todos os subscritores (a base devolve no máximo 1000 de cada vez). */
@@ -107,10 +117,14 @@ const abs = (url: string) => (!url ? '' : /^https?:\/\//.test(url) ? url : `${SI
  * «Ler mais») e as restantes em cards como os da secção Oportunidades do site (foto à esquerda, categoria, título,
  * data, resumo e «Ler mais»). Tabelas e estilos em linha, para funcionar nos programas de e-mail.
  */
-export function digestEmail(posts: Post[], email: string, colors: Record<string, string> = {}, ads: Record<string, Ad> = {}) {
+export function digestEmail(posts: Post[], email: string, colors: Record<string, string> = {}, ads: Record<string, Ad> = {}, sendId = '') {
   const day = new Date().toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Maputo' });
   const unsub = unsubscribeUrl(email);
-  const link = (p: Post) => `${SITE_URL()}/noticias/${p.slug}`;
+  // Com `sendId`, a ligação passa pelo servidor (conta a leitura) e segue para a notícia.
+  const link = (p: Post) =>
+    sendId
+      ? `${SITE_URL()}/api/newsletter/ler?s=${encodeURIComponent(sendId)}&n=${encodeURIComponent(p.slug)}&e=${encodeURIComponent(email)}&t=${unsubscribeToken(email)}`
+      : `${SITE_URL()}/noticias/${p.slug}`;
   // Etiqueta como a do site: caixa do ícone (cor escurecida) + nome da categoria, e abre a página da categoria.
   const tag = (p: Post) => {
     const color = colors[p.categorySlug] ?? categoryColor(p.categorySlug);
@@ -127,15 +141,15 @@ export function digestEmail(posts: Post[], email: string, colors: Record<string,
       .slice(0, 1)
       .map(({ ad, h }) => `<tr><td style="padding:0 0 12px;line-height:0;font-size:0"><a href="${esc(adUrl(ad))}"><img src="${esc(abs(ad.image))}" alt="${esc(ad.advertiser)}" width="${EMAIL_WIDTH}" style="display:block;width:100%;max-width:${EMAIL_WIDTH}px;height:auto;max-height:${h}px;border:0"></a></td></tr>`)
       .join('');
-  const headerAd = ads['cabecalho:caixa']
-    ? `<td class="ec-hd ec-ad" width="212" valign="middle" style="width:212px;padding:10px 10px 10px 0;line-height:0;font-size:0"><a href="${esc(adUrl(ads['cabecalho:caixa']))}"><img src="${esc(abs(ads['cabecalho:caixa'].image))}" alt="${esc(ads['cabecalho:caixa'].advertiser)}" width="200" height="92" style="display:block;width:200px;max-width:100%;height:92px;border:0"></a></td>`
-    : '';
+  const headerAd = ads['cabecalho']
+    ? `<td class="ec-hd ec-ad" width="242" valign="middle" style="width:242px;padding:10px 10px 10px 0;line-height:0;font-size:0"><a href="${esc(adUrl(ads['cabecalho']))}"><img src="${esc(abs(ads['cabecalho'].image))}" alt="${esc(ads['cabecalho'].advertiser)}" width="230" height="120" style="display:block;width:230px;max-width:100%;height:120px;border:0"></a></td>`
+    : `<td class="ec-hd ec-ad" width="242" valign="middle" style="width:242px;padding:10px 10px 10px 0;line-height:0;font-size:0"><a href="${esc(SITE_URL())}/newsletter/publicidade" style="display:block;width:230px;max-width:100%;height:120px;line-height:120px;background:#e4e6e8;color:#50575e;font-size:14px;text-align:center;text-decoration:none">Publicite aqui</a></td>`;
 
   const [lead, ...rest] = posts;
   const leadHtml = lead
     ? `<tr><td style="padding:0 0 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e3e3e3"><tr><td>
-${lead.image ? `<a href="${esc(link(lead))}"><img src="${esc(abs(lead.image))}" alt="" width="${EMAIL_WIDTH}" style="display:block;width:100%;height:auto;border:0"></a>` : ''}
+${lead.image ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td class="ec-leadimg" height="${LEAD_IMAGE_HEIGHT}" bgcolor="#e5e7e9" background="${esc(abs(lead.image))}" style="height:${LEAD_IMAGE_HEIGHT}px;padding:0;background-color:#e5e7e9;background-image:url('${esc(abs(lead.image))}');background-size:cover;background-position:center;line-height:0;font-size:0"><a href="${esc(link(lead))}" style="display:block;height:${LEAD_IMAGE_HEIGHT}px;line-height:${LEAD_IMAGE_HEIGHT}px;font-size:1px;text-decoration:none">&nbsp;</a></td></tr></table>` : ''}
 <div class="ec-pad" style="padding:20px 24px 24px">
 ${tag(lead)}
 <a class="ec-lt ec-t" href="${esc(link(lead))}" style="display:block;margin:10px 0 6px;font-size:23px;line-height:1.25;font-weight:bold;color:#1d2327;text-decoration:none">${esc(lead.title)}</a>
@@ -162,14 +176,14 @@ ${more(p)}
   const cardsAfter = card.slice(mid).join('\n');
 
   const html = `<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>.ec-t:hover{color:#d6101c!important}.ec-b:hover{background:#d6101c!important}.ec-c:hover{filter:brightness(1.1)}@media only screen and (max-width:700px){.ec-hd{display:block!important;width:auto!important}.ec-hd2{padding:0 10px 14px!important}.ec-hd3{display:none!important}.ec-ft{display:block!important;width:100%!important;padding:0 0 10px!important;text-align:left!important}.ec-img,.ec-txt{display:block!important;width:100%!important}.ec-img{height:190px!important}.ec-img a{width:100%!important;height:190px!important;line-height:190px!important}.ec-txt{padding:14px 16px 16px!important}.ec-pad{padding:14px 16px 18px!important}.ec-lt{font-size:16px!important}.ec-ct{font-size:14px!important}}</style></head>
+<style>.ec-t:hover{color:#d6101c!important}.ec-b:hover{background:#d6101c!important}.ec-c:hover{filter:brightness(1.1)}@media only screen and (max-width:700px){.ec-hd{display:block!important;width:auto!important}.ec-hd2{padding:0 10px 14px!important}.ec-hd3{display:none!important}.ec-ft{display:block!important;width:100%!important;padding:0 0 10px!important;text-align:left!important}.ec-fbtn{display:block!important;text-align:center!important}.ec-leadimg,.ec-leadimg a{height:190px!important;line-height:190px!important}.ec-img,.ec-txt{display:block!important;width:100%!important}.ec-img{height:190px!important}.ec-img a{width:100%!important;height:190px!important;line-height:190px!important}.ec-txt{padding:14px 16px 16px!important}.ec-pad{padding:14px 16px 18px!important}.ec-lt{font-size:16px!important}.ec-ct{font-size:14px!important}}</style></head>
 <body style="margin:0;background:#f0f0f1;font-family:Arial,Helvetica,sans-serif;color:#2c3338">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:16px 10px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:16px 10px 0">
 <table role="presentation" width="${EMAIL_WIDTH}" cellpadding="0" cellspacing="0" style="width:100%;max-width:${EMAIL_WIDTH}px">
 ${adRow('topo')}
 <tr><td style="padding:0 0 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-bottom:4px solid ${RED}"><tr>
 <td class="ec-hd" width="118" valign="middle" style="width:118px;padding:10px 0 10px 10px;line-height:0;font-size:0"><a href="${esc(SITE_URL())}"><img src="${esc(SITE_URL())}/images/entrecampos-simbolo.png" alt="${esc(BRAND.name)}" width="108" height="108" style="display:block;width:108px;height:108px;border:0"></a></td>
-<td class="ec-hd ec-hd3" width="1" valign="middle" style="width:1px;padding:0"><div style="width:1px;height:92px;background:#d5d8db;font-size:0;line-height:0">&nbsp;</div></td>
+<td class="ec-hd ec-hd3" width="1" valign="middle" style="width:1px;padding:0"><div style="width:1px;height:120px;background:#d5d8db;font-size:0;line-height:0">&nbsp;</div></td>
 <td class="ec-hd ec-hd2" valign="middle" style="padding:12px 20px;font-size:12px;line-height:1.6;color:#50575e;text-align:left"><div style="margin:0 0 4px;font-size:18px;line-height:1.2;font-weight:bold;color:#1d2327">${esc(BRAND.headline)}</div>${esc(BRAND.address)}<br>${BRAND.phones.map(esc).join(' · ')}<br>${BRAND.emails.map((m) => `<a href="mailto:${esc(m)}" style="color:#50575e;text-decoration:none">${esc(m)}</a>`).join(' · ')}</td>${headerAd}
 </tr></table></td></tr>
 ${adRow('depois')}
@@ -178,7 +192,10 @@ ${cardsBefore}
 ${adRow('meio')}
 ${cardsAfter}
 ${adRow('rodape')}
-<tr><td align="left" style="background:#1d2327;padding:20px 24px;font-size:11px;line-height:1.8;color:#a7aaad;text-align:left"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td class="ec-ft" valign="middle" style="font-size:11px;line-height:1.8;color:#a7aaad;text-align:left"><div style="font-size:12px;font-weight:bold;color:#ffffff">${esc(BRAND.name)} · ${esc(BRAND.tagline)}</div><div>${esc(BRAND.address)}</div><div>${BRAND.phones.map(esc).join(' · ')}</div></td><td class="ec-ft" valign="middle" align="right" style="padding-left:12px;text-align:right"><a href="${esc(SITE_URL())}/newsletter/publicidade" style="display:inline-block;border:1px solid #a7aaad;color:#ffffff;font-size:11px;line-height:1.2;text-decoration:none;padding:9px 14px;white-space:nowrap">Ver espaços de publicidade</a></td></tr></table><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;border-top:1px solid #6b7278"><tr><td valign="middle" style="padding-top:12px;font-size:11px;line-height:1.6;color:#a7aaad;text-align:left">Recebe este e-mail porque subscreveu a newsletter. <a href="${esc(unsub)}" style="color:#7fd35a;text-decoration:underline">Cancelar subscrição</a></td><td class="ec-soc" valign="middle" align="right" style="padding-top:12px;padding-left:12px;white-space:nowrap;text-align:right;font-size:0;line-height:0">${BRAND.social.map((n) => `<a href="${esc(n.url)}" style="display:inline-block;margin-left:10px;text-decoration:none"><img src="${esc(SITE_URL())}/images/social/${n.key}.png" alt="${esc(n.label)}" width="20" height="20" style="display:block;width:20px;height:20px;border:0"></a>`).join('')}</td></tr></table></td></tr>
+
+</table></td></tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#1d2327"><tr><td align="center" style="padding:0 10px"><table role="presentation" width="${EMAIL_WIDTH}" cellpadding="0" cellspacing="0" style="width:100%;max-width:${EMAIL_WIDTH}px">
+<tr><td align="left" style="padding:20px 0;font-size:11px;line-height:1.8;color:#a7aaad;text-align:left"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td class="ec-ft" valign="middle" style="font-size:11px;line-height:1.8;color:#a7aaad;text-align:left"><div style="font-size:12px;font-weight:bold;color:#ffffff">${esc(BRAND.name)} · ${esc(BRAND.tagline)}</div><div>${esc(BRAND.address)}</div><div>${BRAND.phones.map(esc).join(' · ')}</div></td><td class="ec-ft" valign="middle" align="right" style="padding-left:12px;text-align:right"><a class="ec-fbtn" href="${esc(SITE_URL())}/newsletter/publicidade" style="display:inline-block;border:1px solid #a7aaad;color:#ffffff;font-size:11px;line-height:1.2;text-decoration:none;padding:9px 14px;white-space:nowrap">Ver espaços de publicidade</a></td></tr></table><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;border-top:1px solid #6b7278"><tr><td valign="middle" style="padding-top:12px;font-size:11px;line-height:1.6;color:#a7aaad;text-align:left">Recebe este e-mail porque subscreveu a newsletter. <a href="${esc(unsub)}" style="color:#7fd35a;text-decoration:underline">Cancelar subscrição</a></td><td class="ec-soc" valign="middle" align="right" style="padding-top:12px;padding-left:12px;white-space:nowrap;text-align:right;font-size:0;line-height:0">${BRAND.social.map((n) => `<a href="${esc(n.url)}" style="display:inline-block;margin-left:10px;text-decoration:none"><img src="${esc(SITE_URL())}/images/social/${n.key}.png" alt="${esc(n.label)}" width="20" height="20" style="display:block;width:20px;height:20px;border:0"></a>`).join('')}</td></tr></table></td></tr>
 </table></td></tr></table></body></html>`;
   const text = `${BRAND.name} — as notícias de hoje (${day})\n${BRAND.address} · ${BRAND.phones.join(' · ')} · ${BRAND.emails.join(' · ')}\n\n${posts.map((p) => `${p.title}\nLer mais: ${link(p)}`).join('\n\n')}\n\nCancelar subscrição: ${unsub}\n`;
   return { subject: `EntreCAMPOS · as notícias de hoje (${day})`, html, text, headers: { 'List-Unsubscribe': `<${unsub}>` } };
@@ -189,6 +206,7 @@ async function deliver(posts: Post[], subscribers: Subscriber[]) {
   const [colors, adsData] = await Promise.all([getCategoryColors(), loadAds()]);
   const ads = activeBySlot(adsData);
   const adIds = Object.values(ads).map((a) => a.id);
+  const at = new Date().toISOString();
   const mailer = openMailer();
   let sent = 0;
   let failed = 0;
@@ -197,7 +215,7 @@ async function deliver(posts: Post[], subscribers: Subscriber[]) {
       await Promise.all(
         subscribers.slice(i, i + 5).map(async (s) => {
           try {
-            await mailer.send({ to: s.email, ...digestEmail(posts, s.email, colors, ads) });
+            await mailer.send({ to: s.email, ...digestEmail(posts, s.email, colors, ads, at) });
             sent++;
           } catch (e) {
             failed++;
@@ -210,7 +228,7 @@ async function deliver(posts: Post[], subscribers: Subscriber[]) {
     mailer.close();
   }
   await recordSent(adIds, sent).catch((e) => console.error('[newsletter] publicidade:', e instanceof Error ? e.message : e));
-  return { sent, failed, adIds };
+  return { sent, failed, adIds, at };
 }
 
 export type RunResult =
@@ -231,9 +249,9 @@ export async function runNewsletter({ dry = false }: { dry?: boolean } = {}): Pr
   if (dry) return { status: 'dry', ...base };
   if (!mailConfigured()) throw new Error('SMTP não configurado.');
 
-  const { sent, failed, adIds } = await deliver(queue, subscribers);
+  const { sent, failed, adIds, at } = await deliver(queue, subscribers);
   if (sent > 0) {
-    const record: SendRecord = { at: new Date().toISOString(), recipients: subscribers.length, sent, failed, news: queue.length, slugs: queue.map((p) => p.slug), ads: adIds };
+    const record: SendRecord = { at, recipients: subscribers.length, sent, failed, news: queue.length, slugs: queue.map((p) => p.slug), ads: adIds, tracked: true };
     await saveState({ lastSentAt: record.at, history: [record, ...state.history].slice(0, 30) });
   }
   return { status: 'sent', ...base, sent, failed };
@@ -252,10 +270,10 @@ export async function sendSelected(slugs: string[]): Promise<RunResult> {
   if (chosen.length === 0) return { status: 'skipped', reason: 'Nenhuma das notícias escolhidas foi encontrada.', ...base };
   if (subscribers.length === 0) return { status: 'skipped', reason: 'Ainda não há subscritores.', ...base };
   if (!mailConfigured()) throw new Error('SMTP não configurado.');
-  const { sent, failed, adIds } = await deliver(chosen, subscribers);
+  const { sent, failed, adIds, at } = await deliver(chosen, subscribers);
   if (sent > 0) {
     const state = await loadState();
-    const record: SendRecord = { at: new Date().toISOString(), recipients: subscribers.length, sent, failed, news: chosen.length, slugs: chosen.map((p) => p.slug), ads: adIds };
+    const record: SendRecord = { at, recipients: subscribers.length, sent, failed, news: chosen.length, slugs: chosen.map((p) => p.slug), ads: adIds, tracked: true };
     await saveState({ ...state, history: [record, ...state.history].slice(0, 30) });
   }
   return { status: 'sent', ...base, sent, failed };

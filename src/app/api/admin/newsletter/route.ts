@@ -3,7 +3,7 @@ import { requireAuth } from '@/lib/api-guard';
 import { getAllPosts } from '@/lib/news-data';
 import { getCategoryColors } from '@/lib/category-colors';
 import { defaultCategoryColor } from '@/lib/category-palette';
-import { getQueue, listSubscribers, loadSchedules, loadState, mailConfigured, removeSubscriber } from '@/lib/newsletter';
+import { getQueue, listSubscribers, loadSchedules, loadState, mailConfigured, removeSendRecord, removeSubscriber } from '@/lib/newsletter';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,11 +30,19 @@ export async function GET() {
   }
 }
 
-/** Retira um subscritor da lista. */
+/** Retira um subscritor da lista (`id`) ou um envio da lista de newsletters enviadas (`at`). */
 export async function DELETE(req: NextRequest) {
   const guard = await requireAuth('acesso_total');
   if ('error' in guard) return guard.error;
   const body = await req.json().catch(() => ({}));
+  if (typeof body.at === 'string' && body.at) {
+    try {
+      await removeSendRecord(body.at);
+      return NextResponse.json({ ok: true });
+    } catch (err: any) {
+      return NextResponse.json({ error: err?.message || 'Não foi possível eliminar.' }, { status: 502 });
+    }
+  }
   if (typeof body.id !== 'string' || !body.id) return NextResponse.json({ error: 'Subscritor inválido.' }, { status: 400 });
   try {
     await removeSubscriber({ id: body.id });

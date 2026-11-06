@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { Apple, ArrowDown, ArrowUp, Briefcase, CalendarClock, Facebook, Flower2, Instagram, Leaf, Lightbulb, Linkedin, Palmtree, Pencil, Save, Send, Sprout, Tag, Tractor, Trash2, Users, Utensils, X, type LucideIcon } from 'lucide-react';
 import AdminSelect from '@/components/Admin/AdminSelect';
-import { AD_SLOTS, BRAND, EMAIL_WIDTH, RED, categoryColor, categoryIcon, longDate } from '@/lib/newsletter-brand';
-import AdWireframe from '@/components/Newsletter/AdWireframe';
+import { AD_SLOTS, BRAND, EMAIL_WIDTH, LEAD_IMAGE_HEIGHT, RED, categoryColor, categoryIcon, longDate } from '@/lib/newsletter-brand';
+import AdSpacesPopup from '@/components/Newsletter/AdSpacesPopup';
 
 /** Logótipo oficial do WhatsApp (os outros vêm do lucide). */
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -94,7 +94,7 @@ export function EmailPreview({ item, editable, onRemove, onMove, onlyAds }: { it
     const ad = slot && bySlot[slot.key];
     return ad && slot ? <a href={ad.link} target="_blank" rel="noopener noreferrer" className="block"><img src={ad.image} alt={ad.advertiser} className="block h-auto w-full" style={{ maxHeight: slot.h }} /></a> : null;
   };
-  const headerAd = bySlot['cabecalho:caixa'];
+  const headerAd = bySlot['cabecalho'];
   const mid = Math.ceil(rest.length / 2); // «no meio das notícias»: depois da notícia em destaque e de metade dos cartões
   const tools = (slug: string, i: number) =>
     editable && (
@@ -119,7 +119,9 @@ export function EmailPreview({ item, editable, onRemove, onMove, onlyAds }: { it
   const more = (slug: string) => <a {...open(slug)} className="mt-3 inline-block bg-[#3e6611] px-3 py-1.5 text-[11px] text-white transition-colors hover:bg-[#d6101c] sm:px-5 sm:py-2.5 sm:text-[13px]">Ler mais</a>;
 
   return (
-    <div className="mx-auto w-full space-y-3" style={{ maxWidth: EMAIL_WIDTH }}>
+    <div className="bg-[#f0f0f1]">
+      <div className="mx-auto w-full px-3 sm:px-5" style={{ maxWidth: EMAIL_WIDTH + 40 }}>
+      <div className="space-y-3 pb-3 pt-3 sm:pt-5">
       {adRow('topo')}
       <div className="flex flex-col items-stretch overflow-hidden border-b-4 bg-white sm:flex-row" style={{ borderBottomColor: RED }}>
         {/* O símbolo tem 10px de espaço em cima, à esquerda e em baixo (à direita não). */}
@@ -131,7 +133,12 @@ export function EmailPreview({ item, editable, onRemove, onMove, onlyAds }: { it
         <div className="flex min-w-0 flex-1 items-center px-[10px] pb-3 pt-0 text-left text-[9px] leading-relaxed text-[#50575e] sm:px-6 sm:py-2 sm:text-[12px]">
           <div><div className="mb-1 text-[12px] font-bold leading-tight text-[#1d2327] sm:text-[16px]">{BRAND.headline}</div>{BRAND.address}<br />{BRAND.phones.join(' · ')}<br />{BRAND.emails.join(' · ')}</div>
         </div>
-        {headerAd && <a href={headerAd.link} target="_blank" rel="noopener noreferrer" className="shrink-0 self-center px-[10px] pb-3 sm:py-[10px] sm:pl-0"><img src={headerAd.image} alt={headerAd.advertiser} className="block h-[92px] w-[200px] max-w-full object-cover" /></a>}
+        {/* Sem anúncio, o espaço do cabeçalho mostra um cartão cinzento «Publicite aqui» */}
+        {headerAd ? (
+          <a href={headerAd.link} target="_blank" rel="noopener noreferrer" className="shrink-0 self-center px-[10px] pb-3 sm:py-[10px] sm:pl-0"><img src={headerAd.image} alt={headerAd.advertiser} className="block h-[120px] w-[230px] max-w-full object-cover" /></a>
+        ) : (
+          <a href="/newsletter/publicidade" target="_blank" rel="noopener noreferrer" className="shrink-0 self-center px-[10px] pb-3 sm:py-[10px] sm:pl-0"><span className="flex h-[120px] w-[230px] max-w-full items-center justify-center bg-[#e4e6e8] text-[11px] text-[#50575e] sm:text-[13px]">Publicite aqui</span></a>
+        )}
       </div>
 
       {adRow('depois')}
@@ -141,7 +148,7 @@ export function EmailPreview({ item, editable, onRemove, onMove, onlyAds }: { it
       ) : (
         <div className="relative border border-[#e3e3e3] bg-white">
           {tools(lead.slug, 0)}
-          {lead.image && <a {...open(lead.slug)} className="block"><img src={lead.image} alt="" loading="lazy" className="block h-auto w-full" /></a>}
+          {lead.image && <a {...open(lead.slug)} className="block"><img src={lead.image} alt="" loading="lazy" className="block w-full object-cover" style={{ aspectRatio: `${EMAIL_WIDTH} / ${LEAD_IMAGE_HEIGHT}` }} /></a>}
           <div className="px-4 pb-4 pt-4 sm:px-6 sm:pb-6 sm:pt-5">
             {tag(lead)}
             <a {...open(lead.slug)} className="mb-1.5 mt-2 block text-[14px] font-bold leading-snug text-[#1d2327] transition-colors hover:text-[#d6101c] sm:mt-2.5 sm:text-[23px] sm:leading-tight">{lead.title}</a>
@@ -175,14 +182,20 @@ export function EmailPreview({ item, editable, onRemove, onMove, onlyAds }: { it
 
       {adRow('rodape')}
 
-      <div className="bg-[#1d2327] px-4 py-4 text-left text-[9px] leading-relaxed text-[#a7aaad] sm:px-6 sm:py-5 sm:text-[11px]">
+      </div>
+      </div>
+
+      {/* Rodapé: a faixa escura ocupa a largura toda e encosta em baixo; o conteúdo mantém a largura do conteúdo */}
+      <div className="bg-[#1d2327]">
+        <div className="mx-auto w-full px-3 sm:px-5" style={{ maxWidth: EMAIL_WIDTH + 40 }}>
+<div className="py-4 text-left text-[9px] leading-relaxed text-[#a7aaad] sm:py-5 sm:text-[11px]">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
           <div>
             <div className="text-[10px] font-bold text-white sm:text-[12px]">{BRAND.name} · {BRAND.tagline}</div>
             <div>{BRAND.address}</div>
             <div>{BRAND.phones.join(' · ')}</div>
           </div>
-          <button onClick={() => setSpaces(true)} className="border border-[#a7aaad] px-3 py-2 text-[10px] text-white hover:border-[#7fd35a] hover:text-[#7fd35a] sm:text-[11px]">Ver espaços de publicidade</button>
+          <button onClick={() => setSpaces(true)} className="border border-[#a7aaad] px-3 py-2 text-[10px] text-white max-sm:w-full hover:border-[#7fd35a] hover:text-[#7fd35a] sm:text-[11px]">Ver espaços de publicidade</button>
         </div>
         <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#6b7278] pt-3">
           <span>Recebe este e-mail porque subscreveu a newsletter. <span className="text-[#7fd35a] underline">Cancelar subscrição</span></span>
@@ -191,18 +204,17 @@ export function EmailPreview({ item, editable, onRemove, onMove, onlyAds }: { it
           </span>
         </div>
       </div>
+        </div>
+      </div>
 
       {spaces && (
         <div role="dialog" aria-modal="true" aria-label="Espaços de publicidade" className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-3 sm:p-8" onClick={() => setSpaces(false)}>
-          <div className="relative w-full max-w-[760px] bg-white p-4 text-[#2c3338] sm:p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-[18px] text-[#1d2327]">Espaços de publicidade</h3>
-                <p className="mt-1 text-[13px] text-[#50575e]">Onde a publicidade pode aparecer na newsletter, com o tamanho e o custo de cada espaço.</p>
-              </div>
-              <button onClick={() => setSpaces(false)} aria-label="Fechar" className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#ccd0d4] text-[#50575e] hover:text-[#00a651]"><X className="h-4 w-4" /></button>
-            </div>
-            <AdWireframe prices={prices} />
+          <div className="relative w-full max-w-[760px]" onClick={(e) => e.stopPropagation()}>
+            <AdSpacesPopup
+              prices={prices}
+              headerAction={<button onClick={() => setSpaces(false)} aria-label="Fechar" className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center border border-[#ccd0d4] bg-white text-[#50575e] hover:text-[#00a651]"><X className="h-4 w-4" /></button>}
+              footerAction={<button onClick={() => setSpaces(false)} className="flex h-9 w-full items-center justify-center gap-2 border border-[#ccd0d4] bg-white text-[13px] text-[#1d2327] hover:text-[#00a651]"><X className="h-4 w-4" /> Fechar</button>}
+            />
           </div>
         </div>
       )}
@@ -355,9 +367,7 @@ export function NewsletterPreviews({ schedules, subscribers, smtp, onChange, set
               </button>
             )}
           </div>
-          <div className="bg-[#f0f0f1] p-3 sm:p-5">
-            <EmailPreview item={s} editable onRemove={(slug) => act({ id: s.id, remove: slug })} onMove={(slug, dir) => act({ id: s.id, move: { slug, dir } })} />
-          </div>
+          <EmailPreview item={s} editable onRemove={(slug) => act({ id: s.id, remove: slug })} onMove={(slug, dir) => act({ id: s.id, move: { slug, dir } })} />
         </section>
       ))}
     </div>

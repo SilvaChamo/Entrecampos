@@ -5,6 +5,7 @@ import { BarChart3, Database, FileText, Globe, Megaphone, Monitor, RefreshCw, Se
 import Spinner from '@/components/Common/Spinner';
 import AdminSelect from '@/components/Admin/AdminSelect';
 import { slotLabel } from '@/lib/newsletter-brand';
+import NewsletterReport from '@/components/Admin/NewsletterReport';
 
 type Daily = { day: string; views: number; visitors: number };
 type Stats = {
@@ -301,6 +302,8 @@ export default function TrafegoPage() {
             />
             <BarList title="Origem do tráfego (30 dias)" icon={Search} rows={stats.referrers.map((r) => ({ label: r.referrer, views: r.views }))} />
           </div>
+
+          <div className="mt-3 md:mt-8"><NewsletterReport /></div>
 
           <section className={`${card} mt-3 md:mt-8`}>
             <h2 className="mb-1 flex items-center gap-2 text-lg font-normal text-gray-700"><Megaphone className="h-5 w-5 text-[#00a651]" /> Publicidade na newsletter</h2>

@@ -119,6 +119,19 @@ export default function NewsletterPage() {
     }
   };
 
+  const removeSend = async (at: string) => {
+    setConfirmDelete(null);
+    try {
+      const res = await fetch('/api/admin/newsletter', { method: 'DELETE', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ at }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Erro ${res.status} ao eliminar.`);
+      setNotice('Newsletter eliminada da lista.');
+      await load();
+    } catch (err: any) {
+      setError(err?.message || 'Não foi possível eliminar.');
+    }
+  };
+
   const sendNow = async () => {
     setConfirmSend(false);
     setBusy('send');
@@ -199,9 +212,7 @@ export default function NewsletterPage() {
                 {posts.length === 0 ? (
                   <p className="rounded-lg border border-[#ccd0d4] p-6 text-center text-[13px] text-[#50575e]">O conteúdo deste envio não ficou guardado.</p>
                 ) : (
-                  <div className="bg-[#f0f0f1] p-3 sm:p-5">
-                    <EmailPreview item={{ id: rec.at, at: rec.at, slugs: posts.map((p) => p.slug), status: 'sent', posts }} editable={false} onRemove={() => {}} onMove={() => {}} onlyAds={rec.ads ?? []} />
-                  </div>
+                  <EmailPreview item={{ id: rec.at, at: rec.at, slugs: posts.map((p) => p.slug), status: 'sent', posts }} editable={false} onRemove={() => {}} onMove={() => {}} onlyAds={rec.ads ?? []} />
                 )}
               </div>
             );
@@ -300,9 +311,21 @@ export default function NewsletterPage() {
                       <span className="text-[#50575e]">Enviados: {h.sent} de {h.recipients}</span>
                       <span className={h.failed > 0 ? 'text-[#d63638]' : 'text-[#50575e]'}>Falhas: {h.failed}</span>
                     </div>
-                    <button onClick={() => setViewAt(h.at)} className={`${btn} border border-[#ccd0d4] bg-white text-[#50575e] hover:text-[#00a651] max-sm:w-full max-sm:justify-center`}>
-                      <Eye className="h-4 w-4" /> Ver
-                    </button>
+                    <div className="flex items-center gap-2 max-sm:w-full max-sm:flex-wrap">
+                      <button onClick={() => setViewAt(h.at)} className={`${btn} border border-[#ccd0d4] bg-white text-[#50575e] hover:text-[#00a651] max-sm:flex-1 max-sm:justify-center`}>
+                        <Eye className="h-4 w-4" /> Ver
+                      </button>
+                      {confirmDelete === `send:${h.at}` ? (
+                        <>
+                          <button onClick={() => removeSend(h.at)} className={`${btn} bg-[#d63638] text-white max-sm:flex-1 max-sm:justify-center`}>Sim, eliminar</button>
+                          <button onClick={() => setConfirmDelete(null)} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651] max-sm:flex-1 max-sm:justify-center`}>Cancelar</button>
+                        </>
+                      ) : (
+                        <button onClick={() => setConfirmDelete(`send:${h.at}`)} className={`${btn} border border-[#ccd0d4] bg-white text-red-600 hover:text-[#00a651] max-sm:flex-1 max-sm:justify-center`}>
+                          <Trash2 className="h-4 w-4" /> Eliminar
+                        </button>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>

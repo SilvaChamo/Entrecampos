@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ImagePlus, Plus, Save, Trash2 } from 'lucide-react';
 import AdminSelect from '@/components/Admin/AdminSelect';
 import { uploadToLibrary } from '@/components/Admin/ImageChooser';
-import { AD_POSITIONS, AD_SLOTS, adSizeName, formatPrice, slotLabel } from '@/lib/newsletter-brand';
+import { AD_LETTER, AD_POSITIONS, AD_SLOTS, adMeasure, formatPrice, slotLabel } from '@/lib/newsletter-brand';
 
 type Ad = { id: string; slot: string; advertiser: string; image: string; link: string; active: boolean; createdAt: string };
 type Stat = { sent: number; clicks: number; people: number };
@@ -60,7 +60,7 @@ export default function NewsletterAds({ setNotice, setError }: { setNotice: (v: 
     if (!f) return;
     const max = AD_SLOTS.find((x) => x.key === slot)!.kb;
     if (f.size > max * 1024) {
-      setError(`A imagem pesa ${Math.ceil(f.size / 1024)} KB; este espaço aceita no máximo ${max} KB.`);
+      setError(`A imagem pesa ${Math.ceil(f.size / 1024)} KB; o Tamanho deste espaço é de ${max} KB.`);
       if (file.current) file.current.value = '';
       return;
     }
@@ -76,7 +76,8 @@ export default function NewsletterAds({ setNotice, setError }: { setNotice: (v: 
     }
   }
 
-  const size = AD_SLOTS.find((s) => s.key === slot)!;
+  const cur = AD_SLOTS.find((s) => s.key === slot)!;
+  const size = (k: string) => adMeasure(AD_SLOTS.find((y) => y.key === k)!);
   const stats = data?.stats ?? {};
 
   return (
@@ -88,8 +89,8 @@ export default function NewsletterAds({ setNotice, setError }: { setNotice: (v: 
           {AD_SLOTS.map((s) => (
             <div key={s.key} className="flex flex-wrap items-center justify-between gap-2 border-b border-[#f0f0f1] px-3 py-2 last:border-0 max-sm:flex-col max-sm:items-stretch">
               <div className="text-[13px]">
-                <span className="font-bold text-[#1d2327]">{AD_POSITIONS[s.position]}</span>
-                <span className="ml-2 text-[#50575e]">{adSizeName(s.size)} · {s.w} × {s.h} px · até {s.kb} KB</span>
+                <span className="block font-bold text-[#1d2327]">{AD_LETTER[s.position]} · {AD_POSITIONS[s.position]}</span>
+                <span className="block text-[#50575e]">{adMeasure(s)}</span>
               </div>
               <input type="number" min={0} inputMode="numeric" value={prices[s.key] ?? ''} onChange={(e) => setPrices({ ...prices, [s.key]: e.target.value })} placeholder="Sob consulta" className={`${field} w-40 max-sm:w-full`} aria-label={`Custo: ${slotLabel(s.key)}`} />
             </div>
@@ -100,9 +101,9 @@ export default function NewsletterAds({ setNotice, setError }: { setNotice: (v: 
 
       <section>
         <h3 className="mb-1 text-[#1d2327]">Novo anúncio</h3>
-        <p className="mb-3 text-[13px] text-[#50575e]">O anúncio aparece nos próximos envios, no espaço escolhido, sem qualquer legenda. Use uma imagem de {size.w} × {size.h} px, com no máximo {size.kb} KB.</p>
+        <p className="mb-3 text-[13px] text-[#50575e]">O anúncio aparece nos próximos envios, no espaço escolhido, sem qualquer legenda. Use uma imagem de {adMeasure(cur)}.</p>
         <div className="grid gap-3 sm:grid-cols-2">
-          <AdminSelect value={slot} onChange={(e) => setSlot(e.target.value)} className="h-10 w-full border border-[#ccd0d4] bg-white px-3 text-[13px]">
+          <AdminSelect value={slot} onChange={(e) => setSlot(e.target.value as typeof slot)} className="h-10 w-full border border-[#ccd0d4] bg-white px-3 text-[13px]">
             {AD_SLOTS.map((s) => <option key={s.key} value={s.key}>{slotLabel(s.key)} · {formatPrice(data?.prices[s.key])}</option>)}
           </AdminSelect>
           <input value={advertiser} onChange={(e) => setAdvertiser(e.target.value)} placeholder="Anunciante" className={field} />
@@ -133,7 +134,7 @@ export default function NewsletterAds({ setNotice, setError }: { setNotice: (v: 
                   <img src={ad.image} alt="" className="h-12 w-20 shrink-0 border border-[#ccd0d4] object-cover" />
                   <div className="min-w-0 flex-1 max-sm:basis-full">
                     <div className="truncate text-[#1d2327]">{ad.advertiser}</div>
-                    <div className="text-[12px] text-[#50575e]"><span className="font-bold text-[#1d2327]">{AD_POSITIONS[AD_SLOTS.find((x) => x.key === ad.slot)!.position]}</span> · {slotLabel(ad.slot).split(' · ').slice(1).join(' · ')}</div>
+                    <div className="text-[12px] text-[#50575e]">{AD_SLOTS.some((x) => x.key === ad.slot) ? <><span className="font-bold text-[#1d2327]">{AD_POSITIONS[ad.slot as keyof typeof AD_POSITIONS]}</span> — {size(ad.slot)}</> : 'Espaço antigo (já não existe)'}</div>
                     <div className="text-[12px] text-[#50575e]">Alcançados: {st?.sent ?? 0} · Cliques: {st?.clicks ?? 0} · Pessoas que clicaram: {st?.people ?? 0}</div>
                   </div>
                   <button disabled={busy} onClick={() => call('PATCH', { id: ad.id, active: !ad.active }, ad.active ? 'Anúncio desligado.' : 'Anúncio ligado.')} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651] max-sm:flex-1 ${ad.active ? 'text-[#00a651]' : 'text-[#50575e]'}`}>{ad.active ? 'Ligado' : 'Desligado'}</button>
