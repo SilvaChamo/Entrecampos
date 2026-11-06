@@ -22,6 +22,13 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   compress: true,
   poweredByHeader: false,
+  // /webmail abre o Roundcube do servidor de e-mail (o site está na Vercel, não no servidor onde está o webmail)
+  async redirects() {
+    return [
+      { source: '/webmail/:path*', destination: 'https://webmail.entrecamposblog.com/', permanent: false },
+      { source: '/roundcube/:path*', destination: 'https://webmail.entrecamposblog.com/', permanent: false },
+    ];
+  },
   // Ficheiros estáticos do site ficam 7 dias no navegador; o painel e a API nunca vão para cache.
   async headers() {
     return [
