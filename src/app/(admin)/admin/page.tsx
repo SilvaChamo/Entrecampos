@@ -6,13 +6,20 @@ import { useAuth } from '@/context/AuthContext';
 import Spinner from '@/components/Common/Spinner';
 
 export default function AdminPageRedirect() {
-  const { user, loading } = useAuth();
+  const { user, loading, realRole, setViewAs } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
         router.push('/login');
+        return;
+      }
+
+      // Ao entrar, o administrador vai sempre para o Dashboard (com o menu Dashboard aberto), mesmo que na visita anterior estivesse a ver o painel de outro papel.
+      if (realRole === 'admin') {
+        setViewAs(null);
+        router.push('/admin/dashboard');
         return;
       }
 
@@ -34,7 +41,7 @@ export default function AdminPageRedirect() {
           router.push('/admin/dashboard');
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, realRole, setViewAs, router]);
 
   return (
     <div className="min-h-screen bg-[#f0f0f1] flex items-center justify-center">

@@ -4,7 +4,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
-import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, Menu, X, Clock, CheckSquare, MessageSquare, Mail, ShieldCheck, Pencil, FilePlus, Eye } from 'lucide-react';
+import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, LogIn, Menu, X, Clock, CheckSquare, MessageSquare, Mail, ShieldCheck, Pencil, FilePlus, Eye } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import { prefetchAdminNews } from '@/lib/admin-cache';
 
@@ -145,6 +145,23 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   // Galeria aberta só para escolher uma foto (a partir da notícia): já abre sem a barra lateral, sem a ver encolher.
   const [snapSidebar, setSnapSidebar] = useState(false);
+  // Foto da conta: a do perfil ou, se não houver, a do Gravatar (ligada ao e-mail). Sem foto, mostra o ícone.
+  const [gravatar, setGravatar] = useState<string | null>(null);
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const accountEmail = user?.email || '';
+  useEffect(() => {
+    setPhotoFailed(false);
+    setGravatar(null);
+    if (!accountEmail || typeof crypto === 'undefined' || !crypto.subtle) return;
+    let alive = true;
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(accountEmail.trim().toLowerCase())).then((buf) => {
+      const hex = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+      if (alive) setGravatar(`https://www.gravatar.com/avatar/${hex}?d=404&s=64`);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, [accountEmail]);
+  const photo = photoFailed ? null : (user?.avatarUrl || gravatar);
+  const ROLE_NAME: Record<string, string> = { admin: 'Administrador', editor: 'Editor', contribuidor: 'Contribuidor', guest: 'Visitante' };
   useLayoutEffect(() => {
     if (!new URLSearchParams(window.location.search).has('escolher')) return;
     setSnapSidebar(true);
@@ -505,11 +522,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         )}
         {/* Sidebar (Menu Lateral): no telemóvel é uma gaveta (fechada ao entrar); no ecrã grande, a barra de sempre */}
         <aside
-          className={`bg-[#1a3326] flex-shrink-0 transition-transform duration-200 max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-12 max-lg:z-[95] max-lg:w-72 max-lg:max-w-[85vw] max-lg:overflow-y-auto ${
+          className={`bg-[#1a3326] flex-shrink-0 transition-transform duration-200 flex flex-col max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-12 max-lg:z-[95] max-lg:w-72 max-lg:max-w-[85vw] ${
             mobileMenuOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'
           } ${snapSidebar ? '' : 'lg:transition-all'} ${isSidebarOpen ? 'lg:w-56' : 'lg:w-0 lg:overflow-hidden'}`}
         >
-          <nav className="mt-0">
+          <nav className="mt-0 min-h-0 flex-1 max-lg:overflow-y-auto">
             {menuItems.map((item) => {
               const isChildActive = (item as any).submenu?.some((sub: any) => pathname === sub.href);
               const isParentActive = pathname === item.href;
@@ -530,6 +547,20 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               );
             })}
           </nav>
+
+          {/* Conta com sessão iniciada: foto, e-mail e tipo de conta, no fundo escuro dos submenus. O botão de recolher fica fora da barra, na mesma linha. */}
+          <div className="flex shrink-0 items-center gap-2.5 bg-[#0c1b13] px-4 py-3" title={user?.email || ''}>
+            {photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photo} alt="" referrerPolicy="no-referrer" onError={() => setPhotoFailed(true)} className="h-8 w-8 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1f3a2b] text-[#f0f0f1]"><UserIcon className="h-4 w-4" /></span>
+            )}
+            <span className="min-w-0 leading-tight">
+              <span className="block truncate text-[12px] text-[#f0f0f1]">{user?.email || user?.name || 'Visitante'}</span>
+              <span className="block truncate text-[11px] text-[#8fb39d]">{ROLE_NAME[realRole || user?.role || 'guest']}</span>
+            </span>
+          </div>
         </aside>
 
         {/* Main Content Area */}
@@ -537,9 +568,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           {/* Toggle Sidebar Button */}
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="max-lg:hidden fixed bottom-4 left-4 z-50 p-2 bg-[#1a3326] text-[#f0f0f1] rounded-full shadow-lg hover:bg-[#1f3a2b]"
+            aria-label={isSidebarOpen ? 'Recolher a barra lateral' : 'Expandir a barra lateral'}
+            title={isSidebarOpen ? 'Recolher a barra lateral' : 'Expandir a barra lateral'}
+            className={`max-lg:hidden fixed bottom-[10px] z-50 rounded-r-md bg-[#1a3326] p-2 text-[#f0f0f1] shadow-lg transition-[left] duration-200 hover:text-[#39ff14] ${isSidebarOpen ? 'left-56' : 'left-0'}`}
           >
-            {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {/* Expandir: seta a entrar; recolher: o mesmo ícone virado ao contrário */}
+            <LogIn className={`h-5 w-5 ${isSidebarOpen ? '-scale-x-100' : ''}`} />
           </button>
 
           <div className="w-full">
