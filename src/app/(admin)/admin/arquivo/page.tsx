@@ -153,6 +153,17 @@ export default function ArquivoPage() {
         active="arquivo"
         slots={!!aberta}
         onArquivoClick={() => { setAberta(null); setSelCount(0); }}
+        mobileAction={aberta ? undefined : (
+          <button onClick={() => setCreating((c) => !c)} className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[3px] bg-[#00a651] px-3 text-[13px] text-white">
+            <FolderPlus className="h-4 w-4" /> Nova pasta
+          </button>
+        )}
+        mobileBelow={aberta ? undefined : (
+          <div className="relative">
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar pasta…" aria-label="Procurar pasta" className="h-9 w-full min-w-0 rounded-[3px] border border-[#ccd0d4] pl-8 pr-2 text-[13px] outline-none focus:border-[#00a651]" />
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#50575e]" />
+          </div>
+        )}
         right={
           aberta ? (
             <div className="relative flex items-center gap-2">

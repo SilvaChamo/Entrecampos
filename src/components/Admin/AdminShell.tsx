@@ -4,7 +4,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
-import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, Menu, X, Clock, CheckSquare, MessageSquare, Mail } from 'lucide-react';
+import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, Menu, X, Clock, CheckSquare, MessageSquare, Mail, ShieldCheck, Pencil, FilePlus, Eye } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import { prefetchAdminNews } from '@/lib/admin-cache';
 
@@ -451,25 +451,27 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
           <div className={`absolute right-0 top-full w-56 bg-[#1f3a2b] shadow-lg border border-[#2b4a39] p-1 rounded-md lg:group-hover:block ${userMenuOpen ? 'block' : 'hidden'}`}>
             <div className="sm:hidden px-3 py-1.5 text-[12px] text-gray-300 border-b border-[#2b4a39] mb-1 capitalize break-words">{user?.name || 'Visitante'} · {user?.role || 'guest'}</div>
-            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[12px] rounded-md transition-colors">
+            <Link href="/admin/perfil" className="flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#39ff14] text-[12px] rounded-md transition-colors">
               <UserIcon className="w-4 h-4" /> Ver Perfil
             </Link>
+            <div className="mt-1 h-px bg-[#00a651]/40" />
             {/* Quick role switch for testing */}
-            <div className="-mx-1 mt-1 bg-[#12251a] px-4 py-1.5 text-[11px] tracking-wide text-gray-300 uppercase">Trocar papel</div>
+            <div className="-mx-1 flex h-9 items-center bg-[#12251a] px-4 text-[11px] tracking-wide text-gray-300 uppercase">Trocar papel</div>
             <div className="divide-y divide-[#2b4a39] border-y border-[#2b4a39]">
             {(['admin', 'editor', 'contribuidor', 'guest'] as UserRole[]).map(r => (
               <button 
                 key={r}
                 onClick={() => setRole(r)}
-                className={`w-full rounded-md px-3 py-1.5 text-left text-[12px] capitalize hover:bg-[#2b4a39] hover:text-[#72aee6] ${user?.role === r ? 'font-medium text-[#72aee6]' : 'text-gray-200'}`}
+                className={`flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-[12px] capitalize transition-colors hover:text-[#39ff14] ${user?.role === r ? 'text-[#39ff14]' : 'text-gray-200'}`}
               >
+                {(() => { const RI = { admin: ShieldCheck, editor: Pencil, contribuidor: FilePlus, guest: Eye }[r]; return <RI className="h-4 w-4" />; })()}
                 {r === 'guest' ? 'Visitante' : r}
               </button>
             ))}
             </div>
             <button 
               onClick={handleLogout}
-              className="mt-1 flex w-full items-center gap-2 rounded-md bg-[#12251a] px-3 py-2 text-[13px] text-[#f0f0f1] transition-colors hover:text-[#ff3333]"
+              className="mt-1 flex h-9 w-full items-center gap-2 rounded-md bg-[#12251a] px-3 text-[13px] text-[#f0f0f1] transition-colors hover:text-[#ff3333]"
             >
               <LogOut className="w-4 h-4" /> Sair
             </button>
