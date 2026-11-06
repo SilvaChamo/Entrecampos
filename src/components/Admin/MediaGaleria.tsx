@@ -81,9 +81,18 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
       }
     : undefined;
 
+  const visibleTabs = TABS.filter((t) => t.id !== 'partilhado' || canSeeShared);
   const tabs = (
-    <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2">
-      {TABS.filter((t) => t.id !== 'partilhado' || canSeeShared).map((t) => (
+    <>
+    <select
+      value={source}
+      onChange={(e) => { setSource(e.target.value as MediaSource); setPasta(''); }}
+      className="h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none md:hidden"
+    >
+      {visibleTabs.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+    </select>
+    <div className="hidden flex-nowrap items-center gap-1.5 sm:gap-2 md:flex">
+      {visibleTabs.map((t) => (
         <button
           key={t.id}
           type="button"
@@ -95,6 +104,7 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
         </button>
       ))}
     </div>
+    </>
   );
 
   return (

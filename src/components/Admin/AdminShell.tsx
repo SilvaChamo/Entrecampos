@@ -455,7 +455,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               <UserIcon className="w-4 h-4" /> Ver Perfil
             </Link>
             {/* Quick role switch for testing */}
-            <div className="border-t border-[#2b4a39] mt-1 px-3 pb-1 pt-2 text-[13px] font-semibold tracking-wide text-gray-300 uppercase">Trocar papel</div>
+            <div className="-mx-1 mt-1 bg-[#12251a] px-4 py-1.5 text-[11px] tracking-wide text-gray-300 uppercase">Trocar papel</div>
             <div className="divide-y divide-[#2b4a39] border-y border-[#2b4a39]">
             {(['admin', 'editor', 'contribuidor', 'guest'] as UserRole[]).map(r => (
               <button 
@@ -469,7 +469,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             </div>
             <button 
               onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-[#f0f0f1] hover:text-[#ff3333] text-[12px] border-t border-[#2b4a39] mt-2 rounded-md transition-colors"
+              className="mt-1 flex w-full items-center gap-2 rounded-md bg-[#12251a] px-3 py-2 text-[13px] text-[#f0f0f1] transition-colors hover:text-[#ff3333]"
             >
               <LogOut className="w-4 h-4" /> Sair
             </button>

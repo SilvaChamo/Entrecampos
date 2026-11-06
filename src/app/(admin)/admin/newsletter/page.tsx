@@ -170,7 +170,18 @@ export default function NewsletterPage() {
 
           {/* Separadores */}
           <div className="flex flex-wrap items-end justify-between gap-2">
-          <div role="tablist" className="flex gap-1">
+          {(() => {
+            const tabList = [
+              ['news', `Notícias em fila (${data.queue.length})`],
+              ['subscribers', `Lista de subscritores (${data.subscribers.length})`],
+            ] as const;
+            return (
+              <select value={tab} onChange={(e) => setTab(e.target.value as 'news' | 'subscribers')} className="h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none md:hidden">
+                {tabList.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+              </select>
+            );
+          })()}
+          <div role="tablist" className="hidden gap-1 md:flex">
             {([
               ['news', `Notícias em fila (${data.queue.length})`],
               ['subscribers', `Lista de subscritores (${data.subscribers.length})`],

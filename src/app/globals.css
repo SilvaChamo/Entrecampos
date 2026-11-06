@@ -508,6 +508,17 @@ body {
   .ec-page { padding: 12px; }
   .ec-page > * { margin-top: 0 !important; margin-bottom: 12px !important; }
   .ec-page > :last-child { margin-bottom: 0 !important; }
-  .ec-page h1 { font-size: clamp(17px, 5.6vw, 23px) !important; line-height: 1.3 !important; }
-  .ec-page h2 { font-size: clamp(14px, 4.4vw, 18px) !important; line-height: 1.35 !important; }
 }
+
+/* Telemóvel: letras em proporção com o layout. Os títulos e os números grandes encolhem com a largura do ecrã;
+   os campos de formulário têm 13px (a medida do painel) em vez dos 16px do navegador. */
+@media (max-width: 767px) {
+  .ec-admin main h1 { font-size: clamp(17px, 5.6vw, 23px) !important; line-height: 1.3 !important; }
+  .ec-admin main h2 { font-size: clamp(14px, 4.4vw, 18px) !important; line-height: 1.35 !important; }
+  .ec-admin main h3 { font-size: clamp(14px, 4.2vw, 16px) !important; }
+  .ec-admin main [class*="text-4xl"] { font-size: clamp(26px, 8vw, 36px) !important; }
+  .ec-admin main [class*="text-[22px]"], .ec-admin main [class*="text-[24px]"], .ec-admin main [class*="text-2xl"]:not(h1) { font-size: clamp(18px, 6vw, 22px) !important; }
+  .ec-admin main :is(td, th):not([class*="text-"]) { font-size: 14px; }
+  .ec-admin main :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea):not([class*="text-["]) { font-size: 13px; }
+}
+
