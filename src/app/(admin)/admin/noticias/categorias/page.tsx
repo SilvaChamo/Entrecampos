@@ -60,7 +60,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (color: str
         aria-label="Escolher a cor"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex h-10 items-center gap-1.5 px-3 border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7]"
+        className="flex h-9 items-center gap-1.5 px-3 border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7]"
       >
         <span className="flex flex-col items-center">
           <Palette className="w-4 h-4 text-[#1d2327]" />
@@ -124,7 +124,7 @@ function CategoryFormBox({
             type="text"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md bg-white"
+            className="w-full h-9 px-3 border border-[#ccd0d4] rounded-md bg-white"
             placeholder="Ex: Agricultura"
           />
         </div>
@@ -134,7 +134,7 @@ function CategoryFormBox({
             type="text"
             value={form.slug}
             onChange={(e) => setForm({ ...form, slug: e.target.value })}
-            className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md bg-white"
+            className="w-full h-9 px-3 border border-[#ccd0d4] rounded-md bg-white"
             placeholder="Ex: agricultura"
           />
         </div>
@@ -148,7 +148,7 @@ function CategoryFormBox({
             maxLength={DESCRIPTION_MAX}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="w-full min-h-10 px-3 py-2 border border-[#ccd0d4] rounded-md bg-white resize-y leading-5"
+            className="w-full min-h-9 px-3 py-2 border border-[#ccd0d4] rounded-md bg-white resize-y leading-5"
             placeholder="Breve descrição"
           />
         </div>
@@ -158,15 +158,15 @@ function CategoryFormBox({
           <label className="block text-sm font-medium text-[#1d2327] mb-1">Cor da etiqueta no site</label>
           <div className="flex items-center gap-2">
             <ColorPicker value={form.color} onChange={(color) => setForm({ ...form, color })} />
-            <span className="inline-flex h-10 items-center text-[11px] text-white" style={{ backgroundColor: form.color }}>
+            <span className="inline-flex h-9 items-center text-[11px] text-white" style={{ backgroundColor: form.color }}>
               <span className="px-3 font-bold uppercase leading-none tracking-wide">{form.name || 'Categoria'}</span>
             </span>
           </div>
         </div>
-        <button onClick={onSave} className="ml-2 flex h-10 items-center gap-2 px-4 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
+        <button onClick={onSave} className="ml-2 flex h-9 items-center gap-2 px-4 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
           <Save className="w-4 h-4" /> Guardar
         </button>
-        <button onClick={onCancel} className="flex h-10 items-center gap-2 px-4 border border-[#ccd0d4] bg-white rounded-md hover:bg-[#f6f7f7]">
+        <button onClick={onCancel} className="flex h-9 items-center gap-2 px-4 border border-[#ccd0d4] bg-white rounded-md hover:bg-[#f6f7f7]">
           <X className="w-4 h-4" /> Cancelar
         </button>
       </div>
@@ -286,7 +286,7 @@ export default function CategoriasPage() {
             </div>
             <button
               onClick={() => setIsAdding(true)}
-              className="flex h-10 items-center gap-2 px-4 bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
+              className="flex h-9 items-center gap-2 px-4 text-[13px] bg-[#00a651] text-white rounded-md hover:bg-[#008f45]"
             >
               <Plus className="w-4 h-4" /> Adicionar Categoria
             </button>

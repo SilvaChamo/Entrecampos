@@ -504,7 +504,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
             <label
               aria-disabled={uploadDisabled || !!folderList}
               title={uploadDisabled || folderList ? (source === 'partilhado' ? 'As fotos partilhadas chegam por e-mail.' : 'No Arquivo, as fotos adicionam-se dentro de cada pasta (menu Arquivo de fotos).') : undefined}
-              className={`inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-2 2xl:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-xs 2xl:text-sm font-semibold transition-all ${uploadDisabled || folderList ? 'cursor-not-allowed opacity-40' : 'hover:bg-[#f6f7f7] cursor-pointer'}`}
+              className={`inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap px-1.5 sm:px-2 2xl:px-3 text-center bg-white border border-[#00a651] text-[#008f45] rounded-[3px] text-[10px] sm:text-xs 2xl:text-sm transition-all ${uploadDisabled || folderList ? 'cursor-not-allowed opacity-40' : 'hover:bg-[#f6f7f7] cursor-pointer'}`}
             >
               {uploading ? 'A carregar...' : (<><span className="2xl:hidden">Adicionar</span><span className="hidden 2xl:inline">Adicionar ficheiros multimédia</span></>)}
               <input
@@ -694,7 +694,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   )}
                   <button 
                     onClick={() => { setIsBulkMode(false); setSelectedIds(new Set()); }}
-                    className="h-8 px-4 text-sm font-semibold border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
+                    className="h-8 px-4 text-sm border border-[#ccd0d4] rounded-md bg-white hover:bg-[#f6f7f7] whitespace-nowrap"
                   >
                     Cancelar
                   </button>
@@ -778,7 +778,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
             ),
             bulkSlot,
           )}
-          <div className={`grid ${fourCols ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 min-[1920px]:grid-cols-6 gap-2'}`}>
+          <div className={`grid ${fourCols ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 min-[1680px]:grid-cols-7 gap-2'}`}>
             {view !== 'lixo' && (zipOptions ?? []).map((z) => (
               <button
                 key={z.path}
@@ -815,7 +815,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
           </>
         ) : viewMode === 'grid' ? (
           /* Grid View - 7 COLUNAS */
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 min-[1920px]:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 min-[1680px]:grid-cols-7 gap-2">
             {paginatedFiles.map((file) => (
               <div 
                 key={file.name}
@@ -838,7 +838,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 )}
                 {pick && (
-                  <div className="absolute inset-x-0 bottom-0 bg-[#00a651] py-1 text-center text-xs font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">Usar esta foto</div>
+                  <div className="absolute inset-x-0 bottom-0 bg-[#00a651] py-1 text-center text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">Usar esta foto</div>
                 )}
               </div>
             ))}
@@ -936,11 +936,11 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                             setIsEditingImage(true);
                           };
                         }}
-                        className="px-4 py-1.5 bg-[#00a651] text-white text-sm font-semibold rounded-[3px] hover:bg-[#008f45]"
+                        className="px-4 py-1.5 bg-[#00a651] text-white text-sm rounded-[3px] hover:bg-[#008f45]"
                       >
                         Editar imagem
                       </button>
-                      <button onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')} className="px-4 py-1.5 border border-[#00a651] text-[#008f45] bg-white text-sm font-semibold rounded-[3px] hover:bg-[#f6f7f7]">
+                      <button onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')} className="px-4 py-1.5 border border-[#00a651] text-[#008f45] bg-white text-sm rounded-[3px] hover:bg-[#f6f7f7]">
                         Ver ficheiro completo
                       </button>
                     </div>
@@ -1021,13 +1021,13 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                           <button 
                             onClick={applyImageEdits}
                             disabled={processingImage}
-                            className="px-6 py-2 bg-[#00a651] text-white text-sm font-semibold rounded-[3px] hover:bg-[#008f45] disabled:opacity-50"
+                            className="px-6 py-2 bg-[#00a651] text-white text-sm rounded-[3px] hover:bg-[#008f45] disabled:opacity-50"
                           >
                             {processingImage ? 'A processar...' : 'Guardar Alterações'}
                           </button>
                           <button 
                             onClick={() => setIsEditingImage(false)}
-                            className="px-6 py-2 border border-[#ccd0d4] text-sm font-semibold rounded-[3px] hover:bg-[#f6f7f7]"
+                            className="px-6 py-2 border border-[#ccd0d4] text-sm rounded-[3px] hover:bg-[#f6f7f7]"
                           >
                             Cancelar
                           </button>
@@ -1106,7 +1106,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   <button 
                     onClick={saveMetadata}
                     disabled={savingMetadata}
-                    className="px-4 py-1.5 bg-[#00a651] text-white text-sm font-semibold rounded-[3px] hover:bg-[#008f45] disabled:opacity-50"
+                    className="px-4 py-1.5 bg-[#00a651] text-white text-sm rounded-[3px] hover:bg-[#008f45] disabled:opacity-50"
                   >
                     {savingMetadata ? 'A guardar...' : 'Salvar'}
                   </button>
@@ -1125,8 +1125,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
               Quer mesmo eliminar {pendingDel.single ? 'esta foto' : pendingDel.names.length === 1 ? 'a foto selecionada' : `as ${pendingDel.names.length} fotos selecionadas`}?
             </p>
             <div className="mt-5 flex justify-center gap-2">
-              <button type="button" onClick={() => setPendingDel(null)} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm font-semibold text-[#50575e] hover:bg-[#f6f7f7]">Cancelar</button>
-              <button type="button" onClick={async () => { const n = pendingDel.names; setPendingDel(null); await performDelete(n); }} className="rounded-[3px] bg-[#d63638] px-5 py-1.5 text-sm font-semibold text-white hover:bg-[#b32d2e]">Sim</button>
+              <button type="button" onClick={() => setPendingDel(null)} className="rounded-[3px] border border-[#ccd0d4] bg-white px-4 py-1.5 text-sm text-[#50575e] hover:bg-[#f6f7f7]">Cancelar</button>
+              <button type="button" onClick={async () => { const n = pendingDel.names; setPendingDel(null); await performDelete(n); }} className="rounded-[3px] bg-[#d63638] px-5 py-1.5 text-sm text-white hover:bg-[#b32d2e]">Sim</button>
             </div>
           </div>
         </div>

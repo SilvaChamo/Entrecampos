@@ -6,7 +6,7 @@ export default function ArquivoTabs({ active, right, onPartilhadasClick, onArqui
   const withSlots = slots ?? active === 'partilhadas'; // caixa de seleção antes e contador depois dos separadores
   // A linha verde do separador activo fica só por baixo das letras (com uma pequena folga nos lados).
   const tab = (on: boolean, first = false) =>
-    `relative ${first ? 'pl-0 pr-3' : 'px-3'} py-2 text-sm font-semibold ${on ? 'text-[#008f45]' : 'text-[#50575e] hover:text-[#008f45]'}`;
+    `relative ${first ? 'pl-0 pr-3' : 'px-3'} py-2 text-sm ${on ? 'text-[#008f45]' : 'text-[#50575e] hover:text-[#008f45]'}`;
   const line = (first = false) => <span aria-hidden="true" className={`absolute -bottom-px h-[2px] bg-[#00a651] ${first ? 'left-0 right-[10px]' : 'inset-x-[10px]'}`} />;
   return (
     <div className="mb-5 flex flex-wrap items-end justify-between gap-2 border-b border-[#ccd0d4]">

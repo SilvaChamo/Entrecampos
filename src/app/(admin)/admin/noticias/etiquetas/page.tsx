@@ -95,7 +95,7 @@ export default function EtiquetasPage() {
             placeholder="Pesquisar etiquetas..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-10 px-3 border border-[#ccd0d4] rounded-md w-full max-w-md"
+            className="h-9 px-3 border border-[#ccd0d4] rounded-md w-full max-w-md"
           />
         </div>
 
@@ -110,7 +110,7 @@ export default function EtiquetasPage() {
                   type="text"
                   value={newForm.name}
                   onChange={(e) => setNewForm({...newForm, name: e.target.value})}
-                  className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md"
+                  className="w-full h-9 px-3 border border-[#ccd0d4] rounded-md"
                   placeholder="Ex: Milho"
                 />
               </div>
@@ -120,7 +120,7 @@ export default function EtiquetasPage() {
                   type="text"
                   value={newForm.slug}
                   onChange={(e) => setNewForm({...newForm, slug: e.target.value})}
-                  className="w-full h-10 px-3 border border-[#ccd0d4] rounded-md"
+                  className="w-full h-9 px-3 border border-[#ccd0d4] rounded-md"
                   placeholder="Ex: milho"
                 />
               </div>

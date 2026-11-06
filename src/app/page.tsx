@@ -8,6 +8,7 @@ import CategorySection, { type CategoryGroup } from '@/components/Expnews/Catego
 import CategorySlide from '@/components/Expnews/CategorySlide';
 import CategoryStrip from '@/components/Expnews/CategoryStrip';
 import ReadingSuggestions from '@/components/Expnews/ReadingSuggestions';
+import ExchangeCard from '@/components/Expnews/ExchangeCard';
 import OpportunityList from '@/components/Expnews/OpportunityList';
 import NewsletterForm from '@/components/Forms/NewsletterForm';
 import NewsTicker from '@/components/Expnews/NewsTicker';
@@ -267,6 +268,8 @@ export default async function HomePrincipal() {
 
               {/* Coluna secundária (2.ª parte) */}
               <StickyColumn className="min-w-0 space-y-3">
+                <ExchangeCard />
+
                 <Card title="Mais lidas">
                   <ul className="space-y-3">
                     {popular.map((p) => (

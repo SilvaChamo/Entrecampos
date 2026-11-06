@@ -88,7 +88,7 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
           key={t.id}
           type="button"
           onClick={() => { setSource(t.id); setPasta(''); }}
-          className={`h-8 shrink-0 whitespace-nowrap rounded-[3px] border px-1.5 text-[10px] font-semibold sm:px-2 sm:text-xs 2xl:px-3 2xl:text-sm ${source === t.id ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
+          className={`h-8 shrink-0 whitespace-nowrap rounded-[3px] border px-1.5 text-[10px] sm:px-2 sm:text-xs 2xl:px-3 2xl:text-sm ${source === t.id ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:bg-[#f6f7f7]'}`}
         >
           <span className="2xl:hidden">{t.short}</span>
           <span className="hidden 2xl:inline">{t.label}</span>
@@ -102,7 +102,7 @@ function GaleriaInner({ initialSource = 'galeria', initialPasta = '', embedded, 
       {pick && (
         <div className="flex items-center justify-between gap-3 bg-[#00a651] px-6 py-2 text-white">
           <span className="text-sm font-semibold">Escolher foto</span>
-          <button type="button" onClick={backToNews} className="inline-flex items-center gap-1.5 text-sm font-semibold underline-offset-2 hover:underline">
+          <button type="button" onClick={backToNews} className="inline-flex items-center gap-1.5 text-sm underline-offset-2 hover:underline">
             <ArrowLeft className="h-4 w-4" /> Voltar à notícia
           </button>
         </div>

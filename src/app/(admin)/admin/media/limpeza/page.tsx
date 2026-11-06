@@ -188,7 +188,7 @@ export default function MediaCleanupPage() {
                 placeholder="Pesquisar entre as órfãs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#00a651] focus:ring-1 focus:ring-[#00a651]"
+                className="w-full h-9 pl-10 pr-4 border-[#ccd0d4] rounded-[3px] text-sm outline-none focus:border-[#00a651] focus:ring-1 focus:ring-[#00a651]"
               />
               <Search className="absolute left-3 top-3 w-4 h-4 text-[#50575e]" />
             </div>

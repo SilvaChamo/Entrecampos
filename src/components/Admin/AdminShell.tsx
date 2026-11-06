@@ -43,7 +43,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
             className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
               active 
                 ? 'bg-[#00a651] text-white border-[#00a651]' 
-                : 'text-[#f0f0f1] hover:text-white hover:bg-[#1f3a2b] hover:border-[#00a651]'
+                : 'text-[#f0f0f1] hover:text-white hover:bg-[#25442f] hover:border-[#00a651]'
             }`}
           >
             <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1">
@@ -65,7 +65,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
           <div className={`flex items-center justify-between px-4 py-2 text-[14px] transition-colors border-l-[3px] border-transparent ml-[10px] ${
             active 
               ? 'bg-[#00a651] text-white border-[#00a651]' 
-              : 'text-[#f0f0f1] hover:text-white hover:bg-[#1f3a2b] hover:border-[#00a651]'
+              : 'text-[#f0f0f1] hover:text-white hover:bg-[#25442f] hover:border-[#00a651]'
           }`}>
             <Link href={href} onClick={() => avisarNavegacao(href)} className="flex items-center gap-3 flex-1">
               <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#8c8f94] group-hover/item:text-white'}`} />
@@ -491,7 +491,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         )}
         {/* Sidebar (Menu Lateral): no telemóvel é uma gaveta (fechada ao entrar); no ecrã grande, a barra de sempre */}
         <aside
-          className={`bg-[#14281d] flex-shrink-0 transition-transform duration-200 max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-12 max-lg:z-[95] max-lg:w-72 max-lg:max-w-[85vw] max-lg:overflow-y-auto ${
+          className={`bg-[#1a3326] flex-shrink-0 transition-transform duration-200 max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-12 max-lg:z-[95] max-lg:w-72 max-lg:max-w-[85vw] max-lg:overflow-y-auto ${
             mobileMenuOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'
           } ${snapSidebar ? '' : 'lg:transition-all'} ${isSidebarOpen ? 'lg:w-56' : 'lg:w-0 lg:overflow-hidden'}`}
         >
@@ -523,7 +523,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           {/* Toggle Sidebar Button */}
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="max-lg:hidden fixed bottom-4 left-4 z-50 p-2 bg-[#14281d] text-[#f0f0f1] rounded-full shadow-lg hover:bg-[#1f3a2b]"
+            className="max-lg:hidden fixed bottom-4 left-4 z-50 p-2 bg-[#1a3326] text-[#f0f0f1] rounded-full shadow-lg hover:bg-[#1f3a2b]"
           >
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>

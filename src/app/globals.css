@@ -478,3 +478,24 @@ body {
 /* Barras de ferramentas fixas no scroll do painel: o conteúdo (main) é que rola, por isso a barra cola-se ao topo dele,
    logo por baixo da barra preta (e da barra vermelha do "ver como"). */
 .ec-admin .ec-sticky-bar { top: 0; }
+
+/* Ecrãs de 1900px ou mais: letra do painel maior (também nos botões, campos e separadores). As alturas dos botões e campos mantêm-se. */
+@media (min-width: 1900px) {
+  .ec-admin { font-size: 18px; }
+  .ec-admin [class*="text-[8px]"] { font-size: 10px !important; }
+  .ec-admin [class*="text-[9px]"] { font-size: 11px !important; }
+  .ec-admin [class*="text-[10px]"] { font-size: 12px !important; }
+  .ec-admin [class*="text-[11px]"] { font-size: 13px !important; }
+  .ec-admin [class*="text-[12px]"] { font-size: 14px !important; }
+  .ec-admin [class*="text-[13px]"] { font-size: 15px !important; }
+  .ec-admin [class*="text-[14px]"] { font-size: 16px !important; }
+  .ec-admin [class*="text-[15px]"] { font-size: 17px !important; }
+  .ec-admin [class*="text-[16px]"] { font-size: 18px !important; }
+  .ec-admin [class*="text-[17px]"] { font-size: 19px !important; }
+  .ec-admin [class*="text-[18px]"] { font-size: 20px !important; }
+  .ec-admin .text-xs { font-size: 14px !important; }
+  .ec-admin .text-sm { font-size: 16px !important; }
+  .ec-admin .text-base { font-size: 18px !important; }
+  .ec-admin .text-lg { font-size: 20px !important; }
+  .ec-admin [role="tab"] { font-size: 16px !important; }
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Download, FileUp, Send, Trash2, Upload } from 'lucide-react';
+import { Download, FileUp, Send, Trash2, Upload, UserPlus, X } from 'lucide-react';
 import { SkeletonContent, SkeletonHeader } from '@/components/Admin/Skeleton';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
 
@@ -12,8 +12,12 @@ type Summary = { subscribers: Subscriber[]; queue: QueueItem[]; lastSentAt: stri
 
 const PAGE_SIZE = 50;
 const fmt = (iso: string) => new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' });
-const btn = 'flex h-10 items-center gap-2 px-4 rounded-md whitespace-nowrap';
-const field = 'h-10 px-3 border border-[#ccd0d4] rounded-md bg-white';
+// Botões e campos desta página: 36px de altura e letra de 13px.
+const btn = 'flex h-9 items-center gap-2 px-4 rounded-md whitespace-nowrap text-[13px]';
+const field = 'h-9 px-3 border border-[#ccd0d4] rounded-md bg-white text-[13px]';
+// Barra de pesquisa e descarregar da lista: um pouco mais baixa (32px).
+const btnLow = btn.replace('h-9', 'h-8');
+const fieldLow = field.replace('h-9', 'h-8');
 
 export default function NewsletterPage() {
   const [data, setData] = useState<Summary | null>(() => adminCacheGet<Summary>('newsletter') ?? null);
@@ -26,6 +30,7 @@ export default function NewsletterPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [tab, setTab] = useState<'news' | 'subscribers'>('news');
+  const [addOpen, setAddOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const load = async () => {
@@ -164,7 +169,8 @@ export default function NewsletterPage() {
           </div>
 
           {/* Separadores */}
-          <div role="tablist" className="mb-6 flex gap-1 border-b border-[#ccd0d4]">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+          <div role="tablist" className="flex gap-1">
             {([
               ['news', `Notícias em fila (${data.queue.length})`],
               ['subscribers', `Lista de subscritores (${data.subscribers.length})`],
@@ -174,13 +180,20 @@ export default function NewsletterPage() {
                 role="tab"
                 aria-selected={tab === key}
                 onClick={() => setTab(key)}
-                className={`-mb-px h-10 rounded-t-md border border-b-0 px-4 ${tab === key ? 'border-[#ccd0d4] bg-white text-[#1d2327]' : 'border-transparent text-[#50575e] hover:bg-[#f6f7f7]'}`}
+                className={`relative -mb-px h-10 rounded-t-md border border-b-0 px-4 text-[14px] ${tab === key ? 'z-10 border-[#ccd0d4] bg-white text-[#1d2327]' : 'border-transparent text-[#50575e] hover:text-[#00a651]'}`}
               >
                 {label}
               </button>
             ))}
           </div>
+          {tab === 'subscribers' && (
+            <button onClick={() => setAddOpen((v) => !v)} aria-expanded={addOpen} className={`${btn} mb-1 bg-[#00a651] text-white`}>
+              {addOpen ? <X className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />} {addOpen ? 'Fechar' : 'Adicionar contactos'}
+            </button>
+          )}
+          </div>
 
+          <div className="rounded-b-lg rounded-tr-lg border border-[#ccd0d4] bg-white p-4">
           {tab === 'news' && (
             <>
           {/* Fila: notícias novas que seguem na próxima newsletter */}
@@ -190,14 +203,14 @@ export default function NewsletterPage() {
               {confirmSend ? (
                 <div className="flex items-center gap-2 text-[13px]">
                   <span>Enviar já a {data.subscribers.length} subscritores?</span>
-                  <button onClick={sendNow} className={`${btn} bg-[#00a651] text-white hover:bg-[#008f45]`}>Sim, enviar</button>
-                  <button onClick={() => setConfirmSend(false)} className={`${btn} border border-[#ccd0d4] bg-white hover:bg-[#f6f7f7]`}>Cancelar</button>
+                  <button onClick={sendNow} className={`${btn} bg-[#00a651] text-white`}>Sim, enviar</button>
+                  <button onClick={() => setConfirmSend(false)} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651]`}>Cancelar</button>
                 </div>
               ) : (
                 <button
                   onClick={() => setConfirmSend(true)}
                   disabled={busy !== null || data.queue.length === 0 || data.subscribers.length === 0 || !data.smtp}
-                  className={`${btn} border border-[#ccd0d4] bg-white hover:bg-[#f6f7f7] disabled:opacity-50`}
+                  className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651] disabled:opacity-50`}
                 >
                   <Send className="h-4 w-4" /> {busy === 'send' ? 'A enviar...' : 'Enviar agora'}
                 </button>
@@ -264,43 +277,45 @@ export default function NewsletterPage() {
 
           {tab === 'subscribers' && (
             <>
-          {/* Contactos: importar e descarregar */}
-          <div className="mb-6 rounded-lg border border-[#ccd0d4] bg-[#f6f7f7] p-4">
-            <h3 className="mb-3 text-[#1d2327]">Contactos</h3>
-            <label className="mb-1 block text-sm font-medium text-[#1d2327]">Adicionar uma lista existente (cole os e-mails ou escolha um ficheiro CSV ou TXT)</label>
-            <textarea
-              rows={3}
-              value={paste}
-              onChange={(e) => setPaste(e.target.value)}
-              placeholder="nome@exemplo.com, outro@exemplo.com..."
-              className="w-full min-h-10 resize-y rounded-md border border-[#ccd0d4] bg-white px-3 py-2 leading-5"
-            />
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <button onClick={() => importEmails(emailsIn(paste))} disabled={busy !== null || !paste.trim()} className={`${btn} bg-[#00a651] text-white hover:bg-[#008f45] disabled:opacity-50`}>
-                <Upload className="h-4 w-4" /> {busy === 'import' ? 'A importar...' : 'Importar'}
-              </button>
-              <input ref={fileInput} type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-              <button onClick={() => fileInput.current?.click()} disabled={busy !== null} className={`${btn} border border-[#ccd0d4] bg-white hover:bg-[#f6f7f7] disabled:opacity-50`}>
-                <FileUp className="h-4 w-4" /> Escolher ficheiro
-              </button>
-              <span className="mx-1 text-[13px] text-[#50575e]">Descarregar a lista do site:</span>
-              {[
-                ['csv', 'CSV (Excel)'],
-                ['txt', 'TXT'],
-                ['json', 'JSON'],
-              ].map(([format, label]) => (
-                <a key={format} href={`/api/admin/newsletter/export?format=${format}`} className={`${btn} border border-[#ccd0d4] bg-white hover:bg-[#f6f7f7]`}>
-                  <Download className="h-4 w-4" /> {label}
-                </a>
-              ))}
+          {/* Adicionar contactos: abre ao carregar no botão, em cima à direita */}
+          {addOpen && (
+            <div className="mb-4 rounded-lg border border-[#ccd0d4] bg-[#f6f7f7] p-4">
+              <label className="mb-1 block text-[13px] font-medium text-[#1d2327]">Cole os e-mails ou escolha um ficheiro CSV ou TXT</label>
+              <textarea
+                rows={3}
+                value={paste}
+                onChange={(e) => setPaste(e.target.value)}
+                placeholder="nome@exemplo.com, outro@exemplo.com..."
+                className="w-full min-h-9 resize-y rounded-md border border-[#ccd0d4] bg-white px-3 py-2 text-[13px] leading-5"
+              />
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <button onClick={() => importEmails(emailsIn(paste))} disabled={busy !== null || !paste.trim()} className={`${btn} bg-[#00a651] text-white disabled:opacity-50`}>
+                  <Upload className="h-4 w-4" /> {busy === 'import' ? 'A importar...' : 'Importar'}
+                </button>
+                <input ref={fileInput} type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+                <button onClick={() => fileInput.current?.click()} disabled={busy !== null} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651] disabled:opacity-50`}>
+                  <FileUp className="h-4 w-4" /> Escolher ficheiro
+                </button>
+                <button onClick={() => setAddOpen(false)} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651]`}>Cancelar</button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Subscritores */}
           <div className="mb-6">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-[#1d2327]">Subscritores ({filtered.length})</h3>
-              <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquisar e-mail..." className={`${field} w-full sm:w-64`} />
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquisar e-mail..." className={`${fieldLow} w-full sm:w-80`} />
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  ['csv', 'CSV (Excel)'],
+                  ['txt', 'TXT'],
+                  ['json', 'JSON'],
+                ].map(([format, label]) => (
+                  <a key={format} href={`/api/admin/newsletter/export?format=${format}`} className={`${btnLow} border border-[#ccd0d4] bg-white hover:text-[#00a651]`}>
+                    <Download className="h-4 w-4" /> {label}
+                  </a>
+                ))}
+              </div>
             </div>
             <div className="overflow-hidden rounded-lg border border-[#ccd0d4] bg-white">
               <table className="w-full border-collapse text-[13px]">
@@ -318,18 +333,18 @@ export default function NewsletterPage() {
                     </tr>
                   ) : (
                     visible.map((s, idx) => (
-                      <tr key={s.id} className={`border-b border-[#f0f0f1] hover:bg-[#f6f7f7] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
-                        <td className="px-4 py-1.5 text-[#1d2327]">{s.email}</td>
-                        <td className="px-4 py-1.5 text-[#50575e]">{fmt(s.created_at)}</td>
+                      <tr key={s.id} className={`group border-b border-[#f0f0f1] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#f9f9f9]'}`}>
+                        <td className="px-4 py-1.5 text-[#1d2327] group-hover:text-[#00a651]">{s.email}</td>
+                        <td className="px-4 py-1.5 text-[#50575e] group-hover:text-[#00a651]">{fmt(s.created_at)}</td>
                         <td className="px-4 py-1.5 text-right">
                           {confirmDelete === s.id ? (
                             <span className="inline-flex items-center gap-2 text-[12px]">
                               Remover?
-                              <button onClick={() => remove(s.id)} className="rounded px-2 py-1 text-red-600 hover:bg-red-50">Sim</button>
-                              <button onClick={() => setConfirmDelete(null)} className="rounded px-2 py-1 text-[#50575e] hover:bg-gray-100">Não</button>
+                              <button onClick={() => remove(s.id)} className="rounded px-2 py-1 text-red-600 hover:text-[#00a651]">Sim</button>
+                              <button onClick={() => setConfirmDelete(null)} className="rounded px-2 py-1 text-[#50575e] hover:text-[#00a651]">Não</button>
                             </span>
                           ) : (
-                            <button onClick={() => setConfirmDelete(s.id)} aria-label={`Remover ${s.email}`} className="rounded p-2 text-red-600 hover:bg-red-50">
+                            <button onClick={() => setConfirmDelete(s.id)} aria-label={`Remover ${s.email}`} className="rounded p-2 text-red-600 hover:text-[#00a651]">
                               <Trash2 className="h-4 w-4" />
                             </button>
                           )}
@@ -342,15 +357,16 @@ export default function NewsletterPage() {
             </div>
             {pages > 1 && (
               <div className="mt-3 flex items-center justify-end gap-2 text-[13px] text-[#50575e]">
-                <button onClick={() => setPage(current - 1)} disabled={current <= 1} className={`${btn} border border-[#ccd0d4] bg-white hover:bg-[#f6f7f7] disabled:opacity-50`}>‹ Anterior</button>
+                <button onClick={() => setPage(current - 1)} disabled={current <= 1} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651] disabled:opacity-50`}>‹ Anterior</button>
                 <span>{current} / {pages}</span>
-                <button onClick={() => setPage(current + 1)} disabled={current >= pages} className={`${btn} border border-[#ccd0d4] bg-white hover:bg-[#f6f7f7] disabled:opacity-50`}>Seguinte ›</button>
+                <button onClick={() => setPage(current + 1)} disabled={current >= pages} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651] disabled:opacity-50`}>Seguinte ›</button>
               </div>
             )}
           </div>
 
             </>
           )}
+          </div>
         </>
       )}
     </div>

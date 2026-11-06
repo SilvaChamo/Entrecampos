@@ -81,7 +81,7 @@ export default function PartilhadoPage() {
         onPartilhadasClick={() => { setAberta(null); setBin(false); }}
         right={
           <div className="flex items-center gap-2">
-            <button onClick={sync} disabled={syncing || !data?.configured} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white disabled:opacity-50">
+            <button onClick={sync} disabled={syncing || !data?.configured} className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-[#00a651] px-3 text-sm text-white disabled:opacity-50">
               <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'A sincronizar…' : 'Sincronizar agora'}
             </button>
             {aberta === 'imagens' && (user?.role === 'admin' || selCount > 0) && (

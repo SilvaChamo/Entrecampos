@@ -162,7 +162,7 @@ export default function ArquivoPage() {
                 disabled={uploading}
                 aria-haspopup="menu"
                 aria-expanded={addMenu}
-                className="inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white disabled:opacity-60"
+                className="inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[3px] bg-[#00a651] px-3 text-sm text-white disabled:opacity-60"
               >
                 <ImagePlus className="h-4 w-4" /> {uploading ? 'A carregar…' : 'Adicionar fotos'} <ChevronDown className="h-3.5 w-3.5" />
               </button>
@@ -196,7 +196,7 @@ export default function ArquivoPage() {
                 <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar pasta…" aria-label="Procurar pasta" className="h-8 w-full min-w-0 sm:w-72 rounded-[3px] border border-[#ccd0d4] pl-8 pr-2 text-sm outline-none focus:border-[#00a651]" />
                 <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[#50575e]" />
               </div>
-              <button onClick={() => setCreating((c) => !c)} className="inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[3px] bg-[#00a651] px-3 text-sm font-semibold text-white">
+              <button onClick={() => setCreating((c) => !c)} className="inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[3px] bg-[#00a651] px-3 text-sm text-white">
                 <FolderPlus className="h-4 w-4" /> Nova pasta
               </button>
             </div>
@@ -208,7 +208,7 @@ export default function ArquivoPage() {
         <form onSubmit={create} className="mb-5 flex flex-wrap items-center gap-2 rounded border border-[#ccd0d4] bg-white p-3">
           <label htmlFor="nome-pasta" className="text-sm font-semibold">Nome da pasta</label>
           <input id="nome-pasta" autoFocus required maxLength={80} value={nome} onChange={(e) => setNome(limitWords(e.target.value))} placeholder="Ex.: Eleições 2026 (máx. 4 palavras)" className="h-8 min-w-[16rem] flex-1 rounded-[3px] border border-[#ccd0d4] px-2 text-sm outline-none focus:border-[#00a651]" />
-          <button type="submit" disabled={saving} className="h-8 rounded-[3px] bg-[#00a651] px-4 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'A criar…' : 'Criar'}</button>
+          <button type="submit" disabled={saving} className="h-8 rounded-[3px] bg-[#00a651] px-4 text-sm text-white disabled:opacity-50">{saving ? 'A criar…' : 'Criar'}</button>
           <button type="button" onClick={() => { setCreating(false); setNome(''); }} className="h-8 rounded-[3px] border border-[#ccd0d4] bg-white px-4 text-sm">Cancelar</button>
         </form>
       )}
