@@ -7,6 +7,7 @@ import { SESSION_COOKIE, verifySession } from '@/lib/local-session';
 import { hasPermission } from '@/lib/permissions';
 import { isUuid } from '@/lib/api-guard';
 import { normalizeSpaces } from '@/lib/normalize-spaces';
+import { siteAccess } from '@/lib/site-accounts';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -140,7 +141,14 @@ export async function POST(request: Request) {
     let finalAuthorName = session.name || 'Administrador';
     if (finalAuthorId) {
       const { data: userData } = await supabaseAdmin.auth.admin.getUserById(finalAuthorId);
-      if (userData?.user) finalAuthorName = getDisplayName(userData.user);
+      if (userData?.user) {
+        finalAuthorName = getDisplayName(userData.user);
+        // Colunista (tem as permissões do contribuidor) escreve só opinião: a categoria é sempre Opinião, venha o que vier do formulário.
+        if (/^colunista$/i.test(siteAccess(userData.user)?.role ?? '')) {
+          payload.category = 'Opinião';
+          payload.categories = [];
+        }
+      }
     }
 
     if (isEdit) {

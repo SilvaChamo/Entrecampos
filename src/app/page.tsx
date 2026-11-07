@@ -16,6 +16,7 @@ import StickyColumn from '@/components/Expnews/StickyColumn';
 import Columnists from '@/components/Expnews/Columnists';
 import { getSuggestionSlugs } from '@/lib/suggestions';
 import { getColumnists } from '@/lib/columnists';
+import { opinionPosts, sameAuthor } from '@/lib/columnist-utils';
 import { categoryLabel, getAllPosts, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
@@ -105,9 +106,11 @@ function Overlay({
 
 export default async function HomePrincipal() {
   const [slides, { posts }, suggestSlugs, columnists, { posts: allPosts }] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getColumnists(), getAllPosts()]);
-  // Colunistas: só entram os que têm uma notícia publicada para o botão "Ler artigo" abrir.
+  // Colunistas: o card mostra o artigo de Opinião fixado ou, sem fixado, o mais recente do autor; sem artigos, o colunista não aparece.
+  const opinion = opinionPosts(allPosts);
   const columnistItems = columnists.flatMap((columnist) => {
-    const p = allPosts.find((x) => x.slug === columnist.noticia);
+    const mine = opinion.filter((p) => sameAuthor(p.author, columnist.autor));
+    const p = mine.find((x) => x.slug === columnist.artigo) ?? mine[0];
     return p ? [{ columnist, post: { slug: p.slug, title: p.title } }] : [];
   });
 

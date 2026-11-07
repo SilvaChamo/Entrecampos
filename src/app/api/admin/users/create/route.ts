@@ -10,7 +10,7 @@ const supabaseAdmin = createClient(
 );
 
 /** Papéis que o painel pode atribuir (rótulos guardados em app_metadata.role). */
-const ROLE_LABELS = ['Administrador', 'Editor', 'Contribuidor', 'Subscritor'];
+const ROLE_LABELS = ['Administrador', 'Editor', 'Contribuidor', 'Colunista', 'Subscritor'];
 
 export async function POST(req: NextRequest) {
   const guard = await requireAuth('criar_utilizadores');

@@ -7,7 +7,7 @@ import { Camera, Trash2, Shield, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import AdminSelect from '@/components/Admin/AdminSelect';
 
-const ROLES = ['Administrador', 'Editor', 'Actor', 'Subscritor', 'Contribuidor'];
+const ROLES = ['Administrador', 'Editor', 'Actor', 'Subscritor', 'Contribuidor', 'Colunista'];
 
 export default function AddUserPage() {
   const router = useRouter();

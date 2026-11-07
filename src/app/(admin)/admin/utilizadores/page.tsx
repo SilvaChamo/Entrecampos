@@ -32,7 +32,7 @@ const MOCK_USERS: UserItem[] = [
   { id: '5', username: 'tessakosovich3', name: '—', email: 'tessa.kosovich@williamjons.dynainbox.com', role: 'Subscritor', articles: 0 },
 ];
 
-const ROLES = ['Administrador', 'Editor', 'Actor', 'Subscritor', 'Contribuidor'];
+const ROLES = ['Administrador', 'Editor', 'Actor', 'Subscritor', 'Contribuidor', 'Colunista'];
 
 // Símbolo do EntreCAMPOS para o admin
 const EntrecamposSymbol = () => (

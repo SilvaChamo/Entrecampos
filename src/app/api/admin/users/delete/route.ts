@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
         continue;
       }
       // Mesma regra da edição: ninguém elimina contas de nível igual ou superior ao seu; só o administrador elimina administradores.
-      const RANK: Record<string, number> = { Administrador: 3, Editor: 2, Contribuidor: 1, Subscritor: 0 };
+      const RANK: Record<string, number> = { Administrador: 3, Editor: 2, Contribuidor: 1, Colunista: 1, Subscritor: 0 };
       const callerRank = ({ admin: 3, editor: 2, contribuidor: 1, guest: 0 } as Record<string, number>)[guard.session.role] ?? 0;
       const targetRank = RANK[siteAccess(target)!.role] ?? 0;
       if (targetRank > callerRank || (targetRank === callerRank && guard.session.role !== 'admin')) {

@@ -61,6 +61,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'apoio-comunitario': 'Apoio comunitário',
   'mulher-agrario': 'Mulher agrário',
   curiosidade: 'Curiosidade',
+  opiniao: 'Opinião',
   'agro-negocio': 'Agro-negócio',
   'agro-pecuaria': 'Agro-pecuária',
   'agro-processamento': 'Agro-processamento',

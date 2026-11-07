@@ -42,7 +42,7 @@ export default async function PaginaDeCategoria({
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {visible.map((p) => (
-                <NewsCard key={p.slug} post={p} />
+                <NewsCard key={p.slug} post={p} byline={slug === 'opiniao'} />
               ))}
             </div>
           )}

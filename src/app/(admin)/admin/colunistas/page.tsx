@@ -7,9 +7,10 @@ import MobileSelect from '@/components/Admin/MobileSelect';
 import { uploadToLibrary } from '@/components/Admin/ImageChooser';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
 import type { Columnist } from '@/lib/columnists';
+import { sameAuthor } from '@/lib/columnist-utils';
 
-type PostOption = { slug: string; title: string };
-const EMPTY: Columnist = { id: '', nome: '', handle: '', foto: '', noticia: '', facebook: '', instagram: '', linkedin: '', x: '' };
+type OpinionPost = { slug: string; title: string; author: string };
+const EMPTY: Columnist = { id: '', nome: '', handle: '', foto: '', autor: '', artigo: '', facebook: '', instagram: '', linkedin: '', x: '' };
 const SOCIALS: { key: 'facebook' | 'instagram' | 'linkedin' | 'x'; label: string; placeholder: string }[] = [
   { key: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/...' },
   { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/...' },
@@ -32,7 +33,8 @@ function Avatar({ src, className = 'h-9 w-9' }: { src: string; className?: strin
 }
 
 /** Formulário de colunista (o mesmo para criar e para editar). */
-function ColumnistForm({ title, form, setForm, posts, onSave, onCancel, saving }: { title: string; form: Columnist; setForm: (c: Columnist) => void; posts: PostOption[]; onSave: () => void; onCancel: () => void; saving: boolean }) {
+function ColumnistForm({ title, form, setForm, authors, opinion, onSave, onCancel, saving }: { title: string; form: Columnist; setForm: (c: Columnist) => void; authors: string[]; opinion: OpinionPost[]; onSave: () => void; onCancel: () => void; saving: boolean }) {
+  const mine = opinion.filter((o) => sameAuthor(o.author, form.autor));
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -78,12 +80,24 @@ function ColumnistForm({ title, form, setForm, posts, onSave, onCancel, saving }
           {uploadError && <p className="mt-1 text-[12px] text-red-700">{uploadError}</p>}
         </div>
         <div>
-          <label className={labelCls}>Notícia do botão Ler artigo (o título do card é o da notícia)</label>
+          <label className={labelCls}>Autor dos artigos (utilizador)</label>
           <MobileSelect
-            ariaLabel="Notícia do colunista"
-            value={form.noticia}
-            onChange={(noticia) => setForm({ ...form, noticia })}
-            options={[{ value: '', label: 'Escolher notícia...' }, ...posts.map((p) => ({ value: p.slug, label: p.title.length > 70 ? `${p.title.slice(0, 70)}...` : p.title }))]}
+            ariaLabel="Autor do colunista"
+            value={form.autor}
+            onChange={(autor) => setForm({ ...form, autor, artigo: '' })}
+            options={[{ value: '', label: 'Escolher autor...' }, ...authors.map((a) => ({ value: a, label: a }))]}
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className={labelCls}>Artigo do botão Ler artigo (só artigos de Opinião deste autor)</label>
+          <MobileSelect
+            ariaLabel="Artigo de opinião"
+            value={form.artigo}
+            onChange={(artigo) => setForm({ ...form, artigo })}
+            options={[
+              { value: '', label: !form.autor ? 'Escolha primeiro o autor' : mine.length ? 'O mais recente (automático)' : 'Ainda sem artigos de Opinião' },
+              ...mine.map((p) => ({ value: p.slug, label: p.title.length > 70 ? `${p.title.slice(0, 70)}...` : p.title })),
+            ]}
           />
         </div>
         {SOCIALS.map((s) => (
@@ -107,7 +121,8 @@ function ColumnistForm({ title, form, setForm, posts, onSave, onCancel, saving }
 
 export default function ColunistasPage() {
   const [list, setList] = useState<Columnist[]>(() => adminCacheGet<Columnist[]>('columnists-page') ?? []);
-  const [posts, setPosts] = useState<PostOption[]>(() => adminCacheGet<PostOption[]>('columnists-posts') ?? []);
+  const [authors, setAuthors] = useState<string[]>(() => adminCacheGet<string[]>('columnists-authors') ?? []);
+  const [opinion, setOpinion] = useState<OpinionPost[]>(() => adminCacheGet<OpinionPost[]>('columnists-opinion') ?? []);
   const [loading, setLoading] = useState(() => adminCacheGet('columnists-page') === undefined);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -121,14 +136,16 @@ export default function ColunistasPage() {
       .then(async (res) => {
         const body = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(body.error || `Erro ${res.status} ao carregar os colunistas.`);
-        return body as { columnists: Columnist[]; posts: PostOption[] };
+        return body as { columnists: Columnist[]; authors: string[]; opinion: OpinionPost[] };
       })
       .then((data) => {
         if (!alive) return;
         adminCacheSet('columnists-page', data.columnists);
-        adminCacheSet('columnists-posts', data.posts);
+        adminCacheSet('columnists-authors', data.authors);
+        adminCacheSet('columnists-opinion', data.opinion);
         setList(data.columnists);
-        setPosts(data.posts);
+        setAuthors(data.authors);
+        setOpinion(data.opinion);
       })
       .catch((err) => alive && setError(err?.message || 'Não foi possível carregar os colunistas.'))
       .finally(() => alive && setLoading(false));
@@ -171,7 +188,13 @@ export default function ColunistasPage() {
     }
   };
 
-  const titleOf = (slug: string) => posts.find((p) => p.slug === slug)?.title || (slug ? slug : 'Sem notícia');
+  const articleOf = (c: Columnist) => {
+    const mine = opinion.filter((o) => sameAuthor(o.author, c.autor));
+    if (!c.autor) return 'Sem autor escolhido';
+    const pinned = c.artigo ? mine.find((o) => o.slug === c.artigo) : undefined;
+    if (pinned) return `Fixado: ${pinned.title}`;
+    return mine[0] ? `Mais recente: ${mine[0].title}` : 'Sem artigos de Opinião (o card não aparece)';
+  };
 
   return (
     <div className="ec-page text-[#2c3338]">
@@ -203,7 +226,7 @@ export default function ColunistasPage() {
 
           {adding && (
             <div className="mb-6">
-              <ColumnistForm title="Novo colunista" form={form} setForm={setForm} posts={posts} onSave={save} onCancel={() => setAdding(false)} saving={saving} />
+              <ColumnistForm title="Novo colunista" form={form} setForm={setForm} authors={authors} opinion={opinion} onSave={save} onCancel={() => setAdding(false)} saving={saving} />
             </div>
           )}
 
@@ -212,7 +235,7 @@ export default function ColunistasPage() {
               <thead>
                 <tr className="bg-[#f6f7f7] text-left border-b border-[#ccd0d4]">
                   <th className="p-4 font-normal">Colunista</th>
-                  <th className="p-4 font-normal hidden md:table-cell">Notícia</th>
+                  <th className="p-4 font-normal hidden md:table-cell">Artigo no card</th>
                   <th className="p-4 text-right font-normal">Acções</th>
                 </tr>
               </thead>
@@ -226,7 +249,7 @@ export default function ColunistasPage() {
                   editing === c.id ? (
                     <tr key={c.id} className="border-b border-[#f0f0f1] bg-white">
                       <td colSpan={3} className="p-3">
-                        <ColumnistForm title={`Editar colunista ${c.nome}`} form={form} setForm={setForm} posts={posts} onSave={save} onCancel={() => setEditing(null)} saving={saving} />
+                        <ColumnistForm title={`Editar colunista ${c.nome}`} form={form} setForm={setForm} authors={authors} opinion={opinion} onSave={save} onCancel={() => setEditing(null)} saving={saving} />
                       </td>
                     </tr>
                   ) : (
@@ -241,7 +264,7 @@ export default function ColunistasPage() {
                         </div>
                       </td>
                       <td className="px-4 py-1.5 text-[#50575e] hidden md:table-cell">
-                        <span className="line-clamp-2">{titleOf(c.noticia)}</span>
+                        <span className="line-clamp-2">{articleOf(c)}</span>
                       </td>
                       <td className="px-4 py-1.5 text-right">
                         <div className="flex items-center justify-end gap-2">

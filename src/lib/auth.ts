@@ -15,7 +15,8 @@ export function mapRole(metaRole?: string | null): UserRole {
   const r = (metaRole || '').toLowerCase().trim();
   if (r === 'administrador' || r === 'admin') return 'admin';
   if (r === 'editor') return 'editor';
-  if (r === 'contribuidor' || r === 'contributor' || r === 'actor') return 'contribuidor';
+  // Colunista usa o painel e as permissões do contribuidor; o que o distingue (artigos só de Opinião) decide-o o servidor ao gravar.
+  if (r === 'contribuidor' || r === 'contributor' || r === 'actor' || r === 'colunista') return 'contribuidor';
   return 'guest';
 }
 

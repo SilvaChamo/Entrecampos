@@ -2,7 +2,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Colunistas da home: nome, @, foto, redes sociais e a notícia que o botão "Ler artigo" abre. Ficam num ficheiro pequeno
+ * Colunistas da home: nome, @, foto, redes sociais e o autor cujos artigos de Opinião aparecem no card. Ficam num ficheiro pequeno
  * no armazenamento (como as cores das categorias) e na cache de dados com a etiqueta `columnists`, que gravar limpa.
  */
 const supabaseAdmin = createClient(
@@ -20,8 +20,10 @@ export type Columnist = {
   /** Sem o @; mostra-se como @utilizador por baixo do nome. */
   handle: string;
   foto: string;
-  /** Slug da notícia que o botão "Ler artigo" abre; o título do card é o da notícia. */
-  noticia: string;
+  /** Nome do autor dos artigos (o mesmo que aparece como autor nas notícias): os artigos de Opinião com este autor são os do colunista. */
+  autor: string;
+  /** Slug do artigo de Opinião fixado no card; vazio = o mais recente do colunista. */
+  artigo: string;
   facebook: string;
   instagram: string;
   linkedin: string;
@@ -47,7 +49,8 @@ export function cleanColumnist(raw: unknown): Columnist | null {
     nome,
     handle: str(r.handle, 40).replace(/^@+/, '').replace(/[^\w.-]/g, ''),
     foto: url(r.foto),
-    noticia: /^[\w-]+$/.test(str(r.noticia, 200)) ? str(r.noticia, 200) : '',
+    autor: str(r.autor, 80),
+    artigo: /^[\w-]+$/.test(str(r.artigo, 200)) ? str(r.artigo, 200) : '',
     facebook: url(r.facebook),
     instagram: url(r.instagram),
     linkedin: url(r.linkedin),

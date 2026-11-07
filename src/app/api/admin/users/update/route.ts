@@ -11,7 +11,7 @@ const supabaseAdmin = createClient(
 );
 
 /** Papéis que o painel pode atribuir (rótulos guardados em app_metadata.role). */
-const ROLE_LABELS = ['Administrador', 'Editor', 'Contribuidor', 'Subscritor'];
+const ROLE_LABELS = ['Administrador', 'Editor', 'Contribuidor', 'Colunista', 'Subscritor'];
 
 export async function POST(req: NextRequest) {
   const guard = await requireAuth();
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     const currentRole = siteAccess(currentUser)!.role;
 
     // Ninguém edita (nem muda a palavra-passe de) contas de nível igual ou superior ao seu; só o administrador edita administradores.
-    const RANK: Record<string, number> = { Administrador: 3, Editor: 2, Contribuidor: 1, Subscritor: 0 };
+    const RANK: Record<string, number> = { Administrador: 3, Editor: 2, Contribuidor: 1, Colunista: 1, Subscritor: 0 };
     const callerRank = { admin: 3, editor: 2, contribuidor: 1, guest: 0 }[session.role] ?? 0;
     const targetRank = RANK[currentRole] ?? 0;
     if (!isSelf && (targetRank > callerRank || (targetRank === callerRank && session.role !== 'admin'))) {

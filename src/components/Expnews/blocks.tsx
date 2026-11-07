@@ -59,7 +59,7 @@ export function Thumb({ src, className = '', eager = false }: { src: string; cla
 }
 
 /** Card de notícia da secção Agricultura: foto, etiqueta da categoria fora da foto, título e data. */
-export function NewsCard({ post }: { post: Post }) {
+export function NewsCard({ post, byline = false }: { post: Post; byline?: boolean }) {
   const href = `/noticias/${post.slug}`;
   return (
     <article className="ec-reveal flex h-full flex-col bg-white shadow-sm">
@@ -71,6 +71,7 @@ export function NewsCard({ post }: { post: Post }) {
         <Link href={href}>
           <h4 className="mt-2 line-clamp-3 text-[14px] font-bold leading-snug hover:text-[#d6101c]">{post.title}</h4>
         </Link>
+        {byline && post.author && <p className="mt-1 text-[12px] text-gray-600">Por {post.author}</p>}
         {/* A linha e a data ficam sempre no fundo do card, qualquer que seja o tamanho do título. */}
         <div className="mt-auto pt-3">
           <div className="-mx-4 border-t border-gray-300 px-4 pt-2.5">
