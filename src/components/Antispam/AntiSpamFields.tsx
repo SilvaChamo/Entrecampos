@@ -30,7 +30,7 @@ export function resetAntiSpam() {
  *  - Cloudflare Turnstile: o widget escreve o token em `cf-turnstile-response`.
  * Os campos vão no FormData do formulário e são verificados no servidor por guardForm().
  */
-export default function AntiSpamFields({ theme = 'light' }: { theme?: 'light' | 'dark' | 'auto' }) {
+export default function AntiSpamFields({ theme = 'light', fullWidth = false }: { theme?: 'light' | 'dark' | 'auto'; /** O desafio ocupa a largura toda do contentor (mínimo 300px) em vez dos 300px de origem. */ fullWidth?: boolean }) {
   const [ts, setTs] = useState('');
   const [token, setToken] = useState('');
   const box = useRef<HTMLDivElement>(null);
@@ -44,12 +44,13 @@ export default function AntiSpamFields({ theme = 'light' }: { theme?: 'light' | 
     widget.current = window.turnstile.render(box.current, {
       sitekey: SITE_KEY,
       theme,
+      size: fullWidth ? 'flexible' : 'normal',
       language: 'pt',
       callback: (t: string) => setToken(t),
       'expired-callback': () => setToken(''),
       'error-callback': () => setToken(''),
     });
-  }, [scriptReady, theme]);
+  }, [scriptReady, theme, fullWidth]);
 
   // Se o script já estava carregado por outro formulário da mesma página.
   useEffect(() => {
@@ -74,7 +75,7 @@ export default function AntiSpamFields({ theme = 'light' }: { theme?: 'light' | 
             onLoad={() => setScriptReady(true)}
             onReady={() => setScriptReady(true)}
           />
-          <div ref={box} className="min-h-[65px]" />
+          <div ref={box} className={`min-h-[65px]${fullWidth ? ' w-full' : ''}`} />
           <input type="hidden" name="cf-turnstile-response" value={token} />
         </>
       )}
