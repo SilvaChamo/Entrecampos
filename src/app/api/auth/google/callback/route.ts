@@ -3,7 +3,7 @@ import type { User } from '@supabase/supabase-js';
 import { cookieOptions, SESSION_COOKIE, signSession } from '@/lib/local-session';
 import { mapRole } from '@/lib/auth';
 import { serverDb } from '@/lib/antispam';
-import { siteAccess, withSiteAccess } from '@/lib/site-accounts';
+import { siteAccess, withSiteAccess, effectiveRole } from '@/lib/site-accounts';
 import { googleRedirectUri } from '@/lib/google-oauth';
 
 const fail = (req: NextRequest, code: string) => {
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     if (!access?.approved) return fail(req, 'suspensa');
 
     const meta = user.user_metadata || {};
-    const payload = { id: user.id, email, name: String(meta.full_name || meta.name || info.name || email.split('@')[0]), role: mapRole(access.role) };
+    const payload = { id: user.id, email, name: String(meta.full_name || meta.name || info.name || email.split('@')[0]), role: mapRole(effectiveRole(access)), colunista: /^colunista$/i.test(access.role) };
     const res = NextResponse.redirect(new URL('/admin', process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin));
     res.cookies.set(SESSION_COOKIE, signSession(payload), cookieOptions());
     res.cookies.delete('ec_google_state');

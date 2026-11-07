@@ -9,6 +9,7 @@ export type LocalSessionPayload = {
   email: string;
   name: string;
   role: UserRole;
+  colunista?: boolean;
   exp: number;
 };
 
@@ -60,6 +61,7 @@ export function sessionToUser(payload: LocalSessionPayload): AppUser {
     email: payload.email,
     name: payload.name,
     role: payload.role,
+    ...(payload.colunista ? { colunista: true } : {}),
   };
 }
 

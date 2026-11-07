@@ -4,7 +4,7 @@ import { clientIp, serverDb } from '@/lib/antispam';
 import { tooManyAttempts } from '@/lib/rate-limit';
 import { isSiteAccount } from '@/lib/site-accounts';
 
-/** Segundo passo da recuperação: valida a ligação (token de uso único) e grava a nova palavra-passe. */
+/** Segundo passo da recuperação: valida a ligação (token de uso único) e grava a nova senha. */
 export async function POST(req: NextRequest) {
   try {
     if (tooManyAttempts(`recuperar-confirmar|${clientIp(req)}`, 10, 30 * 60 * 1000)) {
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const { token, password } = (await req.json()) as { token?: string; password?: string };
     if (!token || typeof token !== 'string' || token.length > 300) return NextResponse.json({ error: 'Ligação inválida.' }, { status: 400 });
     if (!password || password.length < 8 || password.length > 128) {
-      return NextResponse.json({ error: 'A palavra-passe deve ter pelo menos 8 caracteres.' }, { status: 400 });
+      return NextResponse.json({ error: 'A senha deve ter pelo menos 8 caracteres.' }, { status: 400 });
     }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { error: updateError } = await serverDb().auth.admin.updateUserById(user.id, { password });
-    if (updateError) return NextResponse.json({ error: 'Não foi possível guardar a palavra-passe.' }, { status: 500 });
-    return NextResponse.json({ ok: true, message: 'Palavra-passe alterada. Já pode entrar.' });
+    if (updateError) return NextResponse.json({ error: 'Não foi possível guardar a senha.' }, { status: 500 });
+    return NextResponse.json({ ok: true, message: 'Senha alterada. Já pode entrar.' });
   } catch {
     return NextResponse.json({ error: 'Não foi possível concluir o pedido.' }, { status: 500 });
   }

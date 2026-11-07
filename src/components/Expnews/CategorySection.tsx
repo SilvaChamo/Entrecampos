@@ -137,6 +137,7 @@ export default function CategorySection({
         </div>
 
         {/* Selector de categorias */}
+        {groups.length > 1 && (
         <div ref={box} className="relative shrink-0">
           <button
             type="button"
@@ -173,6 +174,7 @@ export default function CategorySection({
             </ul>
           )}
         </div>
+        )}
 
         {arrowsOnTop && pages > 1 && (
           <div className="flex shrink-0 items-center gap-1.5">

@@ -253,7 +253,7 @@ function UltimasNoticias() {
   }, []);
 
   if (posts.length === 0) {
-    return <div className="py-6 text-center"><Spinner size={32} className="mx-auto" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><Spinner size={32} /></div>;
   }
 
   return (

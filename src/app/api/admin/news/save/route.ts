@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { refreshSite } from '@/lib/refresh-site';
+import { refreshNews, type NewsRef } from '@/lib/refresh-site';
 import { setSuggestion } from '@/lib/suggestions';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
@@ -73,9 +73,12 @@ async function saveWithColumnFallback(
   return { data: null, error: { message: 'Demasiadas colunas em falta na tabela news.' }, warning: undefined as string | undefined };
 }
 
-/** Faz a home, as categorias e a página de leitura mostrarem logo a notícia nova/editada. */
-function refreshPublicPages() {
-  refreshSite();
+const isOpinion = (v: unknown) => typeof v === 'string' && v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '') === 'opiniao';
+const NOT_OPINION_MSG = 'Só colunistas escrevem artigos de Opinião. Escolha outra categoria.';
+
+/** Faz a home, a categoria e a página de leitura mostrarem logo a notícia nova/editada (só o que mudou). */
+function refreshPublicPages(...refs: NewsRef[]) {
+  refreshNews(refs);
 }
 
 /** "Sugestão de leitura": só quem publica a activa; falhar aqui não impede de gravar a notícia. */
@@ -139,14 +142,19 @@ export async function POST(request: Request) {
     // O acesso de emergência não tem conta no Supabase (id sem formato UUID): fica sem author_id.
     const finalAuthorId = isUuid(session.id) ? session.id : null;
     let finalAuthorName = session.name || 'Administrador';
+    let isColumnist = false;
     if (finalAuthorId) {
       const { data: userData } = await supabaseAdmin.auth.admin.getUserById(finalAuthorId);
       if (userData?.user) {
         finalAuthorName = getDisplayName(userData.user);
-        // Colunista (tem as permissões do contribuidor) escreve só opinião: a categoria é sempre Opinião, venha o que vier do formulário.
-        if (/^colunista$/i.test(siteAccess(userData.user)?.role ?? '')) {
+        // Colunista (nível próprio ou somado a outro papel) escreve só opinião: a categoria é sempre Opinião, sem destaque, venha o que vier do formulário.
+        // Quem publica (Editor e colunista) publica direto; o colunista simples fica nos pendentes. Isso decide-o `canPublish`, não este bloco.
+        const access = siteAccess(userData.user);
+        isColumnist = access?.colunista === true || /^colunista$/i.test(access?.role ?? '');
+        if (isColumnist) {
           payload.category = 'Opinião';
           payload.categories = [];
+          payload.featured = false;
         }
       }
     }
@@ -157,10 +165,15 @@ export async function POST(request: Request) {
       }
       
       const updatePayload: any = { ...payload };
+      // Estado e sítio de antes da gravação: a categoria/endereço antigos também têm de se refazer.
+      const { data: before } = await supabaseAdmin.from('news').select('*').eq('id', id).eq('site_id', SITE_ID).maybeSingle();
+      // Quem escreve notícias não escreve Opinião (um artigo que já é de Opinião pode ser editado por quem tem permissão para o fazer).
+      if (!isColumnist && [payload.category, ...(Array.isArray(payload.categories) ? payload.categories : [])].some(isOpinion) && ![before?.category, ...(Array.isArray(before?.categories) ? before.categories : [])].some(isOpinion)) {
+        return NextResponse.json({ error: NOT_OPINION_MSG }, { status: 400 });
+      }
       // Editar não "desarquiva" nem tira do lixo/rascunho: nesses casos mantém-se o estado actual.
       if (canPublish) {
-        const { data: current } = await supabaseAdmin.from('news').select('status').eq('id', id).eq('site_id', SITE_ID).maybeSingle();
-        if (['trash', 'archived', 'draft'].includes(String(current?.status ?? '').toLowerCase())) delete updatePayload.status;
+        if (['trash', 'archived', 'draft'].includes(String(before?.status ?? '').toLowerCase())) delete updatePayload.status;
       }
       if (finalAuthorName) {
         updatePayload.author_name = finalAuthorName;
@@ -181,9 +194,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Notícia não encontrada: nada foi actualizado.' }, { status: 404 });
       }
       await applySuggestion(data.suggest, canPublish, updateData?.[0]?.slug);
-      refreshPublicPages();
+      refreshPublicPages(before ?? {}, updateData[0] ?? {});
       return NextResponse.json({ success: true, data: updateData, warning });
     } else {
+      if (!isColumnist && [payload.category, ...(Array.isArray(payload.categories) ? payload.categories : [])].some(isOpinion)) {
+        return NextResponse.json({ error: NOT_OPINION_MSG }, { status: 400 });
+      }
       const insertPayload: any = { 
         ...payload, 
         author_name: finalAuthorName 
@@ -200,7 +216,7 @@ export async function POST(request: Request) {
 
       if (error) throw error;
       await applySuggestion(data.suggest, canPublish, insertData?.[0]?.slug);
-      refreshPublicPages();
+      refreshPublicPages(insertData?.[0] ?? {});
       return NextResponse.json({ success: true, data: insertData, warning });
     }
   } catch (error: any) {

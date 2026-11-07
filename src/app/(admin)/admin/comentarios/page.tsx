@@ -124,7 +124,7 @@ export default function ComentariosPage() {
 
       <div className="border border-[#ccd0d4] bg-white md:border-t-0">
         {loading && items.length === 0 ? (
-          <div className="p-10 text-center"><Spinner size={40} className="mx-auto" /></div>
+          <div className="flex min-h-[calc(100vh-160px)] items-center justify-center"><Spinner size={40} /></div>
         ) : items.length === 0 ? (
           <p className="p-6 text-sm text-gray-500">Nenhum comentário aqui.</p>
         ) : (

@@ -23,7 +23,11 @@ export default function AdminPageRedirect() {
         return;
       }
 
-      // Redirect based on role
+      // Redirect based on role (colunista: só tem os seus artigos)
+      if (user.colunista) {
+        router.push('/admin/colunista');
+        return;
+      }
       switch (user.role) {
         case 'admin':
           router.push('/admin/dashboard');

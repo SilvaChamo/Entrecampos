@@ -4,7 +4,7 @@ import { cookieOptions, SESSION_COOKIE, signSession } from '@/lib/local-session'
 import { mapRole } from '@/lib/auth';
 import { clientIp, serverDb } from '@/lib/antispam';
 import { tooManyAttempts } from '@/lib/rate-limit';
-import { siteAccess, withSiteAccess } from '@/lib/site-accounts';
+import { siteAccess, withSiteAccess, effectiveRole } from '@/lib/site-accounts';
 
 /**
  * Entrada com Google (o Supabase trata do OAuth). Recebe o token da sessão do Supabase, confirma-o no servidor e
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const meta = user.user_metadata || {};
     const name = meta.full_name || meta.name || email.split('@')[0];
-    const payload = { id: user.id, email, name: String(name), role: mapRole(access.role) };
+    const payload = { id: user.id, email, name: String(name), role: mapRole(effectiveRole(access)), colunista: /^colunista$/i.test(access.role) };
     const res = NextResponse.json({ user: payload });
     res.cookies.set(SESSION_COOKIE, signSession(payload), cookieOptions());
     return res;

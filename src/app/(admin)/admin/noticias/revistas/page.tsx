@@ -62,7 +62,7 @@ export default function ReviewedNewsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={4} className="p-10 text-center"><Spinner size={32} className=" mx-auto" /></td></tr>
+              <tr><td colSpan={4} className="h-[55vh] p-10 text-center align-middle"><Spinner size={32} className=" mx-auto" /></td></tr>
             ) : news.length === 0 ? (
               <tr><td colSpan={4} className="p-10 text-center text-gray-500">Ainda não há notícias publicadas.</td></tr>
             ) : (

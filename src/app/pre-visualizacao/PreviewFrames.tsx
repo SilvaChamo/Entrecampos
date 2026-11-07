@@ -44,7 +44,7 @@ const GROUPS: { label: string; pages: { label: string; path: string }[] }[] = [
       { label: 'Executiva', path: '/executiva' },
       { label: 'Entrar', path: '/login' },
       { label: 'Registar', path: '/register' },
-      { label: 'Recuperar palavra-passe', path: '/recuperar-senha' },
+      { label: 'Recuperar senha', path: '/recuperar-senha' },
     ],
   },
 ];

@@ -8,14 +8,20 @@ import type { SupabaseClient, User } from '@supabase/supabase-js';
  */
 export const SITE_KEY = 'entrecampos';
 
-export type SiteAccess = { role: string; approved: boolean };
+/**
+ * Segundos níveis, somados ao papel: `colunista` (Editor/Administrador que também é colunista) e `editor` (Colunista que também é editor).
+ */
+export type SiteAccess = { role: string; approved: boolean; colunista?: boolean; editor?: boolean };
 
 export function siteAccess(user: Pick<User, 'app_metadata'> | null | undefined): SiteAccess | null {
   const raw = user?.app_metadata?.[SITE_KEY];
   if (!raw || typeof raw !== 'object') return null;
-  const { role, approved } = raw as { role?: unknown; approved?: unknown };
-  return { role: typeof role === 'string' && role ? role : 'Subscritor', approved: approved === true };
+  const { role, approved, colunista, editor } = raw as { role?: unknown; approved?: unknown; colunista?: unknown; editor?: unknown };
+  return { role: typeof role === 'string' && role ? role : 'Subscritor', approved: approved === true, colunista: colunista === true, editor: editor === true };
 }
+
+/** Papel que decide as permissões: Colunista que também é editor tem as do Editor. */
+export const effectiveRole = (a: Pick<SiteAccess, 'role' | 'editor'>) => (a.editor === true && /^colunista$/i.test(a.role) ? 'Editor' : a.role);
 
 export const isSiteAccount = (user: Pick<User, 'app_metadata'> | null | undefined) => siteAccess(user) !== null;
 

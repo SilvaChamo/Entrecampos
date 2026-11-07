@@ -6,6 +6,7 @@ import { supabase, SITE_ID } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import ImageChooser, { type ChosenImage } from '@/components/Admin/ImageChooser';
 import dynamic from 'next/dynamic';
+import Spinner from '@/components/Common/Spinner';
 import {
   ImageIcon,
   Key,
@@ -15,7 +16,19 @@ import {
 } from 'lucide-react';
 
 // O editor só corre no navegador
-const RichEditor = dynamic(() => import('@/components/Admin/RichEditor'), { ssr: false });
+// O editor de texto é pesado: começa a descarregar assim que este ficheiro carrega (antes de o formulário aparecer) e, enquanto
+// não chega, mostra uma caixa com o aviso em vez de um espaço em branco.
+const loadRichEditor = () => import('@/components/Admin/RichEditor');
+if (typeof window !== 'undefined') void loadRichEditor();
+const RichEditor = dynamic(loadRichEditor, {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-[360px] flex-col items-center justify-center gap-3 text-[13px] text-[#50575e]">
+      <Spinner size={32} className="mx-auto" />
+      A carregar o editor de texto…
+    </div>
+  ),
+});
 
 const CATEGORIES = [
   'Fruticultura', 'Gestão agrícola', 'Histórias inspiradoras',
@@ -201,6 +214,16 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     return () => window.removeEventListener('resize', fit);
   }, [formData.title]);
 
+  // Colunista (nível próprio ou somado a outro): só escreve artigos de Opinião, por isso não tem os cards de categorias nem de imagem de destaque.
+  // Quem escreve notícias não escreve Opinião. O servidor impõe as mesmas regras ao gravar.
+  const [isColumnist, setIsColumnist] = useState(false);
+  useEffect(() => {
+    fetch('/api/admin/users/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setIsColumnist(data?.user?.colunista === true))
+      .catch(() => {});
+  }, []);
+
   // Categorias reais (as do menu e as que já têm notícias): vêm do servidor; a lista fixa serve só de plano B.
   const [categoryLabels, setCategoryLabels] = useState<string[]>(CATEGORIES);
   useEffect(() => {
@@ -243,6 +266,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          ...(isColumnist ? { category: 'Opinião', categories: ['opiniao'], featured: false, suggest: false } : {}),
           image_url: imageUrl,
           isEdit,
           site_id: SITE_ID,
@@ -257,7 +281,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
 
       const result = await response.json().catch(() => ({}));
       alert(`Notícia ${isEdit ? 'actualizada' : 'criada'} com sucesso!${result.warning ? `\n\n${result.warning}` : ''}`);
-      router.push('/admin/noticias');
+      router.push(isColumnist ? '/admin/meus-artigos' : '/admin/noticias');
     } catch (err: any) {
       alert('Erro ao guardar: ' + err.message);
     } finally {
@@ -382,7 +406,8 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
             </div>
           </div>
 
-          {/* Categories Box */}
+          {/* Categories Box (colunistas não a têm: escrevem só Opinião) */}
+          {!isColumnist && (
           <div className="bg-white border border-[#ccd0d4] rounded-[8px] overflow-hidden shadow-sm">
             <CollapsibleHeader title="Categorias" open={!collapsed.categories} onToggle={() => toggleCard('categories')} />
 
@@ -422,7 +447,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
               <div className="p-3 bg-white max-h-80 overflow-y-auto">
                 <div className="space-y-1.5">
                   {/* Categorias da notícia que não estão na lista (ex.: vindas da Base) também aparecem, já marcadas. */}
-                  {[...categoryLabels, ...formData.categories.filter((c) => !categoryLabels.some((k) => catKey(k) === catKey(c))).map((c) => c.charAt(0).toUpperCase() + c.slice(1))].map(cat => (
+                  {[...categoryLabels.filter((k) => catKey(k) !== 'opiniao' || formData.categories.some((c) => catKey(c) === 'opiniao')), ...formData.categories.filter((c) => !categoryLabels.some((k) => catKey(k) === catKey(c))).map((c) => c.charAt(0).toUpperCase() + c.slice(1))].map(cat => (
                     <label key={cat} className="flex items-start gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -438,7 +463,10 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
             </div>
           </div>
 
-          {/* Featured Image Box */}
+          )}
+
+          {/* Featured Image Box (colunistas não a têm) */}
+          {!isColumnist && (
           <div className="bg-white border border-[#ccd0d4] rounded-[8px] overflow-hidden shadow-sm">
             <CollapsibleHeader title="Imagem de destaque" open={!collapsed.image} onToggle={() => toggleCard('image')} />
             <div className={`p-3 ${collapsed.image ? 'hidden' : ''}`}>
@@ -474,6 +502,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
               )}
             </div>
           </div>
+          )}
 
         </div>
 

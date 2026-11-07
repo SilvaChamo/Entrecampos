@@ -6,9 +6,8 @@ import ShareLink from '@/components/Expnews/ShareLink';
 import { CardTitle, ListItem, Meta, NewsCard, Tag, Thumb, longDate } from '@/components/Expnews/blocks';
 import CategorySection, { type CategoryGroup } from '@/components/Expnews/CategorySection';
 import CategorySlide from '@/components/Expnews/CategorySlide';
-import CategoryStrip from '@/components/Expnews/CategoryStrip';
 import ReadingSuggestions from '@/components/Expnews/ReadingSuggestions';
-import ExchangeCard from '@/components/Expnews/ExchangeCard';
+import WeatherCard from '@/components/Expnews/WeatherCard';
 import OpportunityList from '@/components/Expnews/OpportunityList';
 import NewsletterForm from '@/components/Forms/NewsletterForm';
 import NewsTicker from '@/components/Expnews/NewsTicker';
@@ -105,13 +104,17 @@ function Overlay({
 }
 
 export default async function HomePrincipal() {
-  const [slides, { posts }, suggestSlugs, columnists, { posts: allPosts }] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getColumnists(), getAllPosts()]);
-  // Colunistas: o card mostra o artigo de Opinião fixado ou, sem fixado, o mais recente do autor; sem artigos, o colunista não aparece.
+  const [featured, { posts: homePosts }, suggestSlugs, columnists, { posts: allPosts }] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getColumnists(), getAllPosts()]);
+  // Artigos de opinião (muitos sem foto) não se misturam com as notícias da home: só aparecem no bloco Colunistas e na categoria Opinião.
+  const notOpinion = (p: Post) => p.categorySlug !== 'opiniao' && !p.extraCategories.some((c) => c.slug === 'opiniao');
+  const slides = featured.filter(notOpinion);
+  const posts = homePosts.filter(notOpinion);
+  // Colunistas: o card mostra o artigo de Opinião mais recente do autor; sem artigos, o card aparece só com o nome, a foto e as redes.
   const opinion = opinionPosts(allPosts);
   const columnistItems = columnists.flatMap((columnist) => {
-    const mine = opinion.filter((p) => sameAuthor(p.author, columnist.autor));
-    const p = mine.find((x) => x.slug === columnist.artigo) ?? mine[0];
-    return p ? [{ columnist, post: { slug: p.slug, title: p.title } }] : [];
+    // O colunista é uma conta: os seus artigos são os de Opinião com o seu nome como autor (o mais recente no card). Sem artigos, o card aparece na mesma (só com a foto, o nome e as redes).
+    const p = opinion.find((x) => sameAuthor(x.author, columnist.autor));
+    return [{ columnist, post: p ? { slug: p.slug, title: p.title } : null }];
   });
 
   if (posts.length === 0) {
@@ -148,10 +151,10 @@ export default async function HomePrincipal() {
   const family = (slugs: string[]): CategoryGroup[] =>
     slugs.map((slug) => ({ slug, label: categoryLabel(slug), posts: posts.filter((p) => p.categorySlug === slug).map(slim) }));
   const communityGroups = family(['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida']);
-  const agroGroups = family(['agricultura', 'fruticultura', 'agro-negocio', 'mulher-agrario', 'sector-agrario', 'entrevista']);
+  const agroGroups = family(['agricultura', 'fruticultura', 'mulher-agrario', 'sector-agrario', 'entrevista']);
   // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Oportunidades que não estão no slide.
   const heroLatest = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 5).map(slim);
-  const agroStrip = posts.filter((p) => p.categorySlug === 'agro-negocio' || p.extraCategories.some((c) => c.slug === 'agro-negocio')).slice(0, 12).map(slim);
+  const agroBusinessGroup: CategoryGroup[] = [{ slug: 'agro-negocio', label: categoryLabel('agro-negocio'), posts: posts.filter((p) => p.categorySlug === 'agro-negocio' || p.extraCategories.some((c) => c.slug === 'agro-negocio')).map(slim) }];
   // Oportunidades: todas as notícias da categoria (fora do slide principal), 6 por página.
   const opportunities = posts.filter((p) => p.categorySlug === 'oportunidades' && !inSlides.has(p.slug)).slice(0, 60).map(slim);
   // Sugestões de leitura (fim da página): as notícias activadas no painel; enquanto nenhuma estiver activada, as mais recentes. O navegador escolhe 8 à sorte.
@@ -192,9 +195,9 @@ export default async function HomePrincipal() {
                 <CategorySection groups={agroGroups} layout="grelha" arrowsOnTop reveal />
               </div>
 
-              {/* Coluna secundária (1.ª parte): termina em "Publicações recentes", por cima da faixa Agro-negócio */}
+              {/* Coluna secundária (1.ª parte): termina em "Publicações recentes", por cima dos Colunistas */}
               <StickyColumn className="min-w-0 space-y-3">
-                <ExchangeCard />
+                <WeatherCard />
 
                 <Card title="Sabores e curiosidades">
                   <Overlay post={food[0]} className="h-[170px]" titleClass="text-[12px]" />
@@ -223,15 +226,8 @@ export default async function HomePrincipal() {
               </StickyColumn>
             </div>
 
-            {/* Faixa Agro-negócio: atravessa a barra lateral (no lugar do antigo espaço publicitário) */}
-            <CategoryStrip posts={agroStrip} label={categoryLabel('agro-negocio')} />
-
-            {/* Colunistas: antes dos vídeos; sem colunistas o bloco não aparece */}
-            {columnistItems.length > 0 && (
-              <Card title="Colunistas" plain>
-                <Columnists items={columnistItems} />
-              </Card>
-            )}
+            {/* Colunistas: carrossel numa linha (no lugar da antiga faixa Agro-negócio), antes dos vídeos; sem colunistas o bloco não aparece */}
+            {columnistItems.length > 0 && <Columnists items={columnistItems} />}
 
             <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
               <div className="min-w-0 space-y-3">
@@ -267,6 +263,9 @@ export default async function HomePrincipal() {
                     </div>
                   </div>
                 </Card>
+
+                {/* Agro-negócio: depois dos vídeos e antes de Oportunidades */}
+                <CategorySection groups={agroBusinessGroup} arrowsOnTop />
 
                 <Card title="Oportunidades" plain>
                   <OpportunityList posts={opportunities} />

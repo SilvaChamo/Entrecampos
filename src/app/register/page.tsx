@@ -48,7 +48,7 @@ export default function RegisterPage() {
         router.push('/admin');
         return;
       } catch {
-        setInfo('Conta criada. Entre com o seu e-mail e palavra-passe.');
+        setInfo('Conta criada. Entre com o seu e-mail e senha.');
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Erro ao registar conta.');
@@ -120,7 +120,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Palavra-passe</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -137,7 +137,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  aria-label={showPassword ? 'Ocultar palavra-passe' : 'Mostrar palavra-passe'}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>

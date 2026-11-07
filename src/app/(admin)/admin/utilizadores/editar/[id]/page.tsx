@@ -29,6 +29,12 @@ export default function EditUserPage() {
     profissao: '',
     cargo: '',
     role: 'Subscritor',
+    colunista: false,
+    editor: false,
+    facebook: '',
+    instagram: '',
+    linkedin: '',
+    x: '',
     isAdmin: false
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -108,7 +114,7 @@ export default function EditUserPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword && newPassword !== confirmPassword) {
-      alert('As palavras-passe não coincidem.');
+      alert('As senhas não coincidem.');
       return;
     }
     setSaving(true);
@@ -145,13 +151,20 @@ export default function EditUserPage() {
           alcunha: form.alcunha,
           displayNameType: form.displayNameType,
           role: form.role,
+          colunista: ['Editor', 'Administrador'].includes(form.role) && form.colunista === true,
+          editor: form.role === 'Colunista' && form.editor === true,
           bio: form.bio,
           website: form.website,
           avatarUrl: finalAvatarUrl,
           password: newPassword || undefined,
           telefone: form.telefone,
           profissao: form.profissao,
-          cargo: form.cargo
+          cargo: form.cargo,
+          // Redes sociais (aparecem no card da home quando a conta é de colunista).
+          facebook: form.facebook,
+          instagram: form.instagram,
+          linkedin: form.linkedin,
+          x: form.x
         }),
       });
       const data = await res.json();
@@ -168,8 +181,8 @@ export default function EditUserPage() {
 
   if (loading) {
     return (
-      <div className="p-10 text-center">
-        <Spinner size={32} className=" mx-auto mb-2" />
+      <div className="flex min-h-[calc(100vh-160px)] items-center justify-center">
+        <Spinner size={32} />
       </div>
     );
   }
@@ -376,16 +389,46 @@ export default function EditUserPage() {
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                 </AdminSelect>
                 {form.isAdmin && <p className="text-[11px] text-[#50575e] mt-1">O papel do administrador não pode ser alterado.</p>}
+                {['Editor', 'Administrador'].includes(form.role) && (
+                  <label className="mt-2 flex items-center gap-2 text-[13px] text-[#1d2327]">
+                    <input type="checkbox" checked={form.colunista === true} onChange={e => setForm({...form, colunista: e.target.checked})} className="h-4 w-4" />
+                    <span>Também é colunista</span>
+                  </label>
+                )}
+                {form.role === 'Colunista' && (
+                  <label className="mt-2 flex items-center gap-2 text-[13px] text-[#1d2327]">
+                    <input type="checkbox" checked={form.editor === true} onChange={e => setForm({...form, editor: e.target.checked})} className="h-4 w-4" />
+                    <span>Também é editor</span>
+                  </label>
+                )}
               </td>
             </tr>
 
-            {/* Secção: Palavra-passe */}
+            {/* Redes sociais: sempre visíveis; aparecem no card da home quando a conta é de colunista. */}
+            {(
+              <>
+                <tr><td colSpan={2} className="pt-8 pb-2 border-b border-[#ccd0d4]">
+                  <h2 className="text-[15px] font-bold text-[#1d2327]">Redes sociais</h2>
+                </td></tr>
+                {([['facebook', 'Facebook', 'https://facebook.com/...'], ['instagram', 'Instagram', 'https://instagram.com/...'], ['linkedin', 'LinkedIn', 'https://linkedin.com/in/...'], ['x', 'X (Twitter)', 'https://x.com/...']] as const).map(([key, label, ph]) => (
+                  <tr key={key} className="border-b border-[#f0f0f1]">
+                    <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">{label}</th>
+                    <td className="p-3">
+                      <input type="url" value={form[key] || ''} onChange={e => setForm({...form, [key]: e.target.value})} placeholder={ph}
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]" />
+                    </td>
+                  </tr>
+                ))}
+              </>
+            )}
+
+            {/* Secção: Senha */}
             <tr><td colSpan={2} className="pt-8 pb-2 border-b border-[#ccd0d4]">
-              <h2 className="text-[15px] font-bold text-[#1d2327]">Palavra-passe</h2>
+              <h2 className="text-[15px] font-bold text-[#1d2327]">Senha</h2>
             </td></tr>
 
             <tr className="border-b border-[#f0f0f1]">
-              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Nova palavra-passe</th>
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Nova senha</th>
               <td className="p-3">
                 <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
                   className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]"
@@ -394,13 +437,13 @@ export default function EditUserPage() {
             </tr>
 
             <tr className="border-b border-[#f0f0f1]">
-              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Confirmar palavra-passe</th>
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Confirmar senha</th>
               <td className="p-3">
                 <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                   className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]"
-                  placeholder="Repita a nova palavra-passe" />
+                  placeholder="Repita a nova senha" />
                 {newPassword && confirmPassword && newPassword !== confirmPassword && (
-                  <p className="text-[11px] text-[#d63638] mt-1">As palavras-passe não coincidem.</p>
+                  <p className="text-[11px] text-[#d63638] mt-1">As senhas não coincidem.</p>
                 )}
               </td>
             </tr>
@@ -413,7 +456,7 @@ export default function EditUserPage() {
                   onClick={() => alert(`E-mail de reposição enviado para ${form.email}`)}
                   className="h-8 px-4 border border-[#00a651] text-[#008f45] text-[13px] rounded-md hover:bg-[#f6f7f7] transition-all"
                 >
-                  Enviar e-mail de reposição de palavra-passe
+                  Enviar e-mail de reposição de senha
                 </button>
               </td>
             </tr>

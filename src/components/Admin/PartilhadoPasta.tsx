@@ -113,7 +113,7 @@ function ListaPasta({ pasta, withTitle }: { pasta: string; withTitle: boolean })
     <div className="text-[#2c3338]">
       {withTitle && <h1 className="mb-4 text-2xl font-normal">{LABELS[pasta] ?? pasta}</h1>}
       {error && <div className="rounded border border-[#d63638] bg-white p-3 text-sm text-[#d63638]">{error}</div>}
-      {!files && !error && <div className="flex justify-center py-20"><Spinner /></div>}
+      {!files && !error && <div className="flex min-h-[calc(100vh-160px)] items-center justify-center"><Spinner /></div>}
       {files && files.length === 0 && <p className="py-10 text-center text-sm text-[#50575e]">Esta pasta ainda está vazia. Use “Sincronizar agora” na página Partilhado.</p>}
 
       {files && files.length > 0 && (

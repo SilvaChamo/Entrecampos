@@ -227,7 +227,7 @@ export default function ArquivoPage() {
       {uploadMsg && <div role="status" className="mb-4 rounded border border-[#00a651] bg-white p-3 text-sm">{uploadMsg}</div>}
       {notice && <div className="mb-4 rounded border border-[#00a651] bg-white p-3 text-sm">{notice}</div>}
       {error && <div className="mb-4 rounded border border-[#d63638] bg-white p-3 text-sm text-[#d63638]">{error}</div>}
-      {!aberta && !folders && !error && <div className="flex justify-center py-20"><Spinner /></div>}
+      {!aberta && !folders && !error && <div className="flex min-h-[calc(100vh-160px)] items-center justify-center"><Spinner /></div>}
       {!aberta && folders && folders.length === 0 && (
         <p className="rounded border border-dashed border-[#ccd0d4] bg-white py-12 text-center text-sm text-[#50575e]">O arquivo ainda não tem pastas. Clique em “Nova pasta”, dê-lhe um nome e carregue as fotos.</p>
       )}

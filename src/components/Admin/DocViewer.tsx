@@ -65,7 +65,7 @@ export default function DocViewer({ name, path, onClose }: Props) {
           {error ? (
             <p className="p-6 text-sm text-[#d63638]">{error}</p>
           ) : !view ? (
-            <div className="flex justify-center py-20"><Spinner /></div>
+            <div className="flex min-h-[calc(100vh-160px)] items-center justify-center"><Spinner /></div>
           ) : view.kind === 'frame' ? (
             <iframe title={name} src={view.src} className="h-full w-full border-0 bg-white" />
           ) : view.kind === 'html' ? (

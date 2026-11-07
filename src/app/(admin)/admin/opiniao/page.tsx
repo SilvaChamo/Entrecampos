@@ -17,24 +17,22 @@ interface NewsItem {
 }
 
 const STATUS: Record<string, string> = { published: 'Publicado', pending: 'Pendente', draft: 'Rascunho', archived: 'Arquivado', trash: 'Lixo' };
-const isOpinion = (n: NewsItem) => (n.category || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim() === 'opiniao';
-const opinionOf = (all: NewsItem[] | undefined) => (all ?? []).filter((n) => isOpinion(n) && String(n.status).toLowerCase() !== 'trash');
 
 /** Artigos de opinião: lista própria (muitos não têm foto, por isso não vão para a lista de notícias). */
 export default function ArtigosDeOpiniaoPage() {
-  const [items, setItems] = useState<NewsItem[]>(() => opinionOf(adminCacheGet<NewsItem[]>('news')));
-  const [loading, setLoading] = useState(() => adminCacheGet('news') === undefined);
+  const [items, setItems] = useState<NewsItem[]>(() => adminCacheGet<NewsItem[]>('opinion') ?? []);
+  const [loading, setLoading] = useState(() => adminCacheGet('opinion') === undefined);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (adminCacheGet('news') === undefined) setLoading(true);
+    if (adminCacheGet('opinion') === undefined) setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/news/list', { credentials: 'include' });
+      const res = await fetch('/api/admin/news/list?tipo=opiniao', { credentials: 'include' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Não foi possível carregar os artigos.');
-      adminCacheSet('news', data.items);
-      setItems(opinionOf(data.items as NewsItem[]));
+      adminCacheSet('opinion', data.items);
+      setItems(data.items as NewsItem[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar.');
     } finally {
@@ -50,8 +48,8 @@ export default function ArtigosDeOpiniaoPage() {
     <div className="ec-page text-[#2c3338]">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl text-[#1d2327]">Artigos de Opinião</h1>
-          <p className="text-[#50575e] mt-1">Os artigos da categoria Opinião e o colunista autor de cada um</p>
+          <h1 className="text-2xl text-[#1d2327]">Todos os artigos de opinião</h1>
+          <p className="text-[#50575e] mt-1">Todos os artigos da categoria Opinião e o colunista autor de cada um</p>
         </div>
         <Link href="/admin/noticias/nova" className="flex h-9 items-center gap-2 px-4 text-[13px] bg-[#00a651] text-white rounded-md hover:bg-[#008f45]">
           Escrever artigo
@@ -74,7 +72,7 @@ export default function ArtigosDeOpiniaoPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="p-10 text-center"><Spinner size={32} className="mx-auto" /></td>
+                <td colSpan={5} className="h-[55vh] p-10 text-center align-middle"><Spinner size={32} className="mx-auto" /></td>
               </tr>
             ) : items.length === 0 ? (
               <tr>

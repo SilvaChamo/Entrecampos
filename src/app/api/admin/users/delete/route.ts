@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-guard';
-import { getSiteUser, onlyThisSite, siteAccess, SITE_KEY } from '@/lib/site-accounts';
+import { effectiveRole, getSiteUser, onlyThisSite, siteAccess, SITE_KEY } from '@/lib/site-accounts';
+import { refreshColumnists } from '@/lib/refresh-site';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
       // Mesma regra da edição: ninguém elimina contas de nível igual ou superior ao seu; só o administrador elimina administradores.
       const RANK: Record<string, number> = { Administrador: 3, Editor: 2, Contribuidor: 1, Colunista: 1, Subscritor: 0 };
       const callerRank = ({ admin: 3, editor: 2, contribuidor: 1, guest: 0 } as Record<string, number>)[guard.session.role] ?? 0;
-      const targetRank = RANK[siteAccess(target)!.role] ?? 0;
+      const targetRank = RANK[effectiveRole(siteAccess(target)!)] ?? 0;
       if (targetRank > callerRank || (targetRank === callerRank && guard.session.role !== 'admin')) {
         errors.push(`${userId}: sem permissão para eliminar um utilizador de nível igual ou superior ao seu`);
         continue;
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: errors.join('; ') }, { status: 500 });
     }
 
+    refreshColumnists();
     return NextResponse.json({
       success: true,
       deleted: targetIds.length - errors.length,

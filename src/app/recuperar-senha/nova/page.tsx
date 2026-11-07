@@ -16,7 +16,7 @@ function Form() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (password !== again) return setError('As palavras-passe não coincidem.');
+    if (password !== again) return setError('As senhas não coincidem.');
     setLoading(true);
     try {
       const res = await fetch('/api/auth/recover/confirm', {
@@ -25,10 +25,10 @@ function Form() {
         body: JSON.stringify({ token, password }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
-      if (!res.ok) throw new Error(data.error || 'Não foi possível guardar a palavra-passe.');
-      setDone(data.message || 'Palavra-passe alterada. Já pode entrar.');
+      if (!res.ok) throw new Error(data.error || 'Não foi possível guardar a senha.');
+      setDone(data.message || 'Senha alterada. Já pode entrar.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível guardar a palavra-passe.');
+      setError(err instanceof Error ? err.message : 'Não foi possível guardar a senha.');
     } finally {
       setLoading(false);
     }
@@ -39,7 +39,7 @@ function Form() {
       <div className="max-w-md w-full bg-white shadow-xl border border-[#ccd0d4] overflow-hidden">
         <div className="bg-[#1d2327] p-8 text-white text-center">
           <h1 className="text-2xl font-bold mb-2">EntreCampos</h1>
-          <p className="text-gray-400 text-sm">Criar nova palavra-passe</p>
+          <p className="text-gray-400 text-sm">Criar nova senha</p>
         </div>
         <form onSubmit={submit} className="p-8 space-y-6">
           {!token && <p className="text-sm text-red-700">Ligação inválida. <Link href="/recuperar-senha" className="underline">Peça uma nova.</Link></p>}
@@ -56,7 +56,7 @@ function Form() {
             </>
           ) : (
             <>
-              {(['Nova palavra-passe', 'Repetir palavra-passe'] as const).map((label, i) => (
+              {(['Nova senha', 'Repetir senha'] as const).map((label, i) => (
                 <div key={label}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
                   <div className="relative">
@@ -79,7 +79,7 @@ function Form() {
                 disabled={loading || !token}
                 className="w-full py-3 bg-[#00a651] text-white font-bold hover:bg-[#008f45] transition-all shadow-md flex items-center justify-center gap-2 group disabled:opacity-70"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Guardar palavra-passe <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Guardar senha <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>}
               </button>
             </>
           )}

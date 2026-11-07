@@ -52,7 +52,7 @@ export default function WeatherCard() {
   return (
     <section
       aria-label="Clima local"
-      className="ec-reveal relative overflow-hidden bg-[#0e1a26] p-5 text-white shadow-sm"
+      className="relative overflow-hidden bg-[#0e1a26] p-5 text-white shadow-sm"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/images/clima-bg.jpeg" alt="" className="absolute inset-0 h-full w-full object-cover" />

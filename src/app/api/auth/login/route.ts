@@ -3,9 +3,9 @@ import { cookieOptions, SESSION_COOKIE, signSession } from '@/lib/local-session'
 import { mapRole, translateAuthError } from '@/lib/auth';
 import { verifyBootstrapAdmin } from '@/lib/bootstrap-admin';
 import { clearAttempts, tooManyAttempts } from '@/lib/rate-limit';
-import { siteAccess } from '@/lib/site-accounts';
+import { siteAccess, effectiveRole } from '@/lib/site-accounts';
 
-function startSession(user: { id: string; email: string; name: string; role: 'admin' | 'editor' | 'contribuidor' | 'guest' }, extra: object = {}) {
+function startSession(user: { id: string; email: string; name: string; role: 'admin' | 'editor' | 'contribuidor' | 'guest'; colunista?: boolean }, extra: object = {}) {
   const res = NextResponse.json({ user, ...extra });
   res.cookies.set(SESSION_COOKIE, signSession(user), cookieOptions());
   return res;
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const password = String(body.password || '');
 
     if (!login || !password) {
-      return NextResponse.json({ error: 'Utilizador e palavra-passe são obrigatórios.' }, { status: 400 });
+      return NextResponse.json({ error: 'Utilizador e senha são obrigatórios.' }, { status: 400 });
     }
 
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
@@ -37,12 +37,12 @@ export async function POST(req: NextRequest) {
 
     // 2) Utilizadores do painel (Supabase Auth). Têm de ser e-mails.
     if (!login.includes('@')) {
-      return NextResponse.json({ error: 'Utilizador ou palavra-passe incorrectos.' }, { status: 401 });
+      return NextResponse.json({ error: 'Utilizador ou senha incorrectos.' }, { status: 401 });
     }
 
     const mode = process.env.AUTH_MODE || process.env.NEXT_PUBLIC_AUTH_MODE || 'supabase';
     if (mode === 'local') {
-      return NextResponse.json({ error: 'Utilizador ou palavra-passe incorrectos.' }, { status: 401 });
+      return NextResponse.json({ error: 'Utilizador ou senha incorrectos.' }, { status: 401 });
     }
 
     const { createClient } = await import('@supabase/supabase-js');
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const role = mapRole(access.role);
+    const role = mapRole(effectiveRole(access));
     const name =
       meta.full_name ||
       [meta.first_name, meta.last_name].filter(Boolean).join(' ').trim() ||
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
     clearAttempts(throttleKey);
     return startSession(
-      { id: data.user.id, email: data.user.email || login, name, role },
+      { id: data.user.id, email: data.user.email || login, name, role, colunista: /^colunista$/i.test(access.role) },
       { access_token: data.session?.access_token }
     );
   } catch (err: unknown) {

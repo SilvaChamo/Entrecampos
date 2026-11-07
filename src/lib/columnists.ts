@@ -1,98 +1,74 @@
-import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
+import { unstable_cache } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
+import { siteAccess } from '@/lib/site-accounts';
+import { displayNameOf } from '@/lib/display-name';
+import { gravatarUrl } from '@/lib/gravatar';
 
 /**
- * Colunistas da home: nome, @, foto, redes sociais e o autor cujos artigos de Opinião aparecem no card. Ficam num ficheiro pequeno
- * no armazenamento (como as cores das categorias) e na cache de dados com a etiqueta `columnists`, que gravar limpa.
+ * Colunistas = contas do EntreCAMPOS com o nível Colunista (sozinho ou somado a outro papel, ex.: Editor e colunista).
+ * O nome, a foto e as redes sociais vêm da própria conta (criar/editar utilizador); os artigos são os de Opinião
+ * cujo autor é o nome de exibição da conta. Fica na cache de dados com a etiqueta `columnists`, que criar, editar
+ * e apagar contas limpam (lib/refresh-site.ts: refreshColumnists).
  */
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder',
-  { auth: { autoRefreshToken: false, persistSession: false } }
-);
-const BUCKET = () => process.env.NEXT_PUBLIC_STORAGE_BUCKET || process.env.STORAGE_BUCKET || 'entrecampos-media';
-const FILE = 'partilhado/_config/colunistas.json';
-export const MAX_COLUMNISTS = 12;
-
 export type Columnist = {
+  /** Id da conta. */
   id: string;
   nome: string;
   /** Sem o @; mostra-se como @utilizador por baixo do nome. */
   handle: string;
   foto: string;
-  /** Nome do autor dos artigos (o mesmo que aparece como autor nas notícias): os artigos de Opinião com este autor são os do colunista. */
+  /** Nome de exibição da conta (o mesmo que fica como autor das notícias): os artigos de Opinião com este autor são os do colunista. */
   autor: string;
-  /** Slug do artigo de Opinião fixado no card; vazio = o mais recente do colunista. */
-  artigo: string;
   facebook: string;
   instagram: string;
   linkedin: string;
   x: string;
 };
 
-const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+export const SOCIAL_KEYS = ['facebook', 'instagram', 'linkedin', 'x'] as const;
+
 /** Só ligações https (o painel é de confiança, mas o endereço acaba num <a href> público). */
-const url = (v: unknown) => {
-  const s = str(v, 300);
+export function cleanUrl(v: unknown): string {
+  const s = typeof v === 'string' ? v.trim().slice(0, 300) : '';
   return /^https:\/\/[^\s]+$/i.test(s) ? s : '';
-};
-
-/** Limpa um colunista vindo do ficheiro ou do painel; devolve null se faltar o essencial (nome). */
-export function cleanColumnist(raw: unknown): Columnist | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const r = raw as Record<string, unknown>;
-  const nome = str(r.nome, 80);
-  const id = str(r.id, 40) || Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-  if (!nome || !/^[\w-]+$/.test(id)) return null;
-  return {
-    id,
-    nome,
-    handle: str(r.handle, 40).replace(/^@+/, '').replace(/[^\w.-]/g, ''),
-    foto: url(r.foto),
-    autor: str(r.autor, 80),
-    artigo: /^[\w-]+$/.test(str(r.artigo, 200)) ? str(r.artigo, 200) : '',
-    facebook: url(r.facebook),
-    instagram: url(r.instagram),
-    linkedin: url(r.linkedin),
-    x: url(r.x),
-  };
 }
 
-async function readFile(): Promise<Columnist[]> {
-  const { data, error } = await supabaseAdmin.storage.from(BUCKET()).download(FILE);
-  if (error || !data) return [];
-  try {
-    const raw = JSON.parse(await data.text());
-    return Array.isArray(raw) ? (raw.map(cleanColumnist).filter(Boolean) as Columnist[]).slice(0, MAX_COLUMNISTS) : [];
-  } catch {
-    return [];
+async function readAccounts(): Promise<Columnist[]> {
+  const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { autoRefreshToken: false, persistSession: false } });
+  const list: Columnist[] = [];
+  for (let page = 1; page <= 10; page++) {
+    const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw new Error(error.message);
+    for (const u of data.users) {
+      const access = siteAccess(u);
+      if (!access || !access.approved || !(access.colunista || /^colunista$/i.test(access.role))) continue;
+      const m = (u.user_metadata || {}) as Record<string, unknown>;
+      const nome = displayNameOf(u);
+      list.push({
+        id: u.id,
+        nome,
+        handle: String(m.username || u.email?.split('@')[0] || '').replace(/^@+/, '').replace(/[^\w.-]/g, '').slice(0, 40),
+        // Foto da conta; sem ela, o avatar do e-mail (se o e-mail não tiver, o card mostra as iniciais).
+        foto: cleanUrl(m.avatar_url) || gravatarUrl(u.email),
+        autor: nome,
+        facebook: cleanUrl(m.facebook),
+        instagram: cleanUrl(m.instagram),
+        linkedin: cleanUrl(m.linkedin),
+        x: cleanUrl(m.x),
+      });
+    }
+    if (data.users.length < 1000) break;
   }
+  return list.sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
 }
 
-const cached = unstable_cache(readFile, ['columnists'], { tags: ['columnists'], revalidate: 3600 });
+const cached = unstable_cache(async () => readAccounts(), ['columnists-accounts'], { tags: ['columnists'], revalidate: 604800 });
 
-/** Para o site público (com cache). */
+/** Para o site público (com cache de 7 dias; mudar uma conta limpa-a logo). */
 export async function getColumnists(): Promise<Columnist[]> {
   try {
     return await cached();
   } catch {
     return [];
   }
-}
-
-/** Para o painel: lê sempre directamente do armazenamento. */
-export const loadColumnists = readFile;
-
-/** Grava a lista inteira e limpa a cache do site. */
-export async function saveColumnists(list: Columnist[]) {
-  const { error } = await supabaseAdmin.storage
-    .from(BUCKET())
-    .upload(FILE, Buffer.from(JSON.stringify(list.slice(0, MAX_COLUMNISTS))), { upsert: true, contentType: 'application/json' });
-  if (error) throw new Error(error.message);
-  try {
-    revalidateTag('columnists', { expire: 0 });
-  } catch {
-    /* fora de um pedido */
-  }
-  revalidatePath('/', 'layout');
 }

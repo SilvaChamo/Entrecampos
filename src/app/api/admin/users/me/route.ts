@@ -63,6 +63,8 @@ export async function GET() {
         telefone: user.user_metadata?.telefone || '',
         profissao: user.user_metadata?.profissao || '',
         cargo: user.user_metadata?.cargo || '',
+        // Colunista (nível próprio ou somado a outro): o editor de notícias só deixa escrever artigos de Opinião.
+        colunista: siteAccess(user)!.colunista === true || /^colunista$/i.test(siteAccess(user)!.role),
       },
     });
   } catch {

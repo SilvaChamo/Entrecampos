@@ -177,7 +177,7 @@ export default function TrafegoPage() {
         </div>
       )}
       {error && error !== 'missing_sql' && <div className="rounded border border-[#d63638] bg-white p-3 text-sm text-[#d63638]">{error}</div>}
-      {!stats && !error && <div className="flex justify-center py-20"><Spinner /></div>}
+      {!stats && !error && <div className="flex min-h-[calc(100vh-160px)] items-center justify-center"><Spinner /></div>}
 
       {stats && (
         <>

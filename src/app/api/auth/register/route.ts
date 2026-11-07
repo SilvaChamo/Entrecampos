@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const role = roleToMetadata('guest');
 
     if (!name || !isEmail(email) || password.length < 6 || password.length > 128) {
-      return NextResponse.json({ error: 'Preencha o nome, um e-mail válido e uma palavra-passe com pelo menos 6 caracteres.' }, { status: 400 });
+      return NextResponse.json({ error: 'Preencha o nome, um e-mail válido e uma senha com pelo menos 6 caracteres.' }, { status: 400 });
     }
 
     // A conta é criada AQUI, no servidor, depois de passar o anti-spam (a base recusa registos directos de contas

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AlertCircle, ChevronRight, Loader2, Mail } from 'lucide-react';
 import AntiSpamFields, { resetAntiSpam } from '@/components/Antispam/AntiSpamFields';
 
-/** Recuperar palavra-passe: pede o e-mail e envia a ligação para criar uma nova. Com anti-spam (honeypot + Turnstile). */
+/** Recuperar senha: pede o e-mail e envia a ligação para criar uma nova. Com anti-spam (honeypot + Turnstile). */
 export default function RecuperarSenhaPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ export default function RecuperarSenhaPage() {
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
       if (!res.ok) throw new Error(data.error || 'Não foi possível enviar o pedido.');
-      setInfo(data.message || 'Se o e-mail estiver registado, receberá uma ligação para criar nova palavra-passe.');
+      setInfo(data.message || 'Se o e-mail estiver registado, receberá uma ligação para criar nova senha.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível enviar o pedido.');
     } finally {
@@ -40,7 +40,7 @@ export default function RecuperarSenhaPage() {
       <div className="max-w-md w-full bg-white shadow-xl border border-[#ccd0d4] overflow-hidden">
         <div className="bg-[#1d2327] p-8 text-white text-center">
           <h1 className="text-2xl font-bold mb-2">EntreCampos</h1>
-          <p className="text-gray-400 text-sm">Recuperar palavra-passe</p>
+          <p className="text-gray-400 text-sm">Recuperar senha</p>
         </div>
         <form onSubmit={submit} className="p-8 space-y-6">
           {error && (

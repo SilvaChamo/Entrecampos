@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Camera, Trash2, Shield, Loader2 } from 'lucide-react';
+import { Camera, Trash2, Shield, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import AdminSelect from '@/components/Admin/AdminSelect';
 
@@ -23,12 +23,24 @@ export default function AddUserPage() {
     telefone: '',
     profissao: '',
     cargo: '',
-    role: 'Subscritor'
+    role: 'Subscritor',
+    colunista: false,
+    editor: false,
+    facebook: '',
+    instagram: '',
+    linkedin: '',
+    x: ''
   });
+
+  // "Adicionar colunista" (página Colunistas) abre este formulário já com o nível Colunista.
+  React.useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('papel') === 'colunista') setForm((f) => ({ ...f, role: 'Colunista' }));
+  }, []);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -86,7 +98,7 @@ export default function AddUserPage() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('As palavras-passe não coincidem.');
+      setError('As senhas não coincidem.');
       return;
     }
 
@@ -121,6 +133,9 @@ export default function AddUserPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          // Segundos níveis: Colunista pode também ser editor; Editor e Administrador podem também ser colunista.
+          colunista: ['Editor', 'Administrador'].includes(form.role) && form.colunista,
+          editor: form.role === 'Colunista' && form.editor,
           password,
           avatarUrl
         }),
@@ -286,22 +301,32 @@ export default function AddUserPage() {
             </tr>
 
             <tr><td colSpan={2} className="pt-8 pb-2 border-b border-[#ccd0d4]">
-              <h2 className="text-[15px] font-bold text-[#1d2327]">Palavra-passe</h2>
+              <h2 className="text-[15px] font-bold text-[#1d2327]">Senha</h2>
             </td></tr>
 
             <tr className="border-b border-[#f0f0f1]">
-              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Palavra-passe (obrigatório)</th>
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Senha (obrigatório)</th>
               <td className="p-3">
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]" />
+                <div className="relative w-full max-w-[300px]">
+                  <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
+                    className="h-8 pl-2 pr-9 border border-[#ccd0d4] rounded-md text-[13px] w-full outline-none focus:border-[#00a651]" />
+                  <button type="button" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'} className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-[#50575e] hover:text-[#1d2327]">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </td>
             </tr>
 
             <tr className="border-b border-[#f0f0f1]">
-              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Confirmar palavra-passe <span className="text-[#d63638]">*</span></th>
+              <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">Confirmar senha <span className="text-[#d63638]">*</span></th>
               <td className="p-3">
-                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required
-                  className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]" />
+                <div className="relative w-full max-w-[300px]">
+                  <input type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required
+                    className="h-8 pl-2 pr-9 border border-[#ccd0d4] rounded-md text-[13px] w-full outline-none focus:border-[#00a651]" />
+                  <button type="button" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'} className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-[#50575e] hover:text-[#1d2327]">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </td>
             </tr>
 
@@ -316,8 +341,37 @@ export default function AddUserPage() {
                   className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] bg-white outline-none focus:border-[#00a651]">
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                 </AdminSelect>
+                {['Editor', 'Administrador'].includes(form.role) && (
+                  <label className="mt-2 flex items-center gap-2 text-[13px] text-[#1d2327]">
+                    <input type="checkbox" checked={form.colunista} onChange={e => setForm({...form, colunista: e.target.checked})} className="h-4 w-4" />
+                    <span>Também é colunista</span>
+                  </label>
+                )}
+                {form.role === 'Colunista' && (
+                  <label className="mt-2 flex items-center gap-2 text-[13px] text-[#1d2327]">
+                    <input type="checkbox" checked={form.editor === true} onChange={e => setForm({...form, editor: e.target.checked})} className="h-4 w-4" />
+                    <span>Também é editor</span>
+                  </label>
+                )}
               </td>
             </tr>
+            {/* Redes sociais: sempre visíveis; aparecem no card da home quando a conta é de colunista. */}
+            {(
+              <>
+                <tr><td colSpan={2} className="pt-8 pb-2 border-b border-[#ccd0d4]">
+                  <h2 className="text-[15px] font-bold text-[#1d2327]">Redes sociais</h2>
+                </td></tr>
+                {([['facebook', 'Facebook', 'https://facebook.com/...'], ['instagram', 'Instagram', 'https://instagram.com/...'], ['linkedin', 'LinkedIn', 'https://linkedin.com/in/...'], ['x', 'X (Twitter)', 'https://x.com/...']] as const).map(([key, label, ph]) => (
+                  <tr key={key} className="border-b border-[#f0f0f1]">
+                    <th className="p-3 text-left text-[13px] font-semibold text-[#1d2327] align-top pt-4">{label}</th>
+                    <td className="p-3">
+                      <input type="url" value={form[key] || ''} onChange={e => setForm({...form, [key]: e.target.value})} placeholder={ph}
+                        className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[300px] outline-none focus:border-[#00a651]" />
+                    </td>
+                  </tr>
+                ))}
+              </>
+            )}
           </tbody>
         </table>
 

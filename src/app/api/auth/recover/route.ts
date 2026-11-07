@@ -18,12 +18,12 @@ function trustedOrigin(requestOrigin: string) {
 }
 
 /**
- * Recuperação de palavra-passe. O e-mail é enviado AQUI (SMTP próprio, modelo do EntreCAMPOS) e a ligação abre uma
+ * Recuperação de senha. O e-mail é enviado AQUI (SMTP próprio, modelo do EntreCAMPOS) e a ligação abre uma
  * página do EntreCAMPOS: não passa pelo e-mail partilhado do Supabase. Só contas deste site; a resposta é sempre a
  * mesma, exista ou não a conta, para não revelar que e-mails estão registados.
  */
 export async function POST(req: NextRequest) {
-  const same = NextResponse.json({ ok: true, message: 'Se o e-mail estiver registado, receberá uma ligação para criar nova palavra-passe.' });
+  const same = NextResponse.json({ ok: true, message: 'Se o e-mail estiver registado, receberá uma ligação para criar nova senha.' });
   try {
     const body = (await req.json()) as Record<string, unknown>;
     const guard = await guardForm(req, body, 'recuperar', { max: 4, windowMs: 30 * 60 * 1000 });

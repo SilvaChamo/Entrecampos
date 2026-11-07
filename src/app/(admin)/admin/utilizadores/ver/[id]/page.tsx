@@ -38,8 +38,8 @@ export default function ViewUserPage() {
 
   if (loading) {
     return (
-      <div className="p-10 text-center">
-        <Spinner size={32} className=" mx-auto mb-2" />
+      <div className="flex min-h-[calc(100vh-160px)] items-center justify-center">
+        <Spinner size={32} />
       </div>
     );
   }

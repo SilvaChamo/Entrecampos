@@ -128,7 +128,7 @@ export default function MeuPerfilPage() {
     
     // Validar senhas
     if (newPassword && newPassword !== confirmPassword) {
-      alert('As palavras-passe não coincidem.');
+      alert('As senhas não coincidem.');
       return;
     }
 
@@ -191,8 +191,8 @@ export default function MeuPerfilPage() {
 
   if (loading) {
     return (
-      <div className="p-10 text-center">
-        <Spinner size={32} className=" mx-auto mb-2" />
+      <div className="flex min-h-[calc(100vh-160px)] items-center justify-center">
+        <Spinner size={32} />
       </div>
     );
   }
@@ -458,14 +458,14 @@ export default function MeuPerfilPage() {
               </div>
             </div>
 
-            {/* Secção: Palavra-passe */}
+            {/* Secção: Senha */}
             <div className="mb-6">
               <h3 className="text-[15px] font-bold text-[#1d2327] pb-2 border-b border-[#ccd0d4] mb-4">
-                Alterar palavra-passe
+                Alterar senha
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
                 <div className="py-3 border-b border-[#f0f0f1]">
-                  <dt className="text-[13px] font-semibold text-[#1d2327] mb-1">Nova palavra-passe</dt>
+                  <dt className="text-[13px] font-semibold text-[#1d2327] mb-1">Nova senha</dt>
                   <dd>
                     <input 
                       type="password" 
@@ -477,17 +477,17 @@ export default function MeuPerfilPage() {
                   </dd>
                 </div>
                 <div className="py-3 border-b border-[#f0f0f1]">
-                  <dt className="text-[13px] font-semibold text-[#1d2327] mb-1">Confirmar palavra-passe</dt>
+                  <dt className="text-[13px] font-semibold text-[#1d2327] mb-1">Confirmar senha</dt>
                   <dd>
                     <input 
                       type="password" 
                       value={confirmPassword} 
                       onChange={e => setConfirmPassword(e.target.value)}
                       className="h-8 px-2 border border-[#ccd0d4] rounded-md text-[13px] w-full max-w-[280px] outline-none focus:border-[#00a651]"
-                      placeholder="Repita a nova palavra-passe"
+                      placeholder="Repita a nova senha"
                     />
                     {newPassword && confirmPassword && newPassword !== confirmPassword && (
-                      <p className="text-[11px] text-[#d63638] mt-1">As palavras-passe não coincidem.</p>
+                      <p className="text-[11px] text-[#d63638] mt-1">As senhas não coincidem.</p>
                     )}
                   </dd>
                 </div>

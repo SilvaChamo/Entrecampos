@@ -90,7 +90,7 @@ export default function PendingNewsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="p-10 text-center"><Spinner size={32} className=" mx-auto" /></td></tr>
+              <tr><td colSpan={6} className="h-[55vh] p-10 text-center align-middle"><Spinner size={32} className=" mx-auto" /></td></tr>
             ) : news.length === 0 ? (
               <tr><td colSpan={6} className="p-10 text-center text-gray-500 py-20">
                 <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4 opacity-20" />

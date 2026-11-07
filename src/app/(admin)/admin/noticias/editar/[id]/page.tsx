@@ -38,7 +38,7 @@ export default function EditNewsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex min-h-[calc(100vh-160px)] items-center justify-center">
         <Spinner size={40} className="" />
       </div>
     );

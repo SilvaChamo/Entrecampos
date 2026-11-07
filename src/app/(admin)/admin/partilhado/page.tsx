@@ -116,7 +116,7 @@ export default function PartilhadoPage() {
       )}
 
       {aberta ? null : !data && !error ? (
-        <div className="flex justify-center py-20"><Spinner /></div>
+        <div className="flex min-h-[calc(100vh-160px)] items-center justify-center"><Spinner /></div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FOLDERS.map(({ id, label, hint, Icon }) => (

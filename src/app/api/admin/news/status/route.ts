@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-guard';
 import { hasPermission } from '@/lib/permissions';
-import { refreshSite } from '@/lib/refresh-site';
+import { refreshNews, refreshSite } from '@/lib/refresh-site';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Supports both new format (sb_secret_...) and legacy JWT
@@ -32,6 +32,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ID(s) obrigatório(s)' }, { status: 400 });
     }
 
+    // Notícias afectadas (antes de mudar): para refazer só as suas categorias.
+    const { data: affected } = await supabaseAdmin
+      .from('news')
+      .select('*')
+      .eq('site_id', process.env.NEXT_PUBLIC_SITE_ID || 'entrecampos')
+      .in('id', targetIds);
+
     const { error } = await supabaseAdmin
       .from('news')
       .update({ status })
@@ -47,7 +54,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    refreshSite();
+    // Publicar: limpeza dirigida. Retirar do site (rascunho, lixo, arquivo, pendente): limpeza geral, porque outras páginas podem ter o link.
+    if (status.toLowerCase() === 'published') refreshNews(affected ?? []);
+    else refreshSite();
     return NextResponse.json({ success: true, updated: targetIds.length });
   } catch (err: any) {
     console.error('Erro ao actualizar status:', err);

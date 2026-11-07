@@ -4,7 +4,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
-import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, LogIn, Menu, X, Clock, CheckSquare, MessageSquare, Mail, ShieldCheck, Pencil, FilePlus, Eye } from 'lucide-react';
+import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, LogIn, Menu, X, Clock, CheckSquare, MessageSquare, Mail, ShieldCheck, Pencil, FilePlus, Eye, FileText } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import { prefetchAdminNews } from '@/lib/admin-cache';
 
@@ -129,7 +129,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, submenu, isOpen = false,
 };
 
 /** Páginas iniciais do painel (cada papel tem a sua): só nelas aparece o botão "Novo". */
-const PANEL_HOME = ['/admin', '/admin/dashboard', '/admin/editor', '/admin/contribuidor', '/admin/guest'];
+const PANEL_HOME = ['/admin', '/admin/dashboard', '/admin/editor', '/admin/contribuidor', '/admin/colunista', '/admin/guest'];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -318,8 +318,16 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Notícias Pendentes', href: '/admin/noticias/pendentes' },
             { label: 'Categorias', href: '/admin/noticias/categorias' },
             { label: 'Etiquetas', href: '/admin/noticias/etiquetas' },
-            { label: 'Artigos de Opinião', href: '/admin/noticias/opiniao' },
             { label: 'Reparar Imagens', href: '/admin/noticias/reparar' },
+          ]
+        },
+        {
+          href: '/admin/opiniao',
+          icon: FileText,
+          label: 'Artigos de Opinião',
+          submenu: [
+            { label: 'Todos os artigos', href: '/admin/opiniao' },
+            { label: 'Pendentes', href: '/admin/opiniao/pendentes' },
           ]
         },
         { 
@@ -338,7 +346,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           submenu: [
             { label: 'Todos os utilizadores', href: '/admin/utilizadores' },
             { label: 'Adicionar utilizador', href: '/admin/utilizadores/novo' },
-            { label: 'Colunistas', href: '/admin/colunistas' },
             { label: 'O seu perfil', href: '/admin/perfil' },
           ]
         },
@@ -366,6 +373,15 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         { href: '/admin/noticias/pendentes', icon: Clock, label: 'Notícias Pendentes' },
         { href: '/admin/noticias/revistas', icon: CheckSquare, label: 'Últimos Revistos' },
         { href: '/admin/noticias', icon: Newspaper, label: 'Todas as Notícias' },
+        {
+          href: '/admin/opiniao',
+          icon: FileText,
+          label: 'Artigos de Opinião',
+          submenu: [
+            { label: 'Todos os artigos', href: '/admin/opiniao' },
+            { label: 'Pendentes', href: '/admin/opiniao/pendentes' },
+          ]
+        },
         { href: '/admin/media', icon: ImageIcon, label: 'Multimédia' },
         { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
         {
@@ -419,7 +435,16 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     return items;
   };
 
-  const menuItems = getMenuItems(user?.role || 'guest');
+  // Colunista (com ou sem o segundo nível editor): só tem "Meus artigos" (lista dos seus artigos e botão de escrever).
+  // Nome do nível das contas de colunista (a sessão do colunista-editor tem papel editor, mas o nível dele é Colunista editor).
+  const colunistaLabel = user?.colunista ? (user.role === 'editor' ? 'Colunista editor' : 'Colunista') : '';
+  const menuItems = user?.colunista
+    ? [
+        { href: '/admin/colunista', icon: LayoutDashboard, label: 'Dashboard' },
+        { href: '/admin/noticias/nova', icon: Plus, label: 'Escrever artigo' },
+        { href: '/admin/meus-artigos', icon: FileText, label: 'Meus artigos' },
+      ]
+    : getMenuItems(user?.role || 'guest');
 
   return (
     <div className={`ec-admin flex flex-col h-[100dvh] bg-[#f0f0f1] ${viewAs ? 'ec-viewing-as' : ''}`}>
@@ -464,7 +489,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             aria-label="Menu do utilizador"
             className="flex h-10 items-center gap-2 px-1 lg:h-8"
           >
-            <span className="capitalize max-sm:hidden">Olá, {user?.name || 'Visitante'} ({user?.role || 'guest'})</span>
+            <span className="capitalize max-sm:hidden">Olá, {user?.name || 'Visitante'} ({colunistaLabel || user?.role || 'guest'})</span>
             <UserIcon className="w-8 h-8 lg:w-6 lg:h-6 bg-[#1f3a2b] p-1.5 lg:p-1 rounded-full" />
           </button>
 
@@ -560,7 +585,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             )}
             <span className="min-w-0 leading-tight">
               <span className="block truncate text-[12px] text-[#f0f0f1]">{user?.email || user?.name || 'Visitante'}</span>
-              <span className="block truncate text-[11px] text-[#8fb39d]">{ROLE_NAME[realRole || user?.role || 'guest']}</span>
+              <span className="block truncate text-[11px] text-[#8fb39d]">{colunistaLabel || ROLE_NAME[realRole || user?.role || 'guest']}</span>
             </span>
           </div>
         </aside>

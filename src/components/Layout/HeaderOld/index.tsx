@@ -346,7 +346,7 @@ const HeaderOld: React.FC = () => {
                       />
                       <input
                         type="password"
-                        placeholder="Palavra-passe"
+                        placeholder="Senha"
                         className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                       />
                       <button
@@ -379,7 +379,7 @@ const HeaderOld: React.FC = () => {
                       />
                       <input
                         type="password"
-                        placeholder="Palavra-passe"
+                        placeholder="Senha"
                         className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                       />
                       <button

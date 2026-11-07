@@ -82,6 +82,7 @@ export function canAccessRoute(role: string, route: string): boolean {
     '/admin/noticias/nova': ['criar_artigos', 'acesso_total'],
     '/admin/noticias/editar': ['editar_artigos', 'acesso_total'],
     '/admin/comentarios': ['rever_artigos', 'publicar_artigos', 'acesso_total'],
+    '/admin/opiniao': ['publicar_artigos', 'acesso_total'],
     '/admin/media': ['usar_media', 'gerir_biblioteca', 'upload_imagens', 'acesso_total'],
     '/admin/arquivo': ['usar_media', 'gerir_biblioteca', 'upload_imagens', 'publicar_artigos', 'acesso_total'],
     '/admin/partilhado': ['gerir_biblioteca', 'upload_imagens', 'publicar_artigos', 'acesso_total'],
@@ -90,6 +91,8 @@ export function canAccessRoute(role: string, route: string): boolean {
     '/admin/dashboard': ['acesso_total'],
     '/admin/editor': ['ler_artigos', 'editar_artigos', 'acesso_total'],
     '/admin/contribuidor': ['criar_artigos', 'ler_artigos', 'acesso_total'],
+    '/admin/colunista': ['criar_artigos', 'ler_artigos', 'acesso_total'],
+    '/admin/meus-artigos': ['criar_artigos', 'ler_artigos', 'acesso_total'],
     '/admin/guest': ['ler_artigos'],
   };
 

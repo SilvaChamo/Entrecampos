@@ -1,3 +1,4 @@
+import { gravatarUrl } from '@/lib/gravatar';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, type User } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-guard';
@@ -32,11 +33,13 @@ export async function GET() {
         name: u.user_metadata?.first_name || '—',
         email: u.email || '',
         role: siteAccess(u)!.role,
+        colunista: siteAccess(u)!.colunista === true,
+        editor: siteAccess(u)!.editor === true,
         approved: siteAccess(u)!.approved,
         alcunha: u.user_metadata?.alcunha || '',
         displayNameType: u.user_metadata?.displayNameType || 'full_name',
         articles: 0,
-        avatar: u.user_metadata?.avatar_url || null,
+        avatar: u.user_metadata?.avatar_url || gravatarUrl(u.email) || null,
         isAdmin: siteAccess(u)!.role === 'Administrador'
       }));
 

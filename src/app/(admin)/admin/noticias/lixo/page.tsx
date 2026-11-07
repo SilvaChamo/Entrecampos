@@ -147,7 +147,7 @@ export default function LixoPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="p-10 text-center"><Spinner size={24} className="mx-auto" /></td></tr>
+              <tr><td colSpan={5} className="h-[55vh] p-10 text-center align-middle"><Spinner size={24} className="mx-auto" /></td></tr>
             ) : news.length === 0 ? (
               <tr><td colSpan={5} className="p-10 text-center text-gray-400">O lixo está vazio.</td></tr>
             ) : news.map((item, idx) => (

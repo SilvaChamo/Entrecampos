@@ -14,7 +14,7 @@ import { removeReads } from '@/lib/newsletter-reads';
  */
 const SITE_URL = () => (process.env.NEXT_PUBLIC_SITE_URL || 'https://entrecamposblog.com').replace(/\/$/, '');
 const BUCKET = () => process.env.NEXT_PUBLIC_STORAGE_BUCKET || process.env.STORAGE_BUCKET || 'entrecampos-media';
-/** Remetente próprio da newsletter (os outros e-mails do site, como a recuperação de palavra-passe, mantêm o noreply). */
+/** Remetente próprio da newsletter (os outros e-mails do site, como a recuperação de senha, mantêm o noreply). */
 const NEWSLETTER_FROM = () => process.env.NEWSLETTER_EMAIL_FROM || 'EntreCAMPOS <newsletter@entrecamposblog.com>';
 const STATE_FILE = 'partilhado/_config/newsletter.json';
 const MAX_NEWS = 20;

@@ -81,7 +81,7 @@ export default function ExpFrame({ sidebar, topBar, children }: { sidebar: React
           <aside
             data-open={open}
             suppressHydrationWarning
-            className={`group/side z-40 flex flex-col bg-[#0c1f08] text-white border-r-2 border-[#39ff14] transition-[width] max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:w-[220px] max-lg:transition-[transform,visibility] ${ease} ${
+            className={`group/side z-40 flex flex-col bg-[#0c1f08] text-white border-r-2 border-[#39ff14] transition-[width] max-lg:fixed max-lg:left-0 max-lg:top-0 max-lg:h-[100dvh] max-lg:w-[220px] max-lg:pb-4 max-lg:transition-[transform,visibility] ${ease} ${
               open ? 'max-lg:translate-x-0' : 'max-lg:invisible max-lg:-translate-x-full'
             } lg:sticky lg:top-0 lg:h-screen lg:pb-9 lg:w-16 lg:shrink-0 lg:self-start lg:data-[open=true]:w-[220px]`}
           >

@@ -8,6 +8,8 @@ export interface AppUser {
   email: string;
   role: UserRole;
   avatarUrl?: string;
+  /** Conta de nível Colunista (sozinho ou também editor): o painel só mostra "Meus artigos". */
+  colunista?: boolean;
 }
 
 /** Maps Supabase user_metadata.role (and similar labels) to app roles. */
@@ -54,7 +56,7 @@ export function roleToMetadata(role: UserRole): string {
 export function translateAuthError(message: string): string {
   const m = message.toLowerCase();
   if (m.includes('invalid login credentials') || m.includes('invalid_credentials')) {
-    return 'E-mail ou palavra-passe incorrectos.';
+    return 'E-mail ou senha incorrectos.';
   }
   if (m.includes('email not confirmed')) {
     return 'Confirme o e-mail antes de entrar.';
@@ -63,7 +65,7 @@ export function translateAuthError(message: string): string {
     return 'Já existe uma conta com este e-mail.';
   }
   if (m.includes('password should be at least') || m.includes('password')) {
-    return 'A palavra-passe não cumpre os requisitos mínimos.';
+    return 'A senha não cumpre os requisitos mínimos.';
   }
   if (m.includes('rate limit') || m.includes('too many')) {
     return 'Demasiadas tentativas. Aguarde um momento e tente de novo.';
