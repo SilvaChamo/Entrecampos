@@ -318,7 +318,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Notícias Pendentes', href: '/admin/noticias/pendentes' },
             { label: 'Categorias', href: '/admin/noticias/categorias' },
             { label: 'Etiquetas', href: '/admin/noticias/etiquetas' },
-            { label: 'Colunistas', href: '/admin/colunistas' },
+            { label: 'Artigos de Opinião', href: '/admin/noticias/opiniao' },
             { label: 'Reparar Imagens', href: '/admin/noticias/reparar' },
           ]
         },
@@ -338,6 +338,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           submenu: [
             { label: 'Todos os utilizadores', href: '/admin/utilizadores' },
             { label: 'Adicionar utilizador', href: '/admin/utilizadores/novo' },
+            { label: 'Colunistas', href: '/admin/colunistas' },
             { label: 'O seu perfil', href: '/admin/perfil' },
           ]
         },
