@@ -318,6 +318,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Notícias Pendentes', href: '/admin/noticias/pendentes' },
             { label: 'Categorias', href: '/admin/noticias/categorias' },
             { label: 'Etiquetas', href: '/admin/noticias/etiquetas' },
+            { label: 'Colunistas', href: '/admin/colunistas' },
             { label: 'Reparar Imagens', href: '/admin/noticias/reparar' },
           ]
         },

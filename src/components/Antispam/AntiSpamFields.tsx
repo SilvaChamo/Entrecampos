@@ -25,7 +25,7 @@ export function resetAntiSpam() {
 
 /**
  * Campos anti-spam para pôr DENTRO de qualquer <form> público (menos o de login):
- *  - honeypot: campo escondido ("empresa_web") que só os robôs preenchem;
+ *  - honeypot: campo escondido ("ec_hp_k7q2") que só os robôs preenchem;
  *  - `_ts`: hora a que o formulário abriu (o servidor rejeita envios instantâneos);
  *  - Cloudflare Turnstile: o widget escreve o token em `cf-turnstile-response`.
  * Os campos vão no FormData do formulário e são verificados no servidor por guardForm().
@@ -61,7 +61,7 @@ export default function AntiSpamFields({ theme = 'light' }: { theme?: 'light' | 
       <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
         <label>
           Não preencha este campo
-          <input type="text" name="empresa_web" tabIndex={-1} autoComplete="off" defaultValue="" />
+          <input type="text" name="ec_hp_k7q2" tabIndex={-1} autoComplete="off" data-lpignore="true" data-1p-ignore data-form-type="other" defaultValue="" />
         </label>
       </div>
       <input type="hidden" name="_ts" value={ts} />

@@ -369,8 +369,40 @@ export async function runSchedule(id: string): Promise<string> {
   return result;
 }
 
-/** Envia os agendamentos cuja hora já chegou. Chamado pelo agendador (de poucos em poucos minutos). */
+/**
+ * Trinco para um só envio de cada vez, seja qual for quem chama (GitHub, cron diário ou visitas ao site/painel).
+ * Cria um ficheiro que não pode já existir; um trinco com mais de 10 minutos é tido como abandonado.
+ */
+const LOCK_FILE = 'partilhado/_config/newsletter-agenda.lock';
+async function takeLock(): Promise<boolean> {
+  const body = () => Buffer.from(JSON.stringify({ at: Date.now() }));
+  const up = await db().storage.from(BUCKET()).upload(LOCK_FILE, body(), { upsert: false, contentType: 'application/json' });
+  if (!up.error) return true;
+  try {
+    const { data } = await db().storage.from(BUCKET()).download(LOCK_FILE);
+    const at = data ? Number(JSON.parse(await data.text()).at) : 0;
+    if (Date.now() - at < 10 * 60 * 1000) return false;
+    const re = await db().storage.from(BUCKET()).upload(LOCK_FILE, body(), { upsert: true, contentType: 'application/json' });
+    return !re.error;
+  } catch {
+    return false;
+  }
+}
+
+/** Envia os agendamentos cuja hora já chegou. Chamado pelo GitHub (5 em 5 minutos), pelo cron diário e pelas visitas ao site/painel. */
 export async function runDueSchedules(): Promise<{ due: number; results: { id: string; result: string }[] }> {
+  // Vê primeiro, sem trinco, se há algo a enviar: é o caso comum e fica barato.
+  const pending = await loadSchedules();
+  if (!pending.some((s) => s.status === 'pending' && new Date(s.at).getTime() <= Date.now())) return { due: 0, results: [] };
+  if (!(await takeLock())) return { due: 0, results: [] };
+  try {
+    return await sendDue();
+  } finally {
+    await db().storage.from(BUCKET()).remove([LOCK_FILE]).catch(() => {});
+  }
+}
+
+async function sendDue(): Promise<{ due: number; results: { id: string; result: string }[] }> {
   const list = await loadSchedules();
   const due = list.filter((s) => s.status === 'pending' && new Date(s.at).getTime() <= Date.now());
   if (due.length === 0) return { due: 0, results: [] };

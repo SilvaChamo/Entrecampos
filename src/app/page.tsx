@@ -13,8 +13,10 @@ import OpportunityList from '@/components/Expnews/OpportunityList';
 import NewsletterForm from '@/components/Forms/NewsletterForm';
 import NewsTicker from '@/components/Expnews/NewsTicker';
 import StickyColumn from '@/components/Expnews/StickyColumn';
+import Columnists from '@/components/Expnews/Columnists';
 import { getSuggestionSlugs } from '@/lib/suggestions';
-import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
+import { getColumnists } from '@/lib/columnists';
+import { categoryLabel, getAllPosts, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
   title: 'EntreCAMPOS — Jornal',
@@ -102,7 +104,12 @@ function Overlay({
 }
 
 export default async function HomePrincipal() {
-  const [slides, { posts }, suggestSlugs] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs()]);
+  const [slides, { posts }, suggestSlugs, columnists, { posts: allPosts }] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getColumnists(), getAllPosts()]);
+  // Colunistas: só entram os que têm uma notícia publicada para o botão "Ler artigo" abrir.
+  const columnistItems = columnists.flatMap((columnist) => {
+    const p = allPosts.find((x) => x.slug === columnist.noticia);
+    return p ? [{ columnist, post: { slug: p.slug, title: p.title } }] : [];
+  });
 
   if (posts.length === 0) {
     return (
@@ -215,6 +222,13 @@ export default async function HomePrincipal() {
 
             {/* Faixa Agro-negócio: atravessa a barra lateral (no lugar do antigo espaço publicitário) */}
             <CategoryStrip posts={agroStrip} label={categoryLabel('agro-negocio')} />
+
+            {/* Colunistas: antes dos vídeos; sem colunistas o bloco não aparece */}
+            {columnistItems.length > 0 && (
+              <Card title="Colunistas" plain>
+                <Columnists items={columnistItems} />
+              </Card>
+            )}
 
             <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
               <div className="min-w-0 space-y-3">

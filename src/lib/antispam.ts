@@ -4,7 +4,9 @@ import { createClient } from '@supabase/supabase-js';
 import { tooManyAttempts } from '@/lib/rate-limit';
 
 /** Nomes dos campos que o componente AntiSpamFields junta a cada formulário. */
-export const HONEYPOT_FIELD = 'empresa_web';
+// Nome sem sentido de propósito: com um nome como "empresa" o preenchimento automático do navegador enche o campo
+// escondido com a empresa do utilizador e o pedido de uma pessoa verdadeira era descartado como se fosse um robô.
+export const HONEYPOT_FIELD = 'ec_hp_k7q2';
 export const TIME_FIELD = '_ts';
 export const TURNSTILE_FIELD = 'cf-turnstile-response';
 
@@ -56,7 +58,11 @@ export async function guardForm(
     return { ok: false, status: 429, error: 'Demasiados pedidos. Aguarde alguns minutos e tente de novo.' };
   }
 
-  if (String(body[HONEYPOT_FIELD] ?? '').trim() !== '') return { ok: false, status: 200, error: 'ok', silent: true };
+  if (String(body[HONEYPOT_FIELD] ?? '').trim() !== '') {
+    // Fica no registo do servidor: um pedido descartado em silêncio não deixa outro rasto.
+    console.warn(`[antispam] pedido descartado pelo honeypot (${form})`);
+    return { ok: false, status: 200, error: 'ok', silent: true };
+  }
 
   const age = Date.now() - Number(body[TIME_FIELD]);
   if (!Number.isFinite(age) || age < MIN_FILL_MS || age > MAX_AGE_MS) {
