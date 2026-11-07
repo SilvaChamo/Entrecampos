@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Apple, ArrowDown, ArrowUp, Briefcase, CalendarClock, Facebook, Flower2, Instagram, Leaf, Lightbulb, Linkedin, Palmtree, Pencil, Save, Send, Sprout, Tag, Tractor, Trash2, Users, Utensils, X, type LucideIcon } from 'lucide-react';
+import { Apple, ArrowDown, ArrowUp, Briefcase, CalendarClock, Facebook, Flower2, Instagram, Leaf, Lightbulb, Linkedin, Palmtree, Pencil, Plus, Save, Send, Sprout, Tag, Tractor, Trash2, Users, Utensils, X, type LucideIcon } from 'lucide-react';
 import AdminSelect from '@/components/Admin/AdminSelect';
 import { AD_SLOTS, BRAND, EMAIL_WIDTH, LEAD_IMAGE_HEIGHT, RED, categoryColor, categoryIcon, longDate } from '@/lib/newsletter-brand';
 import AdSpacesPopup from '@/components/Newsletter/AdSpacesPopup';
@@ -318,17 +318,25 @@ type Props = {
 export default function NewsletterAgenda({ schedules, subscribers, smtp, onChange, setNotice, setError }: Props) {
   const { busy, act, create } = useAgenda(onChange, setNotice, setError);
   const [when, setWhen] = useState({ day: dayOptions()[0].value, hour: '18', minute: '30' });
+  const [adding, setAdding] = useState(false);
   const open = schedules.filter((s) => s.status === 'pending' || s.status === 'sending');
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="mb-1 font-bold text-[#1d2327]">Novo horário de envio</h3>
-        <p className="mb-3 text-[13px] text-[#50575e] max-sm:hidden">Escolha o dia e a hora (hora de Maputo) e grave. As notícias juntam-se a cada horário a partir da lista de notícias, em «Agendar».</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} />
-          <button onClick={() => create(toIso(when.day, when.hour, when.minute))} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50 max-sm:w-full`}><Save className="h-4 w-4" /> Gravar horário</button>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="mb-1 font-bold text-[#1d2327]">Novo horário de envio</h3>
+            <p className="text-[13px] text-[#50575e] max-sm:hidden">Defina o novo horário de envio da newsletter.</p>
+          </div>
+          <button onClick={() => setAdding((v) => !v)} className={`${btn} shrink-0 bg-[#00a651] text-white`}>{adding ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />} {adding ? 'Fechar' : 'Novo horário'}</button>
         </div>
+        {adding && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} />
+            <button onClick={async () => { if (await create(toIso(when.day, when.hour, when.minute))) setAdding(false); }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50 max-sm:w-full`}><Save className="h-4 w-4" /> Gravar horário</button>
+          </div>
+        )}
       </div>
 
       <div>
