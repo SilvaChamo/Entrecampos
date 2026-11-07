@@ -35,7 +35,7 @@ export const longDate = (iso: string) => new Date(iso).toLocaleDateString('pt-PT
 /** Ícone de cada categoria, o mesmo das etiquetas do site público (ficheiro em /images/categorias/<nome>.png). */
 export const CATEGORY_ICON: Record<string, string> = {
   agricultura: 'sprout',
-  'sector-agrario': 'tractor',
+  'sector-publico': 'tractor',
   comunidade: 'users',
   'agro-negocio': 'briefcase',
   curiosidade: 'lightbulb',

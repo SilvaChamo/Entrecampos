@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Tag, Thumb } from '@/components/Expnews/blocks';
 import ShareLink from '@/components/Expnews/ShareLink';
@@ -10,22 +10,38 @@ import type { SlimPost } from '@/components/Expnews/CategorySection';
 
 /**
  * Card ao lado do slide principal: as últimas notícias de uma categoria (até 5), uma de cada vez.
- * As setas pequenas ficam na linha do "Partilhar", à direita, e só mudam à mão.
+ * As setas pequenas ficam na linha do "Partilhar", à direita. Muda à mão (setas) ou, quando recebe `tick` novo, avança uma notícia
+ * (é o que o SideSlides usa para os dois cards mudarem à vez).
  */
 export default function CategorySlide({
   posts,
   label,
   flow = 'left',
   className = '',
+  tick,
+  onPause,
 }: {
   posts: SlimPost[];
   label: string;
   /** Sentido em que as notícias deslizam ao avançar: para a esquerda ou para a direita. */
   flow?: 'left' | 'right';
   className?: string;
+  /** Sobe de valor quando este card deve avançar sozinho. */
+  tick?: number;
+  /** Avisa que o rato entrou ou saiu do card. */
+  onPause?: (paused: boolean) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState<1 | -1>(1);
+  const lastTick = useRef(tick);
+  useEffect(() => {
+    if (tick === undefined || tick === lastTick.current) return;
+    lastTick.current = tick;
+    if (posts.length > 1) {
+      setDir(flow === 'left' ? 1 : -1);
+      setIndex((i) => (i + 1) % posts.length);
+    }
+  }, [tick, flow, posts.length]);
 
   if (posts.length === 0) {
     return (
@@ -44,7 +60,7 @@ export default function CategorySlide({
     'flex h-5 w-5 items-center justify-center bg-white/20 text-white backdrop-blur-sm hover:bg-[#d6101c]';
 
   return (
-    <div className={`group relative overflow-hidden bg-gray-300 ${className}`}>
+    <div className={`group relative overflow-hidden bg-gray-300 ${className}`} onMouseEnter={() => onPause?.(true)} onMouseLeave={() => onPause?.(false)}>
       <SlideStage
         id={String(index)}
         dir={dir}

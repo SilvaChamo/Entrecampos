@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { PAGE_SIZE, categoryLabel, getCategories, getCategoryPosts, isKnownCategory, slugify } from '@/lib/news-data';
+import { PAGE_SIZE, applyCategoryNames, categoryLabel, getCategories, getCategoryPosts, isKnownCategory, slugify } from '@/lib/news-data';
 import { Pagination } from '@/components/Site/parts';
 import InnerPage, { InnerSidebar } from '@/components/Expnews/InnerPage';
 import { NewsCard } from '@/components/Expnews/blocks';
@@ -7,6 +7,7 @@ import { NewsCard } from '@/components/Expnews/blocks';
 export const revalidate = 604800; // 7 dias; gravar no painel limpa já o cache (lib/refresh-site.ts)
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  await applyCategoryNames();
   const slug = slugify(decodeURIComponent((await params).slug));
   return { title: `Arquivo de ${categoryLabel(slug)} — EntreCAMPOS` };
 }
@@ -19,6 +20,7 @@ export default async function PaginaDeCategoria({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ pagina?: string }>;
 }) {
+  await applyCategoryNames();
   const slug = slugify(decodeURIComponent((await params).slug));
   const posts = await getCategoryPosts(slug);
 

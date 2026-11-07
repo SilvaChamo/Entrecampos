@@ -75,3 +75,29 @@ export function translateAuthError(message: string): string {
   }
   return message || 'Ocorreu um erro. Tente novamente.';
 }
+
+/** Para onde vai quem acabou de entrar: o endereço pedido (`next`, só se for desta página) ou o painel. */
+export function destinoDepoisDeEntrar(next?: string | null): string {
+  return caminhoInterno(next) ?? '/admin';
+}
+
+/** Só aceita caminhos desta mesma página (nunca outro site): sem caracteres de controlo, espaços ou barras invertidas, e que o URL resolva para a mesma origem. */
+export function caminhoInterno(next?: string | null): string | null {
+  if (!next || !next.startsWith('/') || next.startsWith('//') || /[\x00-\x20\x7f\\]/.test(next)) return null;
+  try {
+    const base = 'http://interno.invalid';
+    const u = new URL(next, base);
+    if (u.origin !== base) return null;
+    const out = u.pathname + u.search + u.hash;
+    // depois de normalizado (ex.: "/.//x" vira "//x") continua a ter de ser um caminho desta página
+    return out.startsWith('/') && !out.startsWith('//') && !out.includes('\\') ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+/** `?next=` do endereço actual (só no navegador). */
+export function proximoDoEndereco(): string | null {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get('next');
+}

@@ -330,6 +330,13 @@ body {
   from { opacity: 0; transform: translate3d(0, 150px, 0); }
   to { opacity: 1; transform: none; }
 }
+/* Card do clima: ao mudar de província os dados deslizam (seta para cima: entram por baixo; seta para baixo: entram por cima). */
+@keyframes ec-wx-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes ec-wx-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .ec-wx-up { animation: ec-wx-up 0.25s ease-out; }
+  .ec-wx-down { animation: ec-wx-down 0.25s ease-out; }
+}
 .ec-reveal { --ec-col: 0; }
 .ec-reveal:nth-child(3n + 2) { --ec-col: 1; }
 .ec-reveal:nth-child(3n) { --ec-col: 2; }

@@ -83,6 +83,7 @@ export function canAccessRoute(role: string, route: string): boolean {
     '/admin/noticias/editar': ['editar_artigos', 'acesso_total'],
     '/admin/comentarios': ['rever_artigos', 'publicar_artigos', 'acesso_total'],
     '/admin/opiniao': ['publicar_artigos', 'acesso_total'],
+    '/admin/home': ['editar_definicoes', 'acesso_total'],
     '/admin/media': ['usar_media', 'gerir_biblioteca', 'upload_imagens', 'acesso_total'],
     '/admin/arquivo': ['usar_media', 'gerir_biblioteca', 'upload_imagens', 'publicar_artigos', 'acesso_total'],
     '/admin/partilhado': ['gerir_biblioteca', 'upload_imagens', 'publicar_artigos', 'acesso_total'],

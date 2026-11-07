@@ -56,7 +56,7 @@ const HeaderOld: React.FC = () => {
   const navItems = [
     { name: 'Início', href: '/' },
     { name: 'Agricultura', href: '/categoria/agricultura' },
-    { name: 'Sector agrário', href: '/categoria/sector-agrario' },
+    { name: 'Sector público', href: '/categoria/sector-publico' },
     { name: 'Comunidade', href: '/categoria/comunidade' },
     { name: 'Ambiente', href: '/categoria/ambiente' },
     { name: 'Turismo rural', href: '/categoria/turismo-rural' },

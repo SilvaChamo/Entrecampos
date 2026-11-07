@@ -24,7 +24,7 @@ import {
   FileArchive
 } from 'lucide-react';
 import { SkeletonMediaGrid } from '@/components/Admin/Skeleton';
-import { prepareImage } from '@/lib/client-image';
+import { prepareImage, prepareWebp100 } from '@/lib/client-image';
 import ArquivoFolders, { type FolderInfo } from '@/components/Admin/ArquivoFolders';
 import AdminSelect from '@/components/Admin/AdminSelect';
 
@@ -523,7 +523,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   let successCount = 0;
                   let lastError = '';
 
-                  for (const original of filesToUpload) {
+                  for (const rawFile of filesToUpload) {
+                    const original = rawFile;
                     setBusyMsg(`A carregar ${successCount + 1} de ${filesToUpload.length}…`);
                     if (source !== 'galeria') {
                       const file = await prepareImage(original);
@@ -535,6 +536,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                       if (res.ok) successCount++;
                       else lastError = (await res.json().catch(() => ({}))).error || 'Erro ao carregar.';
                     } else {
+                      // Imagens: WebP até 100 KB (sem perder qualidade); vídeos e documentos seguem como vêm.
+                      const original = await prepareWebp100(rawFile);
                       // Mantém o nome original; se já existir, acrescenta -2, -3… (nunca substitui uma foto)
                       const safe = original.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\.-]/g, '_');
                       const dot = safe.lastIndexOf('.');

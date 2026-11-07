@@ -7,7 +7,7 @@ export const DEFAULT_CATEGORY_COLORS: Record<string, string> = {
   comunidade: '#D6101C', // vermelho da marca
   'agro-negocio': '#037E02',
   curiosidade: '#B00D17',
-  'sector-agrario': '#2E7C04',
+  'sector-publico': '#2E7C04',
   ambiente: '#E53935',
   'turismo-rural': '#589442',
   'mulher-agrario': '#8E0B13',

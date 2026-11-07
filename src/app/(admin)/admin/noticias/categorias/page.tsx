@@ -248,8 +248,31 @@ export default function CategoriasPage() {
     setEditForm({ name: category.name, slug: category.slug, description: category.description, color: colorOf(category.slug) });
   };
 
+  /** Grava o nome no servidor (é ele que o site e o formulário de notícias usam). Sem alteração, não pede nada. */
+  const saveName = async (slug: string, name: string, before: string) => {
+    const clean = name.trim();
+    if (!clean || clean === before) return true;
+    try {
+      const res = await fetch('/api/admin/categories/names', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, name: clean }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Erro ${res.status} ao guardar o nome.`);
+      setError(null);
+      return true;
+    } catch (err: any) {
+      setError(err?.message || 'Não foi possível guardar o nome.');
+      return false;
+    }
+  };
+
   const handleSave = async (id: number) => {
     const { color, ...rest } = editForm;
+    const original = categories.find((c) => c.id === id);
+    if (!(await saveName(rest.slug, rest.name, original?.name ?? ''))) return;
     if (!(await saveColor(rest.slug, color))) return;
     setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, ...rest } : c)));
     setIsEditing(null);

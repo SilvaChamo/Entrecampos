@@ -4,7 +4,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/context/AuthContext';
-import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, LogIn, Menu, X, Clock, CheckSquare, MessageSquare, Mail, ShieldCheck, Pencil, FilePlus, Eye, FileText } from 'lucide-react';
+import { User as UserIcon, FolderOpen, BarChart3, LayoutDashboard, Newspaper, ImageIcon, Users, Settings, Plus, ExternalLink, ChevronDown, LogOut, LogIn, Menu, X, Clock, CheckSquare, MessageSquare, Mail, ShieldCheck, Pencil, FilePlus, Eye, FileText, LayoutTemplate } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import { prefetchAdminNews } from '@/lib/admin-cache';
 
@@ -361,6 +361,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Documentos', href: '/admin/partilhado/documentos' },
           ]
         },
+        { href: '/admin/home', icon: LayoutTemplate, label: 'Página inicial' },
         { href: '/admin/newsletter', icon: Mail, label: 'Newsletter' },
         { href: '/admin/trafego', icon: BarChart3, label: 'Estatísticas' },
         { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },

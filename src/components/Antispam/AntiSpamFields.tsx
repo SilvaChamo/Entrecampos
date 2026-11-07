@@ -70,6 +70,8 @@ export default function AntiSpamFields({ theme = 'light' }: { theme?: 'light' | 
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
             strategy="afterInteractive"
+            // onLoad também: com vários formulários na página, só o primeiro Script recebe o onReady; os outros só recebem o onLoad.
+            onLoad={() => setScriptReady(true)}
             onReady={() => setScriptReady(true)}
           />
           <div ref={box} className="min-h-[65px]" />

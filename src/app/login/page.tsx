@@ -4,19 +4,37 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, ChevronRight, Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Poppins } from 'next/font/google';
+import { Mail, KeyRound, LogIn, Loader2, AlertCircle } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
+import { destinoDepoisDeEntrar, proximoDoEndereco } from '@/lib/auth';
+
+// Letra do modelo de referência (Poppins), só nesta página.
+const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700'], style: ['normal', 'italic'] });
 
 export default function LoginPage() {
   const { login, user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const [remember, setRemember] = useState(false);
+
+  // "Lembrar-me": guarda só o e-mail/utilizador neste navegador, para vir já preenchido na próxima visita.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('ec_login_email');
+      if (saved) {
+        setFormData((f) => ({ ...f, email: saved }));
+        setRemember(true);
+      }
+    } catch {
+      /* navegador sem armazenamento */
+    }
+  }, []);
 
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get('erro');
@@ -27,7 +45,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.replace('/admin');
+      router.replace(destinoDepoisDeEntrar(proximoDoEndereco()));
     }
   }, [authLoading, user, router]);
 
@@ -37,7 +55,13 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(formData.email, formData.password);
-      router.push('/admin'); // o /admin leva cada papel ao seu painel (visitante, contribuidor, editor, admin)
+      try {
+        if (remember) localStorage.setItem('ec_login_email', formData.email);
+        else localStorage.removeItem('ec_login_email');
+      } catch {
+        /* navegador sem armazenamento */
+      }
+      router.push(destinoDepoisDeEntrar(proximoDoEndereco())); // sem endereço pedido, o /admin leva cada papel ao seu painel
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erro ao entrar. Tente novamente.';
       setError(message);
@@ -55,110 +79,120 @@ export default function LoginPage() {
     );
   }
 
+  // Campo do modelo: caixa branca com barra de cor à esquerda, brilho suave, ícone, traço vertical e texto em itálico.
+  const box = 'flex h-[54px] items-center bg-white border-l-[4px] border-[#0f6e3a] shadow-[0_0_16px_rgba(0,166,81,0.22)]';
+  const input = 'h-full min-w-0 flex-1 bg-transparent pr-3 text-[13px] italic text-[#1d1d1d] outline-none placeholder:italic placeholder:text-gray-400';
+
   return (
-    <div className="min-h-screen bg-[#f0f0f1] flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white shadow-xl border border-[#ccd0d4] overflow-hidden">
-        <div className="bg-[#1d2327] p-8 text-white text-center">
-          <div className="mx-auto mb-4 w-12 h-12 rounded bg-[#00a651]/10 border border-[#00a651]/30 flex items-center justify-center">
-            <span className="text-sm font-black tracking-tight">
-              <span className="text-[#00a651]">EC</span>
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold mb-2">EntreCampos</h1>
-          <p className="text-gray-400 text-sm">Entre no painel de gestão</p>
+    <div className={`${poppins.className} [&_*]:[font-family:inherit] relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f7f7f9] px-4 py-10`}>
+      {/* Círculos de degradé nos cantos, como no modelo */}
+      <span className="pointer-events-none absolute -left-[90px] -top-[100px] h-[220px] w-[220px] rounded-full bg-gradient-to-br from-[#00a651] to-[#0b5a2e]" />
+      <span className="pointer-events-none absolute -bottom-[60px] -right-[60px] h-[170px] w-[170px] rounded-full bg-gradient-to-br from-[#0f6e3a] to-[#063d1f]" />
+
+      <div className="relative flex w-full max-w-[860px] flex-col items-center md:flex-row md:items-center md:justify-center">
+        {/* Cartão branco: logótipo, título, campos e botão */}
+        <div className="relative z-10 w-full max-w-[400px] bg-white px-8 pb-12 pt-9 shadow-[0_10px_40px_rgba(0,0,0,0.12)] md:w-[400px] md:shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/logo.png" alt="EntreCAMPOS" className="mx-auto mb-6 h-12 w-auto" />
+          <h1 className="mx-auto mb-8 w-fit border-b border-[#1d1d1d] text-[20px] font-medium leading-snug text-[#1d1d1d]">Iniciar sessão</h1>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="flex items-start gap-2 border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div className={box}>
+              <Mail className="mx-3 h-5 w-5 shrink-0 text-gray-500" strokeWidth={1.5} />
+              <span className="h-4 w-px shrink-0 bg-gray-400" />
+              <input
+                aria-label="E-mail ou utilizador"
+                required
+                type="text"
+                autoComplete="username"
+                placeholder="E-mail ou utilizador"
+                className={`${input} pl-3`}
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+
+            <div className={box}>
+              <KeyRound className="mx-3 h-5 w-5 shrink-0 text-gray-500" strokeWidth={1.5} />
+              <span className="h-4 w-px shrink-0 bg-gray-400" />
+              <input
+                aria-label="Senha"
+                required
+                autoComplete="current-password"
+                type="password"
+                placeholder="Senha"
+                minLength={6}
+                className={`${input} pl-3`}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3 pt-1 text-[12px] text-gray-600">
+              <label className="flex cursor-pointer items-center gap-3">
+                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-[18px] w-[18px] accent-[#4b5563]" />
+                Lembrar-me
+              </label>
+              <Link href="/recuperar-senha" className="border-b border-[#1d1d1d] text-[#1d1d1d]">
+                Esqueceu a senha?
+              </Link>
+            </div>
+
+            <div className="flex justify-center pt-6">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex h-[40px] min-w-[140px] items-center justify-center gap-2 bg-[#0f6e3a] px-6 text-[12px] font-bold uppercase tracking-wide text-white shadow-[0_6px_14px_rgba(15,110,58,0.35)] transition-colors hover:bg-[#0b5a2e] disabled:opacity-70"
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <LogIn className="h-4 w-4" />
+                    Entrar
+                  </>
+                )}
+              </button>
+            </div>
+
+            <p className="pt-1 text-center text-[11px]">
+              <button type="button" onClick={() => window.location.assign('/api/auth/google')} className="border-b border-gray-400 text-gray-500 hover:text-[#1d1d1d]">
+                Continuar com o Google
+              </button>
+            </p>
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          {error && (
-            <div className="flex items-start gap-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">E-mail ou utilizador</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  required
-                  type="text"
-                  autoComplete="username"
-                  placeholder="E-mail ou utilizador"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#00a651] focus:border-transparent outline-none transition-all"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  required
-                  autoComplete="current-password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  minLength={6}
-                  className="w-full pl-10 pr-11 py-2 border border-gray-300 focus:ring-2 focus:ring-[#00a651] focus:border-transparent outline-none transition-all"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-[#00a651] text-white font-bold hover:bg-[#008f45] transition-all shadow-md flex items-center justify-center gap-2 group disabled:opacity-70"
-          >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                Entrar no Painel
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </button>
-
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span className="h-px flex-1 bg-gray-200" />ou<span className="h-px flex-1 bg-gray-200" />
-          </div>
-          <button
-            type="button"
-            onClick={() => window.location.assign('/api/auth/google')}
-            className="w-full py-2.5 border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 flex items-center justify-center gap-2"
-          >
-            <svg viewBox="0 0 48 48" className="w-5 h-5" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.5 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.6-4-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
-            Continuar com o Google
-          </button>
-
-          <p className="text-center text-sm">
-            <Link href="/recuperar-senha" className="text-[#2271b1] hover:underline font-medium">
-              Esqueceu a senha?
+        {/* Cartão verde: ondas em degradé, boas-vindas e botão de registo; passa por baixo do cartão branco */}
+        <div className="relative mt-4 w-full max-w-[400px] overflow-hidden bg-gradient-to-br from-[#0b7a3c] via-[#0f6e3a] to-[#0a5a2f] shadow-[0_10px_40px_rgba(0,0,0,0.18)] md:-ml-[24px] md:mt-0 md:h-[520px] md:w-[440px] md:max-w-none md:shrink-0">
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 440 520" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="ecg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#00a651" stopOpacity="0.55" /><stop offset="1" stopColor="#0f6e3a" stopOpacity="0.1" /></linearGradient>
+              <linearGradient id="ecg2" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#063d1f" stopOpacity="0.75" /><stop offset="1" stopColor="#0f6e3a" stopOpacity="0.1" /></linearGradient>
+            </defs>
+            <path d="M60 0 C 40 120 150 150 230 200 C 330 262 420 210 440 90 L 440 0 Z" fill="url(#ecg1)" />
+            <path d="M0 330 C 90 300 180 360 250 420 C 320 480 400 440 440 380 L 440 520 L 0 520 Z" fill="url(#ecg2)" />
+            <path d="M0 150 C 40 160 55 230 20 290 C 10 305 0 300 0 290 Z" fill="#00a651" fillOpacity="0.35" />
+            <path d="M440 280 C 405 290 395 350 440 380 Z" fill="#00a651" fillOpacity="0.35" />
+          </svg>
+          <div className="relative flex h-full min-h-[300px] flex-col items-center justify-center px-8 py-14 text-center text-white md:pl-14">
+            <h2 className="text-[18px] font-bold tracking-wide">BEM-VINDO!</h2>
+            <p className="mt-2 max-w-[300px] text-[12px] leading-relaxed">Introduza os seus dados e comece connosco esta jornada</p>
+            <Link
+              href="/register"
+              className="mt-8 flex h-[40px] min-w-[110px] items-center justify-center bg-[#063d1f]/70 px-6 text-[11px] font-bold uppercase tracking-wide text-white shadow-[0_6px_14px_rgba(0,0,0,0.25)] transition-colors hover:bg-[#063d1f]"
+            >
+              Registar
             </Link>
-          </p>
-
-          <p className="text-center text-sm text-gray-500">
-            Ainda não tem conta?{' '}
-            <Link href="/register" className="text-[#2271b1] hover:underline font-medium">
-              Registe-se aqui
-            </Link>
-          </p>
-        </form>
+          </div>
+        </div>
       </div>
     </div>
   );

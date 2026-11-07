@@ -26,7 +26,7 @@ const NAV = [
   { label: 'Comunidade', href: '/categoria/comunidade' },
   { label: 'Agro-negócio', href: '/categoria/agro-negocio' },
   { label: 'Curiosidade', href: '/categoria/curiosidade' },
-  { label: 'Sector agrário', href: '/categoria/sector-agrario' },
+  { label: 'Sector público', href: '/categoria/sector-publico' },
   { label: 'Fruticultura', href: '/categoria/fruticultura' },
   { label: 'Oportunidades', href: '/categoria/oportunidades' },
   { label: 'Ambiente', href: '/categoria/ambiente' },
@@ -267,7 +267,7 @@ export default async function HomePage() {
             <FooterColumn
               title="Sectores"
               links={[
-                ['Sector agrário', '/categoria/sector-agrario'],
+                ['Sector público', '/categoria/sector-publico'],
                 ['Fruticultura', '/categoria/fruticultura'],
                 ['Agro-pecuária', '/categoria/agro-pecuaria'],
                 ['Apicultura', '/categoria/apicultura'],

@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import { Play } from 'lucide-react';
 import ExpShell from '@/components/Expnews/Shell';
@@ -5,18 +6,16 @@ import ExpSlider from '@/components/Expnews/ExpSlider';
 import ShareLink from '@/components/Expnews/ShareLink';
 import { CardTitle, ListItem, Meta, NewsCard, Tag, Thumb, longDate } from '@/components/Expnews/blocks';
 import CategorySection, { type CategoryGroup } from '@/components/Expnews/CategorySection';
-import CategorySlide from '@/components/Expnews/CategorySlide';
+import SideSlides from '@/components/Expnews/SideSlides';
 import ReadingSuggestions from '@/components/Expnews/ReadingSuggestions';
 import WeatherCard from '@/components/Expnews/WeatherCard';
 import OpportunityList from '@/components/Expnews/OpportunityList';
 import NewsletterForm from '@/components/Forms/NewsletterForm';
 import NewsTicker from '@/components/Expnews/NewsTicker';
 import StickyColumn from '@/components/Expnews/StickyColumn';
-import Columnists from '@/components/Expnews/Columnists';
 import { getSuggestionSlugs } from '@/lib/suggestions';
-import { getColumnists } from '@/lib/columnists';
-import { opinionPosts, sameAuthor } from '@/lib/columnist-utils';
-import { categoryLabel, getAllPosts, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
+import { getHomeLayout, type HomeZone } from '@/lib/home-layout';
+import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
   title: 'EntreCAMPOS — Jornal',
@@ -104,19 +103,11 @@ function Overlay({
 }
 
 export default async function HomePrincipal() {
-  const [featured, { posts: homePosts }, suggestSlugs, columnists, { posts: allPosts }] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getColumnists(), getAllPosts()]);
-  // Artigos de opinião (muitos sem foto) não se misturam com as notícias da home: só aparecem no bloco Colunistas e na categoria Opinião.
+  const [featured, { posts: homePosts }, suggestSlugs, layout] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getHomeLayout()]);
+  // Artigos de opinião (muitos sem foto) não se misturam com as notícias da home: só aparecem na categoria Opinião.
   const notOpinion = (p: Post) => p.categorySlug !== 'opiniao' && !p.extraCategories.some((c) => c.slug === 'opiniao');
   const slides = featured.filter(notOpinion);
   const posts = homePosts.filter(notOpinion);
-  // Colunistas: o card mostra o artigo de Opinião mais recente do autor; sem artigos, o card aparece só com o nome, a foto e as redes.
-  const opinion = opinionPosts(allPosts);
-  const columnistItems = columnists.flatMap((columnist) => {
-    // O colunista é uma conta: os seus artigos são os de Opinião com o seu nome como autor (o mais recente no card). Sem artigos, o card aparece na mesma (só com a foto, o nome e as redes).
-    const p = opinion.find((x) => sameAuthor(x.author, columnist.autor));
-    return [{ columnist, post: p ? { slug: p.slug, title: p.title } : null }];
-  });
-
   if (posts.length === 0) {
     return (
       <main className="flex min-h-screen items-center justify-center text-gray-500">
@@ -151,7 +142,7 @@ export default async function HomePrincipal() {
   const family = (slugs: string[]): CategoryGroup[] =>
     slugs.map((slug) => ({ slug, label: categoryLabel(slug), posts: posts.filter((p) => p.categorySlug === slug).map(slim) }));
   const communityGroups = family(['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida']);
-  const agroGroups = family(['agricultura', 'fruticultura', 'mulher-agrario', 'sector-agrario', 'entrevista']);
+  const agroGroups = family(['agricultura', 'fruticultura', 'mulher-agrario', 'sector-publico', 'entrevista']);
   // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Oportunidades que não estão no slide.
   const heroLatest = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 5).map(slim);
   const agroBusinessGroup: CategoryGroup[] = [{ slug: 'agro-negocio', label: categoryLabel('agro-negocio'), posts: posts.filter((p) => p.categorySlug === 'agro-negocio' || p.extraCategories.some((c) => c.slug === 'agro-negocio')).map(slim) }];
@@ -162,28 +153,24 @@ export default async function HomePrincipal() {
   const suggestions = (activated.length > 0 ? activated : posts.slice(0, 60)).map(slim);
   const newsletterBg = (slides[1] ?? slides[0] ?? posts[0]).image;
 
-  return (
-    <ExpShell backdrop={newsletterBg}>
-        <main className="space-y-3 pb-3">
-          {/* -mt-3 anula o espaço do cabeçalho: a faixa fica colada à barra de menu, na largura toda; o conteúdo dela fica na largura do conteúdo. */}
-          <div className="-mt-3">
-            <NewsTicker posts={tickerPosts} />
-          </div>
-          <div className="mx-3">
-          <div className="mx-auto max-w-[1280px] space-y-3">
-
-            {/* Cabeçalho: slide das últimas notícias em destaque + 2 cards à direita (Comunidade e Oportunidades) */}
+  // Cada secção da home, por nome. A zona e a ordem em que aparecem vêm do painel (Página inicial); ver lib/home-layout.ts.
+  const sections: Record<string, React.ReactNode> = {
+    destaque: (
             <div className="grid gap-3 md:auto-rows-[215px] md:grid-cols-[2fr_1fr]">
               <ExpSlider posts={slides} className="h-[340px] md:row-span-2 md:h-full" />
-              <CategorySlide posts={heroLatest('comunidade')} label="Comunidade" className="h-[215px]" />
-              <CategorySlide posts={heroLatest('oportunidades')} label="Oportunidades" className="h-[215px]" />
+              <SideSlides
+                items={[
+                  { posts: heroLatest('comunidade'), label: 'Comunidade' },
+                  { posts: heroLatest('oportunidades'), label: 'Oportunidades' },
+                ]}
+                className="h-[215px]"
+              />
             </div>
-
-            <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
-              {/* Coluna principal */}
-              <div className="min-w-0 space-y-3">
+    ),
+    comunidade: (
                 <CategorySection groups={communityGroups} arrowsOnTop />
-
+    ),
+    ultimas: (
                 <Card title="Últimas notícias" plain>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {latest.map((p) => (
@@ -191,14 +178,14 @@ export default async function HomePrincipal() {
                     ))}
                   </div>
                 </Card>
-
+    ),
+    agro: (
                 <CategorySection groups={agroGroups} layout="grelha" arrowsOnTop reveal />
-              </div>
-
-              {/* Coluna secundária (1.ª parte): termina em "Publicações recentes", por cima dos Colunistas */}
-              <StickyColumn className="min-w-0 space-y-3">
+    ),
+    clima: (
                 <WeatherCard />
-
+    ),
+    sabores: (
                 <Card title="Sabores e curiosidades">
                   <Overlay post={food[0]} className="h-[170px]" titleClass="text-[12px]" />
                   <div className="mt-3 grid grid-cols-2 gap-3">
@@ -214,7 +201,8 @@ export default async function HomePrincipal() {
                     ))}
                   </div>
                 </Card>
-
+    ),
+    recentes: (
                 <Card title="Publicações recentes">
                   <Overlay post={recent[0]} className="h-[170px]" titleClass="text-[12px]" />
                   <ul className="divide-y divide-gray-100">
@@ -223,14 +211,8 @@ export default async function HomePrincipal() {
                     ))}
                   </ul>
                 </Card>
-              </StickyColumn>
-            </div>
-
-            {/* Colunistas: carrossel numa linha (no lugar da antiga faixa Agro-negócio), antes dos vídeos; sem colunistas o bloco não aparece */}
-            {columnistItems.length > 0 && <Columnists items={columnistItems} />}
-
-            <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
-              <div className="min-w-0 space-y-3">
+    ),
+    'ver-agora': (
                 <Card title="Ver agora">
                   <div className="grid bg-black md:grid-cols-[1.75fr_1fr]">
                     <Link href={`/noticias/${watch[0].slug}`} className="group relative block h-[260px] md:h-auto md:min-h-[330px]">
@@ -263,17 +245,16 @@ export default async function HomePrincipal() {
                     </div>
                   </div>
                 </Card>
-
-                {/* Agro-negócio: depois dos vídeos e antes de Oportunidades */}
+    ),
+    'agro-negocio': (
                 <CategorySection groups={agroBusinessGroup} arrowsOnTop />
-
+    ),
+    oportunidades: (
                 <Card title="Oportunidades" plain>
                   <OpportunityList posts={opportunities} />
                 </Card>
-              </div>
-
-              {/* Coluna secundária (2.ª parte) */}
-              <StickyColumn className="min-w-0 space-y-3">
+    ),
+    internacional: (
                 <Card title={categoryLabel('internacional')}>
                   <Overlay post={hot[0]} className="h-[200px]" titleClass="text-[13px]" />
                   <ul className="divide-y divide-gray-100">
@@ -289,7 +270,8 @@ export default async function HomePrincipal() {
                     ))}
                   </ul>
                 </Card>
-
+    ),
+    'mais-lidas': (
                 <Card title="Mais lidas">
                   <ul className="space-y-3">
                     {popular.map((p) => (
@@ -309,18 +291,42 @@ export default async function HomePrincipal() {
                     ))}
                   </ul>
                 </Card>
-
+    ),
+    newsletter: (
                 <Card title="Newsletter">
                   <p className="mb-3 text-[12px] leading-relaxed text-gray-600">
                     Receba no seu e-mail as notícias do dia, todas as noites às 20h.
                   </p>
                   <NewsletterForm variant="light" />
                 </Card>
-              </StickyColumn>
-            </div>
-
-            {/* Sugestões de leitura (no lugar do último espaço publicitário) */}
+    ),
+    sugestoes: (
             <ReadingSuggestions posts={suggestions} />
+    ),
+  };
+  const render = (zone: HomeZone) => layout[zone].map((id) => <React.Fragment key={id}>{sections[id]}</React.Fragment>);
+  const hasMain = layout.main.length > 0;
+  const hasSide = layout.side.length > 0;
+
+  return (
+    <ExpShell backdrop={newsletterBg}>
+        <main className="space-y-3 pb-3">
+          {/* -mt-3 anula o espaço do cabeçalho: a faixa fica colada à barra de menu, na largura toda; o conteúdo dela fica na largura do conteúdo. */}
+          <div className="-mt-3">
+            <NewsTicker posts={tickerPosts} />
+          </div>
+          <div className="mx-3">
+          <div className="mx-auto max-w-[1280px] space-y-3">
+            {render('top')}
+
+            {(hasMain || hasSide) && (
+              <div className={`grid gap-3 ${hasMain && hasSide ? 'lg:grid-cols-[1fr_340px]' : ''}`}>
+                {hasMain && <div className="min-w-0 space-y-3">{render('main')}</div>}
+                {hasSide && <StickyColumn className="min-w-0 space-y-3">{render('side')}</StickyColumn>}
+              </div>
+            )}
+
+            {render('bottom')}
           </div>
           </div>
         </main>

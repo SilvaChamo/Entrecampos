@@ -4,6 +4,7 @@ import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import sanitizeHtml from 'sanitize-html';
 import { normalizeSpaces } from '@/lib/normalize-spaces';
+import { getCategoryNames } from '@/lib/category-names';
 
 export interface Post {
   slug: string;
@@ -53,7 +54,7 @@ const ONLINE_HOST = 'https://entrecamposblog.com/';
 
 const CATEGORY_LABELS: Record<string, string> = {
   agricultura: 'Agricultura',
-  'sector-agrario': 'Sector agrário',
+  'sector-publico': 'Sector público', // antes "Sector agrário" (o endereço antigo continua a funcionar, ver CATEGORY_ALIASES)
   comunidade: 'Comunidade',
   ambiente: 'Ambiente',
   'turismo-rural': 'Turismo rural',
@@ -90,11 +91,27 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 // Erros de escrita antigos que já estão na base: a mesma categoria com um só endereço.
-const CATEGORY_ALIASES: Record<string, string> = { entrevsta: 'entrevista' };
+const CATEGORY_ALIASES: Record<string, string> = { entrevsta: 'entrevista', 'sector-agrario': 'sector-publico' };
+
+// Nomes de categoria escolhidos no painel (lib/category-names.ts): o nome novo e o seu endereço apontam para a categoria de sempre.
+let NAME_OVERRIDES: Record<string, string> = {};
+let ALIAS_OVERRIDES: Record<string, string> = {};
+
+/** Carrega os nomes escolhidos no painel (cache de dados; chamar antes de usar categoryLabel/slugify em páginas e rotas). */
+export async function applyCategoryNames() {
+  const { names, aliases } = await getCategoryNames();
+  NAME_OVERRIDES = names;
+  ALIAS_OVERRIDES = aliases;
+}
+
+/** Nomes e endereços escolhidos no painel, para o formulário de notícias casar o nome novo com a categoria de sempre. */
+export function categoryAliases(): Record<string, string> {
+  return { ...ALIAS_OVERRIDES };
+}
 
 export function slugify(value: string) {
   const slug = rawSlugify(value);
-  return CATEGORY_ALIASES[slug] ?? slug;
+  return CATEGORY_ALIASES[slug] ?? ALIAS_OVERRIDES[slug] ?? slug;
 }
 
 function rawSlugify(value: string) {
@@ -111,7 +128,7 @@ export function isKnownCategory(slug: string) {
 }
 
 export function categoryLabel(slug: string, fallback = '') {
-  return CATEGORY_LABELS[slug] || fallback || slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+  return NAME_OVERRIDES[slug] || CATEGORY_LABELS[slug] || fallback || slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
 }
 
 function stripTags(value: string) {
@@ -383,6 +400,7 @@ export function notNewsSlugs(): Set<string> {
 type AllPosts = { posts: Post[]; source: 'supabase' | 'local' };
 
 async function computeAllPosts(): Promise<AllPosts> {
+  await applyCategoryNames();
   const remote = await fromSupabase();
   const excluded = notNewsSlugs();
   const local = fromLocalData().filter((p) => !excluded.has(p.slug));
@@ -409,7 +427,7 @@ async function computeAllPosts(): Promise<AllPosts> {
 }
 
 // Versão da cache: mudar quando muda a forma de processar as notícias (a cache de dados sobrevive aos deploys).
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 
 // Notícias já processadas (limpeza do HTML, junção das fontes) ficam na cache de dados, com a etiqueta `news`: gravar no
 // painel limpa-a (lib/refresh-site.ts). Só o resultado vindo do Supabase é guardado; o plano B local nunca fica em cache.
@@ -424,6 +442,7 @@ const cachedAllPosts = unstable_cache(
 );
 
 export const getAllPosts = cache(async (): Promise<AllPosts> => {
+  await applyCategoryNames();
   try {
     return await cachedAllPosts();
   } catch {

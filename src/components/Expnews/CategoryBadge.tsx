@@ -17,7 +17,7 @@ import { defaultCategoryColor } from '@/lib/category-palette';
 
 const ICONS: Record<string, LucideIcon> = {
   agricultura: Sprout,
-  'sector-agrario': Tractor,
+  'sector-publico': Tractor,
   comunidade: Users,
   'agro-negocio': Briefcase,
   curiosidade: Lightbulb,

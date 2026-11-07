@@ -6,12 +6,13 @@ const LINKS_RAPIDOS: LinkItem[] = [
   { nome: 'Início', href: '/' },
   { nome: 'Últimas notícias', href: '/noticias' },
   { nome: 'Todas as categorias', href: '/categorias' },
+  { nome: 'Planos de subscrição', href: '/planos' },
   { nome: 'Contactos', href: '/pagina/contactos' },
 ];
 
 const LINKS_INTERNOS: LinkItem[] = [
   { nome: 'Agricultura', href: '/categoria/agricultura' },
-  { nome: 'Sector agrário', href: '/categoria/sector-agrario' },
+  { nome: 'Sector público', href: '/categoria/sector-publico' },
   { nome: 'Comunidade', href: '/categoria/comunidade' },
   { nome: 'Ambiente', href: '/categoria/ambiente' },
   { nome: 'Turismo rural', href: '/categoria/turismo-rural' },

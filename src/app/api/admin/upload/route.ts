@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-guard';
+import { toWebp100 } from '@/lib/image-optimize';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,7 +40,8 @@ export async function POST(req: NextRequest) {
     if (!ALLOWED_BUCKETS.includes(bucket)) {
       return NextResponse.json({ error: 'Destino não permitido' }, { status: 400 });
     }
-    const fileExt = IMAGE_TYPES[file.type];
+    let fileExt = IMAGE_TYPES[file.type];
+    let contentType = file.type;
     if (!fileExt) {
       return NextResponse.json({ error: 'Só são aceites imagens JPG, PNG, WEBP ou GIF' }, { status: 400 });
     }
@@ -47,7 +49,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'A imagem excede 8 MB' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    let buffer: Buffer = Buffer.from(await file.arrayBuffer());
+    // Todas as imagens do site ficam em WebP com no máximo 100 KB (os GIF, que podem ser animados, seguem como vêm).
+    if (fileExt !== 'gif') {
+      buffer = await toWebp100(buffer);
+      fileExt = 'webp';
+      contentType = 'image/webp';
+    }
     const base = baseName(file.name || '', String(formData.get('title') || ''));
     let fileName = '';
     let error: { message: string } | null = null;
@@ -55,7 +63,7 @@ export async function POST(req: NextRequest) {
     for (let n = 1; n <= 30; n++) {
       fileName = `${base}${n > 1 ? `-${n}` : ''}.${fileExt}`;
       const res = await supabaseAdmin.storage.from(bucket).upload(fileName, buffer, {
-        contentType: file.type,
+        contentType,
         upsert: false,
         cacheControl: '31536000'
       });

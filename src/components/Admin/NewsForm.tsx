@@ -34,16 +34,19 @@ const CATEGORIES = [
   'Fruticultura', 'Gestão agrícola', 'Histórias inspiradoras',
   'Inclusao feminina', 'Infra-estruturas', 'Inovação', 'Agricultura', 'Comunidade',
   // Categorias do site online (entrecamposblog.com)
-  'Sector agrário', 'Ambiente', 'Turismo rural', 'Desenvolvimento local', 'Apoio comunitário', 'Mulher agrário', 'Curiosidade',
+  'Sector público', 'Ambiente', 'Turismo rural', 'Desenvolvimento local', 'Apoio comunitário', 'Mulher agrário', 'Curiosidade',
   'Agro-negócio', 'Oportunidades', 'Receitas',
   // Categorias que chegam da Base de Dados Agro
   'Notícia', 'Evento', 'Guia', 'Internacional', 'Política Agrária', 'Recursos'
 ];
 
 // Compara categorias sem depender de maiúsculas, acentos ou hífenes ("agro-negocio" = "Agro-negócio").
+// Nomes de categoria mudados no painel: o nome novo (em forma de endereço) é a categoria de sempre. Chega com a lista de categorias.
+let RENAMED: Record<string, string> = {};
 const catKey = (v: string) => {
   const key = v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  return key === 'entrevsta' ? 'entrevista' : key; // erro de escrita antigo na base: é a mesma categoria
+  const base = key === 'entrevsta' ? 'entrevista' : key === 'sector-agrario' ? 'sector-publico' : key; // entrevsta: erro de escrita antigo; Sector agrário passou a Sector público
+  return RENAMED[base] ?? base;
 };
 
 /** Cabeçalho de um card da barra lateral: a seta recolhe/expande o conteúdo. */
@@ -230,6 +233,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
     fetch('/api/admin/categories', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        RENAMED = (data?.aliases ?? {}) as Record<string, string>;
         const labels = ((data?.options ?? []) as { label: string }[]).map((o) => o.label);
         if (labels.length > 0) setCategoryLabels(labels);
       })

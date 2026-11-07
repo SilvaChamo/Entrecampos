@@ -46,7 +46,7 @@ const QUICK_LINKS: [string, string][] = [
 
 const INTERNAL_LINKS: [string, string][] = [
   ["Agricultura", "/categoria/agricultura"],
-  ["Sector agrário", "/categoria/sector-agrario"],
+  ["Sector público", "/categoria/sector-publico"],
   ["Comunidade", "/categoria/comunidade"],
   ["Ambiente", "/categoria/ambiente"],
   ["Turismo rural", "/categoria/turismo-rural"],

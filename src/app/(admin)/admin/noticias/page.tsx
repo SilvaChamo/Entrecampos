@@ -35,10 +35,10 @@ interface NewsItem {
 
 type CategoryOption = { slug: string; label: string };
 
-/** Mesma regra do site (lib/news-data.ts): é assim que "Sector agrário" e "sector-agrario" são a mesma categoria. */
+/** Mesma regra do site (lib/news-data.ts): é assim que "Sector público" e o antigo "sector-agrario" são a mesma categoria. */
 const slugOf = (value: string | undefined | null) => {
   const slug = String(value ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  return slug === 'entrevsta' ? 'entrevista' : slug; // erro de escrita antigo na base
+  return slug === 'entrevsta' ? 'entrevista' : slug === 'sector-agrario' ? 'sector-publico' : slug; // entrevsta: erro de escrita antigo; Sector agrário passou a Sector público
 };
 
 /** Verificações de SEO com o que está realmente guardado na notícia (título, resumo, imagem, endereço). */
