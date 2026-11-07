@@ -7,11 +7,14 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 export type TickerPost = { slug: string; title: string };
 
 const SPEED = 0.35; // px por fotograma: devagar, para ler à vontade
+const SPEED_MOBILE = 0.65; // no telemóvel o mesmo ritmo parecia lento
 const GAP = 25; // espaço entre notícias (px)
 
 /**
  * Faixa "Actualidade": os títulos das notícias mais recentes, inteiros, a correr para a esquerda
  * por baixo da etiqueta vermelha. Pára com o rato por cima; as setas pequenas empurram uma notícia.
+ * Verde escuro liso (o das barras de título): a faixa ocupa a largura toda; a etiqueta e as setas
+ * (num cartão verde escuro) ficam na largura do conteúdo, encostadas às suas pontas.
  */
 export default function NewsTicker({ posts }: { posts: TickerPost[] }) {
   const track = useRef<HTMLDivElement>(null);
@@ -41,11 +44,12 @@ export default function NewsTicker({ posts }: { posts: TickerPost[] }) {
     const el = track.current;
     if (!el || !count) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const small = window.matchMedia('(max-width: 639px)');
     let raf = 0;
     const tick = () => {
       const width = lapWidth();
       if (width) {
-        if (!pausedRef.current && !reduced) position.current += SPEED;
+        if (!pausedRef.current && !reduced) position.current += small.matches ? SPEED_MOBILE : SPEED;
         if (Math.abs(boost.current) > 0.5) {
           const step = boost.current * 0.18;
           position.current += step;
@@ -69,10 +73,12 @@ export default function NewsTicker({ posts }: { posts: TickerPost[] }) {
 
   return (
     <div
-      className="relative h-9 overflow-hidden bg-white shadow-sm"
+      className="bg-[#093510]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
+    <div className="mx-3">
+    <div className="relative mx-auto h-9 max-w-[1280px] overflow-hidden">
       {/* Títulos: começam depois da etiqueta e passam por baixo dela */}
       <div className="absolute inset-0">
         <div
@@ -84,16 +90,16 @@ export default function NewsTicker({ posts }: { posts: TickerPost[] }) {
             <Link
               key={`${i}-${p.slug}`}
               href={`/noticias/${p.slug}`}
-              className="flex shrink-0 items-center gap-2 whitespace-nowrap text-[12px] font-bold text-[#222] hover:text-[#d6101c]"
+              className="flex shrink-0 items-center gap-2 whitespace-nowrap text-[12px] font-bold text-white hover:text-[#39ff14]"
             >
-              <span className="h-1.5 w-1.5 shrink-0 rotate-45 bg-[#d6101c]" />
+              <span className="h-1.5 w-1.5 shrink-0 rotate-45 bg-[#39ff14]" />
               {p.title}
             </Link>
           ))}
         </div>
       </div>
 
-      {/* Etiqueta: degradé, borda inclinada e uma bolinha com onda de pulso */}
+      {/* Etiqueta: encostada à ponta esquerda do conteúdo; degradé, borda inclinada e uma bolinha com onda de pulso */}
       <div className="absolute inset-y-0 left-0 z-10 drop-shadow-[3px_0_3px_rgba(0,0,0,0.25)]">
         <div className="flex h-full items-center gap-2.5 bg-gradient-to-r from-[#a30c15] via-[#d6101c] to-[#e8323d] pl-4 pr-8 [clip-path:polygon(0_0,100%_0,calc(100%-14px)_100%,0_100%)]">
           <span className="relative flex h-3 w-3 items-center justify-center">
@@ -104,12 +110,13 @@ export default function NewsTicker({ posts }: { posts: TickerPost[] }) {
         </div>
       </div>
 
-      <div className="absolute inset-y-0 right-0 z-10 flex items-center gap-1 bg-gradient-to-l from-white via-white to-transparent pl-10 pr-2">
+      {/* Setas: num cartão verde escuro, de cor lisa (sem esvanecer), encostado à ponta direita do conteúdo */}
+      <div className="absolute inset-y-0 right-0 z-10 flex items-center gap-1 bg-[#093510] px-2">
         <button
           type="button"
           onClick={() => nudge(-1)}
           aria-label="Notícia anterior"
-          className="flex h-5 w-5 items-center justify-center border border-gray-300 bg-white text-[#d6101c] hover:border-[#d6101c] hover:bg-[#d6101c] hover:text-white"
+          className="flex h-5 w-5 items-center justify-center border border-white/40 text-white hover:border-white hover:bg-white hover:text-[#093510]"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
         </button>
@@ -117,11 +124,13 @@ export default function NewsTicker({ posts }: { posts: TickerPost[] }) {
           type="button"
           onClick={() => nudge(1)}
           aria-label="Notícia seguinte"
-          className="flex h-5 w-5 items-center justify-center border border-gray-300 bg-white text-[#d6101c] hover:border-[#d6101c] hover:bg-[#d6101c] hover:text-white"
+          className="flex h-5 w-5 items-center justify-center border border-white/40 text-white hover:border-white hover:bg-white hover:text-[#093510]"
         >
           <ChevronRight className="h-3.5 w-3.5" />
         </button>
       </div>
+    </div>
+    </div>
     </div>
   );
 }

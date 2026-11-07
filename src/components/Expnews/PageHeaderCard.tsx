@@ -10,7 +10,10 @@ export type Crumb = { label: string; href?: string };
 export default function PageHeaderCard({ title, trail }: { title: string; trail: Crumb[] }) {
   return (
     // -mt-3 anula o espaço (mb-3) do cabeçalho: o card fica colado à barra de menu.
-    <header className="ec-drop relative z-10 -mt-3 mb-3 flex min-h-[38px] flex-wrap items-center justify-between gap-x-6 bg-[#093510] px-5 sm:px-6">
+    // A barra ocupa a largura toda; o título e o caminho ficam na largura do conteúdo (mx-3 + 1280px, como o resto da página). No telemóvel o título encosta à margem esquerda do conteúdo (a do menu e dos cards).
+    <header className="ec-drop relative z-10 -mt-3 mb-3 bg-[#093510]">
+      <div className="mx-3">
+      <div className="mx-auto flex min-h-[38px] max-w-[1280px] flex-wrap items-center justify-between gap-x-6 pr-5 sm:px-6">
       <div className="flex min-w-0 items-center">
         <h1 className="flex min-w-0 items-center gap-3 py-[7px] text-[15px] font-extrabold uppercase leading-tight tracking-[0.08em] text-white sm:text-[17px]">
           <span className="h-[18px] w-[5px] shrink-0 bg-[#d6101c] sm:h-[20px]" />
@@ -40,6 +43,8 @@ export default function PageHeaderCard({ title, trail }: { title: string; trail:
           );
         })}
       </nav>
+      </div>
+      </div>
     </header>
   );
 }

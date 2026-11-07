@@ -8,7 +8,7 @@ const SidebarContext = createContext<{ open: boolean; toggle: () => void }>({ op
 /**
  * Estrutura da home: barra lateral escura + conteúdo.
  * A barra entra sempre fechada (em ecrã grande só ícones, 64px). Se o utilizador a abrir com o botão Menu (220px),
- * a escolha fica guardada e ela só volta a fechar quando ele a fechar. No telemóvel abre só com um clique em "Menu".
+ * a escolha fica guardada e ela só volta a fechar quando ele a fechar. No telemóvel abre só com um clique em "Menu" e desliza da esquerda.
  */
 const STORAGE_KEY = 'ec-sidebar-v2';
 const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
@@ -81,22 +81,21 @@ export default function ExpFrame({ sidebar, topBar, children }: { sidebar: React
           <aside
             data-open={open}
             suppressHydrationWarning
-            className={`group/side z-40 flex-col bg-[#0c1f08] text-white border-r-2 border-[#39ff14] transition-[width] ${ease} ${
-              open ? 'flex w-[220px] max-lg:fixed max-lg:inset-y-0 max-lg:left-0' : 'hidden'
-            } lg:sticky lg:top-0 lg:flex lg:h-screen lg:pb-9 lg:w-16 lg:shrink-0 lg:self-start lg:data-[open=true]:w-[220px]`}
+            className={`group/side z-40 flex flex-col bg-[#0c1f08] text-white border-r-2 border-[#39ff14] transition-[width] max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:w-[220px] max-lg:transition-[transform,visibility] ${ease} ${
+              open ? 'max-lg:translate-x-0' : 'max-lg:invisible max-lg:-translate-x-full'
+            } lg:sticky lg:top-0 lg:h-screen lg:pb-9 lg:w-16 lg:shrink-0 lg:self-start lg:data-[open=true]:w-[220px]`}
           >
             {sidebar}
           </aside>
           {!booted && <script dangerouslySetInnerHTML={{ __html: INIT_SCRIPT }} />}
-          {/* No telemóvel a barra abre por cima, por isso há um fundo para fechar. */}
-          {open && (
-            <button
-              type="button"
-              aria-label="Fechar menu"
-              onClick={() => choose(false)}
-              className="fixed inset-0 z-30 bg-black/50 lg:hidden"
-            />
-          )}
+          {/* No telemóvel a barra desliza por cima do conteúdo (sem saltar), por isso há um fundo, que aparece e some suavemente, para a fechar. */}
+          <button
+            type="button"
+            aria-label="Fechar menu"
+            tabIndex={open ? 0 : -1}
+            onClick={() => choose(false)}
+            className={`fixed inset-0 z-30 bg-black/50 transition-opacity ${ease} lg:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+          />
           <div className="min-w-0 flex-1">{children}</div>
         </div>
       </div>

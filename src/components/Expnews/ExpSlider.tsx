@@ -19,10 +19,16 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
   const [paused, setPaused] = useState(false);
   const [seen, setSeen] = useState<Set<number>>(() => new Set([0]));
   useEffect(() => setSeen((s) => (s.has(active) ? s : new Set(s).add(active))), [active]);
-  // O enchimento só começa depois de a página estar pronta; antes disso o fim do tempo não seria detectado.
+  // O avanço automático só começa depois de a página estar pronta.
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
   const total = posts.length;
+  // Avança sozinho de SLIDE_MS em SLIDE_MS; pára com o rato por cima e conta de novo ao sair ou ao mudar de notícia.
+  useEffect(() => {
+    if (!ready || total < 2 || paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = setTimeout(() => setActive((n) => (n + 1) % total), SLIDE_MS);
+    return () => clearTimeout(timer);
+  }, [ready, total, paused, active]);
 
   if (total === 0) return null;
   const go = (n: number) => setActive((n + total) % total);
@@ -52,7 +58,7 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
-          <div className="absolute inset-0 flex flex-col justify-end p-[30px] text-white max-sm:pb-[70px]">
+          <div className="absolute inset-0 flex flex-col justify-end p-[30px] text-white">
             <CategoryBadge label={p.category} slug={p.categorySlug} tabIndex={i === active ? 0 : -1} className="self-start text-[11px]" />
             <Link href={`/noticias/${p.slug}`} tabIndex={i === active ? 0 : -1} className="block max-w-4xl">
               <h2 className="mt-3 line-clamp-3 text-[22px] font-bold leading-tight hover:underline sm:text-[24px] lg:text-[30px]">
@@ -69,49 +75,23 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
       ))}
 
       {total > 1 && (
-        // Controlo: seta, pontos (o activo alonga-se) e seta. Ecrã grande: canto direito, na linha da data.
-        // Telemóvel: em coluna, por baixo da data (o texto sobe para lhe dar lugar), tudo na horizontal.
-        <div className="absolute bottom-[30px] left-[30px] flex items-center gap-2.5 sm:left-auto sm:right-[30px]">
+        // Controlo: só as duas setas, no canto superior direito do slide, com 12px por fora (o espaço entre os cards) e coladas uma à outra (sem pontos).
+        <div className="absolute right-3 top-3 flex items-center">
           <button
             type="button"
             onClick={() => go(active - 1)}
             aria-label="Notícia anterior"
-            className="flex h-7 w-7 items-center justify-center rounded-none border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
+            className="flex h-9 w-9 items-center justify-center rounded-none border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-2">
-            {posts.map((p, i) => (
-              <button
-                key={p.slug}
-                type="button"
-                onClick={() => setActive(i)}
-                aria-label={`Ir para a notícia ${i + 1}`}
-                aria-current={i === active}
-                className={`relative overflow-hidden rounded-none transition-all duration-300 ${
-                  i === active ? 'h-1.5 w-12 bg-white/40' : 'h-2 w-2 bg-white/55 hover:bg-white'
-                }`}
-              >
-                {/* O ponto activo enche durante o tempo do slide; quando enche, passa para a notícia seguinte */}
-                {i === active && total > 1 && ready && (
-                  <span
-                    key={active}
-                    className="ec-dot-fill absolute inset-y-0 left-0 w-full origin-left bg-[#d6101c]"
-                    style={{ animationDuration: `${SLIDE_MS}ms`, animationPlayState: paused ? 'paused' : 'running' }}
-                    onAnimationEnd={() => go(active + 1)}
-                  />
-                )}
-                {i === active && total <= 1 && <span className="absolute inset-0 bg-[#d6101c]" />}
-              </button>
-            ))}
-          </div>
           <button
             type="button"
             onClick={() => go(active + 1)}
             aria-label="Notícia seguinte"
-            className="flex h-7 w-7 items-center justify-center rounded-none border border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
+            className="flex h-9 w-9 items-center justify-center rounded-none border border-l-0 border-white/50 bg-black/50 text-white hover:border-[#d6101c] hover:bg-[#d6101c]"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-5 w-5" />
           </button>
         </div>
       )}

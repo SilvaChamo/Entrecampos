@@ -323,14 +323,6 @@ body {
   .ec-in-right, .ec-in-left, .ec-out-left, .ec-out-right { animation-duration: 0.01ms; }
 }
 
-/* Ponto activo do slide principal: enche durante o tempo da notícia. */
-@keyframes ec-dot-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-.ec-dot-fill { animation-name: ec-dot-fill; animation-timing-function: linear; animation-fill-mode: forwards; }
-
-@media (prefers-reduced-motion: reduce) {
-  .ec-dot-fill { animation: none; }
-}
-
 /* Entrada dos cards em slide up (RevealOnView): cada card arranca quando chega ao ecrã e sobe até ao fim de uma só vez,
    a velocidade normal, sem parar a meio. Numa linha de 3 colunas entram em sequência (--ec-col = 0, 1, 2).
    Sem JavaScript ou com "reduzir movimento" os cards ficam sempre visíveis. */

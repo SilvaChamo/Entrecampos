@@ -1,5 +1,6 @@
 import ExpShell from '@/components/Expnews/Shell';
 import WeatherCard from '@/components/Expnews/WeatherCard';
+import ExchangeCard from '@/components/Expnews/ExchangeCard';
 import StickyColumn from '@/components/Expnews/StickyColumn';
 import { SiteSidebar } from '@/components/Site/parts';
 import PageHeaderCard, { type Crumb } from '@/components/Expnews/PageHeaderCard';
@@ -21,21 +22,22 @@ export default function InnerPage({
 }) {
   return (
     <ExpShell backdrop={backdrop}>
-      <main className="mx-3 pb-6">
-        <div className="mx-auto max-w-[1280px]">
-          {title && <PageHeaderCard title={title} trail={trail} />}
-          {children}
+      <main className="pb-6">
+        {title && <PageHeaderCard title={title} trail={trail} />}
+        <div className="mx-3">
+          <div className="mx-auto max-w-[1280px]">{children}</div>
         </div>
       </main>
     </ExpShell>
   );
 }
 
-/** Coluna lateral das páginas interiores (igual à da página de leitura): fica fixa ao fazer scroll. */
-export function InnerSidebar() {
+/** Coluna lateral das páginas interiores (igual à da página de leitura): fica fixa ao fazer scroll. Com `exchange`, leva também o card de câmbio (página de leitura). */
+export function InnerSidebar({ exchange = false }: { exchange?: boolean }) {
   return (
     <StickyColumn className="min-w-0 space-y-3">
       <WeatherCard />
+      {exchange && <ExchangeCard />}
       <SiteSidebar facebook={false} />
     </StickyColumn>
   );

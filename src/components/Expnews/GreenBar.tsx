@@ -110,6 +110,14 @@ function today() {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+/** Abreviada, para ecrãs estreitos: "Dom, 2 nov 2026" */
+function todayShort() {
+  const d = new Date();
+  const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  return `${weekdays[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 /** Hora de Maputo, ex.: "14:35:07" */
 function now() {
   return new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Africa/Maputo' });
@@ -120,13 +128,17 @@ function now() {
  */
 export default function GreenBar() {
   const [date, setDate] = useState('');
+  const [dateShort, setDateShort] = useState('');
   const [temp, setTemp] = useState<number | null>(null);
   const [time, setTime] = useState('');
   // Quem fechou o painel sem sair continua com sessão: mostra o botão "Painel" para voltar.
   const [painel, setPainel] = useState<string | null>(null);
 
   // A data calcula-se no browser: a página pode estar guardada em cache de há uns minutos.
-  useEffect(() => setDate(today()), []);
+  useEffect(() => {
+    setDate(today());
+    setDateShort(todayShort());
+  }, []);
 
   // Relógio: actualiza-se a cada segundo (horas, minutos e segundos).
   useEffect(() => {
@@ -161,15 +173,16 @@ export default function GreenBar() {
   }, []);
 
   return (
-    <div className="relative h-9 bg-[#0c1f08] transition-[padding] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:pl-16 lg:group-data-[open=true]/frame:pl-[220px]">
+    <div className="relative bg-[#0c1f08] transition-[padding] max-sm:pb-1.5 lg:h-9 duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:pl-16 lg:group-data-[open=true]/frame:pl-[220px]">
       {/* Linha verde fluorescente (2px, sem blur) por baixo da barra: começa onde a barra de menu acaba, para a linha vertical dela (ExpFrame) fechar o contorno. */}
       <span
         aria-hidden
         className="pointer-events-none absolute bottom-0 left-0 right-0 z-50 h-0.5 bg-[#39ff14] transition-[left] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:left-[62px] lg:group-data-[open=true]/frame:left-[218px]"
       />
-      <div className="mx-3 h-full">
-        <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-4">
+      {/* Telemóvel e tablet: duas linhas (e-mail e data; depois painel, temperatura, hora e idioma). Computador: uma só linha. */}
+      <div className="mx-3 lg:h-full">
+        <div className="mx-auto flex max-w-[1280px] flex-col lg:h-full lg:flex-row lg:items-center lg:justify-between lg:gap-3">
+          <div className="flex h-8 min-w-0 items-center gap-4 lg:h-auto">
             <a href={`mailto:${EMAIL}`} className={`${item} hover:text-white`}>
               <Mail className="h-3.5 w-3.5 text-[#39ff14]" />
               {EMAIL}
@@ -177,11 +190,14 @@ export default function GreenBar() {
             <span className="h-3.5 w-px bg-white/20" />
             <span className={`${item} min-w-0 truncate`} suppressHydrationWarning>
               <CalendarDays className="h-3.5 w-3.5 shrink-0 text-[#39ff14]" />
-              {date}
+              {/* Abaixo de 400px (320, 375, 390…) a data vai abreviada: por extenso já não cabia. */}
+              <span className="max-[399px]:hidden">{date}</span>
+              <span className="min-[400px]:hidden">{dateShort}</span>
             </span>
           </div>
 
-          <div className="flex shrink-0 items-center gap-3">
+          {/* Telemóvel: o botão Painel (quando há) fica à esquerda e a temperatura logo a seguir; sem o Painel, a temperatura ocupa o lugar dele. O idioma fica à direita. */}
+          <div className="flex h-8 items-center gap-3 border-t border-white/10 lg:h-auto lg:shrink-0 lg:border-t-0">
             {painel && (
               <>
                 <a
@@ -191,7 +207,7 @@ export default function GreenBar() {
                   <LayoutDashboard className="h-3 w-3" />
                   Painel
                 </a>
-                <span className="text-[11px] text-white/30" aria-hidden="true">|</span>
+                <span className="text-[11px] text-white/30 max-lg:hidden" aria-hidden="true">|</span>
               </>
             )}
             {temp !== null && (
@@ -200,15 +216,18 @@ export default function GreenBar() {
                   <Thermometer className="h-3.5 w-3.5 text-[#39ff14]" />
                   Maputo {temp}°C
                 </span>
-                <span className="text-[11px] text-white/30" aria-hidden="true">|</span>
+                <span className="text-[11px] text-white/30 max-lg:hidden" aria-hidden="true">|</span>
               </>
             )}
-            <span className={`${item} tabular-nums`} suppressHydrationWarning>
+            {/* Telemóvel: a hora só aparece quando não há o botão Painel (sem ele há lugar, junto à temperatura). */}
+            <span className={`${item} tabular-nums ${painel ? 'max-sm:hidden' : ''}`} suppressHydrationWarning>
               <Clock className="h-3.5 w-3.5 text-[#39ff14]" />
               {time}
             </span>
-            <span className="text-[11px] text-white/30" aria-hidden="true">|</span>
-            <LanguageMenu />
+            <span className="text-[11px] text-white/30 max-lg:hidden" aria-hidden="true">|</span>
+            <div className="max-lg:ml-auto">
+              <LanguageMenu />
+            </div>
           </div>
         </div>
       </div>

@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import {
   Facebook,
   Plus,
-  Search,
   User,
 } from "lucide-react";
 import SideNav from "@/components/Expnews/SideNav";
@@ -11,6 +10,7 @@ import GreenBar from "@/components/Expnews/GreenBar";
 import ShareLink from "@/components/Expnews/ShareLink";
 import NewsletterForm from "@/components/Forms/NewsletterForm";
 import ExpFrame, { MenuToggle } from "@/components/Expnews/ExpFrame";
+import HeaderSearch from "@/components/Expnews/HeaderSearch";
 import styles from "@/components/Expnews/expnews.module.css";
 import { FACEBOOK_URL } from "@/components/Site/parts";
 
@@ -100,42 +100,39 @@ export default function ExpShell({
         <header className="sticky top-0 z-30 mb-3 border-b-2 border-[#d6101c] bg-white shadow-sm">
           <div className="mx-3">
             <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4">
-              <div className="flex min-w-0 items-center gap-3 py-3">
+              <div className="flex min-w-0 items-center gap-3 py-3 max-sm:gap-0">
                 <MenuToggle />
-                <span className="h-9 w-px bg-gray-200" />
+                <span className="h-9 w-px bg-gray-200 max-sm:hidden" />
                 <Link href="/" aria-label="EntreCAMPOS — início" className="shrink-0">
+                  {/* Telemóvel: só o símbolo, encostado ao menu; a partir de sm, o logótipo. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/images/logo.png" alt="EntreCAMPOS" className="h-9 w-auto sm:h-10" />
+                  <img src="/images/entrecampos-simbolo.png" alt="EntreCAMPOS" className="block h-9 w-9 object-cover sm:hidden" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/logo.png" alt="EntreCAMPOS" className="h-9 w-auto max-sm:hidden sm:h-10" />
                 </Link>
               </div>
-              <div className="flex shrink-0 items-center gap-4 text-gray-700">
-                <form action="/noticias" className="flex items-center gap-2 border-l border-gray-200 pl-4">
-                  <button type="submit" aria-label="Pesquisar" className="hover:text-[#d6101c]">
-                    <Search className="h-4 w-4" />
-                  </button>
-                  <input
-                    name="q"
-                    placeholder="Pesquisar"
-                    className="hidden w-40 border-0 bg-transparent text-[13px] font-normal normal-case outline-none placeholder:font-normal placeholder:normal-case placeholder:text-gray-500 md:block lg:w-52 xl:w-56"
-                  />
-                </form>
+              <div className="flex shrink-0 items-center gap-2 text-gray-700 sm:gap-4">
+                <HeaderSearch />
                 <span className="h-9 w-px bg-gray-200" />
-                <Link
-                  href="/admin/guest"
-                  aria-label="Adicionar notícia"
-                  className="flex items-center gap-1.5 bg-[#d6101c] px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-[#a30c15]"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Adicionar notícia</span>
-                </Link>
-                <Link
-                  href="/login"
-                  aria-label="Entrar"
-                  title="Entrar"
-                  className="flex h-9 w-9 items-center justify-center border border-gray-400 text-gray-700 transition-colors hover:border-[#d6101c] hover:text-[#d6101c]"
-                >
-                  <User className="h-5 w-5" />
-                </Link>
+                {/* Adicionar notícia e Entrar: mesma altura (h-9) e um espaço curto entre os dois */}
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/admin/guest"
+                    aria-label="Adicionar notícia"
+                    className="flex h-9 items-center gap-1.5 bg-[#00a651] px-3 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-[#008a44]"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Adicionar notícia</span>
+                  </Link>
+                  <Link
+                    href="/login"
+                    aria-label="Entrar"
+                    title="Entrar"
+                    className="flex h-9 w-9 items-center justify-center border border-gray-400 text-gray-700 transition-colors hover:border-[#d6101c] hover:text-[#d6101c]"
+                  >
+                    <User className="h-5 w-5" />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

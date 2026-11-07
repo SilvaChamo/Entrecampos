@@ -151,12 +151,13 @@ export default async function HomePrincipal() {
 
   return (
     <ExpShell backdrop={newsletterBg}>
-        <main className="mx-3 space-y-3 pb-3">
+        <main className="space-y-3 pb-3">
+          {/* -mt-3 anula o espaço do cabeçalho: a faixa fica colada à barra de menu, na largura toda; o conteúdo dela fica na largura do conteúdo. */}
+          <div className="-mt-3">
+            <NewsTicker posts={tickerPosts} />
+          </div>
+          <div className="mx-3">
           <div className="mx-auto max-w-[1280px] space-y-3">
-            {/* -mt-3 anula o espaço do cabeçalho: o card fica colado à barra de menu. */}
-            <div className="-mt-3">
-              <NewsTicker posts={tickerPosts} />
-            </div>
 
             {/* Cabeçalho: slide das últimas notícias em destaque + 2 cards à direita (Comunidade e Oportunidades) */}
             <div className="grid gap-3 md:auto-rows-[215px] md:grid-cols-[2fr_1fr]">
@@ -183,21 +184,7 @@ export default async function HomePrincipal() {
 
               {/* Coluna secundária (1.ª parte): termina em "Publicações recentes", por cima da faixa Agro-negócio */}
               <StickyColumn className="min-w-0 space-y-3">
-                <Card title={categoryLabel('internacional')}>
-                  <Overlay post={hot[0]} className="h-[200px]" titleClass="text-[13px]" />
-                  <ul className="divide-y divide-gray-100">
-                    {hot.slice(1).map((p) => (
-                      <li key={p.slug} className="py-3">
-                        <Link href={`/noticias/${p.slug}`} className="line-clamp-2 text-[11px] font-bold leading-snug hover:text-[#d6101c]">
-                          {p.title}
-                        </Link>
-                        <div className="mt-1">
-                          <Meta post={p} />
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
+                <ExchangeCard />
 
                 <Card title="Sabores e curiosidades">
                   <Overlay post={food[0]} className="h-[170px]" titleClass="text-[12px]" />
@@ -271,7 +258,21 @@ export default async function HomePrincipal() {
 
               {/* Coluna secundária (2.ª parte) */}
               <StickyColumn className="min-w-0 space-y-3">
-                <ExchangeCard />
+                <Card title={categoryLabel('internacional')}>
+                  <Overlay post={hot[0]} className="h-[200px]" titleClass="text-[13px]" />
+                  <ul className="divide-y divide-gray-100">
+                    {hot.slice(1).map((p) => (
+                      <li key={p.slug} className="py-3">
+                        <Link href={`/noticias/${p.slug}`} className="line-clamp-2 text-[11px] font-bold leading-snug hover:text-[#d6101c]">
+                          {p.title}
+                        </Link>
+                        <div className="mt-1">
+                          <Meta post={p} />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
 
                 <Card title="Mais lidas">
                   <ul className="space-y-3">
@@ -304,6 +305,7 @@ export default async function HomePrincipal() {
 
             {/* Sugestões de leitura (no lugar do último espaço publicitário) */}
             <ReadingSuggestions posts={suggestions} />
+          </div>
           </div>
         </main>
 

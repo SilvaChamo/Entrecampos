@@ -45,12 +45,13 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
 
   return (
     <ExpShell backdrop={post.image}>
-    <main className="mx-3 pb-6">
-    <div className="mx-auto max-w-[1280px]">
+    <main className="pb-6">
       <PageHeaderCard
         title={post.category}
         trail={[{ label: 'Notícias', href: '/noticias' }, { label: post.category, href: `/categoria/${post.categorySlug}` }, { label: post.title }]}
       />
+    <div className="mx-3">
+    <div className="mx-auto max-w-[1280px]">
       <div className="grid gap-3 lg:grid-cols-[1fr_300px]">
         <article className="min-w-0 bg-white">
           {post.image && (
@@ -61,13 +62,13 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
           )}
           <div className="px-5 pb-8 pt-6 sm:px-7">
             <div className="flex flex-wrap items-center gap-2">
-              <CategoryTag label={post.category} slug={post.categorySlug} className="text-[13px]" />
+              <CategoryTag label={post.category} slug={post.categorySlug} className="text-[13px] max-sm:text-[15px]" />
               {post.extraCategories.map((c) => (
-                <CategoryTag key={c.slug} label={c.label} slug={c.slug} className="text-[13px]" />
+                <CategoryTag key={c.slug} label={c.label} slug={c.slug} className="text-[13px] max-sm:text-[15px]" />
               ))}
             </div>
             <h1 className="mt-3 text-[28px] font-bold leading-tight text-gray-800 sm:text-[34px]">{post.title}</h1>
-            <div className="mt-4 flex flex-wrap items-center gap-5 border-b border-gray-200 pb-3 text-[13px] text-gray-600">
+            <div className="mt-4 flex flex-wrap items-center gap-5 border-b border-gray-200 pb-3 text-[13px] text-gray-600 max-sm:text-[15px]">
               <span className="flex items-center gap-2">
                 <CalendarCheck className="h-4 w-4 text-red-600" />
                 {post.edited ? 'Editado a' : 'Publicado a'}{' '}
@@ -80,7 +81,7 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
             </div>
 
             <div
-              className="blog-details mt-6 text-[15px] leading-7 text-gray-500 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-2"
+              className="blog-details mt-6 text-[15px] leading-7 text-gray-500 max-sm:text-[18px] max-sm:leading-8 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-2"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
@@ -119,7 +120,7 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
           </div>
         </article>
 
-        <InnerSidebar />
+        <InnerSidebar exchange />
       </div>
 
       {related.length > 0 && (
@@ -135,6 +136,7 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
           </div>
         </section>
       )}
+    </div>
     </div>
     </main>
     </ExpShell>
