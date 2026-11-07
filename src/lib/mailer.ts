@@ -11,7 +11,7 @@ export function mailConfigured() {
 type Mail = { to: string; subject: string; html: string; text: string; headers?: Record<string, string> };
 
 /** Ligação SMTP reutilizável (envios em série, como a newsletter): abre-se uma vez e fecha-se no fim. */
-export function openMailer() {
+export function openMailer(sender?: string) {
   if (!mailConfigured()) throw new Error('SMTP não configurado.');
   const transport = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -21,7 +21,7 @@ export function openMailer() {
     connectionTimeout: 10_000,
     socketTimeout: 15_000,
   });
-  const from = process.env.SITE_EMAIL_FROM || 'EntreCAMPOS <noreply@entrecamposblog.com>';
+  const from = sender || process.env.SITE_EMAIL_FROM || 'EntreCAMPOS <noreply@entrecamposblog.com>';
   return {
     send: ({ to, subject, html, text, headers }: Mail) => transport.sendMail({ from, to, subject, html, text, headers }),
     close: () => transport.close(),

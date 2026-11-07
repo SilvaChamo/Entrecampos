@@ -14,6 +14,8 @@ import { removeReads } from '@/lib/newsletter-reads';
  */
 const SITE_URL = () => (process.env.NEXT_PUBLIC_SITE_URL || 'https://entrecamposblog.com').replace(/\/$/, '');
 const BUCKET = () => process.env.NEXT_PUBLIC_STORAGE_BUCKET || process.env.STORAGE_BUCKET || 'entrecampos-media';
+/** Remetente próprio da newsletter (os outros e-mails do site, como a recuperação de palavra-passe, mantêm o noreply). */
+const NEWSLETTER_FROM = () => process.env.NEWSLETTER_EMAIL_FROM || 'EntreCAMPOS <newsletter@entrecamposblog.com>';
 const STATE_FILE = 'partilhado/_config/newsletter.json';
 const MAX_NEWS = 20;
 
@@ -207,7 +209,7 @@ async function deliver(posts: Post[], subscribers: Subscriber[]) {
   const ads = activeBySlot(adsData);
   const adIds = Object.values(ads).map((a) => a.id);
   const at = new Date().toISOString();
-  const mailer = openMailer();
+  const mailer = openMailer(NEWSLETTER_FROM());
   let sent = 0;
   let failed = 0;
   try {
