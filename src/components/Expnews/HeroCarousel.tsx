@@ -49,7 +49,7 @@ export default function HeroCarousel({ posts, fullWidth = false }: { posts: Post
     <section
       aria-roledescription="carrossel"
       aria-label="Notícias em destaque"
-      className={`group relative h-[340px] overflow-hidden bg-white${fullWidth ? ' left-1/2 w-[calc(100cqw+24px)] -translate-x-1/2' : ''} [--sw:80cqw] [container-type:inline-size] md:h-[480px] ${fullWidth ? 'md:[--sw:min(1280px,80cqw)]' : 'md:[--sw:60cqw]'}`}
+      className={`group relative h-[340px] overflow-hidden${fullWidth ? ' left-1/2 w-[calc(100cqw+24px)] -translate-x-1/2' : ''} [--sw:80cqw] [container-type:inline-size] md:h-[480px] ${fullWidth ? 'md:[--sw:min(1280px,80cqw)]' : 'md:[--sw:60cqw]'}`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
