@@ -113,7 +113,7 @@ export function normalizeHomeCategories(raw: unknown): HomeCategories {
 export type HeroSide = 'banner-esquerda' | 'cards-esquerda';
 export type HomeAd = { id: string; image: string; link: string };
 /** Estilo do destaque: banner e dois cards (de origem), ou banner e uma lista que desliza para cima. */
-export type HeroStyle = 'cards' | 'lista' | 'carrossel';
+export type HeroStyle = 'cards' | 'lista' | 'carrossel' | 'carrossel-conteudo';
 export type HomeOptions = { heroSide: HeroSide; heroStyle: HeroStyle; ads: HomeAd[] };
 
 export const defaultHomeOptions = (): HomeOptions => ({ heroSide: 'banner-esquerda', heroStyle: 'cards', ads: [] });
@@ -130,5 +130,5 @@ export function normalizeHomeOptions(raw: unknown): HomeOptions {
     const link = typeof o.link === 'string' ? o.link.trim() : '';
     if (isAdId(id) && !ads.some((x) => x.id === id) && okUrl(image) && okUrl(link) && ads.length < 20) ads.push({ id, image, link });
   }
-  return { heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', heroStyle: r.heroStyle === 'lista' ? 'lista' : r.heroStyle === 'carrossel' ? 'carrossel' : 'cards', ads };
+  return { heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', heroStyle: r.heroStyle === 'lista' ? 'lista' : r.heroStyle === 'carrossel' ? 'carrossel' : r.heroStyle === 'carrossel-conteudo' ? 'carrossel-conteudo' : 'cards', ads };
 }

@@ -230,11 +230,12 @@ export default function HomeSeccoesPage() {
                         <AdminSelect aria-label="Estilo do destaque" value={draft.options.heroStyle} onChange={(e) => setHeroStyle(e.target.value as HeroStyle)} className={fieldSide}>
                           <option value="cards">Banner e dois cards</option>
                           <option value="lista">Banner e lista com slide para cima</option>
-                          <option value="carrossel">Carrossel de largura total</option>
+                          <option value="carrossel">Carrossel na largura da página</option>
+                          <option value="carrossel-conteudo">Carrossel na largura do conteúdo</option>
                         </AdminSelect>
                       </div>
                     )}
-                    {id === 'destaque' && draft.options.heroStyle !== 'carrossel' && (
+                    {id === 'destaque' && !draft.options.heroStyle.startsWith('carrossel') && (
                       <div className="flex items-center gap-3">
                         <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Disposição</span>
                         <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldSide}>
@@ -361,7 +362,7 @@ function AdFields({ zone, ad, onChange, canSave, busy, onSave }: { zone: HomeZon
 function CategoryControl({ section, categories, options, onChange, bare = false, heroStyle }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean; heroStyle?: HeroStyle }) {
   const side = section === 'destaque'; // no destaque o título fica ao lado do selector
   // O destaque mostra os selectores do estilo escolhido: dois cards ou a lista.
-  const activeSlots = HOME_CATEGORY_SLOTS.filter((s) => s.section !== 'destaque' || (heroStyle === 'carrossel' ? false : (heroStyle === 'lista') === (s.key === 'herolista')));
+  const activeSlots = HOME_CATEGORY_SLOTS.filter((s) => s.section !== 'destaque' || (heroStyle?.startsWith('carrossel') ? false : (heroStyle === 'lista') === (s.key === 'herolista')));
   const slots = activeSlots.filter((s) => s.section === section);
   if (slots.length === 0) return null;
   const labelOf = (slug: string) => options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());

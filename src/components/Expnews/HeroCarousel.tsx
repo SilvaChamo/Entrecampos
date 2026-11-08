@@ -19,7 +19,7 @@ function formatDate(iso: string) {
  * Destaque em carrossel de largura total: a notícia do meio inteira, com o texto, e nas laterais metade da anterior e da
  * seguinte. A cada passo a do meio sai cortada para a esquerda e a da direita ocupa o meio, e o texto aparece. Ciclo sem fim.
  */
-export default function HeroCarousel({ posts }: { posts: Post[] }) {
+export default function HeroCarousel({ posts, fullWidth = false }: { posts: Post[]; fullWidth?: boolean }) {
   // Com poucas notícias repete-as, para haver sempre as duas laterais.
   const list = posts.length === 0 ? [] : Array.from({ length: Math.max(5, posts.length) }, (_, i) => posts[i % posts.length]);
   const total = list.length;
@@ -49,7 +49,7 @@ export default function HeroCarousel({ posts }: { posts: Post[] }) {
     <section
       aria-roledescription="carrossel"
       aria-label="Notícias em destaque"
-      className="group relative h-[340px] overflow-hidden bg-white [--sw:80cqw] [container-type:inline-size] md:h-[442px] md:[--sw:60cqw]"
+      className={`group relative h-[340px] overflow-hidden bg-white${fullWidth ? ' left-1/2 w-[calc(100cqw+24px)] -translate-x-1/2' : ''} [--sw:80cqw] [container-type:inline-size] md:h-[442px] md:[--sw:60cqw]`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >

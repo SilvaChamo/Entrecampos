@@ -169,8 +169,8 @@ export default async function HomePrincipal() {
 
   // Cada secção da home, por nome. A zona e a ordem em que aparecem vêm do painel (Página inicial); ver lib/home-layout.ts.
   const sections: Record<string, React.ReactNode> = {
-    destaque: options.heroStyle === 'carrossel' ? (
-            <HeroCarousel posts={slides} />
+    destaque: options.heroStyle === 'carrossel' || options.heroStyle === 'carrossel-conteudo' ? (
+            <HeroCarousel posts={slides} fullWidth={options.heroStyle === 'carrossel'} />
     ) : options.heroStyle === 'lista' ? (
             <div className={`grid gap-3 md:grid-rows-[420px] ${options.heroSide === 'cards-esquerda' ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]'}`}>
               <ExpSlider posts={slides} className={`h-[340px] md:h-full${options.heroSide === 'cards-esquerda' ? ' md:col-start-2 md:row-start-1' : ''}`} />
@@ -350,7 +350,8 @@ export default async function HomePrincipal() {
           <div className="-mt-3">
             <NewsTicker posts={tickerPosts} />
           </div>
-          <div className="mx-3">
+          {/* Com o carrossel na largura da página, esta caixa serve de referência (100cqw) para o carrossel sair do conteúdo até aos lados do ecrã. */}
+          <div className={`mx-3${options.heroStyle === 'carrossel' ? ' [container-type:inline-size]' : ''}`}>
           <div className="mx-auto max-w-[1280px] space-y-3">
             {render('top')}
 
