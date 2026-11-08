@@ -345,6 +345,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Todas as Notícias', href: '/admin/noticias' },
             { label: 'Adicionar Nova', href: '/admin/noticias/nova' },
             { label: 'Notícias Pendentes', href: '/admin/noticias/pendentes' },
+            { label: 'Notícias por e-mail', href: '/admin/noticias-email' },
             { label: 'Categorias', href: '/admin/noticias/categorias' },
             { label: 'Etiquetas', href: '/admin/noticias/etiquetas' },
             { label: 'Reparar Imagens', href: '/admin/noticias/reparar' },
@@ -402,7 +403,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         },
         { href: '/admin/home', icon: LayoutTemplate, label: 'Página inicial' },
         { href: '/admin/newsletter', icon: Mail, label: 'Newsletter' },
-        { href: '/admin/importar-noticias', icon: MailCheck, label: 'Importar do e-mail' },
         { href: '/admin/redes-sociais', icon: Share2, label: 'Redes sociais' },
         { href: '/admin/trafego', icon: BarChart3, label: 'Estatísticas' },
         { href: '/admin/comentarios', icon: MessageSquare, label: 'Comentários' },
@@ -413,7 +413,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       items[0].href = '/admin/editor';
       items.push(
         { href: '/admin/noticias/pendentes', icon: Clock, label: 'Notícias Pendentes' },
-        { href: '/admin/importar-noticias', icon: MailCheck, label: 'Importar do e-mail' },
+        { href: '/admin/noticias-email', icon: MailCheck, label: 'Notícias por e-mail' },
         { href: '/admin/subscricoes/exclusivas', icon: CreditCard, label: 'Notícias exclusivas' },
         { href: '/admin/noticias/revistas', icon: CheckSquare, label: 'Últimos Revistos' },
         { href: '/admin/noticias', icon: Newspaper, label: 'Todas as Notícias' },

@@ -619,7 +619,7 @@ export default function NewsAdminPage() {
                     </td>
                     <td className="p-3 align-top text-[#50575e] max-md:inline-block max-md:p-0 max-md:pt-2 max-md:text-[11px]">
                       <div className="flex flex-col leading-tight max-md:flex-row max-md:gap-1">
-                        <span className={SEP}>{item.status === 'Draft' ? 'Rascunho' : item.status === 'Archived' ? 'Arquivado' : 'Publicado'}</span>
+                        <span className={SEP}>{item.status === 'Draft' ? 'Rascunho' : item.status === 'Archived' ? 'Arquivado' : String(item.status).toLowerCase() === 'scheduled' ? 'Agendada' : String(item.status).toLowerCase() === 'pending' ? 'Pendente' : 'Publicado'}</span>
                         <span className={SEP}>{new Date(item.date).toLocaleDateString('pt-PT')}<span className="max-md:hidden"> às {new Date(item.date).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span></span>
                       </div>
                     </td>
