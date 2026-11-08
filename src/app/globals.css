@@ -525,7 +525,3 @@ body {
 
 
 /* Lista do destaque da página inicial: desliza para cima sem parar (metade da lista = uma volta, a lista vem duplicada). */
-@keyframes ec-roll-up { from { transform: translateY(0); } to { transform: translateY(-50%); } }
-@media (prefers-reduced-motion: no-preference) {
-  .ec-roll-up { animation: ec-roll-up 20s linear infinite; }
-}

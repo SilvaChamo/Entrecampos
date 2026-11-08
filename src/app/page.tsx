@@ -20,6 +20,7 @@ import { getHomeOptions } from '@/lib/home-options';
 import { HOME_CATEGORY_SLOTS, isAdId } from '@/lib/home-sections';
 import HomeAd from '@/components/Expnews/HomeAd';
 import HeroList from '@/components/Expnews/HeroList';
+import HeroCarousel from '@/components/Expnews/HeroCarousel';
 import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
@@ -168,8 +169,10 @@ export default async function HomePrincipal() {
 
   // Cada secção da home, por nome. A zona e a ordem em que aparecem vêm do painel (Página inicial); ver lib/home-layout.ts.
   const sections: Record<string, React.ReactNode> = {
-    destaque: options.heroStyle === 'lista' ? (
-            <div className={`grid gap-3 md:grid-rows-[442px] ${options.heroSide === 'cards-esquerda' ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]'}`}>
+    destaque: options.heroStyle === 'carrossel' ? (
+            <HeroCarousel posts={slides} />
+    ) : options.heroStyle === 'lista' ? (
+            <div className={`grid gap-3 md:grid-rows-[420px] ${options.heroSide === 'cards-esquerda' ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]'}`}>
               <ExpSlider posts={slides} className={`h-[340px] md:h-full${options.heroSide === 'cards-esquerda' ? ' md:col-start-2 md:row-start-1' : ''}`} />
               <HeroList posts={heroList(cats.herolista[0])} label={categoryLabel(cats.herolista[0])} className="md:h-full" />
             </div>
