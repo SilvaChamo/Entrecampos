@@ -7,6 +7,7 @@ import AdminSelect from '@/components/Admin/AdminSelect';
 import { uploadToLibrary } from '@/components/Admin/ImageChooser';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
 import {
+  HOME_AD_SIZES,
   HOME_CATEGORY_SLOTS,
   HOME_SECTIONS,
   HOME_ZONES,
@@ -172,12 +173,12 @@ export default function HomeSeccoesPage() {
                   )}
                 </div>
                 {isAdId(id) ? (
-                  <AdFields ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} />
+                  <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} canSave={changed && !busy} busy={busy} onSave={() => draft && save(draft)} />
                 ) : (
                   <div className="mt-3 space-y-2">
                     {id === 'destaque' && (
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <span className="shrink-0 text-[13px] text-gray-500 sm:w-[110px]">Disposição</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[13px] text-gray-500">Disposição</span>
                         <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={field}>
                           <option value="banner-esquerda">Banner à esquerda e cards à direita</option>
                           <option value="cards-esquerda">Cards à esquerda e banner à direita</option>
@@ -193,7 +194,7 @@ export default function HomeSeccoesPage() {
         )}
         <div className="border-t border-[#e5e5e5] px-4 py-3">
           <button type="button" onClick={() => addAd(zone)} className={`${btn} w-full justify-center border border-dashed border-[#00a651] bg-white text-[#00a651] hover:bg-[#f0f7f4] sm:w-auto`}>
-            <Plus className="h-4 w-4" /> Adicionar espaço de publicidade
+            <Plus className="h-4 w-4" /> Adicionar publicidade
           </button>
         </div>
       </section>
@@ -248,8 +249,9 @@ export default function HomeSeccoesPage() {
   );
 }
 
-/** Imagem e ligação de um espaço de publicidade. Sem imagem, o site mostra o convite a anunciar. */
-function AdFields({ ad, onChange }: { ad: HomeAd; onChange: (patch: Partial<HomeAd>) => void }) {
+/** Imagem e ligação de um espaço de publicidade. A imagem tem de ter a medida exacta do espaço (a da página dos espaços de publicidade do site). */
+function AdFields({ zone, ad, onChange, canSave, busy, onSave }: { zone: HomeZone; ad: HomeAd; onChange: (patch: Partial<HomeAd>) => void; canSave: boolean; busy: boolean; onSave: () => void }) {
+  const size = HOME_AD_SIZES[zone];
   const fileRef = useRef<HTMLInputElement>(null);
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -257,6 +259,11 @@ function AdFields({ ad, onChange }: { ad: HomeAd; onChange: (patch: Partial<Home
     setSending(true);
     setErr(null);
     try {
+      const bmp = await createImageBitmap(file).catch(() => null);
+      if (!bmp) throw new Error('Escolha um ficheiro de imagem.');
+      const { width, height } = bmp;
+      bmp.close();
+      if (width !== size.w || height !== size.h) throw new Error(`A imagem tem ${width}x${height}px e este espaço pede exactamente ${size.w}x${size.h}px.`);
       onChange({ image: await uploadToLibrary(file) });
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Não foi possível enviar a imagem.');
@@ -265,21 +272,26 @@ function AdFields({ ad, onChange }: { ad: HomeAd; onChange: (patch: Partial<Home
     }
   };
   return (
-    <div className="mt-3 space-y-2">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <span className="shrink-0 text-[13px] text-gray-500 sm:w-[110px]">Imagem</span>
-        <input value={ad.image} onChange={(e) => onChange({ image: e.target.value })} placeholder="https://… (ou carregue um ficheiro)" className={field} aria-label="Endereço da imagem do anúncio" />
-        <button type="button" disabled={sending} onClick={() => fileRef.current?.click()} className={`${btn} shrink-0 justify-center border border-[#00a651] bg-white text-[#00a651] hover:bg-[#f0f7f4]`}>
-          {sending ? <Spinner size={16} /> : <Upload className="h-4 w-4" />} Carregar
-        </button>
+    <div className="mt-3 space-y-3">
+      <p className="text-[12px] text-gray-500">{size.name}: imagem de {size.w}x{size.h}px, até {size.kb}kb. Sem imagem, o espaço não aparece no site.</p>
+      <div className="flex flex-col gap-1">
+        <span className="text-[13px] text-gray-500">Imagem</span>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input value={ad.image} onChange={(e) => onChange({ image: e.target.value })} placeholder="https://… (ou carregue um ficheiro)" className={field} aria-label="Endereço da imagem do anúncio" />
+          <button type="button" disabled={sending} onClick={() => fileRef.current?.click()} className={`${btn} shrink-0 justify-center border border-[#00a651] bg-white text-[#00a651] hover:bg-[#f0f7f4]`}>
+            {sending ? <Spinner size={16} /> : <Upload className="h-4 w-4" />} Carregar
+          </button>
+        </div>
         <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) send(f); }} />
+        {err && <p className="text-[12px] text-[#d63638]">{err}</p>}
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <span className="shrink-0 text-[13px] text-gray-500 sm:w-[110px]">Ligação</span>
+      <div className="flex flex-col gap-1">
+        <span className="text-[13px] text-gray-500">Ligação</span>
         <input value={ad.link} onChange={(e) => onChange({ link: e.target.value })} placeholder="https://… (para onde o anúncio leva)" className={field} aria-label="Ligação do anúncio" />
       </div>
-      {err && <p className="text-[12px] text-[#d63638]">{err}</p>}
-      <p className="text-[12px] text-gray-500">Sem imagem, o site mostra «Anuncie aqui», que leva à página dos espaços de publicidade.</p>
+      <button type="button" disabled={!canSave} onClick={onSave} className={`${btn} w-full justify-center bg-[#00a651] text-white hover:bg-[#008f46] sm:w-auto`}>
+        {busy ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar
+      </button>
     </div>
   );
 }
@@ -295,8 +307,8 @@ function CategoryControl({ section, categories, options, onChange }: { section: 
         const list = categories[slot.key];
         const all = options.some((o) => o.slug === list[0]) || options.length === 0 ? options : [{ slug: list[0], label: labelOf(list[0]) }, ...options];
         return (
-          <div key={slot.key} className="flex flex-col gap-2 sm:flex-row sm:items-start">
-            <span className="shrink-0 text-[13px] leading-9 text-gray-500 sm:w-[110px]">{slot.label}</span>
+          <div key={slot.key} className="flex flex-col gap-1">
+            <span className="text-[13px] text-gray-500">{slot.label}</span>
             {slot.multi ? (
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                 {list.map((slug) => (

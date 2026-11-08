@@ -32,6 +32,16 @@ export const HOME_SECTIONS: { id: string; label: string; zone: HomeZone }[] = [
 /** Espaço de publicidade posto numa zona (como um bloco do Gutenberg): o `id` entra na lista de secções da zona. */
 export const isAdId = (id: string) => /^pub-[a-z0-9]{4,12}$/.test(id);
 
+/** Medida exacta (e peso de referência) do anúncio em cada zona: a mesma tabela da página dos espaços de publicidade do site. */
+export const HOME_AD_SIZES: Record<HomeZone, { name: string; w: number; h: number; kb: number }> = {
+  top: { name: 'Topo do site', w: 728, h: 90, kb: 100 },
+  main: { name: 'Entre as notícias', w: 680, h: 150, kb: 100 },
+  side: { name: 'Barra lateral', w: 120, h: 200, kb: 120 },
+  main2: { name: 'Entre as notícias', w: 680, h: 150, kb: 100 },
+  side2: { name: 'Barra lateral', w: 120, h: 200, kb: 120 },
+  bottom: { name: 'Em cima do rodapé', w: 728, h: 90, kb: 100 },
+};
+
 export type HomeLayout = Record<HomeZone, string[]>;
 
 /** A ordem de origem da página (a de antes de haver esta configuração). */
