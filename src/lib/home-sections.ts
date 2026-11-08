@@ -81,6 +81,7 @@ export function normalizeHomeLayout(raw: unknown): HomeLayout {
 export const HOME_CATEGORY_SLOTS: { key: string; section: string; label: string; multi: boolean; defaults: string[] }[] = [
   { key: 'hero1', section: 'destaque', label: 'Card de cima', multi: false, defaults: ['comunidade'] },
   { key: 'hero2', section: 'destaque', label: 'Card de baixo', multi: false, defaults: ['oportunidades'] },
+  { key: 'herolista', section: 'destaque', label: 'Categoria da lista', multi: false, defaults: ['comunidade'] },
   { key: 'comunidade', section: 'comunidade', label: 'Categorias', multi: true, defaults: ['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida'] },
   { key: 'agro', section: 'agro', label: 'Categorias', multi: true, defaults: ['agricultura', 'fruticultura', 'mulher-agrario', 'sector-publico', 'entrevista'] },
   { key: 'agro-negocio', section: 'agro-negocio', label: 'Categoria', multi: false, defaults: ['agro-negocio'] },
@@ -111,9 +112,11 @@ export function normalizeHomeCategories(raw: unknown): HomeCategories {
 /** Disposição do destaque (banner e os dois cards) e dados dos espaços de publicidade. */
 export type HeroSide = 'banner-esquerda' | 'cards-esquerda';
 export type HomeAd = { id: string; image: string; link: string };
-export type HomeOptions = { heroSide: HeroSide; ads: HomeAd[] };
+/** Estilo do destaque: banner e dois cards (de origem), ou banner e uma lista que desliza para cima. */
+export type HeroStyle = 'cards' | 'lista';
+export type HomeOptions = { heroSide: HeroSide; heroStyle: HeroStyle; ads: HomeAd[] };
 
-export const defaultHomeOptions = (): HomeOptions => ({ heroSide: 'banner-esquerda', ads: [] });
+export const defaultHomeOptions = (): HomeOptions => ({ heroSide: 'banner-esquerda', heroStyle: 'cards', ads: [] });
 
 const okUrl = (u: string) => u === '' || (u.length <= 500 && (/^https?:\/\/\S+$/i.test(u) || /^\/[^\s/]\S*$/.test(u)));
 
@@ -127,5 +130,5 @@ export function normalizeHomeOptions(raw: unknown): HomeOptions {
     const link = typeof o.link === 'string' ? o.link.trim() : '';
     if (isAdId(id) && !ads.some((x) => x.id === id) && okUrl(image) && okUrl(link) && ads.length < 20) ads.push({ id, image, link });
   }
-  return { heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', ads };
+  return { heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', heroStyle: r.heroStyle === 'lista' ? 'lista' : 'cards', ads };
 }

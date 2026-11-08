@@ -19,6 +19,7 @@ import { getHomeCategories } from '@/lib/home-categories';
 import { getHomeOptions } from '@/lib/home-options';
 import { HOME_CATEGORY_SLOTS, isAdId } from '@/lib/home-sections';
 import HomeAd from '@/components/Expnews/HomeAd';
+import HeroList from '@/components/Expnews/HeroList';
 import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
@@ -148,6 +149,7 @@ export default async function HomePrincipal() {
   const communityGroups = family(cats.comunidade);
   const agroGroups = family(cats.agro);
   // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Oportunidades que não estão no slide.
+  const heroList = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 12).map(slim);
   const heroLatest = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 5).map(slim);
   const businessSlug = cats['agro-negocio'][0];
   const agroBusinessGroup: CategoryGroup[] = [{ slug: businessSlug, label: categoryLabel(businessSlug), posts: posts.filter((p) => p.categorySlug === businessSlug || p.extraCategories.some((c) => c.slug === businessSlug)).map(slim) }];
@@ -166,7 +168,12 @@ export default async function HomePrincipal() {
 
   // Cada secção da home, por nome. A zona e a ordem em que aparecem vêm do painel (Página inicial); ver lib/home-layout.ts.
   const sections: Record<string, React.ReactNode> = {
-    destaque: (
+    destaque: options.heroStyle === 'lista' ? (
+            <div className={`grid gap-3 md:grid-rows-[442px] ${options.heroSide === 'cards-esquerda' ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]'}`}>
+              <ExpSlider posts={slides} className={`h-[340px] md:h-full${options.heroSide === 'cards-esquerda' ? ' md:col-start-2 md:row-start-1' : ''}`} />
+              <HeroList posts={heroList(cats.herolista[0])} label={categoryLabel(cats.herolista[0])} className="md:h-full" />
+            </div>
+    ) : (
             <div className={`grid gap-3 md:auto-rows-[215px] ${options.heroSide === 'cards-esquerda' ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]'}`}>
               <ExpSlider posts={slides} className={`h-[340px] md:row-span-2 md:h-full${options.heroSide === 'cards-esquerda' ? ' md:col-start-2 md:row-start-1' : ''}`} />
               <SideSlides

@@ -19,6 +19,7 @@ import {
   normalizeHomeLayout,
   normalizeHomeOptions,
   type HeroSide,
+  type HeroStyle,
   type HomeAd,
   type HomeCategories,
   type HomeLayout,
@@ -92,6 +93,7 @@ export default function HomeSeccoesPage() {
     });
 
   const setCategory = (key: string, list: string[]) => edit((cur) => ({ ...cur, categories: { ...cur.categories, [key]: list } }));
+  const setHeroStyle = (heroStyle: HeroStyle) => edit((cur) => ({ ...cur, options: { ...cur.options, heroStyle } }));
   const setHeroSide = (heroSide: HeroSide) => edit((cur) => ({ ...cur, options: { ...cur.options, heroSide } }));
 
   const addAd = (zone: HomeZone) =>
@@ -176,7 +178,7 @@ export default function HomeSeccoesPage() {
                   </span>
                   {inlineSlot(zone, id) && (
                     <div className="w-[260px] shrink-0 max-lg:hidden">
-                      <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare />
+                      <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare heroStyle={draft.options.heroStyle} />
                     </div>
                   )}
                   {list.length > 1 && (
@@ -201,14 +203,23 @@ export default function HomeSeccoesPage() {
                   <div className={`mt-3 space-y-2${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
                     {id === 'destaque' && (
                       <div className="flex items-center gap-3">
-                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Disposição</span>
-                        <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldSide}>
-                          <option value="banner-esquerda">Banner à esquerda e cards à direita</option>
-                          <option value="cards-esquerda">Cards à esquerda e banner à direita</option>
+                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Estilo</span>
+                        <AdminSelect aria-label="Estilo do destaque" value={draft.options.heroStyle} onChange={(e) => setHeroStyle(e.target.value as HeroStyle)} className={fieldSide}>
+                          <option value="cards">Banner e dois cards</option>
+                          <option value="lista">Banner e lista com slide para cima</option>
                         </AdminSelect>
                       </div>
                     )}
-                    <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} />
+                    {id === 'destaque' && (
+                      <div className="flex items-center gap-3">
+                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Disposição</span>
+                        <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldSide}>
+                          <option value="banner-esquerda">{draft.options.heroStyle === 'lista' ? 'Banner à esquerda e lista à direita' : 'Banner à esquerda e cards à direita'}</option>
+                          <option value="cards-esquerda">{draft.options.heroStyle === 'lista' ? 'Lista à esquerda e banner à direita' : 'Cards à esquerda e banner à direita'}</option>
+                        </AdminSelect>
+                      </div>
+                    )}
+                    <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} heroStyle={draft.options.heroStyle} />
                   </div>
                 )}
               </li>
@@ -320,16 +331,21 @@ function AdFields({ zone, ad, onChange, canSave, busy, onSave }: { zone: HomeZon
 }
 
 /** Selector(es) de categoria de uma secção. Secções com várias categorias mostram-nas em etiquetas que se podem retirar, e o selector junta outra. */
-function CategoryControl({ section, categories, options, onChange, bare = false }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean }) {
+function CategoryControl({ section, categories, options, onChange, bare = false, heroStyle }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean; heroStyle?: HeroStyle }) {
   const side = section === 'destaque'; // no destaque o título fica ao lado do selector
-  const slots = HOME_CATEGORY_SLOTS.filter((s) => s.section === section);
+  // O destaque mostra os selectores do estilo escolhido: dois cards ou a lista.
+  const activeSlots = HOME_CATEGORY_SLOTS.filter((s) => s.section !== 'destaque' || (heroStyle === 'lista') === (s.key === 'herolista'));
+  const slots = activeSlots.filter((s) => s.section === section);
   if (slots.length === 0) return null;
   const labelOf = (slug: string) => options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
   return (
     <>
       {slots.map((slot) => {
         const list = categories[slot.key];
-        const all = options.some((o) => o.slug === list[0]) || options.length === 0 ? options : [{ slug: list[0], label: labelOf(list[0]) }, ...options];
+        // Uma categoria só pode estar num selector: as que já estão noutro não se oferecem (a que este já tem fica).
+        const usedElsewhere = new Set(activeSlots.filter((x) => x.key !== slot.key).flatMap((x) => categories[x.key]));
+        const free = options.filter((o) => o.slug === list[0] || !usedElsewhere.has(o.slug));
+        const all = free.some((o) => o.slug === list[0]) || options.length === 0 ? free : [{ slug: list[0], label: labelOf(list[0]) }, ...free];
         return (
           <div key={slot.key} className={side ? 'flex items-center gap-3' : 'flex flex-col gap-1'}>
             {!bare && <span className={`text-[13px] text-gray-500${side ? ' w-[100px] shrink-0' : ''}`}>{slot.label}</span>}
@@ -345,7 +361,7 @@ function CategoryControl({ section, categories, options, onChange, bare = false 
                 ))}
                 <AdminSelect aria-label="Juntar categoria" value="" onChange={(e) => e.target.value && onChange(slot.key, [...list, e.target.value])} className={`${field} sm:w-[210px]`}>
                   <option value="">Juntar categoria…</option>
-                  {options.filter((o) => !list.includes(o.slug)).map((o) => (
+                  {options.filter((o) => !list.includes(o.slug) && !usedElsewhere.has(o.slug)).map((o) => (
                     <option key={o.slug} value={o.slug}>{o.label}</option>
                   ))}
                 </AdminSelect>
