@@ -69,7 +69,9 @@ export default function HomeSeccoesPage() {
   const [draft, setDraft] = useState<State | null>(first ?? null);
   const [options, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(!first);
-  const [busy, setBusy] = useState(false);
+  // Quem está a guardar: uma zona, 'all' (Guardar tudo) ou 'reset'. Só o botão clicado mostra o indicador; os outros esperam.
+  const [saving, setSaving] = useState<string | null>(null);
+  const busy = saving !== null;
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
 
@@ -136,7 +138,7 @@ export default function HomeSeccoesPage() {
     edit((cur) => ({ ...cur, options: { ...cur.options, ads: cur.options.ads.map((a) => (a.id === id ? { ...a, ...patch } : a)) } }));
 
   async function save(body: State | null, zone?: HomeZone) {
-    setBusy(true);
+    setSaving(zone ?? (body === null ? 'reset' : 'all'));
     setError(null);
     setDone(null);
     try {
@@ -159,7 +161,7 @@ export default function HomeSeccoesPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível guardar.');
     } finally {
-      setBusy(false);
+      setSaving(null);
     }
   }
 
@@ -221,7 +223,7 @@ export default function HomeSeccoesPage() {
                   )}
                 </div>
                 {isAdId(id) ? (
-                  <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} canSave={zoneChanged(zone) && !busy} busy={busy} onSave={() => draft && save(draft, zone)} />
+                  <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} canSave={zoneChanged(zone) && !busy} busy={saving === zone} onSave={() => draft && save(draft, zone)} />
                 ) : (
                   <div className={`mt-3 space-y-2${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
                     {id === 'destaque' && (
@@ -256,7 +258,7 @@ export default function HomeSeccoesPage() {
             <Plus className="h-4 w-4" /> Adicionar publicidade
           </button>
           <button type="button" disabled={busy || !zoneChanged(zone)} onClick={() => draft && save(draft, zone)} className={`${btn} ml-auto justify-center bg-[#00a651] text-white hover:bg-[#008f46]`}>
-            {busy ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar
+            {saving === zone ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar
           </button>
         </div>
       </section>
@@ -279,7 +281,7 @@ export default function HomeSeccoesPage() {
             <RotateCcw className="h-4 w-4" /> Repor origem
           </button>
           <button type="button" disabled={busy || !changed} onClick={() => draft && save(draft)} className={`${btn} bg-[#00a651] text-white hover:bg-[#008f46]`}>
-            {busy ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar
+            {saving === 'all' ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar tudo
           </button>
         </div>
       </div>
