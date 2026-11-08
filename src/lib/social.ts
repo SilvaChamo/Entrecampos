@@ -474,3 +474,18 @@ export async function shareNews(newsId: string, wanted: Network[], opts: { force
   }
   return results;
 }
+
+/**
+ * Partilha uma notícia já publicada em todas as redes que estão ligadas no painel e com chaves.
+ * Quem já a recebeu fica de fora; uma falha aqui nunca desfaz a publicação no site.
+ */
+export async function shareToEnabled(newsId: string): Promise<NetworkResult[]> {
+  try {
+    const [settings, ok] = await Promise.all([loadSettings(), configured()]);
+    const wanted = NETWORKS.filter((n) => settings[n] && ok[n]);
+    return wanted.length ? await shareNews(newsId, wanted) : [];
+  } catch (err) {
+    console.error('[partilha] não foi possível partilhar nas redes:', err instanceof Error ? err.message : err);
+    return [];
+  }
+}

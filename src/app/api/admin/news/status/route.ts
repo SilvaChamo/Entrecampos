@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-guard';
 import { hasPermission } from '@/lib/permissions';
 import { refreshNews, refreshSite } from '@/lib/refresh-site';
 import { attachToNextSchedule } from '@/lib/newsletter';
+import { shareToEnabled } from '@/lib/social';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Supports both new format (sb_secret_...) and legacy JWT
@@ -58,8 +59,11 @@ export async function POST(req: NextRequest) {
     // Publicar: limpeza dirigida. Retirar do site (rascunho, lixo, arquivo, pendente): limpeza geral, porque outras páginas podem ter o link.
     if (status.toLowerCase() === 'published') {
       // As que acabam de ser publicadas (antes não estavam) entram no próximo envio agendado da newsletter.
-      for (const n of affected ?? []) if (String(n.status ?? '').toLowerCase() !== 'published') await attachToNextSchedule(n.slug);
+      const novas = (affected ?? []).filter((n) => String(n.status ?? '').toLowerCase() !== 'published');
+      for (const n of novas) await attachToNextSchedule(n.slug);
       refreshNews(affected ?? []);
+      // Publicada à mão (por exemplo, a partir dos pendentes): as redes ligadas no painel também a recebem, sem travar a resposta.
+      if (novas.length) after(async () => { for (const n of novas) await shareToEnabled(String(n.id)); });
     }
     else refreshSite();
     return NextResponse.json({ success: true, updated: targetIds.length });

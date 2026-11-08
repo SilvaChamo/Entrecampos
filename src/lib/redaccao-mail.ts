@@ -138,3 +138,41 @@ export async function optimizeImage(buffer: Buffer, contentType: string): Promis
   if (contentType === 'image/webp') return { buffer: await img.webp({ quality: 82 }).toBuffer(), contentType, ext: 'webp' };
   return { buffer: await img.jpeg({ quality: 82, mozjpeg: true }).toBuffer(), contentType: 'image/jpeg', ext: 'jpg' };
 }
+
+export type MailForImport = {
+  uid: number;
+  messageId: string;
+  fromAddress: string;
+  from: string;
+  subject: string;
+  date: string;
+  /** Resultado da verificação do remetente feita pelo servidor de e-mail (SPF/DKIM), se o houver. */
+  auth: string;
+  files: MailAttachment[];
+};
+
+/** Últimas mensagens com anexos (para importar notícias de documentos Word), com remetente e verificação do servidor. Só lê. */
+export async function listMailForImport(limit = 40): Promise<MailForImport[]> {
+  return withMailbox(async (client) => {
+    const total = (client.mailbox && typeof client.mailbox === 'object' ? client.mailbox.exists : 0) || 0;
+    if (!total) return [];
+    const from = Math.max(1, total - limit + 1);
+    const found: MailForImport[] = [];
+    for await (const msg of client.fetch(`${from}:*`, { uid: true, envelope: true, bodyStructure: true, headers: ['authentication-results'] })) {
+      const files = collectFiles(msg.bodyStructure as StructureNode).filter((f) => f.size <= MAX_FILE_BYTES);
+      if (!files.length) continue;
+      const sender = msg.envelope?.from?.[0];
+      found.push({
+        uid: msg.uid,
+        messageId: msg.envelope?.messageId || `uid-${msg.uid}`,
+        fromAddress: (sender?.address || '').toLowerCase(),
+        from: sender?.name || sender?.address || '',
+        subject: msg.envelope?.subject || '(sem assunto)',
+        date: (msg.envelope?.date ? new Date(msg.envelope.date) : new Date()).toISOString(),
+        auth: msg.headers ? Buffer.from(msg.headers).toString('utf8').replace(/\s+/g, ' ').trim() : '',
+        files,
+      });
+    }
+    return found.sort((a, b) => a.date.localeCompare(b.date));
+  });
+}
