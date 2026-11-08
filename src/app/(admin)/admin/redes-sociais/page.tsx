@@ -172,7 +172,7 @@ export default function RedesSociaisPage() {
         <div>
           <h1 className="text-2xl font-bold text-[#1d2327]">Redes sociais</h1>
           <p className="mt-1 max-w-xl text-[13px] text-[#50575e]">
-            Ligue as redes que o EntreCAMPOS usa. Ao ligar uma rede aparecem o link e os dados de ligação. Um só clique em Publicar põe a notícia no site e nas redes ligadas; se uma rede falhar, a notícia fica sempre publicada no site e o editor vê o resultado de cada rede.
+            Ligue as redes sociais do EntreCAMPOS com o sistema de partilha de publicações.
           </p>
         </div>
         <button onClick={() => load(true)} disabled={checking} className="flex h-9 items-center gap-1.5 rounded-md border border-[#00a651] px-3 text-[13px] text-[#00a651] hover:bg-[#f0f7f4] disabled:opacity-50">
