@@ -38,25 +38,6 @@ const sameOptions = (a: HomeOptions, b: HomeOptions) => JSON.stringify(a) === JS
 const isDefault = (s: State) => sameLayout(s.layout, defaultHomeLayout()) && sameCats(s.categories, defaultHomeCategories()) && sameOptions(s.options, defaultHomeOptions());
 const parse = (data: any): State => ({ layout: normalizeHomeLayout(data.layout), categories: normalizeHomeCategories(data.categories), options: normalizeHomeOptions(data.options) });
 
-/** Copia para `base` só o que pertence a uma zona (a posição, as categorias das suas secções, a disposição do destaque e os seus anúncios), com o que está em `from`. */
-function mergeZone(base: State, from: State, zone: HomeZone): State {
-  const ids = from.layout[zone];
-  const categories = { ...base.categories };
-  for (const slot of HOME_CATEGORY_SLOTS) if (ids.includes(slot.section)) categories[slot.key] = from.categories[slot.key];
-  const hasHero = ids.includes('destaque');
-  const own = new Set([...base.layout[zone], ...ids]);
-  return {
-    layout: { ...base.layout, [zone]: [...ids] },
-    categories,
-    options: {
-      heroSide: hasHero ? from.options.heroSide : base.options.heroSide,
-      heroStyle: hasHero ? from.options.heroStyle : base.options.heroStyle,
-      ads: [...base.options.ads.filter((a) => !own.has(a.id)), ...from.options.ads.filter((a) => ids.includes(a.id))],
-    },
-  };
-}
-const zoneState = (st: State, zone: HomeZone) => JSON.stringify({ l: st.layout[zone], c: HOME_CATEGORY_SLOTS.filter((x) => st.layout[zone].includes(x.section)).map((x) => st.categories[x.key]), h: st.layout[zone].includes('destaque') ? [st.options.heroSide, st.options.heroStyle] : null, a: st.options.ads.filter((a) => st.layout[zone].includes(a.id)) });
-
 const field = 'h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none';
 const fieldSide = field.replace('w-full', 'min-w-0 flex-1'); // ao lado de um título: ocupa o que sobra da linha
 const arrow = 'flex h-9 w-9 shrink-0 items-center justify-center border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40';
@@ -69,8 +50,7 @@ export default function HomeSeccoesPage() {
   const [draft, setDraft] = useState<State | null>(first ?? null);
   const [options, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(!first);
-  // Quem está a guardar: uma zona, 'all' (Guardar tudo) ou 'reset'. Só o botão clicado mostra o indicador; os outros esperam.
-  const [saving, setSaving] = useState<string | null>(null);
+  const [saving, setSaving] = useState<'save' | 'reset' | null>(null);
   const busy = saving !== null;
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -97,8 +77,6 @@ export default function HomeSeccoesPage() {
     () => !!draft && !!saved && (!sameLayout(draft.layout, saved.layout) || !sameCats(draft.categories, saved.categories) || !sameOptions(draft.options, saved.options)),
     [draft, saved],
   );
-
-  const zoneChanged = (zone: HomeZone) => !!draft && !!saved && zoneState(draft, zone) !== zoneState(saved, zone);
 
   const edit = (fn: (cur: State) => State) => {
     setDone(null);
@@ -137,13 +115,12 @@ export default function HomeSeccoesPage() {
   const setAd = (id: string, patch: Partial<HomeAd>) =>
     edit((cur) => ({ ...cur, options: { ...cur.options, ads: cur.options.ads.map((a) => (a.id === id ? { ...a, ...patch } : a)) } }));
 
-  async function save(body: State | null, zone?: HomeZone) {
-    setSaving(zone ?? (body === null ? 'reset' : 'all'));
+  async function save(body: State | null) {
+    setSaving(body === null ? 'reset' : 'save');
     setError(null);
     setDone(null);
     try {
-      // Com `zone`, guarda só o que mudou nesse cartão; o resto fica como está guardado.
-      const toSend = body && zone && saved ? mergeZone(saved, body, zone) : body;
+      const toSend = body;
       const payload = toSend === null ? { layout: null, categories: null, options: null } : { ...toSend, options: { ...toSend.options, ads: toSend.options.ads.filter((a) => HOME_ZONES.some((z) => toSend.layout[z.id].includes(a.id))) } };
       const res = await fetch('/api/admin/home-sections', {
         method: 'POST',
@@ -156,8 +133,8 @@ export default function HomeSeccoesPage() {
       const st = parse(data);
       adminCacheSet('home-sections-v3', st);
       setSaved(st);
-      setDraft((cur) => (zone && cur ? mergeZone(cur, st, zone) : st));
-      setDone(body === null ? 'Posição, categorias e publicidade de origem repostas' : zone ? `Guardado: ${zoneOf(zone).label}` : 'Guardado: a página inicial já mostra as alterações');
+      setDraft(st);
+      setDone(body === null ? 'Posição, categorias e publicidade de origem repostas' : 'Guardado: a página inicial já mostra as alterações');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível guardar.');
     } finally {
@@ -223,7 +200,7 @@ export default function HomeSeccoesPage() {
                   )}
                 </div>
                 {isAdId(id) ? (
-                  <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} canSave={zoneChanged(zone) && !busy} busy={saving === zone} onSave={() => draft && save(draft, zone)} />
+                  <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} />
                 ) : (
                   <div className={`mt-3 space-y-2${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
                     {id === 'destaque' && (
@@ -253,12 +230,9 @@ export default function HomeSeccoesPage() {
             ))}
           </ul>
         )}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e5e5e5] px-4 py-3">
+        <div className="border-t border-[#e5e5e5] px-4 py-3">
           <button type="button" onClick={() => addAd(zone)} className={`${btn} justify-center border border-dashed border-[#00a651] bg-white text-[#00a651] hover:bg-[#f0f7f4]`}>
             <Plus className="h-4 w-4" /> Adicionar publicidade
-          </button>
-          <button type="button" disabled={busy || !zoneChanged(zone)} onClick={() => draft && save(draft, zone)} className={`${btn} ml-auto justify-center bg-[#00a651] text-white hover:bg-[#008f46]`}>
-            {saving === zone ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar
           </button>
         </div>
       </section>
@@ -281,7 +255,7 @@ export default function HomeSeccoesPage() {
             <RotateCcw className="h-4 w-4" /> Repor origem
           </button>
           <button type="button" disabled={busy || !changed} onClick={() => draft && save(draft)} className={`${btn} bg-[#00a651] text-white hover:bg-[#008f46]`}>
-            {saving === 'all' ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar tudo
+            {saving === 'save' ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar
           </button>
         </div>
       </div>
@@ -314,7 +288,7 @@ export default function HomeSeccoesPage() {
 }
 
 /** Imagem e ligação de um espaço de publicidade. A imagem tem de ter a medida exacta do espaço (a da página dos espaços de publicidade do site). */
-function AdFields({ zone, ad, onChange, canSave, busy, onSave }: { zone: HomeZone; ad: HomeAd; onChange: (patch: Partial<HomeAd>) => void; canSave: boolean; busy: boolean; onSave: () => void }) {
+function AdFields({ zone, ad, onChange }: { zone: HomeZone; ad: HomeAd; onChange: (patch: Partial<HomeAd>) => void }) {
   const size = HOME_AD_SIZES[zone];
   const fileRef = useRef<HTMLInputElement>(null);
   const [sending, setSending] = useState(false);
@@ -353,9 +327,6 @@ function AdFields({ zone, ad, onChange, canSave, busy, onSave }: { zone: HomeZon
         <span className="text-[13px] text-gray-500">Ligação</span>
         <input value={ad.link} onChange={(e) => onChange({ link: e.target.value })} placeholder="https://… (para onde o anúncio leva)" className={field} aria-label="Ligação do anúncio" />
       </div>
-      <button type="button" disabled={!canSave} onClick={onSave} className={`${btn} w-full justify-center bg-[#00a651] text-white hover:bg-[#008f46] sm:w-auto`}>
-        {busy ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar
-      </button>
     </div>
   );
 }
