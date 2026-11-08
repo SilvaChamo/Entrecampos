@@ -12,7 +12,8 @@ import {
   Key,
   Eye,
   Calendar,
-  ChevronUp
+  ChevronUp,
+  Share2
 } from 'lucide-react';
 
 // O editor só corre no navegador
@@ -72,6 +73,11 @@ function CollapsibleHeader({ title, open, onToggle }: { title: string; open: boo
     </div>
   );
 }
+
+type SocialNet = 'facebook' | 'reels' | 'instagram' | 'linkedin';
+type SocialInfo = { network: SocialNet; enabled: boolean; configured: boolean; shared: boolean };
+type SocialResult = { network: SocialNet; status: 'ok' | 'erro' | 'ignorado' | 'ja'; message: string };
+const SOCIAL_LABEL: Record<SocialNet, string> = { facebook: 'Facebook (Página)', reels: 'Facebook Reels', instagram: 'Instagram', linkedin: 'LinkedIn (Página)' };
 
 interface NewsFormProps {
   initialData?: any;
@@ -240,6 +246,26 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
       .catch(() => {});
   }, []);
 
+  // Redes sociais: só quem pode publicar as vê. Por defeito vão marcadas as redes activas que ainda não receberam esta notícia.
+  const [social, setSocial] = useState<SocialInfo[] | null>(null);
+  const [socialPick, setSocialPick] = useState<SocialNet[]>([]);
+  const newsId = isEdit ? (initialData?.id as string | undefined) : undefined;
+  useEffect(() => {
+    if (isEdit && !newsId) return;
+    let vivo = true;
+    fetch(`/api/admin/news/share${newsId ? `?id=${encodeURIComponent(newsId)}` : ''}`, { credentials: 'include', cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d) => {
+        if (!vivo || !d || !Array.isArray(d.networks)) return;
+        const list = d.networks as SocialInfo[];
+        setSocial(list);
+        setSocialPick(list.filter((n) => n.enabled && n.configured && !n.shared).map((n) => n.network));
+      })
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, [isEdit, newsId]);
+  const toggleSocial = (n: SocialNet) => setSocialPick((p) => (p.includes(n) ? p.filter((x) => x !== n) : [...p, n]));
+
   // Várias categorias: a primeira escolhida é a principal (`category`); tem de sobrar pelo menos uma.
   const toggleCategory = (cat: string) => {
     const key = cat.toLowerCase();
@@ -284,7 +310,27 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
       }
 
       const result = await response.json().catch(() => ({}));
-      alert(`Notícia ${isEdit ? 'actualizada' : 'criada'} com sucesso!${result.warning ? `\n\n${result.warning}` : ''}`);
+
+      // A notícia já está no site. Partilhar nas redes é um passo à parte: se falhar, a publicação não se desfaz.
+      let socialText = '';
+      const savedId = (result.data?.[0]?.id as string | undefined) || newsId;
+      if (socialPick.length > 0 && savedId) {
+        try {
+          const sres = await fetch('/api/admin/news/share', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: savedId, networks: socialPick }),
+          });
+          const sdata = await sres.json().catch(() => ({}));
+          if (!sres.ok) throw new Error(sdata.error || 'Erro ao partilhar nas redes.');
+          const mark = { ok: '✔', erro: '✖', ignorado: '–', ja: '–' } as const;
+          socialText = `\n\nRedes sociais:\n${(sdata.results as SocialResult[]).map((r) => `${mark[r.status]} ${SOCIAL_LABEL[r.network]}: ${r.message}`).join('\n')}`;
+        } catch (e: any) {
+          socialText = `\n\nRedes sociais: ✖ não foi possível partilhar (${e.message}). A notícia ficou publicada no site.`;
+        }
+      }
+      alert(`Notícia ${isEdit ? 'actualizada' : 'criada'} com sucesso!${result.warning ? `\n\n${result.warning}` : ''}${socialText}`);
       router.push(isColumnist ? '/admin/meus-artigos' : '/admin/noticias');
     } catch (err: any) {
       alert('Erro ao guardar: ' + err.message);
@@ -409,6 +455,38 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
               </button>
             </div>
           </div>
+
+          {/* Redes sociais: um só clique publica no site e nas redes marcadas */}
+          {social && (
+            <div className="bg-white border border-[#ccd0d4] rounded-[8px] overflow-hidden shadow-sm">
+              <CollapsibleHeader title="Redes sociais" open={!collapsed.social} onToggle={() => toggleCard('social')} />
+              <div className={`p-3 space-y-2 text-[13px] ${collapsed.social ? 'hidden' : ''}`}>
+                {social.map((n) => {
+                  const off = !n.configured || !n.enabled || n.shared;
+                  const why = n.shared ? 'já partilhada' : !n.configured ? 'sem chaves configuradas' : !n.enabled ? 'desligada nas definições' : '';
+                  return (
+                    <label key={n.network} className={`flex items-start gap-2 ${off ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 rounded border-[#8c8f94] text-[#00a651] focus:ring-[#00a651]"
+                        disabled={off}
+                        checked={!off && socialPick.includes(n.network)}
+                        onChange={() => toggleSocial(n.network)}
+                      />
+                      <span className="text-[#2c3338]">
+                        {SOCIAL_LABEL[n.network]}
+                        {why && <span className="block text-[12px] text-[#646970]">{why}</span>}
+                      </span>
+                    </label>
+                  );
+                })}
+                <p className="flex items-start gap-1.5 border-t border-[#f0f0f1] pt-2 text-[12px] text-[#646970]">
+                  <Share2 className="mt-px h-3.5 w-3.5 shrink-0" />
+                  Ao publicar, a notícia segue para as redes marcadas. Uma falha numa rede nunca impede a publicação no site.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Categories Box (colunistas não a têm: escrevem só Opinião) */}
           {!isColumnist && (
