@@ -144,21 +144,45 @@ export async function configured(): Promise<Record<Network, boolean>> {
 
 /* ---------- Definições (escolha das redes) e registo de partilhas, em site_content ---------- */
 
+/** Texto legível de qualquer erro (o Supabase devolve objectos simples, não instâncias de Error). */
+export function errorText(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === 'object') {
+    const e = err as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+    const parts = [e.message, e.details, e.hint].filter((x): x is string => typeof x === 'string' && x.trim() !== '').map((x) => x.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300));
+    if (parts.length) return parts.join(' - ') + (e.code ? ` (${String(e.code)})` : '');
+  }
+  return typeof err === 'string' && err ? err : 'erro desconhecido';
+}
+
+/** Leitura que devolve null se a linha não existe e lança o erro real se a leitura falhar. */
+async function readRowStrict<T>(slug: string): Promise<T | null> {
+  const { data, error } = await db().from('site_content').select('news').eq('site_slug', slug).maybeSingle();
+  if (error) throw new Error(`Não foi possível ler a base de dados: ${errorText(error)}`);
+  return (data?.news as T) ?? null;
+}
+
 async function readRow<T>(slug: string): Promise<T | null> {
   try {
-    const { data, error } = await db().from('site_content').select('news').eq('site_slug', slug).maybeSingle();
-    if (error) throw error;
-    return (data?.news as T) ?? null;
+    return await readRowStrict<T>(slug);
   } catch {
     return null;
   }
 }
 
 async function writeRow(slug: string, news: unknown) {
-  const { error } = await db()
-    .from('site_content')
-    .upsert({ site_slug: slug, news, categories: [], documents: [], updated_at: new Date().toISOString() }, { onConflict: 'site_slug' });
-  if (error) throw error;
+  let last: unknown;
+  // Uma segunda tentativa cobre falhas passageiras de rede entre o servidor e a base de dados.
+  for (let i = 0; i < 2; i++) {
+    const { error } = await db()
+      .from('site_content')
+      .upsert({ site_slug: slug, news, categories: [], documents: [], updated_at: new Date().toISOString() }, { onConflict: 'site_slug' });
+    if (!error) return;
+    last = error;
+    console.error('[redes-sociais] falha ao guardar', slug, errorText(error));
+    await new Promise((r) => setTimeout(r, 400));
+  }
+  throw new Error(`Não foi possível guardar na base de dados: ${errorText(last)}`);
 }
 
 export async function loadSettings(): Promise<SocialSettings> {
@@ -167,7 +191,9 @@ export async function loadSettings(): Promise<SocialSettings> {
 }
 
 export async function saveSettings(s: Partial<SocialSettings>) {
-  const current = await loadSettings();
+  // Leitura estrita: se falhar, não se grava (senão as outras redes voltariam a "desligado").
+  const row = await readRowStrict<Partial<SocialSettings>>(SETTINGS_SLUG);
+  const current: SocialSettings = { facebook: row?.facebook === true, reels: row?.reels === true, instagram: row?.instagram === true, linkedin: row?.linkedin === true };
   const next: SocialSettings = { facebook: s.facebook ?? current.facebook, reels: s.reels ?? current.reels, instagram: s.instagram ?? current.instagram, linkedin: s.linkedin ?? current.linkedin };
   await writeRow(SETTINGS_SLUG, next);
   return next;

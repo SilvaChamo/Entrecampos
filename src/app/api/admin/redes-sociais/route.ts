@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-guard';
-import { configured, connectionStatus, keysState, loadProfiles, loadSettings, saveKeys, saveProfiles, saveSettings, NETWORKS } from '@/lib/social';
+import { configured, connectionStatus, keysState, loadProfiles, loadSettings, saveKeys, saveProfiles, saveSettings, errorText, NETWORKS } from '@/lib/social';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -26,6 +26,7 @@ export async function PUT(req: NextRequest) {
     const profiles = body.profiles && typeof body.profiles === 'object' ? await saveProfiles(body.profiles as Record<string, unknown>) : undefined;
     return NextResponse.json({ ok: true, settings: await saveSettings(patch), ...(profiles ? { profiles } : {}) });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : 'Erro ao guardar as definições.' }, { status: 500 });
+    console.error('[redes-sociais] PUT', errorText(err));
+    return NextResponse.json({ error: `Erro ao guardar as definições: ${errorText(err)}` }, { status: 500 });
   }
 }
