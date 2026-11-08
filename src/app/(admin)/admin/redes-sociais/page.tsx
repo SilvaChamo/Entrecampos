@@ -18,6 +18,7 @@ type Data = {
 };
 
 type Campo = { id: string; label: string; ajuda?: string; tipo: 'perfil' | 'chave'; segredo?: boolean };
+type Guia = { titulo: string; links: { texto: string; href: string }[]; passos: string[] };
 type Cartao = {
   id: string;
   nome: string;
@@ -26,6 +27,8 @@ type Cartao = {
   partilha?: Share;
   liga?: 'facebook' | 'instagram' | 'linkedin';
   nota?: string;
+  /** Passo a passo para obter os dados de ligação, com as páginas para onde ir. */
+  guia?: Guia;
   campos: Campo[];
   exemplo: string;
 };
@@ -34,10 +37,25 @@ const CARTOES: Cartao[] = [
   {
     id: 'facebook', nome: 'Facebook (Página)', partilha: 'facebook', liga: 'facebook', exemplo: 'https://www.facebook.com/j.entrecampos.co.mz',
     texto: 'Publica na Página do EntreCAMPOS a foto da notícia com o título, o resumo e o link.',
+    guia: {
+      titulo: 'Como obter o ID e o token da Página do Facebook',
+      links: [
+        { texto: 'Criar a app na Meta', href: 'https://developers.facebook.com/apps' },
+        { texto: 'Explorador da API do Graph', href: 'https://developers.facebook.com/tools/explorer' },
+        { texto: 'Prolongar o token', href: 'https://developers.facebook.com/tools/debug/accesstoken' },
+      ],
+      passos: [
+        'Entre com a conta que administra a Página do EntreCAMPOS em developers.facebook.com, abra Minhas apps e carregue em Criar app (tipo Negócios). Se já tem uma app, use essa.',
+        'Abra o Explorador da API do Graph, escolha a sua app e, em Permissões, junte: pages_manage_posts, pages_read_engagement, pages_show_list e instagram_content_publish. Carregue em Gerar token de acesso e aceite.',
+        'Abra Prolongar o token, cole o token e carregue em Depurar e depois em Prolongar token de acesso. Copie o token novo.',
+        'Volte ao Explorador, cole o token prolongado no campo Token de acesso, escreva me/accounts e carregue em Enviar. Na resposta, procure a Página do EntreCAMPOS: o id é o ID da Página e o access_token é o Token de acesso da Página (este não expira).',
+        'Cole os dois valores nos campos abaixo e carregue em Guardar. Depois carregue em Verificar ligação: deve aparecer o nome da Página.',
+      ],
+    },
     campos: [
       { id: 'facebook', label: 'Link da Página', tipo: 'perfil' },
-      { id: 'metaPageId', label: 'ID da Página', ajuda: 'Na Página: Sobre › Transparência da Página › ID da Página.', tipo: 'chave' },
-      { id: 'metaPageToken', label: 'Token de acesso da Página', ajuda: 'Token de longa duração com as permissões pages_manage_posts, pages_read_engagement, pages_show_list e instagram_content_publish.', tipo: 'chave', segredo: true },
+      { id: 'metaPageId', label: 'ID da Página', ajuda: 'Passo 4 do guia acima: o id da Página, na resposta de me/accounts.', tipo: 'chave' },
+      { id: 'metaPageToken', label: 'Token de acesso da Página', ajuda: 'Passo 4 do guia acima: o access_token da Página, na resposta de me/accounts.', tipo: 'chave', segredo: true },
     ],
   },
   {
@@ -58,10 +76,24 @@ const CARTOES: Cartao[] = [
   {
     id: 'linkedin', nome: 'LinkedIn (Página)', partilha: 'linkedin', liga: 'linkedin', exemplo: 'https://www.linkedin.com/company/65832996/',
     texto: 'Publica na Página do EntreCAMPOS no LinkedIn o título, o resumo, a foto e o link da notícia.',
+    guia: {
+      titulo: 'Como obter o ID e o token da Página do LinkedIn',
+      links: [
+        { texto: 'Criar a app no LinkedIn', href: 'https://www.linkedin.com/developers/apps' },
+        { texto: 'Gerar o token', href: 'https://www.linkedin.com/developers/tools/oauth/token-generator' },
+      ],
+      passos: [
+        'Entre com a conta que administra a Página do EntreCAMPOS no LinkedIn, abra Criar app e escolha a Página da empresa como dona da app.',
+        'Na app, abra o separador Produtos e peça acesso à Community Management API. O LinkedIn precisa de aprovar o pedido, o que pode demorar alguns dias.',
+        'Com o acesso aprovado, abra Gerar o token, escolha a sua app, marque a permissão w_organization_social e carregue em Pedir token de acesso. Copie o token (dura cerca de 60 dias: depois é preciso gerar outro).',
+        'O ID da Página é o número que aparece no endereço da sua Página no LinkedIn, em linkedin.com/company/NÚMERO.',
+        'Cole o ID e o token nos campos abaixo e carregue em Guardar. Depois carregue em Verificar ligação: deve aparecer o nome da Página.',
+      ],
+    },
     campos: [
       { id: 'linkedin', label: 'Link da Página', tipo: 'perfil' },
-      { id: 'linkedinOrgId', label: 'ID da Página (número)', ajuda: 'O número que aparece no endereço de administração da Página.', tipo: 'chave' },
-      { id: 'linkedinToken', label: 'Token de acesso', ajuda: 'De um administrador da Página, com a permissão w_organization_social (Community Management API).', tipo: 'chave', segredo: true },
+      { id: 'linkedinOrgId', label: 'ID da Página (número)', ajuda: 'Passo 4 do guia acima: o número no endereço da Página.', tipo: 'chave' },
+      { id: 'linkedinToken', label: 'Token de acesso', ajuda: 'Passo 3 do guia acima: o token gerado com a permissão w_organization_social.', tipo: 'chave', segredo: true },
     ],
   },
   { id: 'youtube', nome: 'YouTube', texto: 'Rede usada pelo EntreCAMPOS (só regista o endereço).', exemplo: 'https://www.youtube.com/@entrecampos', campos: [{ id: 'youtube', label: 'Link do canal', tipo: 'perfil' }] },
@@ -210,9 +242,24 @@ export default function RedesSociaisPage() {
                 </div>
               </div>
 
-              {on && (c.nota || c.campos.length > 0) && (
+              {on && (c.nota || c.guia || c.campos.length > 0) && (
                 <div className="mt-3 space-y-3 border-t border-[#f0f0f1] pt-3 sm:ml-14">
                   {c.nota && <p className="text-[12px] leading-5 text-[#646970]">{c.nota}</p>}
+                  {c.guia && (
+                    <details open={c.partilha ? !data.configured[c.partilha] : false} className="rounded-md border border-[#ccd0d4] bg-[#f6f7f7] p-3 text-[13px] leading-6 text-[#2c3338]">
+                      <summary className="cursor-pointer text-[#1d2327]">{c.guia.titulo}</summary>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {c.guia.links.map((l) => (
+                          <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="flex h-9 items-center gap-1.5 rounded-md border border-[#00a651] bg-white px-3 text-[13px] text-[#00a651] hover:bg-[#f0f7f4]">
+                            <ExternalLink className="h-4 w-4" /> {l.texto}
+                          </a>
+                        ))}
+                      </div>
+                      <ol className="mt-3 list-decimal space-y-2 pl-5">
+                        {c.guia.passos.map((p) => <li key={p}>{p}</li>)}
+                      </ol>
+                    </details>
+                  )}
                   {c.campos.map((f) => (
                     <label key={f.id} className="block">
                       <span className="mb-1 flex flex-wrap items-center gap-x-2 text-[13px] text-[#1d2327]">

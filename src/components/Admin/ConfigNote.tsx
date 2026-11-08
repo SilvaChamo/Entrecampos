@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Settings2 } from 'lucide-react';
 
-type Item = { vars?: string[]; text: string };
+type Item = { vars?: string[]; text: string; link?: { texto: string; href: string } };
 
 /** Nota no topo de uma página do painel com o que falta configurar para ela funcionar. Não aparece se estiver tudo configurado. */
 export default function ConfigNote({ area }: { area: 'redes-sociais' }) {
@@ -26,6 +26,7 @@ export default function ConfigNote({ area }: { area: 'redes-sociais' }) {
         {items.map((i) => (
           <li key={i.text}>
             {i.text}
+            {i.link && <> <a href={i.link.href} target="_blank" rel="noopener noreferrer" className="text-[#00a651] underline">{i.link.texto}</a>.</>}
             {i.vars && i.vars.length > 0 && (
               <> Definir no servidor: {i.vars.map((v, k) => (<span key={v}>{k > 0 && ', '}<code className="bg-[#f6f7f7] px-1">{v}</code></span>))}.</>
             )}
