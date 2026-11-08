@@ -36,7 +36,7 @@ export default function SideSlides({ items, className = '' }: { items: { posts: 
     <>
       {items.map((it, i) => (
         <CategorySlide
-          key={it.label}
+          key={`${i}-${it.label}`}
           posts={it.posts}
           label={it.label}
           className={className}

@@ -1,20 +1,46 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, LayoutTemplate, RotateCcw, Save } from 'lucide-react';
+import { ArrowDown, ArrowUp, LayoutTemplate, RotateCcw, Save, X } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import AdminSelect from '@/components/Admin/AdminSelect';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
-import { HOME_SECTIONS, HOME_ZONES, defaultHomeLayout, normalizeHomeLayout, type HomeLayout, type HomeZone } from '@/lib/home-sections';
+import {
+  HOME_CATEGORY_SLOTS,
+  HOME_SECTIONS,
+  HOME_ZONES,
+  defaultHomeCategories,
+  defaultHomeLayout,
+  normalizeHomeCategories,
+  normalizeHomeLayout,
+  type HomeCategories,
+  type HomeLayout,
+  type HomeZone,
+} from '@/lib/home-sections';
 
 const LABEL = Object.fromEntries(HOME_SECTIONS.map((s) => [s.id, s.label])) as Record<string, string>;
 const same = (a: HomeLayout, b: HomeLayout) => HOME_ZONES.every((z) => a[z.id].join() === b[z.id].join());
+const sameCats = (a: HomeCategories, b: HomeCategories) => HOME_CATEGORY_SLOTS.every((s) => a[s.key].join() === b[s.key].join());
+type State = { layout: HomeLayout; categories: HomeCategories };
+type CategoryOption = { slug: string; label: string };
 
-/** Posição das secções da página inicial: cada uma pode ir para qualquer zona e qualquer lugar. */
+/** Secções da página inicial: as setas mudam a posição dentro da zona e o selector muda a categoria que cada secção mostra. */
 export default function HomeSeccoesPage() {
-  const first = adminCacheGet<HomeLayout>('home-layout');
-  const [saved, setSaved] = useState<HomeLayout | null>(first ?? null);
-  const [layout, setLayout] = useState<HomeLayout | null>(first ?? null);
+  const first = adminCacheGet<State>('home-sections-v2');
+  const [saved, setSaved] = useState<State | null>(first ?? null);
+  const [draft, setDraft] = useState<State | null>(first ?? null);
+  const layout = draft?.layout ?? null;
+  const categories = draft?.categories ?? null;
+  const setLayout = (fn: (cur: HomeLayout | null) => HomeLayout | null) =>
+    setDraft((cur) => {
+      const next = cur ? fn(cur.layout) : null;
+      return cur && next ? { ...cur, layout: next } : cur;
+    });
+  const setCategory = (key: string, list: string[]) => {
+    setDone(null);
+    setDraft((cur) => (cur ? { ...cur, categories: { ...cur.categories, [key]: list } } : cur));
+  };
+  const [options, setOptions] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(!first);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,16 +51,20 @@ export default function HomeSeccoesPage() {
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao carregar as secções.');
-        const l = normalizeHomeLayout(data.layout);
-        adminCacheSet('home-layout', l);
-        setSaved(l);
-        setLayout((cur) => cur ?? l);
+        const st: State = { layout: normalizeHomeLayout(data.layout), categories: normalizeHomeCategories(data.categories) };
+        adminCacheSet('home-sections-v2', st);
+        setSaved(st);
+        setDraft((cur) => cur ?? st);
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Erro ao carregar as secções.'))
       .finally(() => setLoading(false));
+    fetch('/api/admin/categories', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setOptions(Array.isArray(data?.options) ? data.options : []))
+      .catch(() => {});
   }, []);
 
-  const changed = useMemo(() => !!layout && !!saved && !same(layout, saved), [layout, saved]);
+  const changed = useMemo(() => !!draft && !!saved && (!same(draft.layout, saved.layout) || !sameCats(draft.categories, saved.categories)), [draft, saved]);
 
   /** Tira a secção de onde está e põe-na na zona e no lugar pedidos (lugar 0 = primeiro). */
   function move(id: string, zone: HomeZone, index: number) {
@@ -48,7 +78,7 @@ export default function HomeSeccoesPage() {
     });
   }
 
-  async function save(body: HomeLayout | null) {
+  async function save(body: State | null) {
     setBusy(true);
     setError(null);
     setDone(null);
@@ -57,15 +87,15 @@ export default function HomeSeccoesPage() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ layout: body }),
+        body: JSON.stringify(body === null ? { layout: null, categories: null } : { layout: body.layout, categories: body.categories }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Não foi possível guardar.');
-      const l = normalizeHomeLayout(data.layout);
-      adminCacheSet('home-layout', l);
-      setSaved(l);
-      setLayout(l);
-      setDone(body === null ? 'Ordem de origem reposta.' : 'Guardado. A página inicial já mostra a nova ordem.');
+      const st: State = { layout: normalizeHomeLayout(data.layout), categories: normalizeHomeCategories(data.categories) };
+      adminCacheSet('home-sections-v2', st);
+      setSaved(st);
+      setDraft(st);
+      setDone(body === null ? 'Posição e categorias de origem repostas' : 'Guardado: a página inicial já mostra a nova posição e as novas categorias');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível guardar.');
     } finally {
@@ -85,16 +115,16 @@ export default function HomeSeccoesPage() {
         <div className="ml-auto flex flex-wrap gap-2">
           <button
             type="button"
-            disabled={busy || !layout || same(layout, defaultHomeLayout())}
-            onClick={() => confirm('Voltar à ordem de origem da página inicial?') && save(null)}
+            disabled={busy || !draft || (same(draft.layout, defaultHomeLayout()) && sameCats(draft.categories, defaultHomeCategories()))}
+            onClick={() => confirm('Voltar à posição e às categorias de origem da página inicial?') && save(null)}
             className={`${btn} border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50`}
           >
-            <RotateCcw className="h-4 w-4" /> Repor ordem de origem
+            <RotateCcw className="h-4 w-4" /> Repor origem
           </button>
           <button
             type="button"
             disabled={busy || !changed}
-            onClick={() => layout && save(layout)}
+            onClick={() => draft && save(draft)}
             className={`${btn} bg-[#00a651] text-white hover:bg-[#008f46]`}
           >
             {busy ? <Spinner size={16} /> : <Save className="h-4 w-4" />} Guardar
@@ -103,7 +133,7 @@ export default function HomeSeccoesPage() {
       </div>
 
       <p className="mb-4 text-[13px] text-gray-600">
-        Escolha a zona e o lugar de cada secção, ou use as setas. A ordem só muda no site depois de guardar.
+        Use as setas para mudar a posição de cada secção e o selector para escolher a categoria que ela mostra. Só muda no site depois de guardar.
       </p>
 
       {error && <p className="mb-4 border-l-4 border-[#d63638] bg-red-50 px-3 py-2 text-[13px] text-red-800">{error}</p>}
@@ -133,26 +163,7 @@ export default function HomeSeccoesPage() {
                       <button type="button" aria-label="Descer" disabled={i === layout[zone.id].length - 1} onClick={() => move(id, zone.id, i + 1)} className={arrow}>
                         <ArrowDown className="h-4 w-4" />
                       </button>
-                      <AdminSelect
-                        aria-label="Zona"
-                        value={zone.id}
-                        onChange={(e) => move(id, e.target.value as HomeZone, layout[e.target.value as HomeZone].length)}
-                        className="h-9 w-[230px] border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none"
-                      >
-                        {HOME_ZONES.map((z) => (
-                          <option key={z.id} value={z.id}>{z.label}</option>
-                        ))}
-                      </AdminSelect>
-                      <AdminSelect
-                        aria-label="Lugar"
-                        value={i}
-                        onChange={(e) => move(id, zone.id, Number(e.target.value))}
-                        className="h-9 w-[84px] border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none"
-                      >
-                        {layout[zone.id].map((_, n) => (
-                          <option key={n} value={n}>{n + 1}º</option>
-                        ))}
-                      </AdminSelect>
+                      {categories && <CategoryControl section={id} categories={categories} options={options} onChange={setCategory} />}
                     </li>
                   ))}
                 </ul>
@@ -161,6 +172,51 @@ export default function HomeSeccoesPage() {
           ))}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/** Selector(es) de categoria de uma secção. Secções com várias categorias mostram-nas em etiquetas que se podem retirar, e o selector junta outra. */
+function CategoryControl({ section, categories, options, onChange }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void }) {
+  const slots = HOME_CATEGORY_SLOTS.filter((s) => s.section === section);
+  if (slots.length === 0) return null;
+  const labelOf = (slug: string) => options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+  const field = 'h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none';
+  return (
+    <div className="flex w-full flex-col gap-2 pl-8">
+      {slots.map((slot) => {
+        const list = categories[slot.key];
+        const all = options.some((o) => o.slug === list[0]) || options.length === 0 ? options : [{ slug: list[0], label: labelOf(list[0]) }, ...options];
+        return (
+          <div key={slot.key} className="flex flex-wrap items-center gap-2">
+            {slots.length > 1 && <span className="w-[110px] shrink-0 text-[13px] text-gray-500">{slot.label}</span>}
+            {slot.multi ? (
+              <>
+                {list.map((slug) => (
+                  <span key={slug} className="flex h-9 items-center gap-1.5 border border-[#ccd0d4] bg-[#f6f7f7] pl-3 pr-1 text-[13px] text-[#1d2327]">
+                    {labelOf(slug)}
+                    <button type="button" aria-label={`Retirar ${labelOf(slug)}`} disabled={list.length === 1} onClick={() => onChange(slot.key, list.filter((x) => x !== slug))} className="flex h-7 w-7 items-center justify-center text-gray-500 hover:text-[#d63638] disabled:cursor-not-allowed disabled:opacity-40">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </span>
+                ))}
+                <AdminSelect aria-label="Juntar categoria" value="" onChange={(e) => e.target.value && onChange(slot.key, [...list, e.target.value])} className="h-9 w-[210px] border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none">
+                  <option value="">Juntar categoria…</option>
+                  {options.filter((o) => !list.includes(o.slug)).map((o) => (
+                    <option key={o.slug} value={o.slug}>{o.label}</option>
+                  ))}
+                </AdminSelect>
+              </>
+            ) : (
+              <AdminSelect aria-label={`Categoria${slots.length > 1 ? ` (${slot.label.toLowerCase()})` : ''}`} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={`${field} sm:w-[260px]`}>
+                {all.map((o) => (
+                  <option key={o.slug} value={o.slug}>{o.label}</option>
+                ))}
+              </AdminSelect>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

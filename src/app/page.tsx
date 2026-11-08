@@ -15,6 +15,8 @@ import NewsTicker from '@/components/Expnews/NewsTicker';
 import StickyColumn from '@/components/Expnews/StickyColumn';
 import { getSuggestionSlugs } from '@/lib/suggestions';
 import { getHomeLayout, type HomeZone } from '@/lib/home-layout';
+import { getHomeCategories } from '@/lib/home-categories';
+import { HOME_CATEGORY_SLOTS } from '@/lib/home-sections';
 import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
@@ -103,7 +105,7 @@ function Overlay({
 }
 
 export default async function HomePrincipal() {
-  const [featured, { posts: homePosts }, suggestSlugs, layout] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getHomeLayout()]);
+  const [featured, { posts: homePosts }, suggestSlugs, layout, cats] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getHomeLayout(), getHomeCategories()]);
   // Artigos de opinião (muitos sem foto) não se misturam com as notícias da home: só aparecem na categoria Opinião.
   const notOpinion = (p: Post) => p.categorySlug !== 'opiniao' && !p.extraCategories.some((c) => c.slug === 'opiniao');
   const slides = featured.filter(notOpinion);
@@ -120,11 +122,11 @@ export default async function HomePrincipal() {
   const inSlides = new Set(slides.map((p) => p.slug));
   const pool = makePool(posts.filter((p) => !inSlides.has(p.slug)));
   // "Mais quente" já está no slide principal: este card da barra lateral mostra outra categoria.
-  const hot = pool.take(4, ['internacional']);
+  const hot = pool.take(4, cats.internacional);
   const watch = pool.take(5);
-  const food = pool.take(5, ['receitas', 'curiosidade']);
+  const food = pool.take(5, cats.sabores);
   // Publicações recentes da barra lateral: a Entrevista primeiro, depois as mais recentes.
-  const recent = pool.take(3, ['entrevista']);
+  const recent = pool.take(3, cats.recentes);
   // Últimas notícias publicadas (carrossel), sem as do slide principal.
   // Últimas notícias: 6 cards parados (sem slide), sem as do slide principal.
   const latest = posts.filter((p) => !inSlides.has(p.slug)).slice(0, 6);
@@ -141,17 +143,24 @@ export default async function HomePrincipal() {
   // Cada categoria vive numa só secção: as famílias abaixo não se repetem entre si.
   const family = (slugs: string[]): CategoryGroup[] =>
     slugs.map((slug) => ({ slug, label: categoryLabel(slug), posts: posts.filter((p) => p.categorySlug === slug).map(slim) }));
-  const communityGroups = family(['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida']);
-  const agroGroups = family(['agricultura', 'fruticultura', 'mulher-agrario', 'sector-publico', 'entrevista']);
+  const communityGroups = family(cats.comunidade);
+  const agroGroups = family(cats.agro);
   // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Oportunidades que não estão no slide.
   const heroLatest = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 5).map(slim);
-  const agroBusinessGroup: CategoryGroup[] = [{ slug: 'agro-negocio', label: categoryLabel('agro-negocio'), posts: posts.filter((p) => p.categorySlug === 'agro-negocio' || p.extraCategories.some((c) => c.slug === 'agro-negocio')).map(slim) }];
+  const businessSlug = cats['agro-negocio'][0];
+  const agroBusinessGroup: CategoryGroup[] = [{ slug: businessSlug, label: categoryLabel(businessSlug), posts: posts.filter((p) => p.categorySlug === businessSlug || p.extraCategories.some((c) => c.slug === businessSlug)).map(slim) }];
   // Oportunidades: todas as notícias da categoria (fora do slide principal), 6 por página.
-  const opportunities = posts.filter((p) => p.categorySlug === 'oportunidades' && !inSlides.has(p.slug)).slice(0, 60).map(slim);
+  const opportunities = posts.filter((p) => p.categorySlug === cats.oportunidades[0] && !inSlides.has(p.slug)).slice(0, 60).map(slim);
   // Sugestões de leitura (fim da página): as notícias activadas no painel; enquanto nenhuma estiver activada, as mais recentes. O navegador escolhe 8 à sorte.
   const activated = posts.filter((p) => suggestSlugs.has(p.slug));
   const suggestions = (activated.length > 0 ? activated : posts.slice(0, 60)).map(slim);
   const newsletterBg = (slides[1] ?? slides[0] ?? posts[0]).image;
+
+  // Título das secções que mostram categorias à escolha: o de origem enquanto têm as categorias de origem; senão, os nomes das categorias.
+  const titleOf = (key: string, original: string) => {
+    const slot = HOME_CATEGORY_SLOTS.find((x) => x.key === key);
+    return slot && cats[key].join() === slot.defaults.join() ? original : cats[key].map((c) => categoryLabel(c)).join(' e ');
+  };
 
   // Cada secção da home, por nome. A zona e a ordem em que aparecem vêm do painel (Página inicial); ver lib/home-layout.ts.
   const sections: Record<string, React.ReactNode> = {
@@ -160,8 +169,8 @@ export default async function HomePrincipal() {
               <ExpSlider posts={slides} className="h-[340px] md:row-span-2 md:h-full" />
               <SideSlides
                 items={[
-                  { posts: heroLatest('comunidade'), label: 'Comunidade' },
-                  { posts: heroLatest('oportunidades'), label: 'Oportunidades' },
+                  { posts: heroLatest(cats.hero1[0]), label: categoryLabel(cats.hero1[0]) },
+                  { posts: heroLatest(cats.hero2[0]), label: categoryLabel(cats.hero2[0]) },
                 ]}
                 className="h-[215px]"
               />
@@ -186,7 +195,7 @@ export default async function HomePrincipal() {
                 <WeatherCard />
     ),
     sabores: (
-                <Card title="Sabores e curiosidades">
+                <Card title={titleOf('sabores', 'Sabores e curiosidades')}>
                   <Overlay post={food[0]} className="h-[170px]" titleClass="text-[12px]" />
                   <div className="mt-3 grid grid-cols-2 gap-3">
                     {food.slice(1).map((p) => (
@@ -203,7 +212,7 @@ export default async function HomePrincipal() {
                 </Card>
     ),
     recentes: (
-                <Card title="Publicações recentes">
+                <Card title={titleOf('recentes', 'Publicações recentes')}>
                   <Overlay post={recent[0]} className="h-[170px]" titleClass="text-[12px]" />
                   <ul className="divide-y divide-gray-100">
                     {recent.slice(1).map((p) => (
@@ -250,12 +259,12 @@ export default async function HomePrincipal() {
                 <CategorySection groups={agroBusinessGroup} arrowsOnTop />
     ),
     oportunidades: (
-                <Card title="Oportunidades" plain>
+                <Card title={categoryLabel(cats.oportunidades[0])} plain>
                   <OpportunityList posts={opportunities} />
                 </Card>
     ),
     internacional: (
-                <Card title={categoryLabel('internacional')}>
+                <Card title={categoryLabel(cats.internacional[0])}>
                   <Overlay post={hot[0]} className="h-[200px]" titleClass="text-[13px]" />
                   <ul className="divide-y divide-gray-100">
                     {hot.slice(1).map((p) => (

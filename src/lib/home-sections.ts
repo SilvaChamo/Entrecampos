@@ -60,3 +60,37 @@ export function normalizeHomeLayout(raw: unknown): HomeLayout {
   return out;
 }
 
+
+/**
+ * Categorias que cada secção mostra, escolhidas no painel. `key` identifica o lugar (o destaque tem dois cards ao lado do banner);
+ * `multi` = a secção junta várias categorias (selector, ou preferência por ordem); `defaults` = as de origem.
+ */
+export const HOME_CATEGORY_SLOTS: { key: string; section: string; label: string; multi: boolean; defaults: string[] }[] = [
+  { key: 'hero1', section: 'destaque', label: 'Card de cima', multi: false, defaults: ['comunidade'] },
+  { key: 'hero2', section: 'destaque', label: 'Card de baixo', multi: false, defaults: ['oportunidades'] },
+  { key: 'comunidade', section: 'comunidade', label: 'Categorias', multi: true, defaults: ['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida'] },
+  { key: 'agro', section: 'agro', label: 'Categorias', multi: true, defaults: ['agricultura', 'fruticultura', 'mulher-agrario', 'sector-publico', 'entrevista'] },
+  { key: 'agro-negocio', section: 'agro-negocio', label: 'Categoria', multi: false, defaults: ['agro-negocio'] },
+  { key: 'oportunidades', section: 'oportunidades', label: 'Categoria', multi: false, defaults: ['oportunidades'] },
+  { key: 'internacional', section: 'internacional', label: 'Categoria', multi: false, defaults: ['internacional'] },
+  { key: 'sabores', section: 'sabores', label: 'Categorias', multi: true, defaults: ['receitas', 'curiosidade'] },
+  { key: 'recentes', section: 'recentes', label: 'Categoria', multi: false, defaults: ['entrevista'] },
+];
+
+export type HomeCategories = Record<string, string[]>;
+
+export function defaultHomeCategories(): HomeCategories {
+  return Object.fromEntries(HOME_CATEGORY_SLOTS.map((s) => [s.key, [...s.defaults]]));
+}
+
+/** Valida o que está guardado: só lugares que existem, categorias em forma de endereço, sem repetir; o que faltar volta ao de origem. */
+export function normalizeHomeCategories(raw: unknown): HomeCategories {
+  const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const out = defaultHomeCategories();
+  for (const slot of HOME_CATEGORY_SLOTS) {
+    const list = Array.isArray(r[slot.key]) ? (r[slot.key] as unknown[]) : [];
+    const clean = list.filter((c, i): c is string => typeof c === 'string' && /^[a-z0-9-]{1,60}$/.test(c) && list.indexOf(c) === i).slice(0, slot.multi ? 12 : 1);
+    if (clean.length > 0) out[slot.key] = clean;
+  }
+  return out;
+}
