@@ -172,7 +172,7 @@ export default function RedesSociaisPage() {
         <div>
           <h1 className="text-2xl font-bold text-[#1d2327]">Redes sociais</h1>
           <p className="mt-1 max-w-xl text-[13px] text-[#50575e]">
-            Ligue as redes sociais do EntreCAMPOS com o sistema de partilha de publicações.
+            Ligue as redes sociais do EntreCAMPOS com o sistema de partilha de publicações
           </p>
         </div>
         <button onClick={() => load(true)} disabled={checking} className="flex h-9 items-center gap-1.5 rounded-md border border-[#00a651] px-3 text-[13px] text-[#00a651] hover:bg-[#f0f7f4] disabled:opacity-50">
