@@ -46,15 +46,15 @@ const adminNewsRows = unstable_cache(
   async (): Promise<any[]> => {
     const base = 'id,title,slug,category,date,image_url,summary,views';
     let lastError = 'Sem resposta da base de dados.';
-    for (const extra of [',status,author_name', ',status', '']) {
+    for (const extra of [',categories,status,author_name', ',status,author_name', ',status', '']) {
       const res = await supabaseAdmin.from('news').select(`${base}${extra}`).eq('site_id', SITE_ID).order('date', { ascending: false });
       if (!res.error) return (res.data ?? []) as any[];
       lastError = res.error.message;
-      if (!/status|author_name/i.test(res.error.message)) break;
+      if (!/categories|status|author_name/i.test(res.error.message)) break;
     }
     throw new Error(lastError);
   },
-  ['admin-news-rows'],
+  ['admin-news-rows', 'v2'], // v2: inclui `categories` (a cache de dados sobrevive aos deploys)
   { tags: ['news'], revalidate: 86400 }, // 1 dia: só as leituras (views) demoram a actualizar; o resto muda logo ao gravar
 );
 

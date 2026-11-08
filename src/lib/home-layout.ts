@@ -25,11 +25,13 @@ async function read(): Promise<HomeLayout> {
   }
 }
 
-const cached = unstable_cache(read, ['home-layout'], { tags: ['home-layout'], revalidate: 3600 });
+// A cache de dados sobrevive aos deploys: mudar a versão quando muda a forma da posição (v2: zonas da 2.ª secção).
+const cached = unstable_cache(read, ['home-layout', 'v2'], { tags: ['home-layout'], revalidate: 3600 });
 
 export async function getHomeLayout(): Promise<HomeLayout> {
   try {
-    return await cached();
+    // Normaliza sempre: um valor guardado com a forma antiga nunca deixa a home sem uma zona.
+    return normalizeHomeLayout(await cached());
   } catch {
     return defaultHomeLayout();
   }

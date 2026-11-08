@@ -29,6 +29,19 @@ const nextConfig: NextConfig = {
       { source: '/roundcube/:path*', destination: 'https://webmail.entrecamposblog.com/', permanent: false },
     ];
   },
+  // /noticias e /categoria/<slug> não leem ?pagina= nem ?q= (isso fazia a Vercel renderizá-las a cada pedido):
+  // as variantes com parâmetros são reescritas para rotas próprias, e o endereço que o visitante vê não muda.
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: '/noticias', has: [{ type: 'query', key: 'q', value: '.+' }], destination: '/noticias-pesquisa' },
+        { source: '/noticias', has: [{ type: 'query', key: 'pagina', value: '(?<pagina>\\d+)' }], destination: '/noticias-arquivo/:pagina' },
+        { source: '/categoria/:slug', has: [{ type: 'query', key: 'pagina', value: '(?<pagina>\\d+)' }], destination: '/categoria-pagina/:slug/:pagina' },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   // Ficheiros estáticos do site ficam 7 dias no navegador; o painel e a API nunca vão para cache.
   async headers() {
     return [

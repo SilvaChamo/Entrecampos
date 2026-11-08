@@ -26,6 +26,7 @@ interface NewsItem {
   title: string;
   slug: string;
   category: string;
+  categories?: string[] | null;
   date: string;
   image_url: string;
   status?: string;
@@ -40,6 +41,10 @@ const slugOf = (value: string | undefined | null) => {
   const slug = String(value ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   return slug === 'entrevsta' ? 'entrevista' : slug === 'sector-agrario' ? 'sector-publico' : slug; // entrevsta: erro de escrita antigo; Sector agrário passou a Sector público
 };
+
+/** Todas as categorias da notícia, a principal primeiro (sem repetições). */
+const itemCategories = (item: { category?: string; categories?: string[] | null }) =>
+  [...new Set([item.category, ...(Array.isArray(item.categories) ? item.categories : [])].map((c) => slugOf(c)).filter(Boolean))];
 
 /** Verificações de SEO com o que está realmente guardado na notícia (título, resumo, imagem, endereço). */
 function seoChecks(n: NewsItem) {
@@ -184,7 +189,7 @@ export default function NewsAdminPage() {
   const filteredNews = news.filter(item => {
     if (item.status === 'Archived' || item.status === 'Trash') return false;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || !!searchIds?.has(String(item.id));
-    const matchesCategory = filterCategory === 'Todas as categorias' || slugOf(item.category) === filterCategory;
+    const matchesCategory = filterCategory === 'Todas as categorias' || itemCategories(item).includes(slugOf(filterCategory));
     const matchesDate = filterDate === 'Todas as datas' || new Date(item.date).getFullYear().toString() === filterDate;
     const matchesMissingImage = !filterMissingImage || !item.image_url;
     return matchesSearch && matchesCategory && matchesDate && matchesMissingImage;
@@ -350,7 +355,7 @@ export default function NewsAdminPage() {
 
   const handleQuickEdit = (item: NewsItem) => {
     setQuickEditId(item.id);
-    setEditForm({ ...item });
+    setEditForm({ ...item, categories: itemCategories(item) });
   };
 
   const saveQuickEdit = async () => {
@@ -358,7 +363,7 @@ export default function NewsAdminPage() {
     setLoading(true);
     try {
       // Grava no servidor: com a chave pública do navegador a base recusa a alteração sem dar erro, e a notícia ficava na
-      // categoria antiga. A categoria nova passa a ser a única (deixa de pertencer à antiga).
+      // categoria antiga. Podem ser várias: a primeira é a principal.
       const res = await fetch('/api/admin/news/save', {
         method: 'POST',
         credentials: 'include',
@@ -369,7 +374,7 @@ export default function NewsAdminPage() {
           title: editForm.title,
           slug: editForm.slug,
           category: editForm.category,
-          categories: editForm.category ? [editForm.category] : undefined,
+          categories: itemCategories(editForm),
           date: editForm.date,
           summary: editForm.summary, // Usado como meta description
         }),
@@ -606,6 +611,11 @@ export default function NewsAdminPage() {
                       >
                         {item.category}
                       </button>
+                      {itemCategories(item).filter((c) => c !== slugOf(item.category)).map((c) => (
+                        <button key={c} onClick={() => setFilterCategory(c)} className="text-[#2271b1] hover:text-[#135e96] text-left before:content-[',_'] before:text-gray-400">
+                          {categoryOptions.find((o) => o.slug === c)?.label ?? c}
+                        </button>
+                      ))}
                     </td>
                     <td className="p-3 align-top text-[#50575e] max-md:inline-block max-md:p-0 max-md:pt-2 max-md:text-[11px]">
                       <div className="flex flex-col leading-tight max-md:flex-row max-md:gap-1">
@@ -673,17 +683,25 @@ export default function NewsAdminPage() {
                             <div className="space-y-4">
                               <div>
                                 <label className="block text-[11px] min-[1500px]:text-[12px] font-bold mb-1">Categorias</label>
-                                <div className="max-h-32 overflow-y-auto p-2 border border-[#ccd0d4] bg-white rounded-[3px]">
-                                  {categoryOptions.map((cat) => (
-                                    <label key={cat.slug} className="flex items-center gap-2 text-[12px] min-[1500px]:text-sm py-0.5">
-                                      <input
-                                        type="checkbox"
-                                        checked={slugOf(editForm.category) === cat.slug}
-                                        onChange={() => setEditForm({ ...editForm, category: cat.slug })}
-                                      />
-                                      {cat.label}
-                                    </label>
-                                  ))}
+                                <div className="h-32 min-h-24 max-h-[70vh] resize-y overflow-y-auto p-2 border border-[#ccd0d4] bg-white rounded-[3px]">
+                                  {categoryOptions.map((cat) => {
+                                    const selected = itemCategories(editForm);
+                                    const on = selected.includes(cat.slug);
+                                    return (
+                                      <label key={cat.slug} className="flex items-center gap-2 text-[12px] min-[1500px]:text-sm py-0.5">
+                                        <input
+                                          type="checkbox"
+                                          checked={on}
+                                          onChange={() => {
+                                            const next = on ? selected.filter((c) => c !== cat.slug) : [...selected, cat.slug];
+                                            if (next.length === 0) return; // a notícia fica sempre com uma categoria
+                                            setEditForm({ ...editForm, category: next[0], categories: next });
+                                          }}
+                                        />
+                                        {cat.label}
+                                      </label>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </div>

@@ -341,6 +341,26 @@ export async function updateSchedule(id: string, patch: { at?: string; add?: str
   return item;
 }
 
+/**
+ * Notícia nova publicada: junta-a ao próximo envio agendado (o pendente mais próximo, ainda a mais de 2 minutos), se
+ * houver espaço. Sem envio agendado, não faz nada. Nunca lança erro: não pode impedir a notícia de ser gravada.
+ */
+export async function attachToNextSchedule(slug: unknown): Promise<void> {
+  try {
+    if (typeof slug !== 'string' || !slug) return;
+    const list = await loadSchedules();
+    const limit = Date.now() + 2 * 60_000;
+    const next = list
+      .filter((s) => s.status === 'pending' && new Date(s.at).getTime() > limit)
+      .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())[0];
+    if (!next || next.slugs.includes(slug) || next.slugs.length >= MAX_NEWS) return;
+    next.slugs.push(slug);
+    await saveSchedules(list);
+  } catch (e) {
+    console.error('[newsletter] não juntou a notícia à próxima agenda:', e instanceof Error ? e.message : e);
+  }
+}
+
 /** Envia um agendamento: o resultado fica no próprio agendamento. */
 async function dispatch(s: Schedule): Promise<string> {
   try {

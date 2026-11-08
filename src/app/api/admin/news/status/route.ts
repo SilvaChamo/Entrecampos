@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-guard';
 import { hasPermission } from '@/lib/permissions';
 import { refreshNews, refreshSite } from '@/lib/refresh-site';
+import { attachToNextSchedule } from '@/lib/newsletter';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Supports both new format (sb_secret_...) and legacy JWT
@@ -55,7 +56,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Publicar: limpeza dirigida. Retirar do site (rascunho, lixo, arquivo, pendente): limpeza geral, porque outras páginas podem ter o link.
-    if (status.toLowerCase() === 'published') refreshNews(affected ?? []);
+    if (status.toLowerCase() === 'published') {
+      // As que acabam de ser publicadas (antes não estavam) entram no próximo envio agendado da newsletter.
+      for (const n of affected ?? []) if (String(n.status ?? '').toLowerCase() !== 'published') await attachToNextSchedule(n.slug);
+      refreshNews(affected ?? []);
+    }
     else refreshSite();
     return NextResponse.json({ success: true, updated: targetIds.length });
   } catch (err: any) {

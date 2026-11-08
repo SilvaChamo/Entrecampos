@@ -41,7 +41,7 @@ export default function HomeSeccoesPage() {
     setDone(null);
     setLayout((cur) => {
       if (!cur) return cur;
-      const next = { top: [...cur.top], main: [...cur.main], side: [...cur.side], bottom: [...cur.bottom] } as HomeLayout;
+      const next = Object.fromEntries(HOME_ZONES.map((z) => [z.id, [...cur[z.id]]])) as HomeLayout;
       for (const z of HOME_ZONES) next[z.id] = next[z.id].filter((x) => x !== id);
       next[zone].splice(Math.max(0, Math.min(index, next[zone].length)), 0, id);
       return next;
@@ -137,7 +137,7 @@ export default function HomeSeccoesPage() {
                         aria-label="Zona"
                         value={zone.id}
                         onChange={(e) => move(id, e.target.value as HomeZone, layout[e.target.value as HomeZone].length)}
-                        className="h-9 w-[150px] border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none"
+                        className="h-9 w-[230px] border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none"
                       >
                         {HOME_ZONES.map((z) => (
                           <option key={z.id} value={z.id}>{z.label}</option>

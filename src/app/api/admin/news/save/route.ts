@@ -8,6 +8,7 @@ import { hasPermission } from '@/lib/permissions';
 import { isUuid } from '@/lib/api-guard';
 import { normalizeSpaces } from '@/lib/normalize-spaces';
 import { siteAccess } from '@/lib/site-accounts';
+import { attachToNextSchedule } from '@/lib/newsletter';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -216,6 +217,8 @@ export async function POST(request: Request) {
 
       if (error) throw error;
       await applySuggestion(data.suggest, canPublish, insertData?.[0]?.slug);
+      // Notícia nova já publicada: entra no próximo envio agendado da newsletter.
+      if (String(insertData?.[0]?.status ?? payload.status).toLowerCase() === 'published') await attachToNextSchedule(insertData?.[0]?.slug);
       refreshPublicPages(insertData?.[0] ?? {});
       return NextResponse.json({ success: true, data: insertData, warning });
     }

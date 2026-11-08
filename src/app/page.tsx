@@ -305,8 +305,18 @@ export default async function HomePrincipal() {
     ),
   };
   const render = (zone: HomeZone) => layout[zone].map((id) => <React.Fragment key={id}>{sections[id]}</React.Fragment>);
-  const hasMain = layout.main.length > 0;
-  const hasSide = layout.side.length > 0;
+  // Duas secções de colunas (coluna principal + barra lateral), cada uma com a sua barra lateral fixa.
+  const columns = (main: HomeZone, side: HomeZone) => {
+    const hasMain = layout[main].length > 0;
+    const hasSide = layout[side].length > 0;
+    if (!hasMain && !hasSide) return null;
+    return (
+      <div className={`grid gap-3 ${hasMain && hasSide ? 'lg:grid-cols-[1fr_340px]' : ''}`}>
+        {hasMain && <div className="min-w-0 space-y-3">{render(main)}</div>}
+        {hasSide && <StickyColumn className="min-w-0 space-y-3">{render(side)}</StickyColumn>}
+      </div>
+    );
+  };
 
   return (
     <ExpShell backdrop={newsletterBg}>
@@ -319,12 +329,9 @@ export default async function HomePrincipal() {
           <div className="mx-auto max-w-[1280px] space-y-3">
             {render('top')}
 
-            {(hasMain || hasSide) && (
-              <div className={`grid gap-3 ${hasMain && hasSide ? 'lg:grid-cols-[1fr_340px]' : ''}`}>
-                {hasMain && <div className="min-w-0 space-y-3">{render('main')}</div>}
-                {hasSide && <StickyColumn className="min-w-0 space-y-3">{render('side')}</StickyColumn>}
-              </div>
-            )}
+            {columns('main', 'side')}
+
+            {columns('main2', 'side2')}
 
             {render('bottom')}
           </div>

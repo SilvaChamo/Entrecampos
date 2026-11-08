@@ -66,7 +66,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthShell title="Já tem conta?" text="Entre com os seus dados e continue connosco esta jornada" href="/login" label="Entrar">
+    <AuthShell title="Já tem conta?" text="Entre com os seus dados e continue connosco nesta jornada" href="/login" label="Entrar">
       <form onSubmit={handleSubmit} className={AUTH_FORM}>
         <AuthMessage error={error} info={info} />
 
