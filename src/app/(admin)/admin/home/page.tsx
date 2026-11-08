@@ -38,6 +38,7 @@ const isDefault = (s: State) => sameLayout(s.layout, defaultHomeLayout()) && sam
 const parse = (data: any): State => ({ layout: normalizeHomeLayout(data.layout), categories: normalizeHomeCategories(data.categories), options: normalizeHomeOptions(data.options) });
 
 const field = 'h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none';
+const fieldSide = field.replace('w-full', 'min-w-0 flex-1'); // ao lado de um título: ocupa o que sobra da linha
 const arrow = 'flex h-9 w-9 shrink-0 items-center justify-center border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40';
 const btn = 'flex h-9 items-center gap-1.5 px-4 text-[13px] disabled:cursor-not-allowed disabled:opacity-60';
 
@@ -178,12 +179,16 @@ export default function HomeSeccoesPage() {
                       <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare />
                     </div>
                   )}
-                  <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => shift(zone, i, -1)} className={arrow}>
-                    <ArrowUp className="h-4 w-4" />
-                  </button>
-                  <button type="button" aria-label="Descer" disabled={i === list.length - 1} onClick={() => shift(zone, i, 1)} className={arrow}>
-                    <ArrowDown className="h-4 w-4" />
-                  </button>
+                  {list.length > 1 && (
+                    <>
+                      <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => shift(zone, i, -1)} className={arrow}>
+                        <ArrowUp className="h-4 w-4" />
+                      </button>
+                      <button type="button" aria-label="Descer" disabled={i === list.length - 1} onClick={() => shift(zone, i, 1)} className={arrow}>
+                        <ArrowDown className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
                   {isAdId(id) && (
                     <button type="button" aria-label="Retirar o espaço de publicidade" onClick={() => removeAd(id)} className={`${arrow} hover:text-[#d63638]`}>
                       <X className="h-4 w-4" />
@@ -195,9 +200,9 @@ export default function HomeSeccoesPage() {
                 ) : (
                   <div className={`mt-3 space-y-2${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
                     {id === 'destaque' && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[13px] text-gray-500">Disposição</span>
-                        <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={field}>
+                      <div className="flex items-center gap-3">
+                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Disposição</span>
+                        <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldSide}>
                           <option value="banner-esquerda">Banner à esquerda e cards à direita</option>
                           <option value="cards-esquerda">Cards à esquerda e banner à direita</option>
                         </AdminSelect>
@@ -316,6 +321,7 @@ function AdFields({ zone, ad, onChange, canSave, busy, onSave }: { zone: HomeZon
 
 /** Selector(es) de categoria de uma secção. Secções com várias categorias mostram-nas em etiquetas que se podem retirar, e o selector junta outra. */
 function CategoryControl({ section, categories, options, onChange, bare = false }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean }) {
+  const side = section === 'destaque'; // no destaque o título fica ao lado do selector
   const slots = HOME_CATEGORY_SLOTS.filter((s) => s.section === section);
   if (slots.length === 0) return null;
   const labelOf = (slug: string) => options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
@@ -325,8 +331,8 @@ function CategoryControl({ section, categories, options, onChange, bare = false 
         const list = categories[slot.key];
         const all = options.some((o) => o.slug === list[0]) || options.length === 0 ? options : [{ slug: list[0], label: labelOf(list[0]) }, ...options];
         return (
-          <div key={slot.key} className="flex flex-col gap-1">
-            {!bare && <span className="text-[13px] text-gray-500">{slot.label}</span>}
+          <div key={slot.key} className={side ? 'flex items-center gap-3' : 'flex flex-col gap-1'}>
+            {!bare && <span className={`text-[13px] text-gray-500${side ? ' w-[100px] shrink-0' : ''}`}>{slot.label}</span>}
             {slot.multi ? (
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                 {list.map((slug) => (
@@ -345,7 +351,7 @@ function CategoryControl({ section, categories, options, onChange, bare = false 
                 </AdminSelect>
               </div>
             ) : (
-              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={field}>
+              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={side ? fieldSide : field}>
                 {all.map((o) => (
                   <option key={o.slug} value={o.slug}>{o.label}</option>
                 ))}
