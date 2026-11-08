@@ -6,7 +6,7 @@ import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Post } from '@/lib/news-data';
 import CategoryBadge from '@/components/Expnews/CategoryBadge';
 
-const SLIDE_MS = 6000;
+const SLIDE_MS = 4000;
 const GAP = '12px';
 const INSET = '24px'; // seta a 12px da borda da imagem (o espaço entre imagens + 12px)
 
@@ -65,17 +65,16 @@ export default function HeroCarousel({ posts, fullWidth = false }: { posts: Post
             onClick={!centre && near ? () => go(i) : undefined}
             className={`absolute inset-y-0 left-0 w-[var(--sw)] overflow-hidden ${!centre && near ? 'cursor-pointer' : ''}`}
             style={{
-              // A imagem que espera à direita fica fora do slide, transparente, e desliza para o seu lugar enquanto surge.
+              // Todas as imagens deslizam juntas na linha do slide (500 ms, ease) e a seguinte entra pela direita até ao meio; sem fade nem zoom.
               transform: `translateX(calc((100cqw - var(--sw)) / 2 + ${rel} * (var(--sw) + ${GAP})))`,
-              opacity: Math.abs(rel) >= 2 ? 0 : 1,
-              transition: jumped ? 'none' : 'transform 700ms ease-in-out, opacity 700ms ease-in-out',
+              transition: jumped ? 'none' : 'transform 500ms ease',
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={Math.abs(rel) <= 2 ? p.image : undefined} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
-            <div className={`absolute inset-0 bg-black transition-opacity duration-700 ${centre ? 'opacity-0' : 'opacity-50'}`} />
-            <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent transition-opacity duration-700 ${centre ? 'opacity-100' : 'opacity-0'}`} />
-            <div className={`absolute inset-0 flex flex-col justify-end p-3 text-white transition-opacity duration-700 sm:p-[30px] ${centre ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+            <div className={`absolute inset-0 bg-black transition-opacity duration-500 ${centre ? 'opacity-0' : 'opacity-50'}`} />
+            <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent transition-opacity duration-500 ${centre ? 'opacity-100' : 'opacity-0'}`} />
+            <div className={`absolute inset-0 flex flex-col justify-end p-3 text-white transition-opacity duration-500 sm:p-[30px] ${centre ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
               <CategoryBadge label={p.category} slug={p.categorySlug} tabIndex={centre ? 0 : -1} className="self-start text-[11px]" />
               <Link href={`/noticias/${p.slug}`} tabIndex={centre ? 0 : -1} className="block max-w-3xl">
                 <h2 className="mt-3 line-clamp-3 text-[22px] font-bold leading-tight hover:underline sm:text-[24px] lg:text-[30px]">{p.title}</h2>
