@@ -137,6 +137,10 @@ export default function HomeSeccoesPage() {
     }
   }
 
+  // Secções com uma só categoria, nas zonas largas: o selector fica na mesma linha do título e das setas (a partir do computador).
+  const inlineSlot = (zone: HomeZone, id: string) =>
+    ['top', 'main', 'main2', 'bottom'].includes(zone) && HOME_CATEGORY_SLOTS.filter((x) => x.section === id).length === 1 && !HOME_CATEGORY_SLOTS.find((x) => x.section === id)!.multi;
+
   // Chamada como função (e não como componente) para os campos não perderem o foco a cada letra escrita.
   function zoneBox(zone: HomeZone) {
     if (!draft) return null;
@@ -160,6 +164,11 @@ export default function HomeSeccoesPage() {
                     {isAdId(id) && <Megaphone className="h-4 w-4 shrink-0 text-[#d6101c]" />}
                     <span className="truncate">{isAdId(id) ? 'Espaço de publicidade' : LABEL[id]}</span>
                   </span>
+                  {inlineSlot(zone, id) && (
+                    <div className="w-[260px] shrink-0 max-lg:hidden">
+                      <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare />
+                    </div>
+                  )}
                   <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => shift(zone, i, -1)} className={arrow}>
                     <ArrowUp className="h-4 w-4" />
                   </button>
@@ -175,7 +184,7 @@ export default function HomeSeccoesPage() {
                 {isAdId(id) ? (
                   <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} canSave={changed && !busy} busy={busy} onSave={() => draft && save(draft)} />
                 ) : (
-                  <div className="mt-3 space-y-2">
+                  <div className={`mt-3 space-y-2${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
                     {id === 'destaque' && (
                       <div className="flex flex-col gap-1">
                         <span className="text-[13px] text-gray-500">Disposição</span>
@@ -297,7 +306,7 @@ function AdFields({ zone, ad, onChange, canSave, busy, onSave }: { zone: HomeZon
 }
 
 /** Selector(es) de categoria de uma secção. Secções com várias categorias mostram-nas em etiquetas que se podem retirar, e o selector junta outra. */
-function CategoryControl({ section, categories, options, onChange }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void }) {
+function CategoryControl({ section, categories, options, onChange, bare = false }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean }) {
   const slots = HOME_CATEGORY_SLOTS.filter((s) => s.section === section);
   if (slots.length === 0) return null;
   const labelOf = (slug: string) => options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
@@ -308,7 +317,7 @@ function CategoryControl({ section, categories, options, onChange }: { section: 
         const all = options.some((o) => o.slug === list[0]) || options.length === 0 ? options : [{ slug: list[0], label: labelOf(list[0]) }, ...options];
         return (
           <div key={slot.key} className="flex flex-col gap-1">
-            <span className="text-[13px] text-gray-500">{slot.label}</span>
+            {!bare && <span className="text-[13px] text-gray-500">{slot.label}</span>}
             {slot.multi ? (
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                 {list.map((slug) => (
@@ -327,7 +336,7 @@ function CategoryControl({ section, categories, options, onChange }: { section: 
                 </AdminSelect>
               </div>
             ) : (
-              <AdminSelect aria-label={`${slot.label}${slots.length > 1 ? '' : ''}`} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={field}>
+              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={field}>
                 {all.map((o) => (
                   <option key={o.slug} value={o.slug}>{o.label}</option>
                 ))}
