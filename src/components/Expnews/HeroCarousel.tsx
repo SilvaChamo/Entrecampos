@@ -65,7 +65,8 @@ export default function HeroCarousel({ posts, fullWidth = false }: { posts: Post
             onClick={!centre && near ? () => go(i) : undefined}
             className={`absolute inset-y-0 left-0 w-[var(--sw)] overflow-hidden ${!centre && near ? 'cursor-pointer' : ''}`}
             style={{
-              transform: `translateX(calc((100cqw - var(--sw)) / 2 + ${rel} * (var(--sw) + ${GAP})))`,
+              // A que espera à direita fica por baixo do lugar da seguinte e sobe para entrar na linha do slide.
+              transform: `translateX(calc((100cqw - var(--sw)) / 2 + ${rel === 2 ? 1 : rel} * (var(--sw) + ${GAP})))${rel === 2 ? ' translateY(100%)' : ''}`,
               transition: jumped ? 'none' : 'transform 700ms ease-in-out',
             }}
           >
