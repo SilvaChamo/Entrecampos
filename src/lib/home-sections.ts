@@ -29,6 +29,9 @@ export const HOME_SECTIONS: { id: string; label: string; zone: HomeZone }[] = [
   { id: 'sugestoes', label: 'Sugestões de leitura', zone: 'bottom' },
 ];
 
+/** Espaço de publicidade posto numa zona (como um bloco do Gutenberg): o `id` entra na lista de secções da zona. */
+export const isAdId = (id: string) => /^pub-[a-z0-9]{4,12}$/.test(id);
+
 export type HomeLayout = Record<HomeZone, string[]>;
 
 /** A ordem de origem da página (a de antes de haver esta configuração). */
@@ -50,7 +53,7 @@ export function normalizeHomeLayout(raw: unknown): HomeLayout {
   for (const zone of HOME_ZONES.map((z) => z.id)) {
     const list = Array.isArray(r[zone]) ? (r[zone] as unknown[]) : [];
     for (const id of list) {
-      if (typeof id === 'string' && known.has(id) && !seen.has(id)) {
+      if (typeof id === 'string' && (known.has(id) || isAdId(id)) && !seen.has(id)) {
         seen.add(id);
         out[zone].push(id);
       }
@@ -93,4 +96,26 @@ export function normalizeHomeCategories(raw: unknown): HomeCategories {
     if (clean.length > 0) out[slot.key] = clean;
   }
   return out;
+}
+
+/** Disposição do destaque (banner e os dois cards) e dados dos espaços de publicidade. */
+export type HeroSide = 'banner-esquerda' | 'cards-esquerda';
+export type HomeAd = { id: string; image: string; link: string };
+export type HomeOptions = { heroSide: HeroSide; ads: HomeAd[] };
+
+export const defaultHomeOptions = (): HomeOptions => ({ heroSide: 'banner-esquerda', ads: [] });
+
+const okUrl = (u: string) => u === '' || (u.length <= 500 && (/^https?:\/\/\S+$/i.test(u) || /^\/[^\s/]\S*$/.test(u)));
+
+export function normalizeHomeOptions(raw: unknown): HomeOptions {
+  const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const ads: HomeAd[] = [];
+  for (const a of Array.isArray(r.ads) ? (r.ads as unknown[]) : []) {
+    const o = (a && typeof a === 'object' ? a : {}) as Record<string, unknown>;
+    const id = typeof o.id === 'string' ? o.id : '';
+    const image = typeof o.image === 'string' ? o.image.trim() : '';
+    const link = typeof o.link === 'string' ? o.link.trim() : '';
+    if (isAdId(id) && !ads.some((x) => x.id === id) && okUrl(image) && okUrl(link) && ads.length < 20) ads.push({ id, image, link });
+  }
+  return { heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', ads };
 }

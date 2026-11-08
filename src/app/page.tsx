@@ -16,7 +16,9 @@ import StickyColumn from '@/components/Expnews/StickyColumn';
 import { getSuggestionSlugs } from '@/lib/suggestions';
 import { getHomeLayout, type HomeZone } from '@/lib/home-layout';
 import { getHomeCategories } from '@/lib/home-categories';
-import { HOME_CATEGORY_SLOTS } from '@/lib/home-sections';
+import { getHomeOptions } from '@/lib/home-options';
+import { HOME_CATEGORY_SLOTS, isAdId } from '@/lib/home-sections';
+import HomeAd from '@/components/Expnews/HomeAd';
 import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
@@ -105,7 +107,7 @@ function Overlay({
 }
 
 export default async function HomePrincipal() {
-  const [featured, { posts: homePosts }, suggestSlugs, layout, cats] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getHomeLayout(), getHomeCategories()]);
+  const [featured, { posts: homePosts }, suggestSlugs, layout, cats, options] = await Promise.all([getFeatured(), getHomePosts(), getSuggestionSlugs(), getHomeLayout(), getHomeCategories(), getHomeOptions()]);
   // Artigos de opinião (muitos sem foto) não se misturam com as notícias da home: só aparecem na categoria Opinião.
   const notOpinion = (p: Post) => p.categorySlug !== 'opiniao' && !p.extraCategories.some((c) => c.slug === 'opiniao');
   const slides = featured.filter(notOpinion);
@@ -165,8 +167,8 @@ export default async function HomePrincipal() {
   // Cada secção da home, por nome. A zona e a ordem em que aparecem vêm do painel (Página inicial); ver lib/home-layout.ts.
   const sections: Record<string, React.ReactNode> = {
     destaque: (
-            <div className="grid gap-3 md:auto-rows-[215px] md:grid-cols-[2fr_1fr]">
-              <ExpSlider posts={slides} className="h-[340px] md:row-span-2 md:h-full" />
+            <div className={`grid gap-3 md:auto-rows-[215px] ${options.heroSide === 'cards-esquerda' ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]'}`}>
+              <ExpSlider posts={slides} className={`h-[340px] md:row-span-2 md:h-full${options.heroSide === 'cards-esquerda' ? ' md:col-start-2 md:row-start-1' : ''}`} />
               <SideSlides
                 items={[
                   { posts: heroLatest(cats.hero1[0]), label: categoryLabel(cats.hero1[0]) },
@@ -313,7 +315,11 @@ export default async function HomePrincipal() {
             <ReadingSuggestions posts={suggestions} />
     ),
   };
-  const render = (zone: HomeZone) => layout[zone].map((id) => <React.Fragment key={id}>{sections[id]}</React.Fragment>);
+  const adOf = (id: string) => options.ads.find((a) => a.id === id);
+  const render = (zone: HomeZone) =>
+    layout[zone].map((id) => (
+      <React.Fragment key={id}>{isAdId(id) ? <HomeAd image={adOf(id)?.image} link={adOf(id)?.link} /> : sections[id]}</React.Fragment>
+    ));
   // Duas secções de colunas (coluna principal + barra lateral), cada uma com a sua barra lateral fixa.
   const columns = (main: HomeZone, side: HomeZone) => {
     const hasMain = layout[main].length > 0;
