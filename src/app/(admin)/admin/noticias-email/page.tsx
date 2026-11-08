@@ -7,7 +7,7 @@ import Spinner from '@/components/Common/Spinner';
 
 type Item = { title: string; status: 'published' | 'scheduled' | 'pending' | 'erro'; note: string; id?: string; photos?: string[] };
 type Entry = { at: string; from: string; subject: string; items: Item[]; note?: string };
-type Data = { configured: boolean; address: string; settings: { senders: string[]; requireVerified: boolean; share: boolean }; entries: Entry[] };
+type Data = { configured: boolean; address: string; authserv: boolean; settings: { senders: string[]; requireVerified: boolean; share: boolean }; entries: Entry[] };
 
 const ESTADO: Record<Item['status'], { texto: string; cls: string }> = {
   published: { texto: 'Publicada', cls: 'bg-green-50 text-[#008f45]' },
@@ -111,6 +111,9 @@ export default function NoticiasEmailPage() {
 
       {!data.configured && (
         <p className="mb-4 border-l-4 border-amber-400 bg-amber-50 px-3 py-2 text-[13px] text-amber-800">O e-mail da redacção ainda não está ligado ao servidor (faltam IMAP_HOST, IMAP_USER e IMAP_PASS). Enquanto isso, nada é lido.</p>
+      )}
+      {data.configured && data.settings.requireVerified && !data.authserv && (
+        <p className="mb-4 border-l-4 border-amber-400 bg-amber-50 px-3 py-2 text-[13px] text-amber-800">Falta IMAP_AUTHSERV_ID (o nome do servidor de e-mail, que aparece no início do cabeçalho Authentication-Results). Sem ele nenhum remetente é confirmado e todas as notícias ficam nos pendentes.</p>
       )}
       {msg && <p className={`mb-4 border-l-4 px-3 py-2 text-[13px] ${msg.tipo === 'ok' ? 'border-[#00a651] bg-green-50 text-green-800' : 'border-[#d63638] bg-red-50 text-red-800'}`}>{msg.texto}</p>}
 

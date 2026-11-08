@@ -15,7 +15,7 @@ export async function GET() {
   const guard = await requireAuth(PERMISSION);
   if ('error' in guard) return guard.error;
   const [settings, log] = await Promise.all([loadEmailSettings(), loadEmailLog()]);
-  return NextResponse.json({ configured: mailConfigured(), address: mailAddress(), settings, entries: log.entries });
+  return NextResponse.json({ configured: mailConfigured(), address: mailAddress(), authserv: Boolean((process.env.IMAP_AUTHSERV_ID || '').trim()), settings, entries: log.entries });
 }
 
 export async function POST(req: NextRequest) {

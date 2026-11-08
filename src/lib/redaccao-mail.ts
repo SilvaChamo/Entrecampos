@@ -161,8 +161,8 @@ const senderAllowed = (address: string, allowed: string[]) => {
 const sameDomain = (a: string, b: string) => a === b || a.endsWith(`.${b}`) || b.endsWith(`.${a}`);
 
 /**
- * O servidor de e-mail confirmou o remetente? Lê o cabeçalho Authentication-Results do nosso servidor (o mais acima; se
- * IMAP_AUTHSERV_ID estiver definido, tem de ser dele) e exige uma aprovação alinhada com o domínio do remetente:
+ * O servidor de e-mail confirmou o remetente? Lê o cabeçalho Authentication-Results do nosso servidor (o mais acima, que tem de ser do
+ * servidor indicado em IMAP_AUTHSERV_ID; sem essa variável nada é confirmado) e exige uma aprovação alinhada com o domínio do remetente:
  * DMARC aprovado, ou DKIM/SPF aprovados para o mesmo domínio. Qualquer outro resultado conta como não confirmado.
  */
 export function senderVerified(line: string, fromAddress: string): boolean {
@@ -171,7 +171,8 @@ export function senderVerified(line: string, fromAddress: string): boolean {
   const parts = line.replace(/^authentication-results:\s*/i, '').replace(/\([^)]*\)/g, ' ').split(';').map((p) => p.trim()).filter(Boolean);
   const id = (parts.shift() || '').split(/\s+/)[0].toLowerCase();
   const wanted = (process.env.IMAP_AUTHSERV_ID || '').trim().toLowerCase();
-  if (wanted && id !== wanted) return false;
+  // Sem IMAP_AUTHSERV_ID não há como saber qual cabeçalho é do nosso servidor (quem envia pode juntar um seu): nunca confirma.
+  if (!wanted || id !== wanted) return false;
   const prop = (seg: string, name: string) => new RegExp(`${name}=("?)([^\\s";]+)\\1`, 'i').exec(seg)?.[2]?.toLowerCase().replace(/^.*@/, '');
   let ok = false;
   for (const seg of parts) {
