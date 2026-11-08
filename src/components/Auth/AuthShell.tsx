@@ -72,8 +72,10 @@ export default function AuthShell({
       <div className="relative flex w-full max-w-[860px] flex-col items-center md:flex-row md:items-stretch md:justify-center">
         {/* Cartão branco: logótipo e formulário */}
         <div className="relative z-10 w-full max-w-[400px] bg-white px-3 pb-5 pt-4 shadow-[0_10px_40px_rgba(0,0,0,0.12)] md:w-[400px] md:shrink-0 md:px-8 md:pb-12 md:pt-9">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/logo.png" alt="EntreCAMPOS" className="mx-auto mb-4 h-10 w-auto md:mb-10 md:h-12" />
+          <Link href="/" aria-label="Ir para a página inicial" className="mx-auto mb-4 block w-fit md:mb-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/logo.png" alt="EntreCAMPOS" className="h-10 w-auto md:h-12" />
+          </Link>
           {children}
         </div>
 
