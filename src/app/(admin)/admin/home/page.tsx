@@ -137,6 +137,15 @@ export default function HomeSeccoesPage() {
     }
   }
 
+  // O título de uma secção com uma só categoria acompanha a categoria escolhida (como no site); «Publicações recentes» mantém o nome de origem enquanto tem a categoria de origem.
+  const rowLabel = (id: string) => {
+    const slots = HOME_CATEGORY_SLOTS.filter((x) => x.section === id);
+    if (!draft || slots.length !== 1 || slots[0].multi || id === 'destaque') return LABEL[id];
+    const slug = draft.categories[slots[0].key][0];
+    if (id === 'recentes' && slug === slots[0].defaults[0]) return LABEL[id];
+    return options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+  };
+
   // Secções com uma só categoria, nas zonas largas: o selector fica na mesma linha do título e das setas (a partir do computador).
   const inlineSlot = (zone: HomeZone, id: string) =>
     ['top', 'main', 'main2', 'bottom'].includes(zone) && HOME_CATEGORY_SLOTS.filter((x) => x.section === id).length === 1 && !HOME_CATEGORY_SLOTS.find((x) => x.section === id)!.multi;
@@ -162,7 +171,7 @@ export default function HomeSeccoesPage() {
                   <span className="w-5 shrink-0 text-[13px] text-gray-400">{i + 1}</span>
                   <span className="flex min-w-0 flex-1 items-center gap-1.5 text-[13px] text-[#1d2327]">
                     {isAdId(id) && <Megaphone className="h-4 w-4 shrink-0 text-[#d6101c]" />}
-                    <span className="truncate">{isAdId(id) ? 'Espaço de publicidade' : LABEL[id]}</span>
+                    <span className="truncate">{isAdId(id) ? 'Espaço de publicidade' : rowLabel(id)}</span>
                   </span>
                   {inlineSlot(zone, id) && (
                     <div className="w-[260px] shrink-0 max-lg:hidden">
