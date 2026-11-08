@@ -10,6 +10,9 @@ import PageHeaderCard from '@/components/Expnews/PageHeaderCard';
 import PrintButton from '@/components/Site/PrintButton';
 import CommentsSection from '@/components/Comments/CommentsSection';
 import { InnerSidebar } from '@/components/Expnews/InnerPage';
+import ExclusivaGate from '@/components/Site/ExclusivaGate';
+import { loadExclusivas } from '@/lib/assinaturas';
+import { inicioDoTexto } from '@/lib/assinaturas-types';
 
 export const revalidate = 604800; // 7 dias; gravar no painel limpa já o cache (lib/refresh-site.ts)
 
@@ -38,6 +41,8 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
   if (!post) notFound();
 
   const related = await getRelated(post, 4);
+  // Notícia exclusiva: a página (em cache) leva só o início do texto; o resto só chega a quem tem subscrição activa.
+  const exclusiva = (await loadExclusivas()).includes(post.slug);
   const url = encodeURIComponent(`${SITE_URL}/noticias/${post.slug}`);
   const text = encodeURIComponent(post.title);
 
@@ -80,10 +85,14 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
               </span>
             </div>
 
-            <div
-              className="blog-details mt-6 text-[15px] leading-7 text-gray-500 max-sm:text-[18px] max-sm:leading-8 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-2"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            {exclusiva ? (
+              <ExclusivaGate slug={post.slug} inicio={inicioDoTexto(post.content)} />
+            ) : (
+              <div
+                className="blog-details mt-6 text-[15px] leading-7 text-gray-500 max-sm:text-[18px] max-sm:leading-8 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-2"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            )}
 
             <div className="mt-8">
               <h3 className="flex items-center gap-2 border-b border-gray-200 pb-3 text-[18px] font-bold uppercase text-[#1a3d0c]">
