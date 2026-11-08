@@ -116,7 +116,7 @@ export default function ImportarNoticiasPage() {
           <li>Cada notícia do Word começa em Título: e pode ter Categoria:, Descrição:, Texto: e Foto: (nome da imagem enviada no mesmo e-mail, ou uma imagem metida no próprio Word)</li>
           <li>Com foto e categoria reconhecida, a notícia é publicada, vai para as redes sociais ligadas e entra no próximo envio da newsletter</li>
           <li>Sem foto, fica nos pendentes com uma foto sugerida (de notícias parecidas) para rever e publicar à mão; ao publicar, as redes e a newsletter recebem-na na mesma</li>
-          <li>Só são lidos e-mails dos remetentes autorizados; o e-mail nunca é apagado nem alterado</li>
+          <li>Só são lidos e-mails dos remetentes autorizados e o e-mail nunca é apagado nem alterado; como o remetente pode ser falsificado, só se publica sozinha a notícia cujo remetente o servidor de e-mail confirmou (SPF, DKIM ou DMARC); as outras ficam nos pendentes</li>
         </ul>
       </section>
 

@@ -66,8 +66,28 @@ const norm = (v: string) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const palavras = (v: string) => new Set(norm(v).split(' ').filter((w) => w.length > 3));
 
-/** O servidor de e-mail do remetente falhou a verificação (SPF/DKIM)? Sem cabeçalho não se rejeita: vale a lista de remetentes. */
+/** O servidor de e-mail do remetente falhou a verificação (SPF/DKIM/DMARC)? Então o e-mail é rejeitado. */
 export const verificacaoFalhou = (auth: string) => /\b(dkim|spf|dmarc)=(fail|softfail|permerror)\b/i.test(auth);
+
+const dominioDe = (v: string) => v.toLowerCase().replace(/^.*@/, '').replace(/[>\s;].*$/, '');
+const alinhado = (a: string, b: string) => Boolean(a) && Boolean(b) && (a === b || a.endsWith(`.${b}`) || b.endsWith(`.${a}`));
+
+/**
+ * O remetente está mesmo confirmado? O endereço "De:" é fácil de falsificar, por isso só conta o resultado que o NOSSO servidor de e-mail
+ * pôs no cabeçalho (o mais recente, o primeiro): dmarc=pass, ou dkim=pass / spf=pass com o domínio igual ao do "De:".
+ * Sem cabeçalho ou sem "pass" a resposta é não: a notícia importada nunca se publica sozinha.
+ */
+export function remetenteConfirmado(auth: string, fromAddress: string): boolean {
+  const cabecalhos = auth.split(/authentication-results:/i).map((x) => x.trim()).filter(Boolean);
+  const primeiro = cabecalhos[0] ?? '';
+  if (!primeiro || verificacaoFalhou(primeiro)) return false;
+  const de = dominioDe(fromAddress);
+  if (/\bdmarc=pass\b/i.test(primeiro)) return true;
+  const dkim = /\bdkim=pass\b[^;]*?header\.(?:d|i)=@?([^\s;]+)/i.exec(primeiro);
+  if (dkim && alinhado(dominioDe(dkim[1]), de)) return true;
+  const spf = /\bspf=pass\b[^;]*?smtp\.mailfrom=([^\s;]+)/i.exec(primeiro);
+  return Boolean(spf && alinhado(dominioDe(spf[1]), de));
+}
 
 /** Até 5 fotos de notícias já publicadas, as que mais se parecem com esta (palavras do título e da descrição; mesma categoria pesa mais). */
 async function sugerirFotos(item: { title: string; summary: string }, categoria: string): Promise<string[]> {
@@ -117,7 +137,7 @@ function categoriaDoItem(item: ItemWord, opcoes: { slug: string; label: string }
   return { slug: guessCategory(`${item.title} ${item.summary}`), certa: false };
 }
 
-async function criarNoticia(item: ItemWord, anexos: Anexo[], def: Definicoes, de: string, assunto: string): Promise<Registo> {
+async function criarNoticia(item: ItemWord, anexos: Anexo[], def: Definicoes, de: string, assunto: string, confirmado: boolean): Promise<Registo> {
   const base = { at: new Date().toISOString(), email: assunto, de, titulo: item.title };
   const supabase = db();
   const { data: existentes, error: erroLer } = await supabase.from('news').select('slug,title').eq('site_id', SITE_ID);
@@ -150,7 +170,7 @@ async function criarNoticia(item: ItemWord, anexos: Anexo[], def: Definicoes, de
     imagem = fotos[0] ?? null;
   }
   // Só publica sozinha com foto de verdade e categoria indicada no Word; sem foto fica nos pendentes, para rever e publicar à mão.
-  const publicar = def.autoPublicar && Boolean(foto && imagem && !fotos.length) && certa;
+  const publicar = def.autoPublicar && confirmado && Boolean(foto && imagem && !fotos.length) && certa;
 
   let slug = slugify(item.title).slice(0, 120) || `noticia-${Date.now()}`;
   for (let n = 2; slugs.has(slug); n++) slug = `${slugify(item.title).slice(0, 110)}-${n}`;
@@ -183,6 +203,7 @@ async function criarNoticia(item: ItemWord, anexos: Anexo[], def: Definicoes, de
     ? 'Tinha foto: publicada.'
     : !foto
       ? fotos.length ? 'Sem foto: ficou nos pendentes com foto sugerida, para rever e publicar.' : 'Sem foto: ficou nos pendentes, sem foto sugerida.'
+      : !confirmado ? 'O servidor de e-mail não confirmou o remetente: ficou nos pendentes para rever.'
       : !certa ? 'Categoria não reconhecida: ficou nos pendentes para rever.' : 'Publicação automática desligada: ficou nos pendentes.';
   let redes = '';
   if (publicar) {
@@ -216,6 +237,7 @@ export async function importarDoEmail(): Promise<Resultado> {
       def.processados.push(chave);
       if (!def.remetentes.includes(m.fromAddress)) { novos.push({ ...base, estado: 'ignorado', motivo: 'Remetente não autorizado.' }); r.ignoradas++; continue; }
       if (verificacaoFalhou(m.auth)) { novos.push({ ...base, estado: 'ignorado', motivo: 'O servidor de e-mail não confirmou o remetente (SPF/DKIM).' }); r.ignoradas++; continue; }
+      const confirmado = remetenteConfirmado(m.auth, m.fromAddress);
       const anexos: Anexo[] = [];
       for (const f of m.files.filter((x) => DOCX.test(x.filename) || IMG.test(x.filename))) {
         try {
@@ -241,7 +263,7 @@ export async function importarDoEmail(): Promise<Resultado> {
         if (itens.length === 0) { novos.push({ ...base, titulo: doc.filename, estado: 'erro', motivo: 'Não encontrei notícias: use "Título:", "Categoria:", "Descrição:", "Texto:" e "Foto:".' }); r.erros++; continue; }
         for (const item of itens.slice(0, 40)) {
           try {
-            const reg = await criarNoticia(item, anexos, def, m.fromAddress || m.from, m.subject);
+            const reg = await criarNoticia(item, anexos, def, m.fromAddress || m.from, m.subject, confirmado);
             novos.push(reg);
             if (reg.estado === 'publicada') { r.publicadas++; r.criadas++; }
             else if (reg.estado === 'pendente') { r.pendentes++; r.criadas++; }
