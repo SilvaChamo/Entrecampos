@@ -411,9 +411,8 @@ export function NewsletterPreviews({ schedules, subscribers, smtp, onChange, set
           {open.map((s) => {
             const on = s.id === shownId;
             return (
-              <button key={s.id} type="button" role="tab" aria-selected={on} onClick={() => { setSel(s.id); setConfirmId(null); }} className={`flex h-9 items-center gap-2 border px-3 text-[13px] ${on ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#1d2327] hover:text-[#00a651]'}`}>
-                <span>{s.name ? <strong className="font-bold">{s.name} · </strong> : null}{fmt(s.at)}</span>
-                <span className={`text-[12px] ${on ? 'text-white/80' : 'text-[#50575e]'}`}>{s.repeat ? 'fixo · ' : ''}{s.posts.length}</span>
+              <button key={s.id} type="button" role="tab" aria-selected={on} title={`${fmt(s.at)}${s.repeat ? ' (fixo)' : ''} · ${s.posts.length}`} onClick={() => { setSel(s.id); setConfirmId(null); }} className={`flex h-9 items-center gap-2 border px-3 text-[13px] ${on ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#1d2327] hover:text-[#00a651]'}`}>
+                <span className="font-bold">{s.name || fmt(s.at)}</span>
               </button>
             );
           })}
