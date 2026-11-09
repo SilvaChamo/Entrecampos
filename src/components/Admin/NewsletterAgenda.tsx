@@ -252,6 +252,7 @@ function ScheduleBox({ item, subscribers, smtp, busy, act }: { item: AgendaItem;
   const [editing, setEditing] = useState(false);
   const [when, setWhen] = useState(now);
   const [nameEdit, setNameEdit] = useState(item.name ?? '');
+  const [confirmDel, setConfirmDel] = useState(false);
   const [daysEdit, setDaysEdit] = useState<number[]>(item.repeat?.days ?? [0, 1, 2, 3, 4, 5, 6]);
   const [confirmSend, setConfirmSend] = useState(false);
 
@@ -278,7 +279,15 @@ function ScheduleBox({ item, subscribers, smtp, busy, act }: { item: AgendaItem;
               ) : (
                 <button onClick={() => setConfirmSend(true)} disabled={busy || item.posts.length === 0 || subscribers === 0 || !smtp} className={`${btn} justify-center border border-[#ccd0d4] bg-white hover:text-[#00a651] disabled:opacity-50 max-sm:min-w-0 max-sm:flex-1 max-sm:px-2`}><Send className="h-4 w-4 max-sm:hidden" /> Enviar agora</button>
               )}
-              <button onClick={() => act({ id: item.id, cancel: true }, 'Agendamento cancelado.')} aria-label="Cancelar agendamento" className={`${btn} w-9 shrink-0 justify-center border border-[#ccd0d4] bg-white !px-0 text-red-600 hover:text-[#00a651]`}><Trash2 className="h-4 w-4" /></button>
+              {confirmDel ? (
+                <>
+                  <span className="text-[13px]">Eliminar este horário?</span>
+                  <button onClick={async () => { setConfirmDel(false); await act({ id: item.id, cancel: true }, 'Agendamento eliminado.'); }} disabled={busy} className={`${btn} bg-red-600 text-white disabled:opacity-50`}>Sim, eliminar</button>
+                  <button onClick={() => setConfirmDel(false)} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651]`}>Não</button>
+                </>
+              ) : (
+                <button onClick={() => setConfirmDel(true)} aria-label="Eliminar agendamento" className={`${btn} shrink-0 justify-center border border-[#ccd0d4] bg-white text-red-600 hover:text-[#00a651] max-sm:w-9 max-sm:!px-0`}><Trash2 className="h-4 w-4" /> <span className="max-sm:hidden">Eliminar</span></button>
+              )}
             </div>
           </div>
         )}

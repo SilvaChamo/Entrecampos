@@ -87,6 +87,19 @@ export default function NewsAdminPage() {
     if (sched?.slots) setMarcadas(sched.slots.filter((x) => x.slugs.includes(sched.item.slug)).map((x) => x.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sched?.item.id, sched?.slots === null]);
+  const eliminarAgenda = async (slotId: string) => {
+    if (!sched?.slots) return;
+    if (!(await confirmAsync('Eliminar este horário de envio? As notícias juntadas a ele deixam de seguir nele.'))) return;
+    try {
+      const res = await fetch('/api/admin/newsletter/agenda', { method: 'DELETE', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: slotId }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Erro ${res.status}.`);
+      setMarcadas((m) => m.filter((id) => id !== slotId));
+      setSched({ ...sched, slots: sched.slots.filter((x) => x.id !== slotId), msg: 'Horário eliminado.', err: false });
+    } catch (e) {
+      setSched({ ...sched, msg: e instanceof Error ? e.message : 'Não foi possível eliminar o horário.', err: true });
+    }
+  };
   const guardarAgendas = async () => {
     if (!sched?.slots) return;
     const slug = sched.item.slug;
@@ -843,11 +856,14 @@ export default function NewsAdminPage() {
                 <p className="p-4 text-center text-[13px] text-[#50575e]">Ainda não há envios agendados.</p>
               ) : (
                 sched.slots.map((x) => (
-                  <label key={x.id} className="flex min-h-11 w-full cursor-pointer items-center gap-3 border-b border-[#f0f0f1] px-4 py-2 text-[13px] hover:bg-[#f6f7f7]">
-                    <input type="checkbox" checked={marcadas.includes(x.id)} onChange={(e) => setMarcadas((m) => (e.target.checked ? [...m, x.id] : m.filter((id) => id !== x.id)))} />
-                    <span className="min-w-0 flex-1">{x.name ? <strong>{x.name} · </strong> : null}{new Date(x.at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' })}</span>
-                    <span className="shrink-0 text-[12px] text-[#50575e]">{x.repeat ? 'Fixo · ' : ''}{x.slugs.length} {x.slugs.length === 1 ? 'notícia' : 'notícias'}</span>
-                  </label>
+                  <div key={x.id} className="flex items-center border-b border-[#f0f0f1] hover:bg-[#f6f7f7]">
+                    <label className="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-3 py-2 pl-4 text-[13px]">
+                      <input type="checkbox" checked={marcadas.includes(x.id)} onChange={(e) => setMarcadas((m) => (e.target.checked ? [...m, x.id] : m.filter((id) => id !== x.id)))} />
+                      <span className="min-w-0 flex-1">{x.name ? <strong>{x.name} · </strong> : null}{new Date(x.at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' })}</span>
+                      <span className="shrink-0 text-[12px] text-[#50575e]">{x.repeat ? 'Fixo · ' : ''}{x.slugs.length} {x.slugs.length === 1 ? 'notícia' : 'notícias'}</span>
+                    </label>
+                    <button type="button" onClick={() => eliminarAgenda(x.id)} aria-label="Eliminar horário" title="Eliminar horário" className="mx-2 flex h-8 w-8 shrink-0 items-center justify-center text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button>
+                  </div>
                 ))
               )}
             </div>
