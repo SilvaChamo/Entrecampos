@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { CheckCircle2, CircleAlert, CircleSlash, ExternalLink, RefreshCw, Save } from 'lucide-react';
+import { CheckCircle2, ChevronDown, CircleAlert, CircleSlash, ExternalLink, RefreshCw, Save } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import ConfigNote from '@/components/Admin/ConfigNote';
 
@@ -102,8 +102,21 @@ const CARTOES: Cartao[] = [
   { id: 'whatsapp', nome: 'WhatsApp (canal)', texto: 'Rede usada pelo EntreCAMPOS (só regista o endereço).', exemplo: 'https://whatsapp.com/channel/…', campos: [{ id: 'whatsapp', label: 'Link do canal', tipo: 'perfil' }] },
 ];
 
+/** Abre e fecha a deslizar (altura e transparência), sem piscar; fechado, o conteúdo não se pode focar nem ler. */
+function Desliza({ open, children }: { open: boolean; children: React.ReactNode }) {
+  return (
+    <div
+      aria-hidden={!open}
+      inert={!open}
+      className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out motion-reduce:transition-none ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+    >
+      <div className="min-h-0 overflow-hidden">{children}</div>
+    </div>
+  );
+}
+
 const EXTRAS = ['youtube', 'x', 'tiktok', 'whatsapp'];
-const inputCls = 'h-9 w-full rounded-md border border-[#ccd0d4] bg-white px-3 text-[13px] focus:border-[#00a651] focus:outline-none';
+const inputCls = 'h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] focus:border-[#00a651] focus:outline-none';
 
 /** Redes sociais do EntreCAMPOS: em cada cartão, o interruptor liga a rede e mostra o link e os dados de ligação. Os segredos ficam cifrados no servidor. */
 export default function RedesSociaisPage() {
@@ -134,6 +147,9 @@ export default function RedesSociaisPage() {
 
   useEffect(() => { load(true); }, [load]);
 
+  // Guia de activação: aberto por defeito enquanto a rede não está ligada; depois, o que o utilizador escolher.
+  const [guias, setGuias] = useState<Record<string, boolean>>({});
+  const guiaAberto = (c: Cartao) => guias[c.id] ?? (c.partilha ? !data?.configured[c.partilha] : false);
   const ligado = (c: Cartao) => (c.partilha ? !!data?.settings[c.partilha] : !!extras[c.id]);
 
   const guardar = async (c: Cartao, opts: { limpar?: boolean } = {}) => {
@@ -207,7 +223,7 @@ export default function RedesSociaisPage() {
             Ligue as redes sociais do EntreCAMPOS com o sistema de partilha de publicações
           </p>
         </div>
-        <button onClick={() => load(true)} disabled={checking} className="flex h-9 items-center gap-1.5 rounded-md border border-[#00a651] px-3 text-[13px] text-[#00a651] hover:bg-[#f0f7f4] disabled:opacity-50">
+        <button onClick={() => load(true)} disabled={checking} className="flex h-9 items-center gap-1.5 border border-[#00a651] px-3 text-[13px] text-[#00a651] hover:bg-[#f0f7f4] disabled:opacity-50">
           <RefreshCw className={`h-4 w-4 ${checking ? 'animate-spin' : ''}`} /> Verificar ligação
         </button>
       </div>
@@ -238,27 +254,35 @@ export default function RedesSociaisPage() {
                 <div className="min-w-0 flex-1">
                   <p className="text-[14px] text-[#1d2327]">{c.nome}</p>
                   <p className="mt-0.5 text-[13px] leading-5 text-[#50575e]">{c.texto}</p>
-                  {on && c.partilha && <p className="mt-1.5 flex items-start gap-1.5 text-[12px]">{estadoLigacao(c)}</p>}
+                  {c.partilha && <Desliza open={on}><p className="mt-1.5 flex items-start gap-1.5 text-[12px]">{estadoLigacao(c)}</p></Desliza>}
                 </div>
               </div>
 
-              {on && (c.nota || c.guia || c.campos.length > 0) && (
+              {(c.nota || c.guia || c.campos.length > 0) && (
+                <Desliza open={on}>
                 <div className="mt-3 space-y-3 border-t border-[#f0f0f1] pt-3 sm:ml-14">
                   {c.nota && <p className="text-[12px] leading-5 text-[#646970]">{c.nota}</p>}
                   {c.guia && (
-                    <details open={c.partilha ? !data.configured[c.partilha] : false} className="rounded-md border border-[#ccd0d4] bg-[#f6f7f7] p-3 text-[13px] leading-6 text-[#2c3338]">
-                      <summary className="cursor-pointer text-[#1d2327]">{c.guia.titulo}</summary>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {c.guia.links.map((l) => (
-                          <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="flex h-9 items-center gap-1.5 rounded-md border border-[#00a651] bg-white px-3 text-[13px] text-[#00a651] hover:bg-[#f0f7f4]">
+                    <div className="rounded-md border border-[#ccd0d4] bg-[#f6f7f7] text-[13px] leading-6 text-[#2c3338]">
+                      <button type="button" aria-expanded={guiaAberto(c)} onClick={() => setGuias({ ...guias, [c.id]: !guiaAberto(c) })} className="flex w-full items-center justify-between gap-2 p-3 text-left text-[#1d2327]">
+                        {c.guia.titulo}
+                        <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-300 motion-reduce:transition-none ${guiaAberto(c) ? 'rotate-180' : ''}`} />
+                      </button>
+                      <Desliza open={guiaAberto(c)}>
+                        <div className="px-3 pb-3">
+                          <div className="flex flex-wrap gap-2">
+                            {c.guia.links.map((l) => (
+                              <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="flex h-9 items-center gap-1.5 border border-[#00a651] bg-white px-3 text-[13px] text-[#00a651] hover:bg-[#f0f7f4]">
                             <ExternalLink className="h-4 w-4" /> {l.texto}
                           </a>
-                        ))}
-                      </div>
-                      <ol className="mt-3 list-decimal space-y-2 pl-5">
-                        {c.guia.passos.map((p) => <li key={p}>{p}</li>)}
-                      </ol>
-                    </details>
+                            ))}
+                          </div>
+                          <ol className="mt-3 list-decimal space-y-2 pl-5">
+                            {c.guia.passos.map((p) => <li key={p}>{p}</li>)}
+                          </ol>
+                        </div>
+                      </Desliza>
+                    </div>
                   )}
                   {c.campos.map((f) => (
                     <label key={f.id} className="block">
@@ -276,7 +300,7 @@ export default function RedesSociaisPage() {
                           className={inputCls}
                         />
                         {f.tipo === 'perfil' && perfis[f.id] && (
-                          <a href={perfis[f.id]} target="_blank" rel="noopener noreferrer" aria-label={`Abrir ${c.nome}`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#00a651] text-[#00a651] hover:bg-[#f0f7f4]">
+                          <a href={perfis[f.id]} target="_blank" rel="noopener noreferrer" aria-label={`Abrir ${c.nome}`} className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#00a651] text-[#00a651] hover:bg-[#f0f7f4]">
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         )}
@@ -286,12 +310,13 @@ export default function RedesSociaisPage() {
                   ))}
                   {c.campos.length > 0 && (
                     <div className="flex justify-end">
-                      <button onClick={() => guardar(c)} disabled={busy === c.id} className="flex h-9 items-center gap-1.5 rounded-md bg-[#00a651] px-4 text-[13px] text-white hover:bg-[#008f45] disabled:opacity-50">
+                      <button onClick={() => guardar(c)} disabled={busy === c.id} className="flex h-9 items-center gap-1.5 bg-[#00a651] px-4 text-[13px] text-white hover:bg-[#008f45] disabled:opacity-50">
                         <Save className="h-4 w-4" /> {busy === c.id ? 'A guardar…' : 'Guardar'}
                       </button>
                     </div>
                   )}
                 </div>
+                </Desliza>
               )}
             </div>
           );
