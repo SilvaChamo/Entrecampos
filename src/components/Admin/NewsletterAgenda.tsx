@@ -399,11 +399,27 @@ export default function NewsletterAgenda({ schedules, subscribers, smtp, onChang
 export function NewsletterPreviews({ schedules, subscribers, smtp, onChange, setNotice, setError }: Props) {
   const { busy, act } = useAgenda(onChange, setNotice, setError);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [sel, setSel] = useState<string | null>(null);
   const open = schedules.filter((s) => s.status === 'pending');
   if (open.length === 0) return null;
+  // Só um envio agendado de cada vez: escolhe-se em cima, em vez de os empilhar todos.
+  const shownId = open.find((s) => s.id === sel)?.id ?? open[0].id;
   return (
-    <div className="space-y-6">
-      {open.map((s) => (
+    <div className="space-y-4">
+      {open.length > 1 && (
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Envios agendados">
+          {open.map((s) => {
+            const on = s.id === shownId;
+            return (
+              <button key={s.id} type="button" role="tab" aria-selected={on} onClick={() => { setSel(s.id); setConfirmId(null); }} className={`flex h-9 items-center gap-2 border px-3 text-[13px] ${on ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#1d2327] hover:text-[#00a651]'}`}>
+                <span>{s.name ? <strong className="font-bold">{s.name} · </strong> : null}{fmt(s.at)}</span>
+                <span className={`text-[12px] ${on ? 'text-white/80' : 'text-[#50575e]'}`}>{s.repeat ? 'fixo · ' : ''}{s.posts.length}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {open.filter((s) => s.id === shownId).map((s) => (
         <section key={s.id}>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
             <h3 className="font-normal text-[#1d2327]"><span className="font-bold max-sm:block">Envio agendado:</span> <span className="max-sm:block">{s.name ? `${s.name} · ` : ''}{fmt(s.at)}{s.repeat ? ' (fixo)' : ''} · {s.posts.length} {s.posts.length === 1 ? 'notícia' : 'notícias'}</span></h3>
