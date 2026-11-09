@@ -273,9 +273,6 @@ export default function HomeSeccoesPage() {
         </div>
       </div>
 
-      <p className="mb-4 text-[13px] text-gray-600">
-        Está organizada como a página do site. Use as setas para mudar a posição, o olho para desligar uma secção do site, o selector para escolher a categoria de cada secção e adicione espaços de publicidade onde quiser. Só muda no site depois de guardar.
-      </p>
 
       {error && <p className="mb-4 border-l-4 border-[#d63638] bg-red-50 px-3 py-2 text-[13px] text-red-800">{error}</p>}
       {done && <p className="mb-4 border-l-4 border-[#00a651] bg-green-50 px-3 py-2 text-[13px] text-green-800">{done}</p>}
