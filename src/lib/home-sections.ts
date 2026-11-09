@@ -114,9 +114,10 @@ export type HeroSide = 'banner-esquerda' | 'cards-esquerda';
 export type HomeAd = { id: string; image: string; link: string };
 /** Estilo do destaque: banner e dois cards (de origem), ou banner e uma lista que desliza para cima. */
 export type HeroStyle = 'cards' | 'lista' | 'carrossel' | 'carrossel-conteudo';
-export type HomeOptions = { heroSide: HeroSide; heroStyle: HeroStyle; ads: HomeAd[] };
+/** `hidden`: secções desligadas (olho no painel): continuam na lista mas não aparecem no site. */
+export type HomeOptions = { heroSide: HeroSide; heroStyle: HeroStyle; ads: HomeAd[]; hidden: string[] };
 
-export const defaultHomeOptions = (): HomeOptions => ({ heroSide: 'banner-esquerda', heroStyle: 'cards', ads: [] });
+export const defaultHomeOptions = (): HomeOptions => ({ heroSide: 'banner-esquerda', heroStyle: 'cards', ads: [], hidden: [] });
 
 const okUrl = (u: string) => u === '' || (u.length <= 500 && (/^https?:\/\/\S+$/i.test(u) || /^\/[^\s/]\S*$/.test(u)));
 
@@ -130,5 +131,7 @@ export function normalizeHomeOptions(raw: unknown): HomeOptions {
     const link = typeof o.link === 'string' ? o.link.trim() : '';
     if (isAdId(id) && !ads.some((x) => x.id === id) && okUrl(image) && okUrl(link) && ads.length < 20) ads.push({ id, image, link });
   }
-  return { heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', heroStyle: r.heroStyle === 'lista' ? 'lista' : r.heroStyle === 'carrossel' ? 'carrossel' : r.heroStyle === 'carrossel-conteudo' ? 'carrossel-conteudo' : 'cards', ads };
+  const known = new Set(HOME_SECTIONS.map((s) => s.id));
+  const hidden = (Array.isArray(r.hidden) ? (r.hidden as unknown[]) : []).filter((id, i, all): id is string => typeof id === 'string' && (known.has(id) || isAdId(id)) && all.indexOf(id) === i);
+  return { hidden, heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', heroStyle: r.heroStyle === 'lista' ? 'lista' : r.heroStyle === 'carrossel' ? 'carrossel' : r.heroStyle === 'carrossel-conteudo' ? 'carrossel-conteudo' : 'cards', ads };
 }

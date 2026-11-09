@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, LayoutTemplate, Megaphone, Plus, RotateCcw, Save, Upload, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Eye, EyeOff, LayoutTemplate, Megaphone, Plus, RotateCcw, Save, Upload, X } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import AdminSelect from '@/components/Admin/AdminSelect';
 import { uploadToLibrary } from '@/components/Admin/ImageChooser';
@@ -45,7 +45,7 @@ const btn = 'flex h-9 items-center gap-1.5 px-4 text-[13px] disabled:cursor-not-
 
 /** Secções da página inicial, dispostas como no site: topo, coluna principal e barra lateral (duas vezes) e fim. As setas mudam a posição, o selector a categoria e cada zona aceita espaços de publicidade. */
 export default function HomeSeccoesPage() {
-  const first = adminCacheGet<State>('home-sections-v3');
+  const first = adminCacheGet<State>('home-sections-v4');
   const [saved, setSaved] = useState<State | null>(first ?? null);
   const [draft, setDraft] = useState<State | null>(first ?? null);
   const [options, setCategoryOptions] = useState<CategoryOption[]>([]);
@@ -61,7 +61,7 @@ export default function HomeSeccoesPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao carregar as secções.');
         const st = parse(data);
-        adminCacheSet('home-sections-v3', st);
+        adminCacheSet('home-sections-v4', st);
         setSaved(st);
         setDraft((cur) => cur ?? st);
       })
@@ -95,6 +95,9 @@ export default function HomeSeccoesPage() {
 
   const setCategory = (key: string, list: string[]) => edit((cur) => ({ ...cur, categories: { ...cur.categories, [key]: list } }));
   const setHeroStyle = (heroStyle: HeroStyle) => edit((cur) => ({ ...cur, options: { ...cur.options, heroStyle } }));
+  /** Olho: desliga a secção da home (fica na lista, mas não aparece no site) ou volta a ligá-la. */
+  const toggleHidden = (id: string) =>
+    edit((cur) => ({ ...cur, options: { ...cur.options, hidden: cur.options.hidden.includes(id) ? cur.options.hidden.filter((x) => x !== id) : [...cur.options.hidden, id] } }));
   const setHeroSide = (heroSide: HeroSide) => edit((cur) => ({ ...cur, options: { ...cur.options, heroSide } }));
 
   const addAd = (zone: HomeZone) =>
@@ -110,7 +113,7 @@ export default function HomeSeccoesPage() {
     edit((cur) => ({
       ...cur,
       layout: Object.fromEntries(HOME_ZONES.map((z) => [z.id, cur.layout[z.id].filter((x) => x !== id)])) as HomeLayout,
-      options: { ...cur.options, ads: cur.options.ads.filter((a) => a.id !== id) },
+      options: { ...cur.options, ads: cur.options.ads.filter((a) => a.id !== id), hidden: cur.options.hidden.filter((x) => x !== id) },
     }));
   const setAd = (id: string, patch: Partial<HomeAd>) =>
     edit((cur) => ({ ...cur, options: { ...cur.options, ads: cur.options.ads.map((a) => (a.id === id ? { ...a, ...patch } : a)) } }));
@@ -131,7 +134,7 @@ export default function HomeSeccoesPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Não foi possível guardar.');
       const st = parse(data);
-      adminCacheSet('home-sections-v3', st);
+      adminCacheSet('home-sections-v4', st);
       setSaved(st);
       setDraft(st);
       setDone(body === null ? 'Posição, categorias e publicidade de origem repostas' : 'Guardado: a página inicial já mostra as alterações');
@@ -174,7 +177,7 @@ export default function HomeSeccoesPage() {
               <li key={id} className="px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className="w-5 shrink-0 text-[13px] text-gray-400">{i + 1}</span>
-                  <span className="flex min-w-0 flex-1 items-center gap-1.5 text-[13px] text-[#1d2327]">
+                  <span className={`flex min-w-0 flex-1 items-center gap-1.5 text-[13px] text-[#1d2327]${draft.options.hidden.includes(id) ? ' opacity-50' : ''}`}>
                     {isAdId(id) && <Megaphone className="h-4 w-4 shrink-0 text-[#d6101c]" />}
                     <span className="truncate">{isAdId(id) ? 'Espaço de publicidade' : rowLabel(id)}</span>
                   </span>
@@ -183,6 +186,16 @@ export default function HomeSeccoesPage() {
                       <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare heroStyle={draft.options.heroStyle} />
                     </div>
                   )}
+                  <button
+                    type="button"
+                    aria-label={draft.options.hidden.includes(id) ? 'Ligar na página inicial' : 'Desligar da página inicial'}
+                    title={draft.options.hidden.includes(id) ? 'Desligada: não aparece no site' : 'Ligada: aparece no site'}
+                    aria-pressed={draft.options.hidden.includes(id)}
+                    onClick={() => toggleHidden(id)}
+                    className={`${arrow}${draft.options.hidden.includes(id) ? ' text-[#d63638]' : ''}`}
+                  >
+                    {draft.options.hidden.includes(id) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                   {list.length > 1 && (
                     <>
                       <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => shift(zone, i, -1)} className={arrow}>
@@ -261,7 +274,7 @@ export default function HomeSeccoesPage() {
       </div>
 
       <p className="mb-4 text-[13px] text-gray-600">
-        Está organizada como a página do site. Use as setas para mudar a posição, o selector para escolher a categoria de cada secção e adicione espaços de publicidade onde quiser. Só muda no site depois de guardar.
+        Está organizada como a página do site. Use as setas para mudar a posição, o olho para desligar uma secção do site, o selector para escolher a categoria de cada secção e adicione espaços de publicidade onde quiser. Só muda no site depois de guardar.
       </p>
 
       {error && <p className="mb-4 border-l-4 border-[#d63638] bg-red-50 px-3 py-2 text-[13px] text-red-800">{error}</p>}

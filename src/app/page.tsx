@@ -326,14 +326,16 @@ export default async function HomePrincipal() {
     ),
   };
   const adOf = (id: string) => options.ads.find((a) => a.id === id);
+  // Secções desligadas no painel (olho) não aparecem.
+  const visible = (zone: HomeZone) => layout[zone].filter((id) => !options.hidden.includes(id));
   const render = (zone: HomeZone) =>
-    layout[zone].map((id) => (
+    visible(zone).map((id) => (
       <React.Fragment key={id}>{isAdId(id) ? <HomeAd image={adOf(id)?.image} link={adOf(id)?.link} /> : sections[id]}</React.Fragment>
     ));
   // Duas secções de colunas (coluna principal + barra lateral), cada uma com a sua barra lateral fixa.
   const columns = (main: HomeZone, side: HomeZone) => {
-    const hasMain = layout[main].length > 0;
-    const hasSide = layout[side].length > 0;
+    const hasMain = visible(main).length > 0;
+    const hasSide = visible(side).length > 0;
     if (!hasMain && !hasSide) return null;
     return (
       <div className={`grid gap-3 ${hasMain && hasSide ? 'lg:grid-cols-[1fr_340px]' : ''}`}>
