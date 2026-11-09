@@ -14,7 +14,7 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 const ICONS: Record<string, LucideIcon> = { sprout: Sprout, tractor: Tractor, users: Users, briefcase: Briefcase, lightbulb: Lightbulb, apple: Apple, leaf: Leaf, palmtree: Palmtree, 'flower-2': Flower2, utensils: Utensils, tag: Tag };
 
 type Card = { slug: string; title: string; category: string; categorySlug: string; color: string; date: string; image: string | null; excerpt: string };
-export type AgendaItem = { id: string; name?: string; at: string; slugs: string[]; status: 'pending' | 'sending' | 'sent' | 'failed'; result?: string; posts: Card[] };
+export type AgendaItem = { id: string; name?: string; repeat?: { days: number[] }; at: string; slugs: string[]; status: 'pending' | 'sending' | 'sent' | 'failed'; result?: string; posts: Card[] };
 
 const fmt = (iso: string) => new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' });
 const btn = 'flex h-9 items-center justify-center gap-2 px-4 rounded-md whitespace-nowrap text-[13px]';
@@ -44,12 +44,36 @@ function dayOptions(extra?: string) {
   return list;
 }
 
-function WhenPicker({ day, hour, minute, onChange, extraDay }: { day: string; hour: string; minute: string; onChange: (v: { day: string; hour: string; minute: string }) => void; extraDay?: string }) {
+const WEEK: [string, number][] = [['Seg', 1], ['Ter', 2], ['Qua', 3], ['Qui', 4], ['Sex', 5], ['Sáb', 6], ['Dom', 0]];
+const daysLabel = (days: number[]) => {
+  const d = [...days].sort();
+  if (d.length === 7) return 'todos os dias';
+  if (d.length === 5 && [1, 2, 3, 4, 5].every((x) => d.includes(x))) return 'dias úteis';
+  return WEEK.filter(([, n]) => d.includes(n)).map(([l]) => l).join(', ');
+};
+
+/** Escolha dos dias da semana de um horário fixo (pelo menos um). */
+function DaysPicker({ days, onChange }: { days: number[]; onChange: (d: number[]) => void }) {
+  return (
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Dias da semana">
+      {WEEK.map(([label, n]) => {
+        const on = days.includes(n);
+        return (
+          <button key={n} type="button" aria-pressed={on} onClick={() => { const next = on ? days.filter((x) => x !== n) : [...days, n]; if (next.length) onChange(next); }} className={`h-8 min-w-11 border px-2 text-[12px] ${on ? 'border-[#00a651] bg-[#00a651] text-white' : 'border-[#ccd0d4] bg-white text-[#50575e] hover:text-[#00a651]'}`}>{label}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+function WhenPicker({ day, hour, minute, onChange, extraDay, hideDay = false }: { day: string; hour: string; minute: string; onChange: (v: { day: string; hour: string; minute: string }) => void; extraDay?: string; hideDay?: boolean }) {
   return (
     <>
-      <AdminSelect value={day} onChange={(e) => onChange({ day: e.target.value, hour, minute })} className={`${pick} w-full sm:w-64`}>
-        {dayOptions(extraDay).map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
-      </AdminSelect>
+      {!hideDay && (
+        <AdminSelect value={day} onChange={(e) => onChange({ day: e.target.value, hour, minute })} className={`${pick} w-full sm:w-64`}>
+          {dayOptions(extraDay).map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+        </AdminSelect>
+      )}
       <div className="flex items-center gap-2 max-sm:w-full">
         <AdminSelect value={hour} onChange={(e) => onChange({ day, hour: e.target.value, minute })} className={`${pick} w-20 max-sm:flex-1`}>
           {HOURS.map((h) => <option key={h} value={h}>{h}</option>)}
@@ -228,6 +252,7 @@ function ScheduleBox({ item, subscribers, smtp, busy, act }: { item: AgendaItem;
   const [editing, setEditing] = useState(false);
   const [when, setWhen] = useState(now);
   const [nameEdit, setNameEdit] = useState(item.name ?? '');
+  const [daysEdit, setDaysEdit] = useState<number[]>(item.repeat?.days ?? [0, 1, 2, 3, 4, 5, 6]);
   const [confirmSend, setConfirmSend] = useState(false);
 
   return (
@@ -235,13 +260,14 @@ function ScheduleBox({ item, subscribers, smtp, busy, act }: { item: AgendaItem;
       <div className="flex flex-wrap items-center gap-2 bg-[#f6f7f7] p-3">
         <CalendarClock className="h-4 w-4 shrink-0 text-[#50575e]" />
         {item.name && <span className="text-[14px] font-bold text-[#1d2327] max-sm:text-[17px]">{item.name} ·</span>}
-        <span className="text-[14px] text-[#1d2327] max-sm:text-[17px]">{fmt(item.at)}</span>
+        <span className="text-[12px] text-[#1d2327] max-sm:text-[15px]">{fmt(item.at)}</span>
+        {item.repeat && <span className="border border-[#00a651] px-2 py-0.5 text-[11px] text-[#008f45]">Fixo · {daysLabel(item.repeat.days)}</span>}
         <span className="text-[13px] text-[#50575e] max-sm:basis-full" title={item.result}>
           {STATUS[item.status]} · {item.posts.length} {item.posts.length === 1 ? 'notícia' : 'notícias'}{item.result && !pending ? ` · ${item.result}` : ''}
         </span>
         {pending && (
           <div className="ml-auto flex flex-wrap items-center gap-2 max-sm:ml-0 max-sm:w-full max-sm:flex-nowrap">
-            {!editing && <button onClick={() => { setWhen(now); setNameEdit(item.name ?? ''); setEditing(true); }} className={`${btn} justify-center border border-[#ccd0d4] bg-white hover:text-[#00a651] max-sm:min-w-0 max-sm:flex-1 max-sm:px-2`}><Pencil className="h-4 w-4 max-sm:hidden" /> Alterar hora</button>}
+            {!editing && <button onClick={() => { setWhen(now); setNameEdit(item.name ?? ''); setDaysEdit(item.repeat?.days ?? daysEdit); setEditing(true); }} className={`${btn} justify-center border border-[#ccd0d4] bg-white hover:text-[#00a651] max-sm:min-w-0 max-sm:flex-1 max-sm:px-2`}><Pencil className="h-4 w-4 max-sm:hidden" /> Alterar hora</button>}
             <div className={`flex items-center gap-2 ${confirmSend ? 'flex-wrap max-sm:w-full' : 'max-sm:min-w-0 max-sm:flex-[2] max-sm:flex-nowrap'}`}>
               {confirmSend ? (
                 <>
@@ -259,9 +285,10 @@ function ScheduleBox({ item, subscribers, smtp, busy, act }: { item: AgendaItem;
       </div>
       {pending && editing && (
         <div className="flex flex-wrap items-center gap-2 border-t border-[#ccd0d4] p-3">
-          <input value={nameEdit} onChange={(e) => setNameEdit(e.target.value)} maxLength={40} placeholder="Nome (opcional)" className="h-9 w-48 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
-          <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} extraDay={now.day} />
-          <button onClick={async () => { if (await act({ id: item.id, at: toIso(when.day, when.hour, when.minute), name: nameEdit }, 'Horário alterado.')) setEditing(false); }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50`}><Save className="h-4 w-4" /> Gravar hora</button>
+          <input value={nameEdit} onChange={(e) => setNameEdit(e.target.value)} maxLength={40} placeholder="Nome (opcional)" className="h-9 w-72 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
+          {item.repeat && <DaysPicker days={daysEdit} onChange={setDaysEdit} />}
+          <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} extraDay={now.day} hideDay={Boolean(item.repeat)} />
+          <button onClick={async () => { if (await act({ id: item.id, at: toIso(when.day, when.hour, when.minute), name: nameEdit, ...(item.repeat ? { fixed: true, days: daysEdit } : {}) }, 'Horário alterado.')) setEditing(false); }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50`}><Save className="h-4 w-4" /> Gravar hora</button>
           <button onClick={() => setEditing(false)} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651]`}>Cancelar</button>
         </div>
       )}
@@ -300,10 +327,10 @@ function useAgenda(onChange: () => Promise<void>, setNotice: (v: string | null) 
       const data = await call(cancel ? 'DELETE' : 'PATCH', rest);
       return data.result ? String(data.result) : ok;
     });
-  const create = (at: string, name = '') =>
+  const create = (at: string, name = '', fixedDays?: number[]) =>
     run(async () => {
-      const data = await call('POST', { at, name });
-      return `Horário gravado: ${data.schedule.name ? `${data.schedule.name} · ` : ''}${fmt(data.schedule.at)}. Na lista de notícias, use «Agendar» para juntar notícias a este envio.`;
+      const data = await call('POST', { at, name, ...(fixedDays ? { fixed: true, days: fixedDays } : {}) });
+      return `${fixedDays ? `Horário fixo gravado (${daysLabel(fixedDays)}): ` : 'Horário gravado: '}${data.schedule.name ? `${data.schedule.name} · ` : ''}${fmt(data.schedule.at)}. Na lista de notícias, use «Agendar» para juntar notícias a este envio.`;
     });
   return { busy, act, create };
 }
@@ -323,6 +350,8 @@ export default function NewsletterAgenda({ schedules, subscribers, smtp, onChang
   const [when, setWhen] = useState({ day: dayOptions()[0].value, hour: '18', minute: '30' });
   const [adding, setAdding] = useState(false);
   const [nameNew, setNameNew] = useState('');
+  const [fixedNew, setFixedNew] = useState(false);
+  const [daysNew, setDaysNew] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const open = schedules.filter((s) => s.status === 'pending' || s.status === 'sending');
 
   return (
@@ -337,9 +366,13 @@ export default function NewsletterAgenda({ schedules, subscribers, smtp, onChang
         </div>
         {adding && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <input value={nameNew} onChange={(e) => setNameNew(e.target.value)} maxLength={40} placeholder="Nome (opcional), ex.: Hora matinal" className="h-9 w-56 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
-            <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} />
-            <button onClick={async () => { if (await create(toIso(when.day, when.hour, when.minute), nameNew)) { setAdding(false); setNameNew(''); } }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50 max-sm:w-full`}><Save className="h-4 w-4" /> Gravar horário</button>
+            <input value={nameNew} onChange={(e) => setNameNew(e.target.value)} maxLength={40} placeholder="Nome (opcional), ex.: Hora matinal" className="h-9 w-80 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
+            <label className="flex h-9 cursor-pointer items-center gap-2 text-[13px] text-[#1d2327] max-sm:w-full">
+              <input type="checkbox" checked={fixedNew} onChange={(e) => setFixedNew(e.target.checked)} /> Horário fixo (repete)
+            </label>
+            {fixedNew && <DaysPicker days={daysNew} onChange={setDaysNew} />}
+            <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} hideDay={fixedNew} />
+            <button onClick={async () => { if (await create(toIso(when.day, when.hour, when.minute), nameNew, fixedNew ? daysNew : undefined)) { setAdding(false); setNameNew(''); setFixedNew(false); } }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50 max-sm:w-full`}><Save className="h-4 w-4" /> Gravar horário</button>
           </div>
         )}
       </div>
@@ -367,7 +400,7 @@ export function NewsletterPreviews({ schedules, subscribers, smtp, onChange, set
       {open.map((s) => (
         <section key={s.id}>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
-            <h3 className="font-normal text-[#1d2327]"><span className="font-bold max-sm:block">Envio agendado:</span> <span className="max-sm:block">{s.name ? `${s.name} · ` : ''}{fmt(s.at)} · {s.posts.length} {s.posts.length === 1 ? 'notícia' : 'notícias'}</span></h3>
+            <h3 className="font-normal text-[#1d2327]"><span className="font-bold max-sm:block">Envio agendado:</span> <span className="max-sm:block">{s.name ? `${s.name} · ` : ''}{fmt(s.at)}{s.repeat ? ' (fixo)' : ''} · {s.posts.length} {s.posts.length === 1 ? 'notícia' : 'notícias'}</span></h3>
             {confirmId === s.id ? (
               <div className="flex flex-wrap items-center gap-2 text-[13px]">
                 <span>Enviar já a {subscribers} subscritores?</span>

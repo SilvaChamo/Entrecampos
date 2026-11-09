@@ -287,6 +287,8 @@ export type Schedule = {
   id: string;
   /** Nome opcional do horário (por exemplo «Hora matinal»), para o reconhecer ao agendar. */
   name?: string;
+  /** Horário fixo: repete-se nos dias indicados (0 = domingo … 6 = sábado, hora de Maputo); `at` é sempre a próxima vez. */
+  repeat?: { days: number[] };
   /** Momento do envio (ISO). A hora é a de Maputo (UTC+2, sem hora de verão). */
   at: string;
   slugs: string[];
@@ -311,11 +313,34 @@ async function saveSchedules(list: Schedule[]) {
   if (error) throw new Error(error.message);
 }
 
+const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
+const cleanDays = (v: unknown): number[] => {
+  const d = Array.isArray(v) ? [...new Set(v.map(Number).filter((n) => Number.isInteger(n) && n >= 0 && n <= 6))].sort() : [];
+  return d.length ? d : ALL_DAYS;
+};
+/** Hora e minuto (de Maputo, UTC+2) de um momento ISO. */
+const maputoHM = (iso: string): [number, number] => {
+  const t = new Date(new Date(iso).getTime() + 2 * 3600_000);
+  return [t.getUTCHours(), t.getUTCMinutes()];
+};
+/** Próxima vez, depois de `from` (ms), em que dá a hora e o minuto (de Maputo) num dos dias indicados. */
+export function nextOccurrence(from: number, hour: number, minute: number, days: number[]): string {
+  const base = new Date(from + 2 * 3600_000);
+  for (let i = 0; i < 9; i++) {
+    const wall = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate() + i, hour, minute));
+    const ms = wall.getTime() - 2 * 3600_000;
+    if (ms > from && days.includes(wall.getUTCDay())) return new Date(ms).toISOString();
+  }
+  return new Date(from + 86400_000).toISOString();
+}
+
 const cleanName = (v: unknown) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 40);
 
-export async function addSchedule(at: string, slugs: string[], name?: string): Promise<Schedule> {
+export async function addSchedule(at: string, slugs: string[], name?: string, repeat?: { days: unknown }): Promise<Schedule> {
   const list = await loadSchedules();
-  const item: Schedule = { id: Math.random().toString(36).slice(2, 10) + Date.now().toString(36), at, slugs: [...new Set(slugs)], ...(cleanName(name) ? { name: cleanName(name) } : {}), status: 'pending', createdAt: new Date().toISOString() };
+  const days = repeat ? cleanDays(repeat.days) : null;
+  const atFinal = days ? nextOccurrence(Date.now(), ...maputoHM(at), days) : at;
+  const item: Schedule = { id: Math.random().toString(36).slice(2, 10) + Date.now().toString(36), at: atFinal, slugs: [...new Set(slugs)], ...(days ? { repeat: { days } } : {}), ...(cleanName(name) ? { name: cleanName(name) } : {}), status: 'pending', createdAt: new Date().toISOString() };
   // Mantém os pendentes e os 30 últimos já tratados.
   const done = list.filter((s) => s.status !== 'pending').slice(0, 30);
   await saveSchedules([item, ...list.filter((s) => s.status === 'pending'), ...done]);
@@ -328,7 +353,7 @@ export async function removeSchedule(id: string) {
 }
 
 /** Altera um agendamento ainda pendente: nova hora, juntar ou tirar uma notícia, ou mudá-la de posição. */
-export async function updateSchedule(id: string, patch: { at?: string; name?: string; add?: string; remove?: string; move?: { slug: string; dir: -1 | 1 } }): Promise<Schedule> {
+export async function updateSchedule(id: string, patch: { at?: string; name?: string; days?: number[]; add?: string; remove?: string; move?: { slug: string; dir: -1 | 1 } }): Promise<Schedule> {
   const list = await loadSchedules();
   const item = list.find((s) => s.id === id);
   if (!item) throw new Error('Agendamento não encontrado.');
@@ -338,6 +363,11 @@ export async function updateSchedule(id: string, patch: { at?: string; name?: st
     const n = cleanName(patch.name);
     if (n) item.name = n;
     else delete item.name;
+  }
+  if (item.repeat) {
+    // Horário fixo: mudar a hora ou os dias recalcula a próxima vez.
+    if (patch.days) item.repeat = { days: cleanDays(patch.days) };
+    if (patch.at || patch.days) item.at = nextOccurrence(Date.now(), ...maputoHM(patch.at ?? item.at), item.repeat.days);
   }
   if (patch.add && !item.slugs.includes(patch.add) && item.slugs.length < MAX_NEWS) item.slugs.push(patch.add);
   if (patch.remove) item.slugs = item.slugs.filter((x) => x !== patch.remove);
@@ -382,7 +412,20 @@ async function dispatch(s: Schedule): Promise<string> {
 
 async function finish(id: string, result: string, ok: boolean) {
   const fresh = await loadSchedules();
-  await saveSchedules(fresh.map((s) => (s.id === id ? { ...s, status: ok ? ('sent' as const) : ('failed' as const), result } : s)));
+  // Horário fixo: o que foi enviado fica no histórico como um envio normal (o horário em si volta vazio para a próxima vez).
+  const fixed = fresh.find((s) => s.id === id && s.repeat && s.slugs.length > 0);
+  const history: Schedule[] = fixed
+    ? [{ id: `${fixed.id}-${Date.now().toString(36)}`, ...(fixed.name ? { name: fixed.name } : {}), at: fixed.at, slugs: fixed.slugs, status: ok ? 'sent' : 'failed', createdAt: fixed.createdAt, result }]
+    : [];
+  await saveSchedules([
+    ...history,
+    ...fresh.map((s) => {
+      if (s.id !== id) return s;
+      // Horário fixo: o resultado fica registado e o horário volta, sem notícias, para a próxima vez (o que acontece depois da hora e do envio de agora).
+      if (s.repeat) return { ...s, status: 'pending' as const, slugs: [], result, at: nextOccurrence(Math.max(Date.now(), new Date(s.at).getTime()) + 60_000, ...maputoHM(s.at), s.repeat.days) };
+      return { ...s, status: ok ? ('sent' as const) : ('failed' as const), result };
+    }),
+  ]);
 }
 
 /** Envia já um agendamento (botão "Enviar agora" do painel). */

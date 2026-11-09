@@ -9,6 +9,11 @@ const future = (value: unknown) => {
   const at = new Date(String(value ?? ''));
   return Number.isNaN(at.getTime()) || at.getTime() <= Date.now() ? null : at.toISOString();
 };
+/** Horários fixos aceitam qualquer data válida: só interessa a hora (a próxima vez calcula-se no servidor). */
+const anyDate = (value: unknown) => {
+  const at = new Date(String(value ?? ''));
+  return Number.isNaN(at.getTime()) ? null : at.toISOString();
+};
 const fail = (err: unknown, fallback: string) => NextResponse.json({ error: err instanceof Error ? err.message : fallback }, { status: 502 });
 
 /** Horários de envio ainda por enviar (para escolher a que envio anexar uma notícia). */
@@ -17,7 +22,7 @@ export async function GET() {
   if ('error' in guard) return guard.error;
   try {
     const pending = (await loadSchedules()).filter((s) => s.status === 'pending').sort((a, b) => a.at.localeCompare(b.at));
-    return NextResponse.json({ schedules: pending.map((s) => ({ id: s.id, name: s.name, at: s.at, slugs: s.slugs })) });
+    return NextResponse.json({ schedules: pending.map((s) => ({ id: s.id, name: s.name, at: s.at, slugs: s.slugs, repeat: s.repeat })) });
   } catch (err) {
     return fail(err, 'Não foi possível carregar os agendamentos.');
   }
@@ -28,11 +33,12 @@ export async function POST(req: NextRequest) {
   const guard = await requireAuth('acesso_total');
   if ('error' in guard) return guard.error;
   const body = await req.json().catch(() => ({}));
-  const at = future(body.at);
-  if (!at) return NextResponse.json({ error: 'Escolha uma hora que ainda não passou.' }, { status: 400 });
+  const fixed = body.fixed === true;
+  const at = fixed ? anyDate(body.at) : future(body.at);
+  if (!at) return NextResponse.json({ error: fixed ? 'Escolha a hora do horário fixo.' : 'Escolha uma hora que ainda não passou.' }, { status: 400 });
   const slugs: string[] = Array.isArray(body.slugs) ? body.slugs.map(String).slice(0, 20) : [];
   try {
-    return NextResponse.json({ ok: true, schedule: await addSchedule(at, slugs, typeof body.name === 'string' ? body.name : undefined) });
+    return NextResponse.json({ ok: true, schedule: await addSchedule(at, slugs, typeof body.name === 'string' ? body.name : undefined, fixed ? { days: body.days } : undefined) });
   } catch (err) {
     return fail(err, 'Não foi possível gravar o agendamento.');
   }
@@ -48,13 +54,14 @@ export async function PATCH(req: NextRequest) {
     if (body.send === true) return NextResponse.json({ ok: true, result: await runSchedule(body.id) });
     let at: string | undefined;
     if (body.at !== undefined) {
-      at = future(body.at) ?? undefined;
+      at = (body.fixed === true ? anyDate(body.at) : future(body.at)) ?? undefined;
       if (!at) return NextResponse.json({ error: 'Escolha uma hora que ainda não passou.' }, { status: 400 });
     }
     const dir = body.move?.dir === 1 ? 1 : body.move?.dir === -1 ? -1 : null;
     const schedule = await updateSchedule(body.id, {
       at,
       name: typeof body.name === 'string' ? body.name : undefined,
+      days: Array.isArray(body.days) ? body.days.map(Number) : undefined,
       add: typeof body.add === 'string' ? body.add : undefined,
       remove: typeof body.remove === 'string' ? body.remove : undefined,
       move: dir && typeof body.move?.slug === 'string' ? { slug: body.move.slug, dir } : undefined,

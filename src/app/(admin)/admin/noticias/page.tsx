@@ -68,20 +68,14 @@ export default function NewsAdminPage() {
   const { user } = useAuth();
   const router = useRouter();
   // Agendar na newsletter: escolher a que envio agendado se junta a notícia (só o administrador).
-  const [sched, setSched] = useState<{ item: NewsItem; slots: { id: string; name?: string; at: string; slugs: string[] }[] | null; msg: string | null; err: boolean } | null>(null);
+  const [sched, setSched] = useState<{ item: NewsItem; slots: { id: string; name?: string; repeat?: { days: number[] }; at: string; slugs: string[] }[] | null; msg: string | null; err: boolean } | null>(null);
   const openSchedule = async (item: NewsItem) => {
     setSched({ item, slots: null, msg: null, err: false });
     try {
       const res = await fetch('/api/admin/newsletter/agenda', { credentials: 'include', cache: 'no-store' });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `Erro ${res.status}.`);
-      // Sem nenhum envio agendado não há onde juntar a notícia: leva logo ao separador Agendamento da newsletter.
-      if (!Array.isArray(body.schedules) || body.schedules.length === 0) {
-        setSched(null);
-        router.push('/admin/newsletter?aba=agenda');
-        return;
-      }
-      setSched({ item, slots: body.schedules, msg: null, err: false });
+      setSched({ item, slots: Array.isArray(body.schedules) ? body.schedules : [], msg: null, err: false });
     } catch (e) {
       setSched({ item, slots: [], msg: e instanceof Error ? e.message : 'Não foi possível carregar os horários.', err: true });
     }
@@ -827,14 +821,14 @@ export default function NewsAdminPage() {
               {sched.slots === null ? (
                 <p className="p-4 text-center text-[13px] text-[#50575e]">A carregar os horários...</p>
               ) : sched.slots.length === 0 ? (
-                <p className="p-4 text-center text-[13px] text-[#50575e]">Ainda não há envios agendados. Crie um horário em <Link href="/admin/newsletter" className="text-[#008f45] hover:underline">Newsletter › Agendamento</Link>.</p>
+                <p className="p-4 text-center text-[13px] text-[#50575e]">Ainda não há envios agendados.</p>
               ) : (
                 sched.slots.map((x) => {
                   const joined = x.slugs.includes(sched.item.slug);
                   return (
                     <button key={x.id} type="button" disabled={joined} onClick={() => attachToSchedule(x.id)} className="flex h-11 w-full items-center justify-between gap-3 border-b border-[#f0f0f1] px-4 text-left text-[13px] hover:text-[#00a651] disabled:text-[#008f45]">
                       <span>{x.name ? <strong>{x.name} · </strong> : null}{new Date(x.at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' })}</span>
-                      <span className="text-[12px] text-[#50575e]">{joined ? 'Já está neste envio' : `${x.slugs.length} ${x.slugs.length === 1 ? 'notícia' : 'notícias'}`}</span>
+                      <span className="text-[12px] text-[#50575e]">{x.repeat ? 'Fixo · ' : ''}{joined ? 'Já está neste envio' : `${x.slugs.length} ${x.slugs.length === 1 ? 'notícia' : 'notícias'}`}</span>
                     </button>
                   );
                 })
@@ -842,6 +836,9 @@ export default function NewsAdminPage() {
             </div>
             {sched.msg && <p className={`border-t border-[#ccd0d4] px-4 py-2 text-[13px] ${sched.err ? 'text-red-700' : 'text-green-800'}`}>{sched.msg}</p>}
             <div className="flex justify-end border-t border-[#ccd0d4] p-3">
+              {sched.slots !== null && sched.slots.length === 0 && !sched.err && (
+                <button type="button" onClick={() => { setSched(null); router.push('/admin/newsletter?aba=agenda'); }} className="mr-2 h-9 bg-[#00a651] px-4 text-[13px] text-white hover:bg-[#008f45]">Definir horário</button>
+              )}
               <button type="button" onClick={() => setSched(null)} className="h-9 border border-[#ccd0d4] bg-white px-4 text-[13px] hover:text-[#00a651]">Fechar</button>
             </div>
           </div>
