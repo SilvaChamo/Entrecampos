@@ -252,7 +252,7 @@ export default function NewsletterPage() {
           {tab === 'news' && (
             <>
           {/* Fila: notícias novas que seguem na próxima newsletter */}
-          <div className={data.queue.length === 0 && data.schedules.some((x) => x.status === 'pending' && x.posts.length > 0) ? 'hidden' : 'mb-6'}>
+          <div className={data.queue.length === 0 && data.schedules.some((x) => x.status === 'pending') ? 'hidden' : 'mb-6'}>
             <div className="mb-3 flex flex-wrap items-center justify-end gap-3">
               {confirmSend ? (
                 <div className="flex items-center gap-2 text-[13px]">
@@ -271,7 +271,7 @@ export default function NewsletterPage() {
               )}
             </div>
             {data.queue.length === 0 ? (
-              data.schedules.some((x) => x.status === 'pending' && x.posts.length > 0) ? null : <div className="rounded-lg border border-[#ccd0d4] bg-white p-6 text-center text-[13px] text-[#50575e]">Sem notícias novas desde o último envio.</div>
+              data.schedules.some((x) => x.status === 'pending') ? null : <div className="rounded-lg border border-[#ccd0d4] bg-white p-6 text-center text-[13px] text-[#50575e]">Sem notícias novas desde o último envio.</div>
             ) : (
               <ul className="grid grid-flow-dense gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
                 {data.queue.map((n, idx) => (
