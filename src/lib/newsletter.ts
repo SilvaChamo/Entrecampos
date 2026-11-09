@@ -184,8 +184,8 @@ ${more(p)}
 <table role="presentation" width="${EMAIL_WIDTH}" cellpadding="0" cellspacing="0" style="width:100%;max-width:${EMAIL_WIDTH}px">
 ${adRow('topo')}
 <tr><td style="padding:0 0 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-bottom:4px solid ${RED}"><tr>
-<td class="ec-hd" width="118" valign="middle" style="width:118px;padding:10px 0 10px 10px;line-height:0;font-size:0"><a href="${esc(SITE_URL())}"><img src="${esc(SITE_URL())}/images/entrecampos-simbolo.png" alt="${esc(BRAND.name)}" width="108" height="108" style="display:block;width:108px;height:108px;border:0"></a></td>
-<td class="ec-hd ec-hd3" width="1" valign="middle" style="width:1px;padding:0"><div style="width:1px;height:120px;background:#d5d8db;font-size:0;line-height:0">&nbsp;</div></td>
+<td class="ec-hd" width="86" valign="middle" style="width:86px;padding:10px 0 10px 10px;line-height:0;font-size:0"><a href="${esc(SITE_URL())}"><img src="${esc(SITE_URL())}/images/entrecampos-simbolo.png" alt="${esc(BRAND.name)}" width="76" height="76" style="display:block;width:76px;height:76px;border:0"></a></td>
+<td class="ec-hd ec-hd3" width="1" valign="middle" style="width:1px;padding:0"><div style="width:1px;height:76px;background:#d5d8db;font-size:0;line-height:0">&nbsp;</div></td>
 <td class="ec-hd ec-hd2" valign="middle" style="padding:12px 20px;font-size:12px;line-height:1.6;color:#50575e;text-align:left"><div style="margin:0 0 4px;font-size:18px;line-height:1.2;font-weight:bold;color:#1d2327">${esc(BRAND.headline)}</div>${esc(BRAND.address)}<br>${BRAND.phones.map(esc).join(' · ')}<br>${BRAND.emails.map((m) => `<a href="mailto:${esc(m)}" style="color:#50575e;text-decoration:none">${esc(m)}</a>`).join(' · ')}</td>${headerAd}
 </tr></table></td></tr>
 ${adRow('depois')}
