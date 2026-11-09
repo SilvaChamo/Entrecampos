@@ -14,7 +14,7 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 const ICONS: Record<string, LucideIcon> = { sprout: Sprout, tractor: Tractor, users: Users, briefcase: Briefcase, lightbulb: Lightbulb, apple: Apple, leaf: Leaf, palmtree: Palmtree, 'flower-2': Flower2, utensils: Utensils, tag: Tag };
 
 type Card = { slug: string; title: string; category: string; categorySlug: string; color: string; date: string; image: string | null; excerpt: string };
-export type AgendaItem = { id: string; at: string; slugs: string[]; status: 'pending' | 'sending' | 'sent' | 'failed'; result?: string; posts: Card[] };
+export type AgendaItem = { id: string; name?: string; at: string; slugs: string[]; status: 'pending' | 'sending' | 'sent' | 'failed'; result?: string; posts: Card[] };
 
 const fmt = (iso: string) => new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' });
 const btn = 'flex h-9 items-center justify-center gap-2 px-4 rounded-md whitespace-nowrap text-[13px]';
@@ -227,19 +227,21 @@ function ScheduleBox({ item, subscribers, smtp, busy, act }: { item: AgendaItem;
   const now = maputo(item.at);
   const [editing, setEditing] = useState(false);
   const [when, setWhen] = useState(now);
+  const [nameEdit, setNameEdit] = useState(item.name ?? '');
   const [confirmSend, setConfirmSend] = useState(false);
 
   return (
     <section className="border border-[#ccd0d4] bg-white">
       <div className="flex flex-wrap items-center gap-2 bg-[#f6f7f7] p-3">
         <CalendarClock className="h-4 w-4 shrink-0 text-[#50575e]" />
+        {item.name && <span className="text-[14px] font-bold text-[#1d2327] max-sm:text-[17px]">{item.name} ·</span>}
         <span className="text-[14px] text-[#1d2327] max-sm:text-[17px]">{fmt(item.at)}</span>
         <span className="text-[13px] text-[#50575e] max-sm:basis-full" title={item.result}>
           {STATUS[item.status]} · {item.posts.length} {item.posts.length === 1 ? 'notícia' : 'notícias'}{item.result && !pending ? ` · ${item.result}` : ''}
         </span>
         {pending && (
           <div className="ml-auto flex flex-wrap items-center gap-2 max-sm:ml-0 max-sm:w-full max-sm:flex-nowrap">
-            {!editing && <button onClick={() => { setWhen(now); setEditing(true); }} className={`${btn} justify-center border border-[#ccd0d4] bg-white hover:text-[#00a651] max-sm:min-w-0 max-sm:flex-1 max-sm:px-2`}><Pencil className="h-4 w-4 max-sm:hidden" /> Alterar hora</button>}
+            {!editing && <button onClick={() => { setWhen(now); setNameEdit(item.name ?? ''); setEditing(true); }} className={`${btn} justify-center border border-[#ccd0d4] bg-white hover:text-[#00a651] max-sm:min-w-0 max-sm:flex-1 max-sm:px-2`}><Pencil className="h-4 w-4 max-sm:hidden" /> Alterar hora</button>}
             <div className={`flex items-center gap-2 ${confirmSend ? 'flex-wrap max-sm:w-full' : 'max-sm:min-w-0 max-sm:flex-[2] max-sm:flex-nowrap'}`}>
               {confirmSend ? (
                 <>
@@ -257,8 +259,9 @@ function ScheduleBox({ item, subscribers, smtp, busy, act }: { item: AgendaItem;
       </div>
       {pending && editing && (
         <div className="flex flex-wrap items-center gap-2 border-t border-[#ccd0d4] p-3">
+          <input value={nameEdit} onChange={(e) => setNameEdit(e.target.value)} maxLength={40} placeholder="Nome (opcional)" className="h-9 w-48 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
           <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} extraDay={now.day} />
-          <button onClick={async () => { if (await act({ id: item.id, at: toIso(when.day, when.hour, when.minute) }, 'Hora alterada.')) setEditing(false); }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50`}><Save className="h-4 w-4" /> Gravar hora</button>
+          <button onClick={async () => { if (await act({ id: item.id, at: toIso(when.day, when.hour, when.minute), name: nameEdit }, 'Horário alterado.')) setEditing(false); }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50`}><Save className="h-4 w-4" /> Gravar hora</button>
           <button onClick={() => setEditing(false)} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651]`}>Cancelar</button>
         </div>
       )}
@@ -297,10 +300,10 @@ function useAgenda(onChange: () => Promise<void>, setNotice: (v: string | null) 
       const data = await call(cancel ? 'DELETE' : 'PATCH', rest);
       return data.result ? String(data.result) : ok;
     });
-  const create = (at: string) =>
+  const create = (at: string, name = '') =>
     run(async () => {
-      const data = await call('POST', { at });
-      return `Horário gravado: ${fmt(data.schedule.at)}. Na lista de notícias, use «Agendar» para juntar notícias a este envio.`;
+      const data = await call('POST', { at, name });
+      return `Horário gravado: ${data.schedule.name ? `${data.schedule.name} · ` : ''}${fmt(data.schedule.at)}. Na lista de notícias, use «Agendar» para juntar notícias a este envio.`;
     });
   return { busy, act, create };
 }
@@ -319,6 +322,7 @@ export default function NewsletterAgenda({ schedules, subscribers, smtp, onChang
   const { busy, act, create } = useAgenda(onChange, setNotice, setError);
   const [when, setWhen] = useState({ day: dayOptions()[0].value, hour: '18', minute: '30' });
   const [adding, setAdding] = useState(false);
+  const [nameNew, setNameNew] = useState('');
   const open = schedules.filter((s) => s.status === 'pending' || s.status === 'sending');
 
   return (
@@ -333,8 +337,9 @@ export default function NewsletterAgenda({ schedules, subscribers, smtp, onChang
         </div>
         {adding && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
+            <input value={nameNew} onChange={(e) => setNameNew(e.target.value)} maxLength={40} placeholder="Nome (opcional), ex.: Hora matinal" className="h-9 w-56 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
             <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} />
-            <button onClick={async () => { if (await create(toIso(when.day, when.hour, when.minute))) setAdding(false); }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50 max-sm:w-full`}><Save className="h-4 w-4" /> Gravar horário</button>
+            <button onClick={async () => { if (await create(toIso(when.day, when.hour, when.minute), nameNew)) { setAdding(false); setNameNew(''); } }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50 max-sm:w-full`}><Save className="h-4 w-4" /> Gravar horário</button>
           </div>
         )}
       </div>
@@ -362,7 +367,7 @@ export function NewsletterPreviews({ schedules, subscribers, smtp, onChange, set
       {open.map((s) => (
         <section key={s.id}>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
-            <h3 className="font-normal text-[#1d2327]"><span className="font-bold max-sm:block">Envio agendado:</span> <span className="max-sm:block">{fmt(s.at)} · {s.posts.length} {s.posts.length === 1 ? 'notícia' : 'notícias'}</span></h3>
+            <h3 className="font-normal text-[#1d2327]"><span className="font-bold max-sm:block">Envio agendado:</span> <span className="max-sm:block">{s.name ? `${s.name} · ` : ''}{fmt(s.at)} · {s.posts.length} {s.posts.length === 1 ? 'notícia' : 'notícias'}</span></h3>
             {confirmId === s.id ? (
               <div className="flex flex-wrap items-center gap-2 text-[13px]">
                 <span>Enviar já a {subscribers} subscritores?</span>

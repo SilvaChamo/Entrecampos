@@ -17,7 +17,7 @@ export async function GET() {
   if ('error' in guard) return guard.error;
   try {
     const pending = (await loadSchedules()).filter((s) => s.status === 'pending').sort((a, b) => a.at.localeCompare(b.at));
-    return NextResponse.json({ schedules: pending.map((s) => ({ id: s.id, at: s.at, slugs: s.slugs })) });
+    return NextResponse.json({ schedules: pending.map((s) => ({ id: s.id, name: s.name, at: s.at, slugs: s.slugs })) });
   } catch (err) {
     return fail(err, 'Não foi possível carregar os agendamentos.');
   }
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   if (!at) return NextResponse.json({ error: 'Escolha uma hora que ainda não passou.' }, { status: 400 });
   const slugs: string[] = Array.isArray(body.slugs) ? body.slugs.map(String).slice(0, 20) : [];
   try {
-    return NextResponse.json({ ok: true, schedule: await addSchedule(at, slugs) });
+    return NextResponse.json({ ok: true, schedule: await addSchedule(at, slugs, typeof body.name === 'string' ? body.name : undefined) });
   } catch (err) {
     return fail(err, 'Não foi possível gravar o agendamento.');
   }
@@ -54,6 +54,7 @@ export async function PATCH(req: NextRequest) {
     const dir = body.move?.dir === 1 ? 1 : body.move?.dir === -1 ? -1 : null;
     const schedule = await updateSchedule(body.id, {
       at,
+      name: typeof body.name === 'string' ? body.name : undefined,
       add: typeof body.add === 'string' ? body.add : undefined,
       remove: typeof body.remove === 'string' ? body.remove : undefined,
       move: dir && typeof body.move?.slug === 'string' ? { slug: body.move.slug, dir } : undefined,

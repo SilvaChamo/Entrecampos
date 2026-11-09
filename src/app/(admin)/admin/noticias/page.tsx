@@ -68,7 +68,7 @@ export default function NewsAdminPage() {
   const { user } = useAuth();
   const router = useRouter();
   // Agendar na newsletter: escolher a que envio agendado se junta a notícia (só o administrador).
-  const [sched, setSched] = useState<{ item: NewsItem; slots: { id: string; at: string; slugs: string[] }[] | null; msg: string | null; err: boolean } | null>(null);
+  const [sched, setSched] = useState<{ item: NewsItem; slots: { id: string; name?: string; at: string; slugs: string[] }[] | null; msg: string | null; err: boolean } | null>(null);
   const openSchedule = async (item: NewsItem) => {
     setSched({ item, slots: null, msg: null, err: false });
     try {
@@ -833,7 +833,7 @@ export default function NewsAdminPage() {
                   const joined = x.slugs.includes(sched.item.slug);
                   return (
                     <button key={x.id} type="button" disabled={joined} onClick={() => attachToSchedule(x.id)} className="flex h-11 w-full items-center justify-between gap-3 border-b border-[#f0f0f1] px-4 text-left text-[13px] hover:text-[#00a651] disabled:text-[#008f45]">
-                      <span>{new Date(x.at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' })}</span>
+                      <span>{x.name ? <strong>{x.name} · </strong> : null}{new Date(x.at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' })}</span>
                       <span className="text-[12px] text-[#50575e]">{joined ? 'Já está neste envio' : `${x.slugs.length} ${x.slugs.length === 1 ? 'notícia' : 'notícias'}`}</span>
                     </button>
                   );

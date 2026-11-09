@@ -285,6 +285,8 @@ export async function sendSelected(slugs: string[]): Promise<RunResult> {
 const AGENDA_FILE = 'partilhado/_config/newsletter-agenda.json';
 export type Schedule = {
   id: string;
+  /** Nome opcional do horário (por exemplo «Hora matinal»), para o reconhecer ao agendar. */
+  name?: string;
   /** Momento do envio (ISO). A hora é a de Maputo (UTC+2, sem hora de verão). */
   at: string;
   slugs: string[];
@@ -309,9 +311,11 @@ async function saveSchedules(list: Schedule[]) {
   if (error) throw new Error(error.message);
 }
 
-export async function addSchedule(at: string, slugs: string[]): Promise<Schedule> {
+const cleanName = (v: unknown) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 40);
+
+export async function addSchedule(at: string, slugs: string[], name?: string): Promise<Schedule> {
   const list = await loadSchedules();
-  const item: Schedule = { id: Math.random().toString(36).slice(2, 10) + Date.now().toString(36), at, slugs: [...new Set(slugs)], status: 'pending', createdAt: new Date().toISOString() };
+  const item: Schedule = { id: Math.random().toString(36).slice(2, 10) + Date.now().toString(36), at, slugs: [...new Set(slugs)], ...(cleanName(name) ? { name: cleanName(name) } : {}), status: 'pending', createdAt: new Date().toISOString() };
   // Mantém os pendentes e os 30 últimos já tratados.
   const done = list.filter((s) => s.status !== 'pending').slice(0, 30);
   await saveSchedules([item, ...list.filter((s) => s.status === 'pending'), ...done]);
@@ -324,12 +328,17 @@ export async function removeSchedule(id: string) {
 }
 
 /** Altera um agendamento ainda pendente: nova hora, juntar ou tirar uma notícia, ou mudá-la de posição. */
-export async function updateSchedule(id: string, patch: { at?: string; add?: string; remove?: string; move?: { slug: string; dir: -1 | 1 } }): Promise<Schedule> {
+export async function updateSchedule(id: string, patch: { at?: string; name?: string; add?: string; remove?: string; move?: { slug: string; dir: -1 | 1 } }): Promise<Schedule> {
   const list = await loadSchedules();
   const item = list.find((s) => s.id === id);
   if (!item) throw new Error('Agendamento não encontrado.');
   if (item.status !== 'pending') throw new Error('Este envio já não se pode alterar.');
   if (patch.at) item.at = patch.at;
+  if (patch.name !== undefined) {
+    const n = cleanName(patch.name);
+    if (n) item.name = n;
+    else delete item.name;
+  }
   if (patch.add && !item.slugs.includes(patch.add) && item.slugs.length < MAX_NEWS) item.slugs.push(patch.add);
   if (patch.remove) item.slugs = item.slugs.filter((x) => x !== patch.remove);
   if (patch.move) {
