@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   Wrench,
   Archive,
-  Recycle
+  Recycle,
+  X
 } from 'lucide-react';
 import { SkeletonTableRow, SkeletonHeader } from '@/components/Admin/Skeleton';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
@@ -80,15 +81,29 @@ export default function NewsAdminPage() {
       setSched({ item, slots: [], msg: e instanceof Error ? e.message : 'Não foi possível carregar os horários.', err: true });
     }
   };
-  const attachToSchedule = async (slotId: string) => {
-    if (!sched) return;
+  // Agendas marcadas no popup (as que já têm a notícia vêm marcadas); "Adicionar à agenda" aplica as diferenças.
+  const [marcadas, setMarcadas] = useState<string[]>([]);
+  useEffect(() => {
+    if (sched?.slots) setMarcadas(sched.slots.filter((x) => x.slugs.includes(sched.item.slug)).map((x) => x.id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sched?.item.id, sched?.slots === null]);
+  const guardarAgendas = async () => {
+    if (!sched?.slots) return;
+    const slug = sched.item.slug;
+    let slots = sched.slots;
     try {
-      const res = await fetch('/api/admin/newsletter/agenda', { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: slotId, add: sched.item.slug }) });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || `Erro ${res.status}.`);
-      setSched({ ...sched, slots: sched.slots?.map((x) => (x.id === slotId ? body.schedule : x)) ?? null, msg: 'Notícia juntada a este envio.', err: false });
+      for (const x of sched.slots) {
+        const has = x.slugs.includes(slug);
+        const want = marcadas.includes(x.id);
+        if (has === want) continue;
+        const res = await fetch('/api/admin/newsletter/agenda', { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(want ? { id: x.id, add: slug } : { id: x.id, remove: slug }) });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || `Erro ${res.status}.`);
+        slots = slots.map((y) => (y.id === x.id ? body.schedule : y));
+      }
+      setSched({ ...sched, slots, msg: 'Agendas actualizadas.', err: false });
     } catch (e) {
-      setSched({ ...sched, msg: e instanceof Error ? e.message : 'Não foi possível juntar a notícia.', err: true });
+      setSched({ ...sched, slots, msg: e instanceof Error ? e.message : 'Não foi possível actualizar as agendas.', err: true });
     }
   };
   const [ask, setAsk] = useState<{ text: string; done: (ok: boolean) => void } | null>(null);
@@ -813,9 +828,12 @@ export default function NewsAdminPage() {
       {sched && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Agendar na newsletter" onClick={() => setSched(null)}>
           <div className="w-full max-w-md border border-[#ccd0d4] bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="border-b border-[#ccd0d4] bg-[#f6f7f7] px-4 py-3">
-              <div className="text-[13px] text-[#1d2327]">Agendar na newsletter</div>
-              <div className="mt-0.5 line-clamp-2 text-[12px] text-[#50575e]">{sched.item.title}</div>
+            <div className="flex items-start justify-between gap-3 border-b border-[#ccd0d4] bg-[#f6f7f7] px-4 py-3">
+              <div className="min-w-0">
+                <div className="text-[13px] text-[#1d2327]">Agendar na newsletter</div>
+                <div className="mt-0.5 line-clamp-2 text-[12px] text-[#50575e]">{sched.item.title}</div>
+              </div>
+              <button type="button" onClick={() => setSched(null)} aria-label="Fechar" className="shrink-0 text-[#50575e] hover:text-[#1d2327]"><X className="h-4 w-4" /></button>
             </div>
             <div className="max-h-80 overflow-y-auto">
               {sched.slots === null ? (
@@ -823,24 +841,25 @@ export default function NewsAdminPage() {
               ) : sched.slots.length === 0 ? (
                 <p className="p-4 text-center text-[13px] text-[#50575e]">Ainda não há envios agendados.</p>
               ) : (
-                sched.slots.map((x) => {
-                  const joined = x.slugs.includes(sched.item.slug);
-                  return (
-                    <button key={x.id} type="button" disabled={joined} onClick={() => attachToSchedule(x.id)} className="flex h-11 w-full items-center justify-between gap-3 border-b border-[#f0f0f1] px-4 text-left text-[13px] hover:text-[#00a651] disabled:text-[#008f45]">
-                      <span>{x.name ? <strong>{x.name} · </strong> : null}{new Date(x.at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' })}</span>
-                      <span className="text-[12px] text-[#50575e]">{x.repeat ? 'Fixo · ' : ''}{joined ? 'Já está neste envio' : `${x.slugs.length} ${x.slugs.length === 1 ? 'notícia' : 'notícias'}`}</span>
-                    </button>
-                  );
-                })
+                sched.slots.map((x) => (
+                  <label key={x.id} className="flex min-h-11 w-full cursor-pointer items-center gap-3 border-b border-[#f0f0f1] px-4 py-2 text-[13px] hover:bg-[#f6f7f7]">
+                    <input type="checkbox" checked={marcadas.includes(x.id)} onChange={(e) => setMarcadas((m) => (e.target.checked ? [...m, x.id] : m.filter((id) => id !== x.id)))} />
+                    <span className="min-w-0 flex-1">{x.name ? <strong>{x.name} · </strong> : null}{new Date(x.at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Maputo' })}</span>
+                    <span className="shrink-0 text-[12px] text-[#50575e]">{x.repeat ? 'Fixo · ' : ''}{x.slugs.length} {x.slugs.length === 1 ? 'notícia' : 'notícias'}</span>
+                  </label>
+                ))
               )}
             </div>
             {sched.msg && <p className={`border-t border-[#ccd0d4] px-4 py-2 text-[13px] ${sched.err ? 'text-red-700' : 'text-green-800'}`}>{sched.msg}</p>}
-            <div className="flex justify-end border-t border-[#ccd0d4] p-3">
-              {sched.slots !== null && sched.slots.length === 0 && !sched.err && (
-                <button type="button" onClick={() => { setSched(null); router.push('/admin/newsletter?aba=agenda'); }} className="mr-2 h-9 bg-[#00a651] px-4 text-[13px] text-white hover:bg-[#008f45]">Definir horário</button>
-              )}
-              <button type="button" onClick={() => setSched(null)} className="h-9 border border-[#ccd0d4] bg-white px-4 text-[13px] hover:text-[#00a651]">Fechar</button>
-            </div>
+            {sched.slots !== null && (
+              <div className="flex justify-end border-t border-[#ccd0d4] p-3">
+                {sched.slots.length === 0 ? (
+                  <button type="button" onClick={() => { setSched(null); router.push('/admin/newsletter?aba=agenda'); }} className="h-9 bg-[#00a651] px-4 text-[13px] text-white hover:bg-[#008f45]">Definir horário</button>
+                ) : (
+                  <button type="button" onClick={guardarAgendas} disabled={sched.slots.every((x) => x.slugs.includes(sched.item.slug) === marcadas.includes(x.id))} className="h-9 bg-[#00a651] px-4 text-[13px] text-white hover:bg-[#008f45] disabled:opacity-50">Adicionar à agenda</button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
