@@ -70,7 +70,7 @@ function WhenPicker({ day, hour, minute, onChange, extraDay, hideDay = false }: 
   return (
     <>
       {!hideDay && (
-        <AdminSelect value={day} onChange={(e) => onChange({ day: e.target.value, hour, minute })} className={`${pick} w-full sm:w-64`}>
+        <AdminSelect value={day} onChange={(e) => onChange({ day: e.target.value, hour, minute })} className={`${pick} w-full sm:w-52 sm:shrink-0`}>
           {dayOptions(extraDay).map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
         </AdminSelect>
       )}
@@ -284,12 +284,14 @@ function ScheduleBox({ item, subscribers, smtp, busy, act }: { item: AgendaItem;
         )}
       </div>
       {pending && editing && (
-        <div className="flex flex-wrap items-center gap-2 border-t border-[#ccd0d4] p-3">
-          <input value={nameEdit} onChange={(e) => setNameEdit(e.target.value)} maxLength={40} placeholder="Nome (opcional)" className="h-9 w-72 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
+        <div className="space-y-2 border-t border-[#ccd0d4] p-3">
           {item.repeat && <DaysPicker days={daysEdit} onChange={setDaysEdit} />}
-          <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} extraDay={now.day} hideDay={Boolean(item.repeat)} />
-          <button onClick={async () => { if (await act({ id: item.id, at: toIso(when.day, when.hour, when.minute), name: nameEdit, ...(item.repeat ? { fixed: true, days: daysEdit } : {}) }, 'Horário alterado.')) setEditing(false); }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50`}><Save className="h-4 w-4" /> Gravar hora</button>
-          <button onClick={() => setEditing(false)} className={`${btn} border border-[#ccd0d4] bg-white hover:text-[#00a651]`}>Cancelar</button>
+          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+            <input value={nameEdit} onChange={(e) => setNameEdit(e.target.value)} maxLength={40} placeholder="Nome (opcional)" className="h-9 w-72 sm:min-w-0 sm:flex-1 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
+            <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} extraDay={now.day} hideDay={Boolean(item.repeat)} />
+            <button onClick={async () => { if (await act({ id: item.id, at: toIso(when.day, when.hour, when.minute), name: nameEdit, ...(item.repeat ? { fixed: true, days: daysEdit } : {}) }, 'Horário alterado.')) setEditing(false); }} disabled={busy} className={`${btn} sm:shrink-0 bg-[#00a651] text-white disabled:opacity-50`}><Save className="h-4 w-4" /> Gravar hora</button>
+            <button onClick={() => setEditing(false)} className={`${btn} sm:shrink-0 border border-[#ccd0d4] bg-white hover:text-[#00a651]`}>Cancelar</button>
+          </div>
         </div>
       )}
     </section>
@@ -365,14 +367,18 @@ export default function NewsletterAgenda({ schedules, subscribers, smtp, onChang
           <button onClick={() => setAdding((v) => !v)} className={`${btn} shrink-0 bg-[#00a651] text-white`}>{adding ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />} {adding ? 'Fechar' : 'Novo horário'}</button>
         </div>
         {adding && (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <input value={nameNew} onChange={(e) => setNameNew(e.target.value)} maxLength={40} placeholder="Nome (opcional), ex.: Hora matinal" className="h-9 w-80 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
-            <label className="flex h-9 cursor-pointer items-center gap-2 text-[13px] text-[#1d2327] max-sm:w-full">
-              <input type="checkbox" checked={fixedNew} onChange={(e) => setFixedNew(e.target.checked)} /> Horário fixo (repete)
-            </label>
-            {fixedNew && <DaysPicker days={daysNew} onChange={setDaysNew} />}
-            <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} hideDay={fixedNew} />
-            <button onClick={async () => { if (await create(toIso(when.day, when.hour, when.minute), nameNew, fixedNew ? daysNew : undefined)) { setAdding(false); setNameNew(''); setFixedNew(false); } }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50 max-sm:w-full`}><Save className="h-4 w-4" /> Gravar horário</button>
+          <div className="mt-3 space-y-2">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <label className="flex h-9 cursor-pointer items-center gap-2 text-[13px] text-[#1d2327]">
+                <input type="checkbox" checked={fixedNew} onChange={(e) => setFixedNew(e.target.checked)} /> Horário fixo (repete)
+              </label>
+              {fixedNew && <DaysPicker days={daysNew} onChange={setDaysNew} />}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+              <input value={nameNew} onChange={(e) => setNameNew(e.target.value)} maxLength={40} placeholder="Nome (opcional), ex.: Hora matinal" className="h-9 w-80 sm:min-w-0 sm:flex-1 border border-[#8c8f94] bg-white px-3 text-[13px] focus:border-[#047857] focus:outline-none max-sm:w-full" />
+              <WhenPicker day={when.day} hour={when.hour} minute={when.minute} onChange={setWhen} hideDay={fixedNew} />
+              <button onClick={async () => { if (await create(toIso(when.day, when.hour, when.minute), nameNew, fixedNew ? daysNew : undefined)) { setAdding(false); setNameNew(''); setFixedNew(false); } }} disabled={busy} className={`${btn} bg-[#00a651] text-white disabled:opacity-50 max-sm:w-full sm:shrink-0`}><Save className="h-4 w-4" /> Gravar horário</button>
+            </div>
           </div>
         )}
       </div>
