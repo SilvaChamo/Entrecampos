@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Eye, EyeOff, LayoutTemplate, Megaphone, Plus, RotateCcw, Save, Upload, X } from 'lucide-react';
+import { ArrowDown, ArrowRightLeft, ArrowUp, Eye, EyeOff, LayoutTemplate, Megaphone, Plus, RotateCcw, Save, Upload, X } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import AdminSelect from '@/components/Admin/AdminSelect';
 import { uploadToLibrary } from '@/components/Admin/ImageChooser';
@@ -54,6 +54,7 @@ export default function HomeSeccoesPage() {
   const busy = saving !== null;
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
+  const [moving, setMoving] = useState<string | null>(null); // secção com o selector «Mover para» aberto
 
   useEffect(() => {
     fetch('/api/admin/home-sections', { credentials: 'include' })
@@ -95,6 +96,16 @@ export default function HomeSeccoesPage() {
 
   const setCategory = (key: string, list: string[]) => edit((cur) => ({ ...cur, categories: { ...cur.categories, [key]: list } }));
   const setHeroStyle = (heroStyle: HeroStyle) => edit((cur) => ({ ...cur, options: { ...cur.options, heroStyle } }));
+  /** Passa uma secção para outra zona (para o fim dela); depois as setas ajustam o lugar. */
+  const moveTo = (id: string, to: HomeZone) => {
+    setMoving(null);
+    edit((cur) => {
+      const layout = Object.fromEntries(HOME_ZONES.map((z) => [z.id, cur.layout[z.id].filter((x) => x !== id)])) as HomeLayout;
+      layout[to] = [...layout[to], id];
+      return { ...cur, layout };
+    });
+  };
+
   /** Olho: desliga a secção da home (fica na lista, mas não aparece no site) ou volta a ligá-la. */
   const toggleHidden = (id: string) =>
     edit((cur) => ({ ...cur, options: { ...cur.options, hidden: cur.options.hidden.includes(id) ? cur.options.hidden.filter((x) => x !== id) : [...cur.options.hidden, id] } }));
@@ -196,6 +207,11 @@ export default function HomeSeccoesPage() {
                   >
                     {draft.options.hidden.includes(id) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
+                  {!isAdId(id) && (
+                    <button type="button" aria-label="Mover para outra zona" title="Mover para outra zona" aria-pressed={moving === id} onClick={() => setMoving(moving === id ? null : id)} className={`${arrow}${moving === id ? ' border-[#00a651] text-[#00a651]' : ''}`}>
+                      <ArrowRightLeft className="h-4 w-4" />
+                    </button>
+                  )}
                   {list.length > 1 && (
                     <>
                       <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => shift(zone, i, -1)} className={arrow}>
@@ -212,6 +228,17 @@ export default function HomeSeccoesPage() {
                     </button>
                   )}
                 </div>
+                {moving === id && !isAdId(id) && (
+                  <div className="mt-3 flex items-center gap-3">
+                    <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Mover para</span>
+                    <AdminSelect aria-label="Mover para a zona" value="" onChange={(e) => e.target.value && moveTo(id, e.target.value as HomeZone)} className={fieldSide}>
+                      <option value="">Escolher a zona…</option>
+                      {HOME_ZONES.filter((x) => x.id !== zone).map((x) => (
+                        <option key={x.id} value={x.id}>{x.label}</option>
+                      ))}
+                    </AdminSelect>
+                  </div>
+                )}
                 {isAdId(id) ? (
                   <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} />
                 ) : (
