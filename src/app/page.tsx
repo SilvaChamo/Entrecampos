@@ -17,7 +17,8 @@ import { getSuggestionSlugs } from '@/lib/suggestions';
 import { getHomeLayout, type HomeZone } from '@/lib/home-layout';
 import { getHomeCategories } from '@/lib/home-categories';
 import { getHomeOptions } from '@/lib/home-options';
-import { HOME_CATEGORY_SLOTS, isAdId } from '@/lib/home-sections';
+import { HOME_CATEGORY_SLOTS, baseId, isAdId, slotsFor } from '@/lib/home-sections';
+import CardsCarousel from '@/components/Expnews/CardsCarousel';
 import HomeAd from '@/components/Expnews/HomeAd';
 import HeroList from '@/components/Expnews/HeroList';
 import HeroCarousel from '@/components/Expnews/HeroCarousel';
@@ -133,7 +134,6 @@ export default async function HomePrincipal() {
   const recent = pool.take(3, cats.recentes);
   // Últimas notícias publicadas (carrossel), sem as do slide principal.
   // Últimas notícias: 6 cards parados (sem slide), sem as do slide principal.
-  const latest = posts.filter((p) => !inSlides.has(p.slug)).slice(0, 6);
   // Mais lidas: pelas leituras registadas; sem contagem (tudo a 0) ficam as mais recentes.
   // Sem as do "Mais quente": as duas listas nunca repetem notícias.
   const inHot = new Set(hot.map((p) => p.slug));
@@ -147,15 +147,13 @@ export default async function HomePrincipal() {
   // Cada categoria vive numa só secção: as famílias abaixo não se repetem entre si.
   const family = (slugs: string[]): CategoryGroup[] =>
     slugs.map((slug) => ({ slug, label: categoryLabel(slug), posts: posts.filter((p) => p.categorySlug === slug).map(slim) }));
-  const communityGroups = family(cats.comunidade);
-  const agroGroups = family(cats.agro);
   // Cards ao lado do slide principal: últimas notícias (até 5) de Comunidade e de Oportunidades que não estão no slide.
   const heroList = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 12).map(slim);
   const heroLatest = (slug: string) => posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, 5).map(slim);
-  const businessSlug = cats['agro-negocio'][0];
-  const agroBusinessGroup: CategoryGroup[] = [{ slug: businessSlug, label: categoryLabel(businessSlug), posts: posts.filter((p) => p.categorySlug === businessSlug || p.extraCategories.some((c) => c.slug === businessSlug)).map(slim) }];
-  // Oportunidades: todas as notícias da categoria (fora do slide principal), 6 por página.
-  const opportunities = posts.filter((p) => p.categorySlug === cats.oportunidades[0] && !inSlides.has(p.slug)).slice(0, 60).map(slim);
+  // Categorias e opções de uma secção (ou da sua cópia): as escolhidas no painel ou, sem escolha, as de origem.
+  const catsOf = (id: string) => cats[id] ?? slotsFor(id)[0]?.defaults ?? [];
+  const settingsOf = (id: string) => options.sections[id] ?? {};
+  const inCategory = (p: Post, slug: string) => p.categorySlug === slug || p.extraCategories.some((c) => c.slug === slug);
   // Sugestões de leitura (fim da página): as notícias activadas no painel; enquanto nenhuma estiver activada, as mais recentes. O navegador escolhe 8 à sorte.
   const activated = posts.filter((p) => suggestSlugs.has(p.slug));
   const suggestions = (activated.length > 0 ? activated : posts.slice(0, 60)).map(slim);
@@ -187,21 +185,6 @@ export default async function HomePrincipal() {
                 className="h-[215px]"
               />
             </div>
-    ),
-    comunidade: (
-                <CategorySection groups={communityGroups} arrowsOnTop />
-    ),
-    ultimas: (
-                <Card title="Últimas notícias" plain>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {latest.map((p) => (
-                      <NewsCard key={p.slug} post={p} />
-                    ))}
-                  </div>
-                </Card>
-    ),
-    agro: (
-                <CategorySection groups={agroGroups} layout="grelha" arrowsOnTop reveal />
     ),
     clima: (
                 <WeatherCard />
@@ -267,14 +250,6 @@ export default async function HomePrincipal() {
                   </div>
                 </Card>
     ),
-    'agro-negocio': (
-                <CategorySection groups={agroBusinessGroup} arrowsOnTop />
-    ),
-    oportunidades: (
-                <Card title={categoryLabel(cats.oportunidades[0])} plain>
-                  <OpportunityList posts={opportunities} />
-                </Card>
-    ),
     internacional: (
                 <Card title={categoryLabel(cats.internacional[0])}>
                   <Overlay post={hot[0]} className="h-[200px]" titleClass="text-[13px]" />
@@ -325,12 +300,51 @@ export default async function HomePrincipal() {
             <ReadingSuggestions posts={suggestions} />
     ),
   };
+  // Secções com categoria e opções próprias (as originais e as cópias feitas no painel): `id` é o da secção ou o da cópia.
+  const factories: Record<string, (id: string) => React.ReactNode> = {
+    comunidade: (id) => <CategorySection groups={family(catsOf(id))} arrowsOnTop />,
+    agro: (id) => <CategorySection groups={family(catsOf(id))} layout="grelha" arrowsOnTop reveal />,
+    'agro-negocio': (id) => {
+      const slug = catsOf(id)[0];
+      return <CategorySection groups={[{ slug, label: categoryLabel(slug), posts: posts.filter((p) => inCategory(p, slug)).map(slim) }]} arrowsOnTop />;
+    },
+    oportunidades: (id) => {
+      const slug = catsOf(id)[0];
+      // Todas as notícias da categoria (fora do slide principal), até ao número escolhido no painel, 6 por página.
+      const list = posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, settingsOf(id).count ?? 60).map(slim);
+      return (
+        <Card title={categoryLabel(slug)} plain>
+          <OpportunityList posts={list} />
+        </Card>
+      );
+    },
+    ultimas: (id) => {
+      const slug = catsOf(id)[0];
+      const { rows = 2, carousel = false } = settingsOf(id);
+      // Últimas notícias (de todas as categorias ou da escolhida), sem as do slide principal: 3 cards por linha, no número de linhas escolhido.
+      const list = posts.filter((p) => !inSlides.has(p.slug) && (slug === 'todas' || inCategory(p, slug))).slice(0, rows * 3);
+      return (
+        <Card title={slug === 'todas' ? 'Últimas notícias' : categoryLabel(slug)} plain>
+          {carousel ? (
+            <CardsCarousel posts={list.map(slim)} />
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {list.map((p) => (
+                <NewsCard key={p.slug} post={p} />
+              ))}
+            </div>
+          )}
+        </Card>
+      );
+    },
+  };
+  const nodeOf = (id: string) => (baseId(id) in factories ? factories[baseId(id)](id) : sections[id]);
   const adOf = (id: string) => options.ads.find((a) => a.id === id);
   // Secções desligadas no painel (olho) não aparecem.
   const visible = (zone: HomeZone) => layout[zone].filter((id) => !options.hidden.includes(id));
   const render = (zone: HomeZone) =>
     visible(zone).map((id) => (
-      <React.Fragment key={id}>{isAdId(id) ? <HomeAd image={adOf(id)?.image} link={adOf(id)?.link} /> : sections[id]}</React.Fragment>
+      <React.Fragment key={id}>{isAdId(id) ? <HomeAd image={adOf(id)?.image} link={adOf(id)?.link} /> : nodeOf(id)}</React.Fragment>
     ));
   // Duas secções de colunas (coluna principal + barra lateral), cada uma com a sua barra lateral fixa.
   const columns = (main: HomeZone, side: HomeZone) => {

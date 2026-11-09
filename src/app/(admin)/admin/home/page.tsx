@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowDown, ArrowRightLeft, ArrowUp, Eye, EyeOff, LayoutTemplate, Megaphone, Plus, RotateCcw, Save, Upload, X } from 'lucide-react';
+import { ArrowDown, ArrowRightLeft, ArrowUp, Copy, Eye, EyeOff, LayoutTemplate, Megaphone, Plus, RotateCcw, Save, Trash2, Upload, X } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import AdminSelect from '@/components/Admin/AdminSelect';
 import { uploadToLibrary } from '@/components/Admin/ImageChooser';
@@ -11,6 +11,11 @@ import {
   HOME_CATEGORY_SLOTS,
   HOME_SECTIONS,
   HOME_ZONES,
+  DUPLICABLE,
+  baseId,
+  isCopyId,
+  sectionLabel,
+  slotsFor,
   defaultHomeCategories,
   defaultHomeLayout,
   defaultHomeOptions,
@@ -25,15 +30,17 @@ import {
   type HomeLayout,
   type HomeOptions,
   type HomeZone,
+  type SectionSettings,
 } from '@/lib/home-sections';
 
 const LABEL = Object.fromEntries(HOME_SECTIONS.map((s) => [s.id, s.label])) as Record<string, string>;
+const newCode = () => (Math.random().toString(36) + '0000000').slice(2, 8);
 const zoneOf = (id: HomeZone) => HOME_ZONES.find((z) => z.id === id)!;
 type State = { layout: HomeLayout; categories: HomeCategories; options: HomeOptions };
 type CategoryOption = { slug: string; label: string };
 
 const sameLayout = (a: HomeLayout, b: HomeLayout) => HOME_ZONES.every((z) => a[z.id].join() === b[z.id].join());
-const sameCats = (a: HomeCategories, b: HomeCategories) => HOME_CATEGORY_SLOTS.every((s) => a[s.key].join() === b[s.key].join());
+const sameCats = (a: HomeCategories, b: HomeCategories) => [...new Set([...Object.keys(a), ...Object.keys(b)])].every((k) => (a[k] ?? []).join() === (b[k] ?? []).join());
 const sameOptions = (a: HomeOptions, b: HomeOptions) => JSON.stringify(a) === JSON.stringify(b);
 const isDefault = (s: State) => sameLayout(s.layout, defaultHomeLayout()) && sameCats(s.categories, defaultHomeCategories()) && sameOptions(s.options, defaultHomeOptions());
 const parse = (data: any): State => ({ layout: normalizeHomeLayout(data.layout), categories: normalizeHomeCategories(data.categories), options: normalizeHomeOptions(data.options) });
@@ -45,7 +52,7 @@ const btn = 'flex h-9 items-center gap-1.5 px-4 text-[13px] disabled:cursor-not-
 
 /** Secções da página inicial, dispostas como no site: topo, coluna principal e barra lateral (duas vezes) e fim. As setas mudam a posição, o selector a categoria e cada zona aceita espaços de publicidade. */
 export default function HomeSeccoesPage() {
-  const first = adminCacheGet<State>('home-sections-v4');
+  const first = adminCacheGet<State>('home-sections-v5');
   const [saved, setSaved] = useState<State | null>(first ?? null);
   const [draft, setDraft] = useState<State | null>(first ?? null);
   const [options, setCategoryOptions] = useState<CategoryOption[]>([]);
@@ -55,6 +62,7 @@ export default function HomeSeccoesPage() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const [moving, setMoving] = useState<string | null>(null); // secção com o selector «Mover para» aberto
+  const [picked, setPicked] = useState<string[]>([]); // secções marcadas para mover juntas
 
   useEffect(() => {
     fetch('/api/admin/home-sections', { credentials: 'include' })
@@ -62,7 +70,7 @@ export default function HomeSeccoesPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao carregar as secções.');
         const st = parse(data);
-        adminCacheSet('home-sections-v4', st);
+        adminCacheSet('home-sections-v5', st);
         setSaved(st);
         setDraft((cur) => cur ?? st);
       })
@@ -106,6 +114,52 @@ export default function HomeSeccoesPage() {
     });
   };
 
+  /** Copia uma secção: a cópia fica logo a seguir, com a mesma categoria e as mesmas opções (depois muda-se à vontade). */
+  const duplicate = (zone: HomeZone, id: string) =>
+    edit((cur) => {
+      const copy = `${baseId(id)}~${newCode()}`;
+      const list = [...cur.layout[zone]];
+      list.splice(list.indexOf(id) + 1, 0, copy);
+      const slot = slotsFor(id)[0];
+      return {
+        ...cur,
+        layout: { ...cur.layout, [zone]: list },
+        categories: slot ? { ...cur.categories, [copy]: [...(cur.categories[slot.key] ?? slot.defaults)] } : cur.categories,
+        options: { ...cur.options, sections: cur.options.sections[id] ? { ...cur.options.sections, [copy]: { ...cur.options.sections[id] } } : cur.options.sections },
+      };
+    });
+
+  /** Apaga uma cópia (as secções de origem não se apagam: desliga-se com o olho). */
+  const removeCopy = (id: string) => {
+    if (!confirm('Apagar esta cópia da secção?')) return;
+    setPicked((p) => p.filter((x) => x !== id));
+    edit((cur) => {
+      const { [id]: _c, ...categories } = cur.categories;
+      const { [id]: _s, ...sections } = cur.options.sections;
+      return {
+        layout: Object.fromEntries(HOME_ZONES.map((z) => [z.id, cur.layout[z.id].filter((x) => x !== id)])) as HomeLayout,
+        categories,
+        options: { ...cur.options, sections, hidden: cur.options.hidden.filter((x) => x !== id) },
+      };
+    });
+  };
+
+  /** Muda uma opção da secção (linhas, número de notícias, carrossel). */
+  const setSetting = (id: string, patch: SectionSettings) =>
+    edit((cur) => ({ ...cur, options: { ...cur.options, sections: { ...cur.options.sections, [id]: { ...cur.options.sections[id], ...patch } } } }));
+
+  const togglePick = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+
+  /** Passa as secções marcadas, todas juntas e pela mesma ordem em que estão, para o fim de outra zona. */
+  const moveMany = (to: HomeZone) =>
+    edit((cur) => {
+      const order = HOME_ZONES.flatMap((z) => cur.layout[z.id]).filter((id) => picked.includes(id));
+      const layout = Object.fromEntries(HOME_ZONES.map((z) => [z.id, cur.layout[z.id].filter((x) => !picked.includes(x))])) as HomeLayout;
+      layout[to] = [...layout[to], ...order];
+      setPicked([]);
+      return { ...cur, layout };
+    });
+
   /** Olho: desliga a secção da home (fica na lista, mas não aparece no site) ou volta a ligá-la. */
   const toggleHidden = (id: string) =>
     edit((cur) => ({ ...cur, options: { ...cur.options, hidden: cur.options.hidden.includes(id) ? cur.options.hidden.filter((x) => x !== id) : [...cur.options.hidden, id] } }));
@@ -145,7 +199,7 @@ export default function HomeSeccoesPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Não foi possível guardar.');
       const st = parse(data);
-      adminCacheSet('home-sections-v4', st);
+      adminCacheSet('home-sections-v5', st);
       setSaved(st);
       setDraft(st);
       setDone(body === null ? 'Posição, categorias e publicidade de origem repostas' : 'Guardado: a página inicial já mostra as alterações');
@@ -158,16 +212,17 @@ export default function HomeSeccoesPage() {
 
   // O título de uma secção com uma só categoria acompanha a categoria escolhida (como no site); «Publicações recentes» mantém o nome de origem enquanto tem a categoria de origem.
   const rowLabel = (id: string) => {
-    const slots = HOME_CATEGORY_SLOTS.filter((x) => x.section === id);
-    if (!draft || slots.length !== 1 || slots[0].multi || id === 'destaque') return LABEL[id];
-    const slug = draft.categories[slots[0].key][0];
-    if (id === 'recentes' && slug === slots[0].defaults[0]) return LABEL[id];
-    return options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+    const slots = slotsFor(id);
+    if (!draft || slots.length !== 1 || slots[0].multi || id === 'destaque') return sectionLabel(id);
+    const slug = (draft.categories[slots[0].key] ?? slots[0].defaults)[0];
+    if (slug === 'todas' || (id === 'recentes' && slug === slots[0].defaults[0])) return sectionLabel(id);
+    const name = options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+    return isCopyId(id) ? `${name} (cópia)` : name;
   };
 
   // Secções com uma só categoria, nas zonas largas: o selector fica na mesma linha do título e das setas (a partir do computador).
   const inlineSlot = (zone: HomeZone, id: string) =>
-    ['top', 'main', 'main2', 'bottom'].includes(zone) && HOME_CATEGORY_SLOTS.filter((x) => x.section === id).length === 1 && !HOME_CATEGORY_SLOTS.find((x) => x.section === id)!.multi;
+    ['top', 'main', 'main2', 'bottom'].includes(zone) && slotsFor(id).length === 1 && !slotsFor(id)[0].multi;
 
   // Chamada como função (e não como componente) para os campos não perderem o foco a cada letra escrita.
   function zoneBox(zone: HomeZone) {
@@ -186,9 +241,10 @@ export default function HomeSeccoesPage() {
           <ul className="divide-y divide-[#e5e5e5]">
             {list.map((id, i) => (
               <li key={id} className="px-4 py-3">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <input type="checkbox" aria-label="Marcar para mover com outras" checked={picked.includes(id)} onChange={() => togglePick(id)} className="h-[18px] w-[18px] shrink-0 accent-[#00a651]" />
                   <span className="w-5 shrink-0 text-[13px] text-gray-400">{i + 1}</span>
-                  <span className={`flex min-w-0 flex-1 items-center gap-1.5 text-[13px] text-[#1d2327]${draft.options.hidden.includes(id) ? ' opacity-50' : ''}`}>
+                  <span className={`flex min-w-0 flex-1 basis-[140px] items-center gap-1.5 text-[13px] text-[#1d2327]${draft.options.hidden.includes(id) ? ' opacity-50' : ''}`}>
                     {isAdId(id) && <Megaphone className="h-4 w-4 shrink-0 text-[#d6101c]" />}
                     <span className="truncate">{isAdId(id) ? 'Espaço de publicidade' : rowLabel(id)}</span>
                   </span>
@@ -210,6 +266,16 @@ export default function HomeSeccoesPage() {
                   {!isAdId(id) && (
                     <button type="button" aria-label="Mover para outra zona" title="Mover para outra zona" aria-pressed={moving === id} onClick={() => setMoving(moving === id ? null : id)} className={`${arrow}${moving === id ? ' border-[#00a651] text-[#00a651]' : ''}`}>
                       <ArrowRightLeft className="h-4 w-4" />
+                    </button>
+                  )}
+                  {DUPLICABLE.includes(baseId(id)) && (
+                    <button type="button" aria-label="Duplicar a secção" title="Duplicar a secção" onClick={() => duplicate(zone, id)} className={arrow}>
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  )}
+                  {isCopyId(id) && (
+                    <button type="button" aria-label="Apagar a cópia" title="Apagar a cópia" onClick={() => removeCopy(id)} className={`${arrow} hover:text-[#d63638]`}>
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   )}
                   {list.length > 1 && (
@@ -242,7 +308,7 @@ export default function HomeSeccoesPage() {
                 {isAdId(id) ? (
                   <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} />
                 ) : (
-                  <div className={`mt-3 space-y-2${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
+                  <div className="mt-3 space-y-2">
                     {id === 'destaque' && (
                       <div className="flex items-center gap-3">
                         <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Estilo</span>
@@ -263,7 +329,10 @@ export default function HomeSeccoesPage() {
                         </AdminSelect>
                       </div>
                     )}
-                    <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} heroStyle={draft.options.heroStyle} />
+                    <div className={`space-y-2${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
+                      <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} heroStyle={draft.options.heroStyle} />
+                    </div>
+                    <SectionOptions id={id} settings={draft.options.sections[id] ?? {}} onChange={(patch) => setSetting(id, patch)} />
                   </div>
                 )}
               </li>
@@ -300,6 +369,21 @@ export default function HomeSeccoesPage() {
         </div>
       </div>
 
+
+      {picked.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 border border-[#00a651] bg-[#f0f7f4] px-4 py-3">
+          <span className="text-[13px] text-[#1d2327]">{picked.length} {picked.length === 1 ? 'secção marcada' : 'secções marcadas'}</span>
+          <AdminSelect aria-label="Mover as marcadas para a zona" value="" onChange={(e) => e.target.value && moveMany(e.target.value as HomeZone)} className={`${field} sm:w-[260px]`}>
+            <option value="">Mover juntas para…</option>
+            {HOME_ZONES.map((x) => (
+              <option key={x.id} value={x.id}>{x.label}</option>
+            ))}
+          </AdminSelect>
+          <button type="button" onClick={() => setPicked([])} className={`${btn} border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50`}>
+            Limpar marcação
+          </button>
+        </div>
+      )}
 
       {error && <p className="mb-4 border-l-4 border-[#d63638] bg-red-50 px-3 py-2 text-[13px] text-red-800">{error}</p>}
       {done && <p className="mb-4 border-l-4 border-[#00a651] bg-green-50 px-3 py-2 text-[13px] text-green-800">{done}</p>}
@@ -368,21 +452,70 @@ function AdFields({ zone, ad, onChange }: { zone: HomeZone; ad: HomeAd; onChange
   );
 }
 
+/** Opções de uma secção: linhas de cards e carrossel (Últimas notícias) ou número de notícias (Oportunidades). */
+function SectionOptions({ id, settings, onChange }: { id: string; settings: SectionSettings; onChange: (patch: SectionSettings) => void }) {
+  const base = baseId(id);
+  if (base !== 'ultimas' && base !== 'oportunidades') return null;
+  const row = 'flex items-center gap-3';
+  const label = 'w-[100px] shrink-0 text-[13px] text-gray-500';
+  if (base === 'oportunidades') {
+    return (
+      <div className={row}>
+        <span className={label}>Notícias</span>
+        <input
+          type="number"
+          min={1}
+          max={60}
+          aria-label="Quantas notícias mostra (1 a 60)"
+          value={settings.count ?? 60}
+          onChange={(e) => {
+            const n = Math.round(Number(e.target.value));
+            if (n >= 1 && n <= 60) onChange({ count: n });
+          }}
+          className={`${field} sm:w-[110px]`}
+        />
+        <span className="text-[12px] text-gray-500">de 1 a 60, 6 por página</span>
+      </div>
+    );
+  }
+  return (
+    <>
+      <div className={row}>
+        <span className={label}>Linhas</span>
+        <AdminSelect aria-label="Linhas de cards" value={String(settings.rows ?? 2)} onChange={(e) => onChange({ rows: Number(e.target.value) })} className={fieldSide}>
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <option key={n} value={String(n)}>{n} {n === 1 ? 'linha' : 'linhas'} ({n * 3} notícias)</option>
+          ))}
+        </AdminSelect>
+      </div>
+      <div className={row}>
+        <span className={label}>Carrossel</span>
+        <AdminSelect aria-label="Carrossel" value={settings.carousel ? 'on' : 'off'} onChange={(e) => onChange({ carousel: e.target.value === 'on' })} className={fieldSide}>
+          <option value="off">Desligado (cards em grelha)</option>
+          <option value="on">Ligado (cards a deslizar)</option>
+        </AdminSelect>
+      </div>
+    </>
+  );
+}
+
 /** Selector(es) de categoria de uma secção. Secções com várias categorias mostram-nas em etiquetas que se podem retirar, e o selector junta outra. */
 function CategoryControl({ section, categories, options, onChange, bare = false, heroStyle }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean; heroStyle?: HeroStyle }) {
   const side = section === 'destaque'; // no destaque o título fica ao lado do selector
   // O destaque mostra os selectores do estilo escolhido: dois cards ou a lista.
   const activeSlots = HOME_CATEGORY_SLOTS.filter((s) => s.section !== 'destaque' || (heroStyle?.startsWith('carrossel') ? false : (heroStyle === 'lista') === (s.key === 'herolista')));
-  const slots = activeSlots.filter((s) => s.section === section);
+  const slots = section === 'destaque' ? activeSlots.filter((s) => s.section === section) : slotsFor(section);
   if (slots.length === 0) return null;
-  const labelOf = (slug: string) => options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+  const labelOf = (slug: string) => slug === 'todas' ? 'Todas as categorias' : options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
   return (
     <>
       {slots.map((slot) => {
-        const list = categories[slot.key];
+        const list = categories[slot.key] ?? slot.defaults;
         // Uma categoria só pode estar num selector: as que já estão noutro não se oferecem (a que este já tem fica).
-        const usedElsewhere = new Set(activeSlots.filter((x) => x.key !== slot.key).flatMap((x) => categories[x.key]));
-        const free = options.filter((o) => o.slug === list[0] || !usedElsewhere.has(o.slug));
+        // As «Últimas notícias» e as cópias escolhem à vontade: podem repetir categorias de outras secções.
+        const free_ = slot.key === 'ultimas' || slot.key.includes('~');
+        const usedElsewhere = free_ ? new Set<string>() : new Set(activeSlots.filter((x) => x.key !== slot.key && x.key !== 'ultimas').flatMap((x) => categories[x.key] ?? []));
+        const free = [...(slot.key === 'ultimas' ? [{ slug: 'todas', label: 'Todas as categorias' }] : []), ...options.filter((o) => o.slug === list[0] || !usedElsewhere.has(o.slug))];
         const all = free.some((o) => o.slug === list[0]) || options.length === 0 ? free : [{ slug: list[0], label: labelOf(list[0]) }, ...free];
         return (
           <div key={slot.key} className={side ? 'flex items-center gap-3' : 'flex flex-col gap-1'}>
