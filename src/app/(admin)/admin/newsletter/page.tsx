@@ -30,6 +30,12 @@ export default function NewsletterPage() {
   const [data, setData] = useState<Summary | null>(() => adminCacheGet<Summary>('newsletter') ?? null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // O aviso de sucesso desaparece sozinho (também se fecha no X).
+  useEffect(() => {
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(null), 12000);
+    return () => clearTimeout(t);
+  }, [notice]);
   const [paste, setPaste] = useState('');
   const [busy, setBusy] = useState<'import' | 'send' | null>(null);
   const [confirmSend, setConfirmSend] = useState(false);
@@ -179,8 +185,18 @@ export default function NewsletterPage() {
         <p className="mt-1 text-[13px] text-[#50575e]">Subscritores do site, fila de notícias e envio diário às 20h (hora de Maputo)</p>
       </div>
 
-      {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-[13px] text-red-700">{error}</div>}
-      {notice && <div className="mb-4 rounded-md border border-green-200 bg-green-50 px-4 py-2 text-[13px] text-green-800">{notice}</div>}
+      {error && (
+        <div role="alert" className="mb-4 flex items-start justify-between gap-3 border border-red-200 border-l-4 border-l-red-600 bg-red-50 px-4 py-2 text-[13px] text-red-700">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError(null)} aria-label="Fechar mensagem" className="shrink-0 pt-0.5 hover:text-red-900"><X className="h-4 w-4" /></button>
+        </div>
+      )}
+      {notice && (
+        <div role="status" className="mb-4 flex items-start justify-between gap-3 border border-green-200 border-l-4 border-l-green-700 bg-green-50 px-4 py-2 text-[13px] text-green-800">
+          <span>{notice}</span>
+          <button type="button" onClick={() => setNotice(null)} aria-label="Fechar mensagem" className="shrink-0 pt-0.5 hover:text-green-950"><X className="h-4 w-4" /></button>
+        </div>
+      )}
       {data && !data.smtp && (
         <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-[13px] text-amber-800">
           O e-mail (SMTP) não está configurado neste servidor: a lista e a fila funcionam, mas o envio não.
