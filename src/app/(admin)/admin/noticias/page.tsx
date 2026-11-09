@@ -101,7 +101,8 @@ export default function NewsAdminPage() {
         if (!res.ok) throw new Error(body.error || `Erro ${res.status}.`);
         slots = slots.map((y) => (y.id === x.id ? body.schedule : y));
       }
-      setSched({ ...sched, slots, msg: 'Agendas actualizadas.', err: false });
+      // Gravado: o popup fecha sozinho (o X continua a fechá-lo sem gravar).
+      setSched(null);
     } catch (e) {
       setSched({ ...sched, slots, msg: e instanceof Error ? e.message : 'Não foi possível actualizar as agendas.', err: true });
     }
