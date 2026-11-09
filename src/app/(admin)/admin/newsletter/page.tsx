@@ -38,6 +38,11 @@ export default function NewsletterPage() {
   const [page, setPage] = useState(1);
   const [tab, setTab] = useState<'news' | 'agenda' | 'sent' | 'ads' | 'subscribers'>('news');
   const [viewAt, setViewAt] = useState<string | null>(null);
+  // Vindo da lista de notícias sem envios agendados (?aba=agenda), abre logo no separador Agendamento.
+  useEffect(() => {
+    const aba = new URLSearchParams(window.location.search).get('aba');
+    if (aba === 'agenda' || aba === 'news' || aba === 'sent' || aba === 'ads' || aba === 'subscribers') setTab(aba);
+  }, []);
   const [addOpen, setAddOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 

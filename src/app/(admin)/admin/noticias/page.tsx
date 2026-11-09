@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Search,
   Filter,
@@ -65,6 +66,7 @@ export default function NewsAdminPage() {
   const [news, setNews] = useState<NewsItem[]>(() => adminCacheGet<NewsItem[]>('news') ?? []);
   // Confirmação na própria página: os diálogos nativos do navegador podem não aparecer e a acção ficava sem efeito.
   const { user } = useAuth();
+  const router = useRouter();
   // Agendar na newsletter: escolher a que envio agendado se junta a notícia (só o administrador).
   const [sched, setSched] = useState<{ item: NewsItem; slots: { id: string; at: string; slugs: string[] }[] | null; msg: string | null; err: boolean } | null>(null);
   const openSchedule = async (item: NewsItem) => {
@@ -73,6 +75,12 @@ export default function NewsAdminPage() {
       const res = await fetch('/api/admin/newsletter/agenda', { credentials: 'include', cache: 'no-store' });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `Erro ${res.status}.`);
+      // Sem nenhum envio agendado não há onde juntar a notícia: leva logo ao separador Agendamento da newsletter.
+      if (!Array.isArray(body.schedules) || body.schedules.length === 0) {
+        setSched(null);
+        router.push('/admin/newsletter?aba=agenda');
+        return;
+      }
       setSched({ item, slots: body.schedules, msg: null, err: false });
     } catch (e) {
       setSched({ item, slots: [], msg: e instanceof Error ? e.message : 'Não foi possível carregar os horários.', err: true });
