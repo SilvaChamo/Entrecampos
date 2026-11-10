@@ -50,6 +50,7 @@ const parse = (data: any): State => ({ layout: normalizeHomeLayout(data.layout),
 const field = 'h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none';
 const fieldWide = field.replace('w-full', 'w-full sm:w-[170px]'); // selector dos detalhes: largura certa, vários na mesma linha
 const fieldRow = field.replace('h-9', 'h-8'); // selector dentro da linha: mesma altura dos botões da linha
+const fieldHalf = field.replace('w-full', 'w-full sm:w-1/2'); // selector em linha própria: metade da largura da linha
 const fieldLabel = 'shrink-0 text-[13px] text-gray-500'; // etiqueta à esquerda do selector
 const fieldSide = field.replace('w-full', 'min-w-0 flex-1'); // ao lado de um título: ocupa o que sobra da linha
 const arrow = 'flex h-8 w-8 shrink-0 items-center justify-center border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40';
@@ -57,7 +58,7 @@ const btn = 'flex h-9 items-center gap-1.5 px-4 text-[13px] disabled:cursor-not-
 
 /** Secções da página inicial, dispostas como no site: topo, coluna principal e barra lateral (duas vezes) e fim. As setas mudam a posição, o selector a categoria e cada zona aceita espaços de publicidade. */
 export default function HomeSeccoesPage() {
-  const first = adminCacheGet<State>('home-sections-v5');
+  const first = adminCacheGet<State>('home-sections-v6');
   const [saved, setSaved] = useState<State | null>(first ?? null);
   const [draft, setDraft] = useState<State | null>(first ?? null);
   const [options, setCategoryOptions] = useState<CategoryOption[]>([]);
@@ -76,7 +77,7 @@ export default function HomeSeccoesPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao carregar as secções.');
         const st = parse(data);
-        adminCacheSet('home-sections-v5', st);
+        adminCacheSet('home-sections-v6', st);
         setSaved(st);
         setDraft((cur) => cur ?? st);
       })
@@ -98,18 +99,28 @@ export default function HomeSeccoesPage() {
     setDraft((cur) => (cur ? fn(cur) : cur));
   };
 
-  /** Sobe ou desce uma secção dentro da sua zona. */
-  const shift = (zone: HomeZone, index: number, by: -1 | 1) =>
+  /** Sobe ou desce uma secção dentro da sua zona (a «lista ao lado do slide» não aparece na lista: troca-se pelo Estilo do slide). */
+  const shift = (zone: HomeZone, id: string, by: -1 | 1) =>
     edit((cur) => {
       const list = [...cur.layout[zone]];
-      const to = index + by;
-      if (to < 0 || to >= list.length) return cur;
-      [list[index], list[to]] = [list[to], list[index]];
+      const shown = list.filter((x) => x !== 'destaque-lista');
+      const target = shown[shown.indexOf(id) + by];
+      if (!target) return cur;
+      const [from, to] = [list.indexOf(id), list.indexOf(target)];
+      [list[from], list[to]] = [list[to], list[from]];
       return { ...cur, layout: { ...cur.layout, [zone]: list } };
     });
 
   const setCategory = (key: string, list: string[]) => edit((cur) => ({ ...cur, categories: { ...cur.categories, [key]: list } }));
-  const setHeroStyle = (heroStyle: HeroStyle) => edit((cur) => ({ ...cur, options: { ...cur.options, heroStyle } }));
+  // «Que destaque mostrar»: slide com dois cards, slide com lista, ou um dos carrosséis. Slide com cards/lista liga uma peça e desliga a outra.
+  const heroMode = (o: HomeOptions): 'cards' | 'lista' | HeroStyle =>
+    o.heroStyle !== 'cards' ? o.heroStyle : o.hidden.includes('destaque-card1') && o.hidden.includes('destaque-card2') && !o.hidden.includes('destaque-lista') ? 'lista' : 'cards';
+  const setHeroMode = (mode: string) =>
+    edit((cur) => {
+      const without = (ids: string[]) => cur.options.hidden.filter((x) => !ids.includes(x));
+      const hidden = mode === 'cards' ? [...without(['destaque-card1', 'destaque-card2']), 'destaque-lista'] : mode === 'lista' ? [...without(['destaque-lista']), 'destaque-card1', 'destaque-card2'] : cur.options.hidden;
+      return { ...cur, options: { ...cur.options, heroStyle: mode === 'lista' ? 'cards' : (mode as HeroStyle), hidden: [...new Set(hidden)] } };
+    });
   /** Passa uma secção para outra zona (para o fim dela); depois as setas ajustam o lugar. */
   const moveTo = (id: string, to: HomeZone) => {
     setMoving(null);
@@ -209,7 +220,7 @@ export default function HomeSeccoesPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Não foi possível guardar.');
       const st = parse(data);
-      adminCacheSet('home-sections-v5', st);
+      adminCacheSet('home-sections-v6', st);
       setSaved(st);
       setDraft(st);
       setDone(body === null ? 'Posição, categorias e publicidade de origem repostas' : 'Guardado: a página inicial já mostra as alterações');
@@ -244,7 +255,7 @@ export default function HomeSeccoesPage() {
   function zoneBox(zone: HomeZone) {
     if (!draft) return null;
     const z = zoneOf(zone);
-    const list = draft.layout[zone];
+    const list = draft.layout[zone].filter((x) => x !== 'destaque-lista');
     return (
       <section className="min-w-0 border border-[#ccd0d4] bg-white">
         <header className="border-b border-[#e5e5e5] px-4 py-3">
@@ -310,10 +321,10 @@ export default function HomeSeccoesPage() {
                   )}
                   {list.length > 1 && (
                     <>
-                      <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => shift(zone, i, -1)} className={arrow}>
+                      <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => shift(zone, id, -1)} className={arrow}>
                         <ArrowUp className="h-4 w-4" />
                       </button>
-                      <button type="button" aria-label="Descer" disabled={i === list.length - 1} onClick={() => shift(zone, i, 1)} className={arrow}>
+                      <button type="button" aria-label="Descer" disabled={i === list.length - 1} onClick={() => shift(zone, id, 1)} className={arrow}>
                         <ArrowDown className="h-4 w-4" />
                       </button>
                     </>
@@ -359,26 +370,32 @@ export default function HomeSeccoesPage() {
                 ) : (
                   <div className="mt-2 flex flex-wrap items-end gap-3">
                     {baseId(id) === 'destaque' && (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <span className={fieldLabel}>Estilo</span>
-                          <AdminSelect aria-label="Estilo do slide" value={draft.options.heroStyle} onChange={(e) => setHeroStyle(e.target.value as HeroStyle)} className={fieldWide}>
-                            <option value="cards">Slide normal</option>
+                      <div className="w-full space-y-2">
+                        <div className="flex items-center gap-3">
+                          <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Estilo</span>
+                          <AdminSelect aria-label="Estilo do slide" value={heroMode(draft.options)} onChange={(e) => setHeroMode(e.target.value)} className={fieldHalf}>
+                            <option value="cards">Slide e dois cards ao lado</option>
+                            <option value="lista">Slide e lista ao lado (com slide para cima)</option>
                             <option value="carrossel">Carrossel na largura da página</option>
                             <option value="carrossel-conteudo">Carrossel na largura do conteúdo</option>
                           </AdminSelect>
                         </div>
                         {!draft.options.heroStyle.startsWith('carrossel') && (
-                          <div className="flex items-center gap-2">
-                            <span className={fieldLabel}>Disposição</span>
-                            <AdminSelect aria-label="Disposição do slide" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldWide}>
+                          <div className="flex items-center gap-3">
+                            <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Disposição</span>
+                            <AdminSelect aria-label="Disposição do slide" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldHalf}>
                               <option value="banner-esquerda">Slide à esquerda</option>
                               <option value="cards-esquerda">Slide à direita</option>
                             </AdminSelect>
                           </div>
                         )}
-                        <p className="basis-full text-[12px] text-gray-500">O estilo e a disposição valem para todos os slides. A disposição só se nota quando o slide está logo antes de uns cards ou de uma lista.</p>
-                      </>
+                        {heroMode(draft.options) === 'lista' && id === 'destaque' && (
+                          <div className="w-full space-y-2">
+                            <CategoryControl section="destaque-lista" categories={draft.categories} options={options} onChange={setCategory} />
+                          </div>
+                        )}
+                        <p className="text-[12px] text-gray-500">O estilo e a disposição valem para todos os slides. A disposição só se nota quando o slide está logo antes de uns cards ou de uma lista.</p>
+                      </div>
                     )}
                     <div className={`${baseId(id).startsWith('destaque-') ? 'w-full space-y-2' : 'flex flex-wrap items-end gap-3'}${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
                       <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} />
@@ -574,7 +591,7 @@ function CategoryControl({ section, categories, options, onChange, bare = false 
                 </AdminSelect>
               </div>
             ) : (
-              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={bare ? fieldRow : stack ? fieldSide : fieldWide}>
+              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={bare ? fieldRow : stack ? fieldHalf : fieldWide}>
                 {all.map((o) => (
                   <option key={o.slug} value={o.slug}>{o.label}</option>
                 ))}

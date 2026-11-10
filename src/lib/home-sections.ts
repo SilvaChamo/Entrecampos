@@ -14,7 +14,8 @@ export const HOME_ZONES: { id: HomeZone; label: string; hint: string }[] = [
 /** Todas as secções da home. `zone` é a zona de origem (a ordem em que estão aqui é a ordem de origem). */
 export const HOME_SECTIONS: { id: string; label: string; zone: HomeZone }[] = [
   { id: 'destaque', label: 'Slide principal', zone: 'top' },
-  { id: 'destaque-cards', label: 'Cards ao lado do slide', zone: 'top' },
+  { id: 'destaque-card1', label: 'Card de cima ao lado do slide', zone: 'top' },
+  { id: 'destaque-card2', label: 'Card de baixo ao lado do slide', zone: 'top' },
   { id: 'destaque-lista', label: 'Lista ao lado do slide', zone: 'top' },
   { id: 'comunidade', label: 'Comunidade e família (com selector)', zone: 'main' },
   { id: 'ultimas', label: 'Últimas notícias', zone: 'main' },
@@ -32,9 +33,9 @@ export const HOME_SECTIONS: { id: string; label: string; zone: HomeZone }[] = [
 ];
 
 /** Secções que se podem duplicar (cada cópia tem a sua categoria e as suas opções). O `id` da cópia é «secção~código». */
-export const DUPLICABLE = ['destaque', 'destaque-cards', 'destaque-lista', 'comunidade', 'ultimas', 'agro', 'agro-negocio', 'oportunidades'];
+export const DUPLICABLE = ['destaque', 'destaque-card1', 'destaque-card2', 'destaque-lista', 'comunidade', 'ultimas', 'agro', 'agro-negocio', 'oportunidades'];
 export const baseId = (id: string) => id.split('~')[0];
-export const isCopyId = (id: string) => /^[a-z-]+~[a-z0-9]{4,8}$/.test(id) && DUPLICABLE.includes(baseId(id));
+export const isCopyId = (id: string) => /^[a-z0-9-]+~[a-z0-9]{4,8}$/.test(id) && DUPLICABLE.includes(baseId(id));
 /** Nome da secção no painel (a cópia leva «(cópia)»). */
 export const sectionLabel = (id: string) => {
   const base = HOME_SECTIONS.find((x) => x.id === baseId(id));
@@ -73,7 +74,7 @@ export function normalizeHomeLayout(raw: unknown): HomeLayout {
   const seen = new Set<string>();
   const out: HomeLayout = { top: [], main: [], side: [], main2: [], side2: [], bottom: [] };
   for (const zone of HOME_ZONES.map((z) => z.id)) {
-    const list = Array.isArray(r[zone]) ? (r[zone] as unknown[]) : [];
+    const list = (Array.isArray(r[zone]) ? (r[zone] as unknown[]) : []).flatMap((x) => (x === 'destaque-cards' ? ['destaque-card1', 'destaque-card2'] : [x]));
     for (const id of list) {
       if (typeof id === 'string' && (known.has(id) || isAdId(id) || isCopyId(id)) && !seen.has(id)) {
         seen.add(id);
@@ -91,9 +92,9 @@ export function normalizeHomeLayout(raw: unknown): HomeLayout {
  * `multi` = a secção junta várias categorias (selector, ou preferência por ordem); `defaults` = as de origem.
  */
 export const HOME_CATEGORY_SLOTS: { key: string; section: string; label: string; multi: boolean; defaults: string[] }[] = [
-  { key: 'hero1', section: 'destaque-cards', label: 'Card de cima', multi: false, defaults: ['comunidade'] },
-  { key: 'hero2', section: 'destaque-cards', label: 'Card de baixo', multi: false, defaults: ['oportunidades'] },
-  { key: 'herolista', section: 'destaque-lista', label: 'Categoria da lista', multi: false, defaults: ['comunidade'] },
+  { key: 'hero1', section: 'destaque-card1', label: 'Categoria', multi: false, defaults: ['comunidade'] },
+  { key: 'hero2', section: 'destaque-card2', label: 'Categoria', multi: false, defaults: ['oportunidades'] },
+  { key: 'herolista', section: 'destaque-lista', label: 'Categoria', multi: false, defaults: ['comunidade'] },
   { key: 'ultimas', section: 'ultimas', label: 'Categoria', multi: false, defaults: ['todas'] },
   { key: 'comunidade', section: 'comunidade', label: 'Categorias', multi: true, defaults: ['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida'] },
   { key: 'agro', section: 'agro', label: 'Categorias', multi: true, defaults: ['agricultura', 'fruticultura', 'mulher-agrario', 'sector-publico', 'entrevista'] },
@@ -165,7 +166,7 @@ export function normalizeHomeOptions(raw: unknown): HomeOptions {
     if (isAdId(id) && !ads.some((x) => x.id === id) && okUrl(image) && okUrl(link) && ads.length < 20) ads.push({ id, image, link });
   }
   const known = new Set(HOME_SECTIONS.map((s) => s.id));
-  let hidden = (Array.isArray(r.hidden) ? (r.hidden as unknown[]) : []).filter((id, i, all): id is string => typeof id === 'string' && (known.has(id) || isAdId(id) || isCopyId(id)) && all.indexOf(id) === i);
+  let hidden = (Array.isArray(r.hidden) ? (r.hidden as unknown[]) : []).flatMap((x) => (x === 'destaque-cards' ? ['destaque-card1', 'destaque-card2'] : [x])).filter((id, i, all): id is string => typeof id === 'string' && (known.has(id) || isAdId(id) || isCopyId(id)) && all.indexOf(id) === i);
   const sections: Record<string, SectionSettings> = {};
   for (const [id, v] of Object.entries((r.sections && typeof r.sections === 'object' ? r.sections : {}) as Record<string, unknown>)) {
     if (!known.has(id) && !isCopyId(id)) continue;
@@ -181,7 +182,7 @@ export function normalizeHomeOptions(raw: unknown): HomeOptions {
   let heroStyle: HeroStyle = r.heroStyle === 'carrossel' ? 'carrossel' : r.heroStyle === 'carrossel-conteudo' ? 'carrossel-conteudo' : 'cards';
   if (r.v !== 2) {
     const wasList = r.heroStyle === 'lista';
-    hidden = [...hidden, ...(wasList ? ['destaque-cards'] : ['destaque-lista'])].filter((id, i, all) => all.indexOf(id) === i);
+    hidden = [...hidden, ...(wasList ? ['destaque-card1', 'destaque-card2'] : ['destaque-lista'])].filter((id, i, all) => all.indexOf(id) === i);
     heroStyle = wasList ? 'cards' : heroStyle;
   }
   return { v: 2, hidden, sections, heroStyle, heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', ads };

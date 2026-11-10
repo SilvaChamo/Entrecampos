@@ -288,18 +288,19 @@ export default async function HomePrincipal() {
   const carousel = options.heroStyle === 'carrossel' || options.heroStyle === 'carrossel-conteudo';
   const heroSideLeft = options.heroSide === 'cards-esquerda';
   const catAt = (id: string, key: string) => cats[slotKey(id, key)]?.[0] ?? HOME_CATEGORY_SLOTS.find((x) => x.key === key)?.defaults[0] ?? 'todas';
-  const cardItems = (id: string) =>
-    ['hero1', 'hero2'].map((k) => ({ posts: heroLatest(catAt(id, k)), label: categoryLabel(catAt(id, k)) }));
+  // Cada card ao lado do slide é uma peça própria (cada um copia-se à parte): o de cima usa o lugar «hero1», o de baixo «hero2».
+  const isCard = (id: string) => baseId(id).startsWith('destaque-card');
+  const cardItem = (id: string) => {
+    const key = baseId(id) === 'destaque-card1' ? 'hero1' : 'hero2';
+    return { posts: heroLatest(catAt(id, key)), label: categoryLabel(catAt(id, key)) };
+  };
   const listNode = (id: string, className: string) => <HeroList posts={heroList(catAt(id, 'herolista'))} label={categoryLabel(catAt(id, 'herolista'))} className={className} />;
   const slideNode = (className: string) =>
     carousel ? <HeroCarousel posts={slides} fullWidth={options.heroStyle === 'carrossel'} /> : <ExpSlider posts={slides} className={className} />;
   const factories: Record<string, (id: string, zone?: HomeZone) => React.ReactNode> = {
     destaque: () => slideNode('h-[340px] md:h-[442px]'),
-    'destaque-cards': (id, zone) => (
-      <div className={`grid gap-3${zone && WIDE.includes(zone) ? ' md:grid-cols-2' : ''}`}>
-        <SideSlides items={cardItems(id)} className="h-[215px]" />
-      </div>
-    ),
+    'destaque-card1': (id) => <SideSlides items={[cardItem(id)]} className="h-[215px]" />,
+    'destaque-card2': (id) => <SideSlides items={[cardItem(id)]} className="h-[215px]" />,
     'destaque-lista': (id) => listNode(id, 'h-[420px]'),
     comunidade: (id) => <CategorySection groups={family(catsOf(id))} arrowsOnTop />,
     agro: (id) => <CategorySection groups={family(catsOf(id))} layout="grelha" arrowsOnTop reveal />,
@@ -347,22 +348,42 @@ export default async function HomePrincipal() {
     for (let i = 0; i < list.length; i++) {
       const id = list[i];
       const next = list[i + 1];
-      // Slide seguido de cards ou lista, numa zona larga: lado a lado (a disposição vem do painel).
-      if (!carousel && baseId(id) === 'destaque' && next && WIDE.includes(zone) && (baseId(next) === 'destaque-cards' || baseId(next) === 'destaque-lista')) {
+      // Slide seguido de um ou dois cards, ou de uma lista, numa zona larga: lado a lado (a disposição vem do painel).
+      if (!carousel && baseId(id) === 'destaque' && next && WIDE.includes(zone) && (isCard(next) || baseId(next) === 'destaque-lista')) {
         const cols = heroSideLeft ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]';
         const place = heroSideLeft ? ' md:col-start-2 md:row-start-1' : '';
-        out.push(
-          baseId(next) === 'destaque-cards' ? (
-            <div key={`${id}+${next}`} className={`grid gap-3 md:auto-rows-[215px] ${cols}`}>
+        if (isCard(next)) {
+          const cardIds = [next, ...(list[i + 2] && isCard(list[i + 2]) ? [list[i + 2]] : [])];
+          out.push(
+            <div key={`${id}+${cardIds.join('+')}`} className={`grid gap-3 md:auto-rows-[215px] ${cols}`}>
               <ExpSlider posts={slides} className={`h-[340px] md:row-span-2 md:h-full${place}`} />
-              <SideSlides items={cardItems(next)} className="h-[215px]" />
-            </div>
-          ) : (
+              {cardIds.length === 1 ? (
+                <div className="h-[215px] md:row-span-2 md:h-full">
+                  <SideSlides items={[cardItem(cardIds[0])]} className="h-full" />
+                </div>
+              ) : (
+                <SideSlides items={cardIds.map(cardItem)} className="h-[215px]" />
+              )}
+            </div>,
+          );
+          i += cardIds.length;
+        } else {
+          out.push(
             <div key={`${id}+${next}`} className={`grid gap-3 md:grid-rows-[420px] ${cols}`}>
               <ExpSlider posts={slides} className={`h-[340px] md:h-full${place}`} />
               {listNode(next, 'md:h-full')}
-            </div>
-          ),
+            </div>,
+          );
+          i++;
+        }
+        continue;
+      }
+      // Dois cards seguidos que não vêm depois do slide: lado a lado numa zona larga.
+      if (isCard(id) && next && isCard(next) && WIDE.includes(zone)) {
+        out.push(
+          <div key={`${id}+${next}`} className="grid gap-3 md:grid-cols-2">
+            <SideSlides items={[cardItem(id), cardItem(next)]} className="h-[215px]" />
+          </div>,
         );
         i++;
         continue;
