@@ -47,8 +47,9 @@ const isDefault = (s: State) => sameLayout(s.layout, defaultHomeLayout()) && sam
 const parse = (data: any): State => ({ layout: normalizeHomeLayout(data.layout), categories: normalizeHomeCategories(data.categories), options: normalizeHomeOptions(data.options) });
 
 const field = 'h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none';
-const fieldWide = field.replace('w-full', 'w-full sm:w-[250px]'); // selector dos detalhes: largura certa, vários na mesma linha
-const fieldLabel = 'text-[12px] text-gray-500'; // etiqueta por cima do selector
+const fieldWide = field.replace('w-full', 'w-full sm:w-[170px]'); // selector dos detalhes: largura certa, vários na mesma linha
+const fieldRow = field.replace('h-9', 'h-8'); // selector dentro da linha: mesma altura dos botões da linha
+const fieldLabel = 'shrink-0 text-[13px] text-gray-500'; // etiqueta à esquerda do selector
 const fieldSide = field.replace('w-full', 'min-w-0 flex-1'); // ao lado de um título: ocupa o que sobra da linha
 const arrow = 'flex h-8 w-8 shrink-0 items-center justify-center border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40';
 const btn = 'flex h-9 items-center gap-1.5 px-4 text-[13px] disabled:cursor-not-allowed disabled:opacity-60';
@@ -251,7 +252,7 @@ export default function HomeSeccoesPage() {
           <ul className="divide-y divide-[#e5e5e5]">
             {list.map((id, i) => (
               <li key={id} className="px-4 py-2">
-                <div className="flex flex-wrap items-center gap-2 md:flex-nowrap">
+                <div className="flex flex-wrap items-center gap-1.5 md:flex-nowrap">
                   <input type="checkbox" aria-label="Marcar para mover com outras" checked={picked.includes(id)} onChange={() => togglePick(id)} className="h-[18px] w-[18px] shrink-0 accent-[#00a651]" />
                   <span className="w-5 shrink-0 text-[13px] text-gray-400">{i + 1}</span>
                   <span className={`flex min-w-0 flex-1 basis-[140px] items-center md:basis-0 gap-1.5 text-[13px] text-[#1d2327]${draft.options.hidden.includes(id) ? ' opacity-50' : ''}`}>
@@ -259,7 +260,7 @@ export default function HomeSeccoesPage() {
                     <span className="truncate">{isAdId(id) ? 'Espaço de publicidade' : rowLabel(id)}</span>
                   </span>
                   {inlineSlot(zone, id) && (
-                    <div className="w-[190px] shrink-0 max-lg:hidden">
+                    <div className="w-[170px] shrink-0 max-lg:hidden">
                       <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare heroStyle={draft.options.heroStyle} />
                     </div>
                   )}
@@ -351,28 +352,30 @@ export default function HomeSeccoesPage() {
                 {isAdId(id) ? (
                   <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} />
                 ) : (
-                  <div className="mt-2 flex flex-wrap items-end gap-3">
+                  <div className={id === 'destaque' ? 'mt-3 grid gap-x-8 gap-y-2 lg:grid-cols-2' : 'mt-2 flex flex-wrap items-end gap-3'}>
                     {id === 'destaque' && (
-                      <div className="flex flex-col gap-1">
-                        <span className={fieldLabel}>Estilo</span>
-                        <AdminSelect aria-label="Estilo do destaque" value={draft.options.heroStyle} onChange={(e) => setHeroStyle(e.target.value as HeroStyle)} className={fieldWide}>
+                      <div className="min-w-0 space-y-2">
+                      <div className="flex items-center gap-3">
+                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Estilo</span>
+                        <AdminSelect aria-label="Estilo do destaque" value={draft.options.heroStyle} onChange={(e) => setHeroStyle(e.target.value as HeroStyle)} className={fieldSide}>
                           <option value="cards">Banner e dois cards</option>
                           <option value="lista">Banner e lista com slide para cima</option>
                           <option value="carrossel">Carrossel na largura da página</option>
                           <option value="carrossel-conteudo">Carrossel na largura do conteúdo</option>
                         </AdminSelect>
                       </div>
-                    )}
-                    {id === 'destaque' && !draft.options.heroStyle.startsWith('carrossel') && (
-                      <div className="flex flex-col gap-1">
-                        <span className={fieldLabel}>Disposição</span>
-                        <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldWide}>
+                    {!draft.options.heroStyle.startsWith('carrossel') && (
+                      <div className="flex items-center gap-3">
+                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Disposição</span>
+                        <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldSide}>
                           <option value="banner-esquerda">{draft.options.heroStyle === 'lista' ? 'Banner à esquerda e lista à direita' : 'Banner à esquerda e cards à direita'}</option>
                           <option value="cards-esquerda">{draft.options.heroStyle === 'lista' ? 'Lista à esquerda e banner à direita' : 'Cards à esquerda e banner à direita'}</option>
                         </AdminSelect>
                       </div>
                     )}
-                    <div className={`flex flex-wrap items-end gap-3${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
+                      </div>
+                    )}
+                    <div className={`${id === 'destaque' ? 'min-w-0 space-y-2' : 'flex flex-wrap items-end gap-3'}${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
                       <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} heroStyle={draft.options.heroStyle} />
                     </div>
                     <SectionOptions id={id} settings={draft.options.sections[id] ?? {}} onChange={(patch) => setSetting(id, patch)} />
@@ -485,7 +488,7 @@ function AdFields({ zone, ad, onChange }: { zone: HomeZone; ad: HomeAd; onChange
 function SectionOptions({ id, settings, onChange }: { id: string; settings: SectionSettings; onChange: (patch: SectionSettings) => void }) {
   const base = baseId(id);
   if (base !== 'ultimas' && base !== 'oportunidades') return null;
-  const row = 'flex flex-col gap-1';
+  const row = 'flex items-center gap-2';
   const label = fieldLabel;
   if (base === 'oportunidades') {
     return (
@@ -530,6 +533,7 @@ function SectionOptions({ id, settings, onChange }: { id: string; settings: Sect
 /** Selector(es) de categoria de uma secção. Secções com várias categorias mostram-nas em etiquetas que se podem retirar, e o selector junta outra. */
 function CategoryControl({ section, categories, options, onChange, bare = false, heroStyle }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean; heroStyle?: HeroStyle }) {
     // O destaque mostra os selectores do estilo escolhido: dois cards ou a lista.
+  const side = section === 'destaque'; // no destaque o título fica ao lado do selector, como estava
   const activeSlots = HOME_CATEGORY_SLOTS.filter((s) => s.section !== 'destaque' || (heroStyle?.startsWith('carrossel') ? false : (heroStyle === 'lista') === (s.key === 'herolista')));
   const slots = section === 'destaque' ? activeSlots.filter((s) => s.section === section) : slotsFor(section);
   if (slots.length === 0) return null;
@@ -545,8 +549,8 @@ function CategoryControl({ section, categories, options, onChange, bare = false,
         const free = [...(slot.key === 'ultimas' ? [{ slug: 'todas', label: 'Todas as categorias' }] : []), ...options.filter((o) => o.slug === list[0] || !usedElsewhere.has(o.slug))];
         const all = free.some((o) => o.slug === list[0]) || options.length === 0 ? free : [{ slug: list[0], label: labelOf(list[0]) }, ...free];
         return (
-          <div key={slot.key} className={`flex flex-col gap-1${slot.multi ? ' w-full' : ''}`}>
-            {!bare && <span className={fieldLabel}>{slot.label}</span>}
+          <div key={slot.key} className={side ? 'flex items-center gap-3' : slot.multi ? 'flex w-full flex-col gap-1' : 'flex items-center gap-2'}>
+            {!bare && <span className={side ? 'w-[100px] shrink-0 text-[13px] text-gray-500' : slot.multi ? 'text-[12px] text-gray-500' : fieldLabel}>{slot.label}</span>}
             {slot.multi ? (
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
                 {list.map((slug) => (
@@ -565,7 +569,7 @@ function CategoryControl({ section, categories, options, onChange, bare = false,
                 </AdminSelect>
               </div>
             ) : (
-              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={fieldWide}>
+              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={bare ? fieldRow : side ? fieldSide : fieldWide}>
                 {all.map((o) => (
                   <option key={o.slug} value={o.slug}>{o.label}</option>
                 ))}
