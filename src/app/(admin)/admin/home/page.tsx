@@ -15,6 +15,9 @@ import {
   DUPLICABLE,
   baseId,
   isCopyId,
+  SECTION_LAYOUTS,
+  defaultLayoutOf,
+  layoutsOf,
   sectionLabel,
   slotKey,
   slotsFor,
@@ -32,6 +35,7 @@ import {
   type HomeLayout,
   type HomeOptions,
   type HomeZone,
+  type SectionLayout,
   type SectionSettings,
 } from '@/lib/home-sections';
 
@@ -171,6 +175,14 @@ export default function HomeSeccoesPage() {
 
   const togglePick = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
 
+  /** Muda o layout de todas as secções marcadas que o aceitam (as outras ficam como estão). */
+  const setLayoutMany = (layout: SectionLayout) =>
+    edit((cur) => {
+      const sections = { ...cur.options.sections };
+      for (const id of picked) if (layoutsOf(id).includes(layout)) sections[id] = { ...sections[id], layout };
+      return { ...cur, options: { ...cur.options, sections } };
+    });
+
   /** Passa as secções marcadas, todas juntas e pela mesma ordem em que estão, para o fim de outra zona. */
   const moveMany = (to: HomeZone) =>
     edit((cur) => {
@@ -247,7 +259,7 @@ export default function HomeSeccoesPage() {
 
   // Linhas compactas: as categorias e as opções de cada secção ficam escondidas e abrem a deslizar com a seta da linha.
   const toggleRow = (id: string) => setOpenRows((r) => (r.includes(id) ? r.filter((x) => x !== id) : [...r, id]));
-  const hasDetail = (id: string) => isAdId(id) || baseId(id) === 'destaque' || slotsFor(id).length > 0 || ['ultimas', 'oportunidades'].includes(baseId(id));
+  const hasDetail = (id: string) => isAdId(id) || baseId(id) === 'destaque' || slotsFor(id).length > 0 || layoutsOf(id).length > 0 || ['ultimas', 'oportunidades'].includes(baseId(id));
   // Só tem detalhe no computador quando a categoria não está já na própria linha.
   const detailOnlyMobile = (zone: HomeZone, id: string) => inlineSlot(zone, id) && !isAdId(id) && baseId(id) !== 'destaque' && !['ultimas', 'oportunidades'].includes(baseId(id));
 
@@ -339,16 +351,18 @@ export default function HomeSeccoesPage() {
                 {/* Opções da marcação: deslizam para baixo por baixo do título da secção marcada (a última que se marcou) e empurram o que vem a seguir */}
                 <Slide open={picked.length > 0 && picked[picked.length - 1] === id}>
                   <div className="mt-3 flex flex-wrap items-center gap-3 border border-[#00a651] bg-[#f0f7f4] px-3 py-3">
-                    <span className="text-[13px] text-[#1d2327]">{picked.length} {picked.length === 1 ? 'secção marcada' : 'secções marcadas'}</span>
                     <AdminSelect aria-label="Mover as marcadas para a zona" value="" onChange={(e) => e.target.value && moveMany(e.target.value as HomeZone)} className={`${field} sm:w-[240px]`}>
                       <option value="">Mover {picked.length === 1 ? 'para' : 'juntas para'}…</option>
                       {HOME_ZONES.map((x) => (
                         <option key={x.id} value={x.id}>{x.label}</option>
                       ))}
                     </AdminSelect>
-                    <button type="button" onClick={() => setPicked([])} className={`${btn} border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50`}>
-                      Limpar marcação
-                    </button>
+                    <AdminSelect aria-label="Layout das marcadas" value="" onChange={(e) => e.target.value && setLayoutMany(e.target.value as SectionLayout)} className={`${field} sm:w-[280px]`}>
+                      <option value="">Layout…</option>
+                      {SECTION_LAYOUTS.map((l) => (
+                        <option key={l.id} value={l.id}>{l.label}</option>
+                      ))}
+                    </AdminSelect>
                   </div>
                 </Slide>
                 {!isAdId(id) && (
@@ -509,9 +523,20 @@ function AdFields({ zone, ad, onChange }: { zone: HomeZone; ad: HomeAd; onChange
 /** Opções de uma secção: linhas de cards e carrossel (Últimas notícias) ou número de notícias (Oportunidades). */
 function SectionOptions({ id, settings, onChange }: { id: string; settings: SectionSettings; onChange: (patch: SectionSettings) => void }) {
   const base = baseId(id);
-  if (base !== 'ultimas' && base !== 'oportunidades') return null;
+  const layouts = layoutsOf(id);
   const row = 'flex items-center gap-2';
   const label = fieldLabel;
+  const layoutField = layouts.length > 0 && (
+    <div className={row}>
+      <span className={label}>Layout</span>
+      <AdminSelect aria-label="Layout da secção" value={settings.layout ?? defaultLayoutOf(id)} onChange={(e) => onChange({ layout: e.target.value as SectionLayout })} className={`${field} sm:w-[270px]`}>
+        {SECTION_LAYOUTS.filter((l) => layouts.includes(l.id)).map((l) => (
+          <option key={l.id} value={l.id}>{l.label}</option>
+        ))}
+      </AdminSelect>
+    </div>
+  );
+  if (base !== 'ultimas' && base !== 'oportunidades') return layoutField || null;
   if (base === 'oportunidades') {
     return (
       <div className={row}>
@@ -533,6 +558,7 @@ function SectionOptions({ id, settings, onChange }: { id: string; settings: Sect
   }
   return (
     <>
+      {layoutField}
       <div className={row}>
         <span className={label}>Linhas</span>
         <AdminSelect aria-label="Linhas de cards" value={String(settings.rows ?? 2)} onChange={(e) => onChange({ rows: Number(e.target.value) })} className={fieldWide}>

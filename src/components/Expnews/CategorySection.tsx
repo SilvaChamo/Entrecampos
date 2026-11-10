@@ -6,13 +6,14 @@ import { Check, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CardTitle, ListItem, Meta, Tag, Thumb } from '@/components/Expnews/blocks';
 import SlideStage from '@/components/Expnews/SlideStage';
 import type { Post } from '@/lib/news-data';
+import type { SectionLayout } from '@/lib/home-sections';
 
 /** Dados mínimos de cada notícia (o conteúdo completo não vai para o browser). */
 export type SlimPost = Pick<Post, 'slug' | 'title' | 'excerpt' | 'category' | 'categorySlug' | 'image' | 'date'>;
 export type CategoryGroup = { slug: string; label: string; posts: SlimPost[] };
 
 // Quantas notícias por vista: destaque = 1 grande + 4 ao lado; grelha = 2 grandes + 4 pequenas.
-const pageSizeFor = (layout: 'destaque' | 'grelha') => (layout === 'grelha' ? 6 : 5);
+const pageSizeFor = (layout: SectionLayout) => (layout === 'grelha' || layout === 'lista' ? 6 : 5);
 
 function BigCard({ post, imageHeight, reveal = false, fill = false }: { post: SlimPost; imageHeight: string; reveal?: boolean; fill?: boolean }) {
   return (
@@ -39,16 +40,16 @@ function BigCard({ post, imageHeight, reveal = false, fill = false }: { post: Sl
  * Secção de uma família de categorias na home. O selector (canto superior direito) escolhe a categoria;
  * as setas (canto inferior esquerdo) mudam, à mão, o conjunto de 6 notícias para o seguinte.
  *
- * layout "destaque": 1 notícia grande + 5 pequenas.  layout "grelha": 2 grandes + 4 pequenas.
+ * Layouts: lista numa coluna; card principal com a lista em baixo, à direita ou à esquerda; grelha (2 grandes + 4 pequenas).
  */
 export default function CategorySection({
   groups,
-  layout = 'destaque',
+  layout = 'principal-direita',
   arrowsOnTop = false,
   reveal = false,
 }: {
   groups: CategoryGroup[];
-  layout?: 'destaque' | 'grelha';
+  layout?: SectionLayout;
   /** Setas do slide no canto superior direito, depois do selector (em vez de por baixo da secção). */
   arrowsOnTop?: boolean;
   /** Entra com o mesmo efeito de subida dos outros cards quando chega ao ecrã. */
@@ -114,9 +115,39 @@ export default function CategorySection({
         </div>
       );
     }
+    if (layout === 'lista') {
+      return (
+        <div className="grid gap-3">
+          {visible.map((p) => (
+            <div key={p.slug} className={`${revealing ? 'ec-reveal ' : ''}h-[94px]`}>
+              <ListItem as="div" post={p as Post} bleed />
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (layout === 'principal-baixo') {
+      return (
+        <div className="space-y-3">
+          <BigCard post={visible[0]} imageHeight="h-[240px]" />
+          {visible.length > 1 && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {visible.slice(1, 5).map((p) => (
+                <div key={p.slug} className="h-[94px]">
+                  <ListItem as="div" post={p as Post} bleed />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+    const left = layout === 'principal-esquerda';
     return (
-      <div className="grid gap-3 md:grid-cols-[1.05fr_1fr]">
-        <BigCard post={visible[0]} imageHeight="h-[240px] md:h-auto md:min-h-[160px] md:flex-1" fill />
+      <div className={`grid gap-3 ${left ? 'md:grid-cols-[1fr_1.05fr]' : 'md:grid-cols-[1.05fr_1fr]'}`}>
+        <div className={`flex flex-col md:h-full${left ? ' md:order-2' : ''}`}>
+          <BigCard post={visible[0]} imageHeight="h-[240px] md:h-auto md:min-h-[160px] md:flex-1" fill />
+        </div>
         {/* Lista junto ao topo do card, cada notícia com a sua altura (nunca esticada ao card todo) */}
         <div className="flex flex-col gap-3 self-start">
           {visible.slice(1, 5).map((p) => (

@@ -17,7 +17,7 @@ import { getSuggestionSlugs } from '@/lib/suggestions';
 import { getHomeLayout, type HomeZone } from '@/lib/home-layout';
 import { getHomeCategories } from '@/lib/home-categories';
 import { getHomeOptions } from '@/lib/home-options';
-import { HOME_CATEGORY_SLOTS, baseId, isAdId, slotKey, slotsFor } from '@/lib/home-sections';
+import { HOME_CATEGORY_SLOTS, baseId, defaultLayoutOf, isAdId, slotKey, slotsFor } from '@/lib/home-sections';
 import CardsCarousel from '@/components/Expnews/CardsCarousel';
 import HomeAd from '@/components/Expnews/HomeAd';
 import HeroList from '@/components/Expnews/HeroList';
@@ -153,6 +153,7 @@ export default async function HomePrincipal() {
   // Categorias e opções de uma secção (ou da sua cópia): as escolhidas no painel ou, sem escolha, as de origem.
   const catsOf = (id: string) => cats[id] ?? slotsFor(id)[0]?.defaults ?? [];
   const settingsOf = (id: string) => options.sections[id] ?? {};
+  const layoutOf = (id: string) => settingsOf(id).layout ?? defaultLayoutOf(id);
   const inCategory = (p: Post, slug: string) => p.categorySlug === slug || p.extraCategories.some((c) => c.slug === slug);
   // Sugestões de leitura (fim da página): as notícias activadas no painel; enquanto nenhuma estiver activada, as mais recentes. O navegador escolhe 8 à sorte.
   const activated = posts.filter((p) => suggestSlugs.has(p.slug));
@@ -302,11 +303,11 @@ export default async function HomePrincipal() {
     'destaque-card1': (id) => <SideSlides items={[cardItem(id)]} className="h-[215px]" />,
     'destaque-card2': (id) => <SideSlides items={[cardItem(id)]} className="h-[215px]" />,
     'destaque-lista': (id) => listNode(id, 'h-[420px]'),
-    comunidade: (id) => <CategorySection groups={family(catsOf(id))} arrowsOnTop />,
-    agro: (id) => <CategorySection groups={family(catsOf(id))} layout="grelha" arrowsOnTop reveal />,
+    comunidade: (id) => <CategorySection groups={family(catsOf(id))} layout={layoutOf(id)} arrowsOnTop />,
+    agro: (id) => <CategorySection groups={family(catsOf(id))} layout={layoutOf(id)} arrowsOnTop reveal />,
     'agro-negocio': (id) => {
       const slug = catsOf(id)[0];
-      return <CategorySection groups={[{ slug, label: categoryLabel(slug), posts: posts.filter((p) => inCategory(p, slug)).map(slim) }]} arrowsOnTop />;
+      return <CategorySection groups={[{ slug, label: categoryLabel(slug), posts: posts.filter((p) => inCategory(p, slug)).map(slim) }]} layout={layoutOf(id)} arrowsOnTop />;
     },
     oportunidades: (id) => {
       const slug = catsOf(id)[0];
@@ -327,6 +328,14 @@ export default async function HomePrincipal() {
         <Card title={slug === 'todas' ? 'Últimas notícias' : categoryLabel(slug)} plain>
           {carousel ? (
             <CardsCarousel posts={list.map(slim)} />
+          ) : layoutOf(id) === 'lista' ? (
+            <div className="grid gap-3">
+              {list.map((p) => (
+                <div key={p.slug} className="h-[94px]">
+                  <ListItem as="div" post={p} bleed />
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {list.map((p) => (

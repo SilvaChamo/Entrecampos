@@ -147,7 +147,23 @@ export type HomeAd = { id: string; image: string; link: string };
 export type HeroStyle = 'cards' | 'lista' | 'carrossel' | 'carrossel-conteudo';
 /** `hidden`: secções desligadas (olho no painel): continuam na lista mas não aparecem no site. */
 /** Opções de cada secção: `rows` = linhas de cards (Últimas notícias), `count` = quantas notícias mostra (Oportunidades), `carousel` = passa em carrossel. */
-export type SectionSettings = { rows?: number; count?: number; carousel?: boolean };
+export type SectionSettings = { rows?: number; count?: number; carousel?: boolean; layout?: SectionLayout };
+
+/** Layout de uma secção de cards: lista numa coluna, card principal com a lista por baixo / à direita / à esquerda, ou grelha de notícias. */
+export type SectionLayout = 'lista' | 'principal-baixo' | 'principal-direita' | 'principal-esquerda' | 'grelha';
+export const SECTION_LAYOUTS: { id: SectionLayout; label: string }[] = [
+  { id: 'lista', label: 'Lista vertical numa coluna' },
+  { id: 'principal-baixo', label: 'Card principal com lista em baixo' },
+  { id: 'principal-direita', label: 'Card principal com lista à direita' },
+  { id: 'principal-esquerda', label: 'Card principal com lista à esquerda' },
+  { id: 'grelha', label: 'Grelha de notícias' },
+];
+const ALL_LAYOUTS = SECTION_LAYOUTS.map((l) => l.id);
+/** Secções onde se escolhe o layout e os que cada uma aceita (as cópias herdam da secção de origem). */
+export const LAYOUT_SUPPORT: Record<string, SectionLayout[]> = { comunidade: ALL_LAYOUTS, agro: ALL_LAYOUTS, 'agro-negocio': ALL_LAYOUTS, ultimas: ['grelha', 'lista'] };
+export const layoutsOf = (id: string): SectionLayout[] => LAYOUT_SUPPORT[baseId(id)] ?? [];
+/** O layout de origem de cada secção (o que tinha antes de haver escolha). */
+export const defaultLayoutOf = (id: string): SectionLayout => (['agro', 'ultimas'].includes(baseId(id)) ? 'grelha' : 'principal-direita');
 /** `v`: versão da forma guardada (2 = o destaque dividido em slide, cards e lista). */
 export type HomeOptions = { v: number; heroSide: HeroSide; heroStyle: HeroStyle; ads: HomeAd[]; hidden: string[]; sections: Record<string, SectionSettings> };
 
@@ -176,6 +192,7 @@ export function normalizeHomeOptions(raw: unknown): HomeOptions {
     if (int(o.rows, 6)) st.rows = int(o.rows, 6);
     if (int(o.count, 60)) st.count = int(o.count, 60);
     if (o.carousel === true) st.carousel = true;
+    if (typeof o.layout === 'string' && layoutsOf(id).includes(o.layout as SectionLayout)) st.layout = o.layout as SectionLayout;
     if (Object.keys(st).length) sections[id] = st;
   }
   // Forma antiga (antes do destaque se dividir): a lista só aparecia com o estilo «lista», e então os cards ficavam de fora.
