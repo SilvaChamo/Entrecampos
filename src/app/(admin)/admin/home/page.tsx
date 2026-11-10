@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowDown, ArrowRightLeft, ArrowUp, Copy, Eye, EyeOff, LayoutTemplate, Megaphone, Plus, RotateCcw, Save, Trash2, Upload, X } from 'lucide-react';
+import { ArrowDown, ArrowRightLeft, ArrowUp, ChevronDown, Copy, Eye, EyeOff, LayoutTemplate, Megaphone, Plus, RotateCcw, Save, Trash2, Upload, X } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import AdminSelect from '@/components/Admin/AdminSelect';
 import Slide from '@/components/Admin/Slide';
@@ -47,8 +47,10 @@ const isDefault = (s: State) => sameLayout(s.layout, defaultHomeLayout()) && sam
 const parse = (data: any): State => ({ layout: normalizeHomeLayout(data.layout), categories: normalizeHomeCategories(data.categories), options: normalizeHomeOptions(data.options) });
 
 const field = 'h-9 w-full border border-[#ccd0d4] bg-white px-3 text-[13px] text-[#1d2327] focus:border-[#00a651] focus:outline-none';
+const fieldWide = field.replace('w-full', 'w-full sm:w-[250px]'); // selector dos detalhes: largura certa, vários na mesma linha
+const fieldLabel = 'text-[12px] text-gray-500'; // etiqueta por cima do selector
 const fieldSide = field.replace('w-full', 'min-w-0 flex-1'); // ao lado de um título: ocupa o que sobra da linha
-const arrow = 'flex h-9 w-9 shrink-0 items-center justify-center border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40';
+const arrow = 'flex h-8 w-8 shrink-0 items-center justify-center border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40';
 const btn = 'flex h-9 items-center gap-1.5 px-4 text-[13px] disabled:cursor-not-allowed disabled:opacity-60';
 
 /** Secções da página inicial, dispostas como no site: topo, coluna principal e barra lateral (duas vezes) e fim. As setas mudam a posição, o selector a categoria e cada zona aceita espaços de publicidade. */
@@ -62,6 +64,7 @@ export default function HomeSeccoesPage() {
   const busy = saving !== null;
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
+  const [openRows, setOpenRows] = useState<string[]>([]); // secções com os detalhes (categorias e opções) abertos
   const [moving, setMoving] = useState<string | null>(null); // secção com o selector «Mover para» aberto
   const [picked, setPicked] = useState<string[]>([]); // secções marcadas para mover juntas
 
@@ -225,6 +228,12 @@ export default function HomeSeccoesPage() {
   const inlineSlot = (zone: HomeZone, id: string) =>
     ['top', 'main', 'main2', 'bottom'].includes(zone) && slotsFor(id).length === 1 && !slotsFor(id)[0].multi;
 
+  // Linhas compactas: as categorias e as opções de cada secção ficam escondidas e abrem a deslizar com a seta da linha.
+  const toggleRow = (id: string) => setOpenRows((r) => (r.includes(id) ? r.filter((x) => x !== id) : [...r, id]));
+  const hasDetail = (id: string) => isAdId(id) || id === 'destaque' || slotsFor(id).length > 0 || ['ultimas', 'oportunidades'].includes(baseId(id));
+  // Só tem detalhe no computador quando a categoria não está já na própria linha.
+  const detailOnlyMobile = (zone: HomeZone, id: string) => inlineSlot(zone, id) && !isAdId(id) && id !== 'destaque' && !['ultimas', 'oportunidades'].includes(baseId(id));
+
   // Chamada como função (e não como componente) para os campos não perderem o foco a cada letra escrita.
   function zoneBox(zone: HomeZone) {
     if (!draft) return null;
@@ -241,21 +250,33 @@ export default function HomeSeccoesPage() {
         ) : (
           <ul className="divide-y divide-[#e5e5e5]">
             {list.map((id, i) => (
-              <li key={id} className="px-4 py-3">
-                <div className="flex flex-wrap items-center gap-2">
+              <li key={id} className="px-4 py-2">
+                <div className="flex flex-wrap items-center gap-2 md:flex-nowrap">
                   <input type="checkbox" aria-label="Marcar para mover com outras" checked={picked.includes(id)} onChange={() => togglePick(id)} className="h-[18px] w-[18px] shrink-0 accent-[#00a651]" />
                   <span className="w-5 shrink-0 text-[13px] text-gray-400">{i + 1}</span>
-                  <span className={`flex min-w-0 flex-1 basis-[140px] items-center gap-1.5 text-[13px] text-[#1d2327]${draft.options.hidden.includes(id) ? ' opacity-50' : ''}`}>
+                  <span className={`flex min-w-0 flex-1 basis-[140px] items-center md:basis-0 gap-1.5 text-[13px] text-[#1d2327]${draft.options.hidden.includes(id) ? ' opacity-50' : ''}`}>
                     {isAdId(id) && <Megaphone className="h-4 w-4 shrink-0 text-[#d6101c]" />}
                     <span className="truncate">{isAdId(id) ? 'Espaço de publicidade' : rowLabel(id)}</span>
                   </span>
                   {inlineSlot(zone, id) && (
-                    <div className="w-[260px] shrink-0 max-lg:hidden">
+                    <div className="w-[190px] shrink-0 max-lg:hidden">
                       <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare heroStyle={draft.options.heroStyle} />
                     </div>
                   )}
                   {/* Botões: no computador ao lado do título; no telemóvel numa só linha por baixo do título */}
-                  <div className="flex items-center gap-2 max-md:basis-full">
+                  <div className="flex items-center gap-1.5 max-md:basis-full md:shrink-0">
+                  {hasDetail(id) && (
+                    <button
+                      type="button"
+                      aria-label={openRows.includes(id) ? 'Esconder as categorias e opções' : 'Ver as categorias e opções'}
+                      title={openRows.includes(id) ? 'Esconder as categorias e opções' : 'Ver as categorias e opções'}
+                      aria-expanded={openRows.includes(id)}
+                      onClick={() => toggleRow(id)}
+                      className={`${arrow}${openRows.includes(id) ? ' border-[#00a651] text-[#00a651]' : ''}${detailOnlyMobile(zone, id) ? ' lg:hidden' : ''}`}
+                    >
+                      <ChevronDown className={`h-4 w-4 transition-transform duration-500 ${openRows.includes(id) ? 'rotate-180' : ''}`} />
+                    </button>
+                  )}
                   <button
                     type="button"
                     aria-label={draft.options.hidden.includes(id) ? 'Ligar na página inicial' : 'Desligar da página inicial'}
@@ -326,14 +347,15 @@ export default function HomeSeccoesPage() {
                     </div>
                   </Slide>
                 )}
+                <Slide open={openRows.includes(id)}>
                 {isAdId(id) ? (
                   <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} />
                 ) : (
-                  <div className="mt-3 space-y-2">
+                  <div className="mt-2 flex flex-wrap items-end gap-3">
                     {id === 'destaque' && (
-                      <div className="flex items-center gap-3">
-                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Estilo</span>
-                        <AdminSelect aria-label="Estilo do destaque" value={draft.options.heroStyle} onChange={(e) => setHeroStyle(e.target.value as HeroStyle)} className={fieldSide}>
+                      <div className="flex flex-col gap-1">
+                        <span className={fieldLabel}>Estilo</span>
+                        <AdminSelect aria-label="Estilo do destaque" value={draft.options.heroStyle} onChange={(e) => setHeroStyle(e.target.value as HeroStyle)} className={fieldWide}>
                           <option value="cards">Banner e dois cards</option>
                           <option value="lista">Banner e lista com slide para cima</option>
                           <option value="carrossel">Carrossel na largura da página</option>
@@ -342,20 +364,21 @@ export default function HomeSeccoesPage() {
                       </div>
                     )}
                     {id === 'destaque' && !draft.options.heroStyle.startsWith('carrossel') && (
-                      <div className="flex items-center gap-3">
-                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Disposição</span>
-                        <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldSide}>
+                      <div className="flex flex-col gap-1">
+                        <span className={fieldLabel}>Disposição</span>
+                        <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldWide}>
                           <option value="banner-esquerda">{draft.options.heroStyle === 'lista' ? 'Banner à esquerda e lista à direita' : 'Banner à esquerda e cards à direita'}</option>
                           <option value="cards-esquerda">{draft.options.heroStyle === 'lista' ? 'Lista à esquerda e banner à direita' : 'Cards à esquerda e banner à direita'}</option>
                         </AdminSelect>
                       </div>
                     )}
-                    <div className={`space-y-2${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
+                    <div className={`flex flex-wrap items-end gap-3${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
                       <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} heroStyle={draft.options.heroStyle} />
                     </div>
                     <SectionOptions id={id} settings={draft.options.sections[id] ?? {}} onChange={(patch) => setSetting(id, patch)} />
                   </div>
                 )}
+                </Slide>
               </li>
             ))}
           </ul>
@@ -399,11 +422,11 @@ export default function HomeSeccoesPage() {
       ) : draft ? (
         <div className="space-y-3">
           {zoneBox('top')}
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_400px]">
             {zoneBox('main')}
             {zoneBox('side')}
           </div>
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_400px]">
             {zoneBox('main2')}
             {zoneBox('side2')}
           </div>
@@ -462,12 +485,12 @@ function AdFields({ zone, ad, onChange }: { zone: HomeZone; ad: HomeAd; onChange
 function SectionOptions({ id, settings, onChange }: { id: string; settings: SectionSettings; onChange: (patch: SectionSettings) => void }) {
   const base = baseId(id);
   if (base !== 'ultimas' && base !== 'oportunidades') return null;
-  const row = 'flex items-center gap-3';
-  const label = 'w-[100px] shrink-0 text-[13px] text-gray-500';
+  const row = 'flex flex-col gap-1';
+  const label = fieldLabel;
   if (base === 'oportunidades') {
     return (
       <div className={row}>
-        <span className={label}>Notícias</span>
+        <span className={label}>Notícias (1 a 60, 6 por página)</span>
         <input
           type="number"
           min={1}
@@ -480,7 +503,6 @@ function SectionOptions({ id, settings, onChange }: { id: string; settings: Sect
           }}
           className={`${field} sm:w-[110px]`}
         />
-        <span className="text-[12px] text-gray-500">de 1 a 60, 6 por página</span>
       </div>
     );
   }
@@ -488,7 +510,7 @@ function SectionOptions({ id, settings, onChange }: { id: string; settings: Sect
     <>
       <div className={row}>
         <span className={label}>Linhas</span>
-        <AdminSelect aria-label="Linhas de cards" value={String(settings.rows ?? 2)} onChange={(e) => onChange({ rows: Number(e.target.value) })} className={fieldSide}>
+        <AdminSelect aria-label="Linhas de cards" value={String(settings.rows ?? 2)} onChange={(e) => onChange({ rows: Number(e.target.value) })} className={fieldWide}>
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <option key={n} value={String(n)}>{n} {n === 1 ? 'linha' : 'linhas'} ({n * 3} notícias)</option>
           ))}
@@ -496,7 +518,7 @@ function SectionOptions({ id, settings, onChange }: { id: string; settings: Sect
       </div>
       <div className={row}>
         <span className={label}>Carrossel</span>
-        <AdminSelect aria-label="Carrossel" value={settings.carousel ? 'on' : 'off'} onChange={(e) => onChange({ carousel: e.target.value === 'on' })} className={fieldSide}>
+        <AdminSelect aria-label="Carrossel" value={settings.carousel ? 'on' : 'off'} onChange={(e) => onChange({ carousel: e.target.value === 'on' })} className={fieldWide}>
           <option value="off">Desligado (cards em grelha)</option>
           <option value="on">Ligado (cards a deslizar)</option>
         </AdminSelect>
@@ -507,8 +529,7 @@ function SectionOptions({ id, settings, onChange }: { id: string; settings: Sect
 
 /** Selector(es) de categoria de uma secção. Secções com várias categorias mostram-nas em etiquetas que se podem retirar, e o selector junta outra. */
 function CategoryControl({ section, categories, options, onChange, bare = false, heroStyle }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean; heroStyle?: HeroStyle }) {
-  const side = section === 'destaque'; // no destaque o título fica ao lado do selector
-  // O destaque mostra os selectores do estilo escolhido: dois cards ou a lista.
+    // O destaque mostra os selectores do estilo escolhido: dois cards ou a lista.
   const activeSlots = HOME_CATEGORY_SLOTS.filter((s) => s.section !== 'destaque' || (heroStyle?.startsWith('carrossel') ? false : (heroStyle === 'lista') === (s.key === 'herolista')));
   const slots = section === 'destaque' ? activeSlots.filter((s) => s.section === section) : slotsFor(section);
   if (slots.length === 0) return null;
@@ -524,19 +545,19 @@ function CategoryControl({ section, categories, options, onChange, bare = false,
         const free = [...(slot.key === 'ultimas' ? [{ slug: 'todas', label: 'Todas as categorias' }] : []), ...options.filter((o) => o.slug === list[0] || !usedElsewhere.has(o.slug))];
         const all = free.some((o) => o.slug === list[0]) || options.length === 0 ? free : [{ slug: list[0], label: labelOf(list[0]) }, ...free];
         return (
-          <div key={slot.key} className={side ? 'flex items-center gap-3' : 'flex flex-col gap-1'}>
-            {!bare && <span className={`text-[13px] text-gray-500${side ? ' w-[100px] shrink-0' : ''}`}>{slot.label}</span>}
+          <div key={slot.key} className={`flex flex-col gap-1${slot.multi ? ' w-full' : ''}`}>
+            {!bare && <span className={fieldLabel}>{slot.label}</span>}
             {slot.multi ? (
-              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
                 {list.map((slug) => (
-                  <span key={slug} className="flex h-9 items-center gap-1.5 border border-[#ccd0d4] bg-[#f6f7f7] pl-3 pr-1 text-[13px] text-[#1d2327]">
+                  <span key={slug} className="flex h-7 items-center gap-1 border border-[#ccd0d4] bg-[#f6f7f7] pl-2.5 pr-0.5 text-[12px] text-[#1d2327]">
                     {labelOf(slug)}
-                    <button type="button" aria-label={`Retirar ${labelOf(slug)}`} disabled={list.length === 1} onClick={() => onChange(slot.key, list.filter((x) => x !== slug))} className="flex h-7 w-7 items-center justify-center text-gray-500 hover:text-[#d63638] disabled:cursor-not-allowed disabled:opacity-40">
-                      <X className="h-4 w-4" />
+                    <button type="button" aria-label={`Retirar ${labelOf(slug)}`} disabled={list.length === 1} onClick={() => onChange(slot.key, list.filter((x) => x !== slug))} className="flex h-6 w-6 items-center justify-center text-gray-500 hover:text-[#d63638] disabled:cursor-not-allowed disabled:opacity-40">
+                      <X className="h-3.5 w-3.5" />
                     </button>
                   </span>
                 ))}
-                <AdminSelect aria-label="Juntar categoria" value="" onChange={(e) => e.target.value && onChange(slot.key, [...list, e.target.value])} className={`${field} sm:w-[210px]`}>
+                <AdminSelect aria-label="Juntar categoria" value="" onChange={(e) => e.target.value && onChange(slot.key, [...list, e.target.value])} className="h-7 w-full border border-[#ccd0d4] bg-white px-2 text-[12px] text-[#1d2327] focus:border-[#00a651] focus:outline-none sm:w-[150px]">
                   <option value="">Juntar categoria…</option>
                   {options.filter((o) => !list.includes(o.slug) && !usedElsewhere.has(o.slug)).map((o) => (
                     <option key={o.slug} value={o.slug}>{o.label}</option>
@@ -544,7 +565,7 @@ function CategoryControl({ section, categories, options, onChange, bare = false,
                 </AdminSelect>
               </div>
             ) : (
-              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={side ? fieldSide : field}>
+              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={fieldWide}>
                 {all.map((o) => (
                   <option key={o.slug} value={o.slug}>{o.label}</option>
                 ))}

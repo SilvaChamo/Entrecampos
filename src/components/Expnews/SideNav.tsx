@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Apple,
   BookOpen,
@@ -46,6 +46,8 @@ const ITEM = 'flex items-center text-[12px] font-medium uppercase tracking-wide'
 const HOVER = 'hover:bg-white/5 hover:text-[#39ff14]';
 // Ao passar o rato, o ícone e o texto deslizam JUNTOS (um só bloco) um pouco para a direita; desligado com "reduzir movimento".
 const SLIDE = 'flex items-center transition-transform duration-300 ease-out group-hover/slide:translate-x-1.5 motion-reduce:group-hover/slide:translate-x-0';
+// Largura da gaveta de um item: ícone (64px) + o texto mais comprido + 25px de espaço.
+const FLY_OPEN = 196;
 const ACTIVE = 'bg-white/5 text-[#39ff14]';
 
 /** Menu da barra lateral: o item da página actual fica com a cor do hover. */
@@ -55,16 +57,46 @@ export default function SideNav() {
 
   // Com a barra recolhida (ecrã grande), ao apontar um item abre-se SÓ essa linha para a direita, como uma gaveta, com o fundo e a
   // linha vertical da barra, por cima do conteúdo. É "fixed" para não ser cortada pelo scroll da lista; as outras linhas ficam como estão.
-  const [fly, setFly] = useState<{ label: string; href: string; Icon: (typeof SIDE_NAV)[number]['Icon']; top: number; active: boolean; n: number } | null>(null);
-  const [flyOpen, setFlyOpen] = useState(false);
-  const navRef = useRef<HTMLElement>(null);
-  const show = (item: (typeof SIDE_NAV)[number], active: boolean) => (e: React.SyntheticEvent<HTMLElement>) => {
-    if (e.currentTarget.closest('aside')?.getAttribute('data-open') === 'true') return setFlyOpen(false);
-    const r = e.currentTarget.getBoundingClientRect();
-    setFly((f) => ({ ...item, top: r.top, active, n: (f?.n ?? 0) + 1 })); // novo `n` = nova gaveta: cada item começa sempre a deslizar do início
-    setFlyOpen(true);
+  // Tudo é feito direto no elemento (sem estado do React): apontar um item não volta a desenhar a lista, por isso a gaveta arranca logo.
+  const router = useRouter();
+  const flyRef = useRef<HTMLAnchorElement>(null);
+  const iconRef = useRef<HTMLSpanElement>(null);
+  const labelRef = useRef<HTMLSpanElement>(null);
+  const anim = useRef<Animation | null>(null);
+  const hide = () => {
+    const el = flyRef.current;
+    if (!el || el.style.visibility !== 'visible') return;
+    anim.current?.cancel();
+    const a = el.animate([{ width: `${FLY_OPEN}px` }, { width: '64px' }], { duration: 350, easing: 'ease-out' });
+    anim.current = a;
+    a.onfinish = () => {
+      if (anim.current === a) {
+        el.style.visibility = 'hidden';
+        el.style.width = '';
+      }
+    };
+    el.style.width = '64px';
   };
-  const hide = () => setFlyOpen(false);
+  const show = (e: React.SyntheticEvent<HTMLElement>) => {
+    const link = e.currentTarget;
+    const el = flyRef.current;
+    if (!el || link.closest('aside')?.getAttribute('data-open') === 'true') return hide();
+    const svg = link.querySelector('svg');
+    iconRef.current?.replaceChildren(...(svg ? [svg.cloneNode(true)] : []));
+    if (labelRef.current) labelRef.current.textContent = link.getAttribute('aria-label');
+    el.setAttribute('href', link.getAttribute('href') || '/');
+    el.style.top = `${link.getBoundingClientRect().top}px`;
+    el.style.visibility = 'visible';
+    el.style.width = `${FLY_OPEN}px`;
+    anim.current?.cancel();
+    // Cada item começa sempre a deslizar do início, com um pequeno balanço no fim (flexível, sem ser rápido).
+    anim.current = el.animate([{ width: '64px' }, { width: `${FLY_OPEN}px` }], { duration: 600, easing: 'cubic-bezier(0.25, 0.7, 0.3, 1.2)' });
+  };
+  const go = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    router.push(e.currentTarget.getAttribute('href') || '/');
+  };
 
   return (
     <>
@@ -84,7 +116,7 @@ export default function SideNav() {
         />
       </div>
       {/* Só esta lista tem scroll vertical (quando o ecrã é baixo). */}
-      <nav ref={navRef} onScroll={hide} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-color:#2f5224_transparent] [scrollbar-width:thin]">
+      <nav onScroll={hide} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-color:#2f5224_transparent] [scrollbar-width:thin]">
         {SIDE_NAV.map(({ label, href, Icon }) => {
           const active = isActive(href);
           return (
@@ -93,8 +125,8 @@ export default function SideNav() {
               href={href}
               aria-label={label}
               aria-current={active ? 'page' : undefined}
-              onMouseEnter={show({ label, href, Icon }, active)}
-              onFocus={show({ label, href, Icon }, active)}
+              onMouseEnter={show}
+              onFocus={show}
               onBlur={hide}
               className={`group/slide ${ITEM} ${active ? ACTIVE : `text-gray-200 ${HOVER}`}`}
             >
@@ -108,24 +140,18 @@ export default function SideNav() {
           );
         })}
       </nav>
-      {fly && (
-        <Link
-          key={fly.n}
-          href={fly.href}
-          tabIndex={-1}
-          aria-hidden
-          onMouseLeave={hide}
-          style={{ top: fly.top }}
-          className={`${ITEM} fixed left-0 z-[60] h-[37px] items-center overflow-hidden whitespace-nowrap border-r-2 border-[#39ff14] bg-[#12290d] text-[#39ff14] shadow-[6px_0_16px_rgba(0,0,0,0.35)] transition-[width,visibility] duration-500 ease-in-out max-lg:hidden ${
-            flyOpen ? 'ec-fly-in visible w-[196px]' : 'invisible w-16 pointer-events-none'
-          }`}
-        >
-          <span className={ICON_BOX}>
-            <fly.Icon className="h-5 w-5" />
-          </span>
-          <span>{fly.label}</span>
-        </Link>
-      )}
+      <a
+        ref={flyRef}
+        href="/"
+        tabIndex={-1}
+        aria-hidden
+        onClick={go}
+        onMouseLeave={hide}
+        className={`${ITEM} invisible fixed left-0 top-0 z-[60] h-[37px] w-16 items-center overflow-hidden whitespace-nowrap border-r-2 border-[#39ff14] bg-[#12290d] text-[#39ff14] shadow-[6px_0_16px_rgba(0,0,0,0.35)] will-change-[width] max-lg:hidden`}
+      >
+        <span ref={iconRef} className={ICON_BOX} />
+        <span ref={labelRef} />
+      </a>
     </>
   );
 }

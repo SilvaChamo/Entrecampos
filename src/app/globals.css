@@ -531,7 +531,3 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .ec-slide-popups [role="listbox"] { animation: ec-pop-down 0.45s ease-in-out; }
 }
-
-/* Gaveta de um item da barra lateral da home: nasce com a largura do ícone e desliza para a direita. */
-@keyframes ec-fly-in { from { width: 64px; } to { width: 196px; } }
-.ec-fly-in { animation: ec-fly-in 0.6s ease-in-out; }
