@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDown, ArrowRightLeft, ArrowUp, Copy, Eye, EyeOff, LayoutTemplate, Megaphone, Plus, RotateCcw, Save, Trash2, Upload, X } from 'lucide-react';
 import Spinner from '@/components/Common/Spinner';
 import AdminSelect from '@/components/Admin/AdminSelect';
+import Slide from '@/components/Admin/Slide';
 import { uploadToLibrary } from '@/components/Admin/ImageChooser';
 import { adminCacheGet, adminCacheSet } from '@/lib/admin-cache';
 import {
@@ -297,9 +298,9 @@ export default function HomeSeccoesPage() {
                   )}
                   </div>
                 </div>
-                {picked.length > 0 && picked[picked.length - 1] === id && (
-                  // Opções da marcação: aparecem a deslizar por baixo do título da secção marcada (a última que se marcou)
-                  <div className="ec-slide-down mt-3 flex flex-wrap items-center gap-3 border border-[#00a651] bg-[#f0f7f4] px-3 py-3">
+                {/* Opções da marcação: deslizam para baixo por baixo do título da secção marcada (a última que se marcou) e empurram o que vem a seguir */}
+                <Slide open={picked.length > 0 && picked[picked.length - 1] === id}>
+                  <div className="mt-3 flex flex-wrap items-center gap-3 border border-[#00a651] bg-[#f0f7f4] px-3 py-3">
                     <span className="text-[13px] text-[#1d2327]">{picked.length} {picked.length === 1 ? 'secção marcada' : 'secções marcadas'}</span>
                     <AdminSelect aria-label="Mover as marcadas para a zona" value="" onChange={(e) => e.target.value && moveMany(e.target.value as HomeZone)} className={`${field} sm:w-[240px]`}>
                       <option value="">Mover {picked.length === 1 ? 'para' : 'juntas para'}…</option>
@@ -311,17 +312,19 @@ export default function HomeSeccoesPage() {
                       Limpar marcação
                     </button>
                   </div>
-                )}
-                {moving === id && !isAdId(id) && (
-                  <div className="mt-3 flex items-center gap-3">
-                    <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Mover para</span>
-                    <AdminSelect aria-label="Mover para a zona" value="" onChange={(e) => e.target.value && moveTo(id, e.target.value as HomeZone)} className={fieldSide}>
-                      <option value="">Escolher a zona…</option>
-                      {HOME_ZONES.filter((x) => x.id !== zone).map((x) => (
-                        <option key={x.id} value={x.id}>{x.label}</option>
-                      ))}
-                    </AdminSelect>
-                  </div>
+                </Slide>
+                {!isAdId(id) && (
+                  <Slide open={moving === id}>
+                    <div className="mt-3 flex items-center gap-3">
+                      <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Mover para</span>
+                      <AdminSelect aria-label="Mover para a zona" value="" onChange={(e) => e.target.value && moveTo(id, e.target.value as HomeZone)} className={fieldSide}>
+                        <option value="">Escolher a zona…</option>
+                        {HOME_ZONES.filter((x) => x.id !== zone).map((x) => (
+                          <option key={x.id} value={x.id}>{x.label}</option>
+                        ))}
+                      </AdminSelect>
+                    </div>
+                  </Slide>
                 )}
                 {isAdId(id) ? (
                   <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} />
@@ -367,7 +370,7 @@ export default function HomeSeccoesPage() {
   }
 
   return (
-    <div className="ec-page text-[#2c3338]">
+    <div className="ec-page ec-slide-popups text-[#2c3338]">
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <h1 className="flex items-center gap-2 text-[23px] font-normal text-[#1d2327]">
           <LayoutTemplate className="h-5 w-5 text-gray-500" /> Secções da página inicial
