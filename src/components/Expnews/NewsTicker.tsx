@@ -111,7 +111,7 @@ export default function NewsTicker({ posts }: { posts: TickerPost[] }) {
       </div>
 
       {/* Setas: num cartão verde escuro, de cor lisa (sem esvanecer), encostado à ponta direita do conteúdo */}
-      <div className="absolute inset-y-0 right-0 z-10 flex items-center gap-1 bg-[#093510] px-2">
+      <div className="absolute inset-y-0 right-0 z-10 flex items-center gap-1 bg-[#093510] pl-2">
         <button
           type="button"
           onClick={() => nudge(-1)}

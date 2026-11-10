@@ -7,7 +7,7 @@ const SidebarContext = createContext<{ open: boolean; toggle: () => void }>({ op
 
 /**
  * Estrutura da home: barra lateral escura + conteúdo.
- * A barra entra sempre fechada (em ecrã grande só ícones, 64px). Se o utilizador a abrir com o botão Menu (196px),
+ * A barra entra sempre fechada (em ecrã grande só ícones, 64px). Se o utilizador a abrir com o botão Menu (220px),
  * a escolha fica guardada e ela só volta a fechar quando ele a fechar. No telemóvel abre só com um clique em "Menu" e desliza da esquerda.
  */
 const STORAGE_KEY = 'ec-sidebar-v2';
@@ -81,16 +81,11 @@ export default function ExpFrame({ sidebar, topBar, children }: { sidebar: React
           <aside
             data-open={open}
             suppressHydrationWarning
-            className={`group/side z-40 flex flex-col text-white max-lg:bg-[#0c1f08] max-lg:border-r-2 max-lg:border-[#39ff14] transition-[width] max-lg:fixed max-lg:left-0 max-lg:top-0 max-lg:h-[100dvh] max-lg:w-[196px] max-lg:pb-4 max-lg:transition-[transform,visibility] ${ease} ${
+            className={`group/side z-40 flex flex-col bg-[#0c1f08] text-white border-r-2 border-[#39ff14] transition-[width] max-lg:fixed max-lg:left-0 max-lg:top-0 max-lg:h-[100dvh] max-lg:w-[220px] max-lg:pb-4 max-lg:transition-[transform,visibility] ${ease} ${
               open ? 'max-lg:translate-x-0' : 'max-lg:invisible max-lg:-translate-x-full'
-            } lg:sticky lg:top-0 lg:h-screen lg:w-16 lg:shrink-0 lg:self-start lg:data-[open=true]:w-[196px]`}
+            } lg:sticky lg:top-0 lg:h-screen lg:pb-9 lg:w-16 lg:shrink-0 lg:self-start lg:data-[open=true]:w-[220px]`}
           >
-            {/* Em ecrã grande o aside guarda o lugar (64px, ou 196px se o utilizador a abriu). */}
-            <div
-              className={`flex h-full min-h-0 flex-col lg:absolute lg:inset-y-0 lg:left-0 lg:w-full lg:border-r-2 lg:border-[#39ff14] lg:bg-[#0c1f08] lg:pb-9 lg:transition-[width] ${ease} lg:group-data-[open=true]/side:w-[220px]`}
-            >
-              {sidebar}
-            </div>
+            {sidebar}
           </aside>
           {!booted && <script dangerouslySetInnerHTML={{ __html: INIT_SCRIPT }} />}
           {/* No telemóvel a barra desliza por cima do conteúdo (sem saltar), por isso há um fundo, que aparece e some suavemente, para a fechar. */}

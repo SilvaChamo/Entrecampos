@@ -173,7 +173,7 @@ export default function GreenBar() {
   }, []);
 
   return (
-    <div className="relative bg-[#0c1f08] transition-[padding] max-sm:pb-1.5 lg:h-9 duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:pl-16 lg:group-data-[open=true]/frame:pl-[196px]">
+    <div className="relative bg-[#0c1f08] transition-[padding] max-sm:pb-1.5 lg:h-9 duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:pl-16 lg:group-data-[open=true]/frame:pl-[220px]">
       {/* Linha verde fluorescente (2px, sem blur) por baixo da barra: começa onde a barra de menu acaba, para a linha vertical dela (ExpFrame) fechar o contorno. */}
       <span
         aria-hidden

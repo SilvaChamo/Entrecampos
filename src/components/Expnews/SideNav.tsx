@@ -38,7 +38,7 @@ const SIDE_NAV = [
 
 // Barra recolhida por defeito (só ícones, 64px); ao abrir os rótulos surgem com fade + largura, sem saltos.
 const OPEN = 'group-data-[open=true]/side:opacity-100';
-const LABEL = `block w-0 overflow-hidden whitespace-nowrap opacity-0 transition-[width,opacity] duration-300 group-data-[open=true]/side:w-[130px] ${OPEN}`;
+const LABEL = `block w-0 overflow-hidden whitespace-nowrap opacity-0 transition-[width,opacity] duration-300 group-data-[open=true]/side:w-[140px] ${OPEN}`;
 // Mesmas medidas do menu do painel: ícones de 20px e linhas de 37px.
 const ICON_BOX = 'flex h-[37px] w-16 shrink-0 items-center justify-center';
 const ITEM = 'flex items-center text-[12px] font-medium uppercase tracking-wide';
