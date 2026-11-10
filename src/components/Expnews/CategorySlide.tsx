@@ -80,7 +80,7 @@ export default function CategorySlide({
                 </div>
                 <h4 className="line-clamp-3 text-[14px] font-bold leading-snug">{post.title}</h4>
                 <div className="pointer-events-auto mt-2 flex h-5 items-center gap-3 text-[10px] font-medium">
-                  {post.date && <span className="text-white/85">{shortDate(post.date)}</span>}
+                  {post.date && <span className="text-[#39ff14] [text-shadow:0_1px_3px_rgba(0,0,0,0.7)]">{shortDate(post.date)}</span>}
                   <ShareLink path={href} title={post.title} className="text-white/85 hover:text-white" />
                 </div>
               </div>
