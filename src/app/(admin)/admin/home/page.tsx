@@ -253,6 +253,8 @@ export default function HomeSeccoesPage() {
                       <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare heroStyle={draft.options.heroStyle} />
                     </div>
                   )}
+                  {/* Botões: no computador ao lado do título; no telemóvel numa só linha por baixo do título */}
+                  <div className="flex items-center gap-2 max-md:basis-full">
                   <button
                     type="button"
                     aria-label={draft.options.hidden.includes(id) ? 'Ligar na página inicial' : 'Desligar da página inicial'}
@@ -293,7 +295,23 @@ export default function HomeSeccoesPage() {
                       <X className="h-4 w-4" />
                     </button>
                   )}
+                  </div>
                 </div>
+                {picked.length > 0 && picked[picked.length - 1] === id && (
+                  // Opções da marcação: aparecem a deslizar por baixo do título da secção marcada (a última que se marcou)
+                  <div className="ec-slide-down mt-3 flex flex-wrap items-center gap-3 border border-[#00a651] bg-[#f0f7f4] px-3 py-3">
+                    <span className="text-[13px] text-[#1d2327]">{picked.length} {picked.length === 1 ? 'secção marcada' : 'secções marcadas'}</span>
+                    <AdminSelect aria-label="Mover as marcadas para a zona" value="" onChange={(e) => e.target.value && moveMany(e.target.value as HomeZone)} className={`${field} sm:w-[240px]`}>
+                      <option value="">Mover {picked.length === 1 ? 'para' : 'juntas para'}…</option>
+                      {HOME_ZONES.map((x) => (
+                        <option key={x.id} value={x.id}>{x.label}</option>
+                      ))}
+                    </AdminSelect>
+                    <button type="button" onClick={() => setPicked([])} className={`${btn} border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50`}>
+                      Limpar marcação
+                    </button>
+                  </div>
+                )}
                 {moving === id && !isAdId(id) && (
                   <div className="mt-3 flex items-center gap-3">
                     <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Mover para</span>
@@ -369,21 +387,6 @@ export default function HomeSeccoesPage() {
         </div>
       </div>
 
-
-      {picked.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-3 border border-[#00a651] bg-[#f0f7f4] px-4 py-3">
-          <span className="text-[13px] text-[#1d2327]">{picked.length} {picked.length === 1 ? 'secção marcada' : 'secções marcadas'}</span>
-          <AdminSelect aria-label="Mover as marcadas para a zona" value="" onChange={(e) => e.target.value && moveMany(e.target.value as HomeZone)} className={`${field} sm:w-[260px]`}>
-            <option value="">Mover juntas para…</option>
-            {HOME_ZONES.map((x) => (
-              <option key={x.id} value={x.id}>{x.label}</option>
-            ))}
-          </AdminSelect>
-          <button type="button" onClick={() => setPicked([])} className={`${btn} border border-[#ccd0d4] bg-white text-[#2c3338] hover:bg-gray-50`}>
-            Limpar marcação
-          </button>
-        </div>
-      )}
 
       {error && <p className="mb-4 border-l-4 border-[#d63638] bg-red-50 px-3 py-2 text-[13px] text-red-800">{error}</p>}
       {done && <p className="mb-4 border-l-4 border-[#00a651] bg-green-50 px-3 py-2 text-[13px] text-green-800">{done}</p>}

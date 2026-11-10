@@ -525,3 +525,9 @@ body {
 
 
 /* Lista do destaque da página inicial: desliza para cima sem parar (metade da lista = uma volta, a lista vem duplicada). */
+
+/* Bloco que aparece por baixo de um elemento a deslizar para baixo (opções das secções marcadas no painel). */
+@keyframes ec-slide-down { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .ec-slide-down { animation: ec-slide-down 0.2s ease-out; }
+}
