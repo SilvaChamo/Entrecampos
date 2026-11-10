@@ -17,7 +17,7 @@ import { getSuggestionSlugs } from '@/lib/suggestions';
 import { getHomeLayout, type HomeZone } from '@/lib/home-layout';
 import { getHomeCategories } from '@/lib/home-categories';
 import { getHomeOptions } from '@/lib/home-options';
-import { HOME_CATEGORY_SLOTS, baseId, isAdId, slotsFor } from '@/lib/home-sections';
+import { HOME_CATEGORY_SLOTS, baseId, isAdId, slotKey, slotsFor } from '@/lib/home-sections';
 import CardsCarousel from '@/components/Expnews/CardsCarousel';
 import HomeAd from '@/components/Expnews/HomeAd';
 import HeroList from '@/components/Expnews/HeroList';
@@ -167,25 +167,6 @@ export default async function HomePrincipal() {
 
   // Cada secção da home, por nome. A zona e a ordem em que aparecem vêm do painel (Página inicial); ver lib/home-layout.ts.
   const sections: Record<string, React.ReactNode> = {
-    destaque: options.heroStyle === 'carrossel' || options.heroStyle === 'carrossel-conteudo' ? (
-            <HeroCarousel posts={slides} fullWidth={options.heroStyle === 'carrossel'} />
-    ) : options.heroStyle === 'lista' ? (
-            <div className={`grid gap-3 md:grid-rows-[420px] ${options.heroSide === 'cards-esquerda' ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]'}`}>
-              <ExpSlider posts={slides} className={`h-[340px] md:h-full${options.heroSide === 'cards-esquerda' ? ' md:col-start-2 md:row-start-1' : ''}`} />
-              <HeroList posts={heroList(cats.herolista[0])} label={categoryLabel(cats.herolista[0])} className="md:h-full" />
-            </div>
-    ) : (
-            <div className={`grid gap-3 md:auto-rows-[215px] ${options.heroSide === 'cards-esquerda' ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]'}`}>
-              <ExpSlider posts={slides} className={`h-[340px] md:row-span-2 md:h-full${options.heroSide === 'cards-esquerda' ? ' md:col-start-2 md:row-start-1' : ''}`} />
-              <SideSlides
-                items={[
-                  { posts: heroLatest(cats.hero1[0]), label: categoryLabel(cats.hero1[0]) },
-                  { posts: heroLatest(cats.hero2[0]), label: categoryLabel(cats.hero2[0]) },
-                ]}
-                className="h-[215px]"
-              />
-            </div>
-    ),
     clima: (
                 <WeatherCard />
     ),
@@ -301,7 +282,25 @@ export default async function HomePrincipal() {
     ),
   };
   // Secções com categoria e opções próprias (as originais e as cópias feitas no painel): `id` é o da secção ou o da cópia.
-  const factories: Record<string, (id: string) => React.ReactNode> = {
+  // O destaque são três peças independentes (slide, cards, lista): cada uma pode ser copiada e posta onde se quiser.
+  // Se o slide vem logo a seguir aos cards (ou à lista), numa zona larga, ficam lado a lado como sempre foram.
+  const WIDE: HomeZone[] = ['top', 'main', 'main2', 'bottom'];
+  const carousel = options.heroStyle === 'carrossel' || options.heroStyle === 'carrossel-conteudo';
+  const heroSideLeft = options.heroSide === 'cards-esquerda';
+  const catAt = (id: string, key: string) => cats[slotKey(id, key)]?.[0] ?? HOME_CATEGORY_SLOTS.find((x) => x.key === key)?.defaults[0] ?? 'todas';
+  const cardItems = (id: string) =>
+    ['hero1', 'hero2'].map((k) => ({ posts: heroLatest(catAt(id, k)), label: categoryLabel(catAt(id, k)) }));
+  const listNode = (id: string, className: string) => <HeroList posts={heroList(catAt(id, 'herolista'))} label={categoryLabel(catAt(id, 'herolista'))} className={className} />;
+  const slideNode = (className: string) =>
+    carousel ? <HeroCarousel posts={slides} fullWidth={options.heroStyle === 'carrossel'} /> : <ExpSlider posts={slides} className={className} />;
+  const factories: Record<string, (id: string, zone?: HomeZone) => React.ReactNode> = {
+    destaque: () => slideNode('h-[340px] md:h-[442px]'),
+    'destaque-cards': (id, zone) => (
+      <div className={`grid gap-3${zone && WIDE.includes(zone) ? ' md:grid-cols-2' : ''}`}>
+        <SideSlides items={cardItems(id)} className="h-[215px]" />
+      </div>
+    ),
+    'destaque-lista': (id) => listNode(id, 'h-[420px]'),
     comunidade: (id) => <CategorySection groups={family(catsOf(id))} arrowsOnTop />,
     agro: (id) => <CategorySection groups={family(catsOf(id))} layout="grelha" arrowsOnTop reveal />,
     'agro-negocio': (id) => {
@@ -338,14 +337,40 @@ export default async function HomePrincipal() {
       );
     },
   };
-  const nodeOf = (id: string) => (baseId(id) in factories ? factories[baseId(id)](id) : sections[id]);
+  const nodeOf = (id: string, zone?: HomeZone) => (baseId(id) in factories ? factories[baseId(id)](id, zone) : sections[id]);
   const adOf = (id: string) => options.ads.find((a) => a.id === id);
   // Secções desligadas no painel (olho) não aparecem.
   const visible = (zone: HomeZone) => layout[zone].filter((id) => !options.hidden.includes(id));
-  const render = (zone: HomeZone) =>
-    visible(zone).map((id) => (
-      <React.Fragment key={id}>{isAdId(id) ? <HomeAd image={adOf(id)?.image} link={adOf(id)?.link} /> : nodeOf(id)}</React.Fragment>
-    ));
+  const render = (zone: HomeZone) => {
+    const list = visible(zone);
+    const out: React.ReactNode[] = [];
+    for (let i = 0; i < list.length; i++) {
+      const id = list[i];
+      const next = list[i + 1];
+      // Slide seguido de cards ou lista, numa zona larga: lado a lado (a disposição vem do painel).
+      if (!carousel && baseId(id) === 'destaque' && next && WIDE.includes(zone) && (baseId(next) === 'destaque-cards' || baseId(next) === 'destaque-lista')) {
+        const cols = heroSideLeft ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]';
+        const place = heroSideLeft ? ' md:col-start-2 md:row-start-1' : '';
+        out.push(
+          baseId(next) === 'destaque-cards' ? (
+            <div key={`${id}+${next}`} className={`grid gap-3 md:auto-rows-[215px] ${cols}`}>
+              <ExpSlider posts={slides} className={`h-[340px] md:row-span-2 md:h-full${place}`} />
+              <SideSlides items={cardItems(next)} className="h-[215px]" />
+            </div>
+          ) : (
+            <div key={`${id}+${next}`} className={`grid gap-3 md:grid-rows-[420px] ${cols}`}>
+              <ExpSlider posts={slides} className={`h-[340px] md:h-full${place}`} />
+              {listNode(next, 'md:h-full')}
+            </div>
+          ),
+        );
+        i++;
+        continue;
+      }
+      out.push(<React.Fragment key={id}>{isAdId(id) ? <HomeAd image={adOf(id)?.image} link={adOf(id)?.link} /> : nodeOf(id, zone)}</React.Fragment>);
+    }
+    return out;
+  };
   // Duas secções de colunas (coluna principal + barra lateral), cada uma com a sua barra lateral fixa.
   const columns = (main: HomeZone, side: HomeZone) => {
     const hasMain = visible(main).length > 0;

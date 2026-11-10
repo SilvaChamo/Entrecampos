@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Tag, Thumb } from '@/components/Expnews/blocks';
+import { Tag, Thumb, shortDate } from '@/components/Expnews/blocks';
 import ShareLink from '@/components/Expnews/ShareLink';
 import SlideStage from '@/components/Expnews/SlideStage';
 import type { SlimPost } from '@/components/Expnews/CategorySection';
@@ -79,7 +79,8 @@ export default function CategorySlide({
                   <Tag label={post.category} slug={post.categorySlug} />
                 </div>
                 <h4 className="line-clamp-3 text-[14px] font-bold leading-snug">{post.title}</h4>
-                <div className="pointer-events-auto mt-2 flex h-5 items-center text-[10px] font-medium">
+                <div className="pointer-events-auto mt-2 flex h-5 items-center gap-3 text-[10px] font-medium">
+                  {post.date && <span className="text-white/85">{shortDate(post.date)}</span>}
                   <ShareLink path={href} title={post.title} className="text-white/85 hover:text-white" />
                 </div>
               </div>

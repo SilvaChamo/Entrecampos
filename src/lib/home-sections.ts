@@ -13,7 +13,9 @@ export const HOME_ZONES: { id: HomeZone; label: string; hint: string }[] = [
 
 /** Todas as secções da home. `zone` é a zona de origem (a ordem em que estão aqui é a ordem de origem). */
 export const HOME_SECTIONS: { id: string; label: string; zone: HomeZone }[] = [
-  { id: 'destaque', label: 'Destaque (slide principal e cards ao lado)', zone: 'top' },
+  { id: 'destaque', label: 'Slide principal', zone: 'top' },
+  { id: 'destaque-cards', label: 'Cards ao lado do slide', zone: 'top' },
+  { id: 'destaque-lista', label: 'Lista ao lado do slide', zone: 'top' },
   { id: 'comunidade', label: 'Comunidade e família (com selector)', zone: 'main' },
   { id: 'ultimas', label: 'Últimas notícias', zone: 'main' },
   { id: 'agro', label: 'Agricultura e família (grelha)', zone: 'main' },
@@ -30,7 +32,7 @@ export const HOME_SECTIONS: { id: string; label: string; zone: HomeZone }[] = [
 ];
 
 /** Secções que se podem duplicar (cada cópia tem a sua categoria e as suas opções). O `id` da cópia é «secção~código». */
-export const DUPLICABLE = ['comunidade', 'ultimas', 'agro', 'agro-negocio', 'oportunidades'];
+export const DUPLICABLE = ['destaque', 'destaque-cards', 'destaque-lista', 'comunidade', 'ultimas', 'agro', 'agro-negocio', 'oportunidades'];
 export const baseId = (id: string) => id.split('~')[0];
 export const isCopyId = (id: string) => /^[a-z-]+~[a-z0-9]{4,8}$/.test(id) && DUPLICABLE.includes(baseId(id));
 /** Nome da secção no painel (a cópia leva «(cópia)»). */
@@ -89,9 +91,9 @@ export function normalizeHomeLayout(raw: unknown): HomeLayout {
  * `multi` = a secção junta várias categorias (selector, ou preferência por ordem); `defaults` = as de origem.
  */
 export const HOME_CATEGORY_SLOTS: { key: string; section: string; label: string; multi: boolean; defaults: string[] }[] = [
-  { key: 'hero1', section: 'destaque', label: 'Card de cima', multi: false, defaults: ['comunidade'] },
-  { key: 'hero2', section: 'destaque', label: 'Card de baixo', multi: false, defaults: ['oportunidades'] },
-  { key: 'herolista', section: 'destaque', label: 'Categoria da lista', multi: false, defaults: ['comunidade'] },
+  { key: 'hero1', section: 'destaque-cards', label: 'Card de cima', multi: false, defaults: ['comunidade'] },
+  { key: 'hero2', section: 'destaque-cards', label: 'Card de baixo', multi: false, defaults: ['oportunidades'] },
+  { key: 'herolista', section: 'destaque-lista', label: 'Categoria da lista', multi: false, defaults: ['comunidade'] },
   { key: 'ultimas', section: 'ultimas', label: 'Categoria', multi: false, defaults: ['todas'] },
   { key: 'comunidade', section: 'comunidade', label: 'Categorias', multi: true, defaults: ['comunidade', 'ambiente', 'desenvolvimento-local', 'apoio-comunitario', 'turismo-rural', 'meios-de-vida'] },
   { key: 'agro', section: 'agro', label: 'Categorias', multi: true, defaults: ['agricultura', 'fruticultura', 'mulher-agrario', 'sector-publico', 'entrevista'] },
@@ -107,8 +109,11 @@ export type HomeCategories = Record<string, string[]>;
 /** Lugares de categoria de uma secção: os dela ou, numa cópia, os da secção de origem com a chave da cópia. */
 export function slotsFor(id: string) {
   if (!id.includes('~')) return HOME_CATEGORY_SLOTS.filter((s) => s.section === id);
-  return HOME_CATEGORY_SLOTS.filter((s) => s.section === baseId(id)).map((s) => ({ ...s, key: s.key === baseId(id) ? id : s.key, section: id }));
+  return HOME_CATEGORY_SLOTS.filter((s) => s.section === baseId(id)).map((s) => ({ ...s, key: slotKey(id, s.key), section: id }));
 }
+
+/** Chave onde ficam as categorias de um lugar numa secção: a de origem, ou («lugar~código») a da cópia. */
+export const slotKey = (id: string, baseKey: string) => (!id.includes('~') ? baseKey : baseKey === baseId(id) ? id : `${baseKey}~${id.split('~')[1]}`);
 
 export function defaultHomeCategories(): HomeCategories {
   return Object.fromEntries(HOME_CATEGORY_SLOTS.map((s) => [s.key, [...s.defaults]]));
@@ -125,8 +130,8 @@ export function normalizeHomeCategories(raw: unknown): HomeCategories {
   }
   // Cópias de secções: a chave é a da cópia («oportunidades~ab12»); as regras são as do lugar de origem.
   for (const key of Object.keys(r)) {
-    if (!isCopyId(key)) continue;
-    const slot = HOME_CATEGORY_SLOTS.find((x) => x.key === baseId(key));
+    if (!/^[a-z0-9-]+~[a-z0-9]{4,8}$/.test(key)) continue;
+    const slot = HOME_CATEGORY_SLOTS.find((x) => x.key === baseId(key) && DUPLICABLE.includes(x.section));
     const list = Array.isArray(r[key]) ? (r[key] as unknown[]) : [];
     const clean = list.filter((c, i): c is string => typeof c === 'string' && /^[a-z0-9-]{1,60}$/.test(c) && list.indexOf(c) === i).slice(0, slot?.multi ? 12 : 1);
     if (slot && clean.length > 0) out[key] = clean;
@@ -142,9 +147,10 @@ export type HeroStyle = 'cards' | 'lista' | 'carrossel' | 'carrossel-conteudo';
 /** `hidden`: secções desligadas (olho no painel): continuam na lista mas não aparecem no site. */
 /** Opções de cada secção: `rows` = linhas de cards (Últimas notícias), `count` = quantas notícias mostra (Oportunidades), `carousel` = passa em carrossel. */
 export type SectionSettings = { rows?: number; count?: number; carousel?: boolean };
-export type HomeOptions = { heroSide: HeroSide; heroStyle: HeroStyle; ads: HomeAd[]; hidden: string[]; sections: Record<string, SectionSettings> };
+/** `v`: versão da forma guardada (2 = o destaque dividido em slide, cards e lista). */
+export type HomeOptions = { v: number; heroSide: HeroSide; heroStyle: HeroStyle; ads: HomeAd[]; hidden: string[]; sections: Record<string, SectionSettings> };
 
-export const defaultHomeOptions = (): HomeOptions => ({ heroSide: 'banner-esquerda', heroStyle: 'cards', ads: [], hidden: [], sections: {} });
+export const defaultHomeOptions = (): HomeOptions => ({ v: 2, heroSide: 'banner-esquerda', heroStyle: 'cards', ads: [], hidden: ['destaque-lista'], sections: {} });
 
 const okUrl = (u: string) => u === '' || (u.length <= 500 && (/^https?:\/\/\S+$/i.test(u) || /^\/[^\s/]\S*$/.test(u)));
 
@@ -159,7 +165,7 @@ export function normalizeHomeOptions(raw: unknown): HomeOptions {
     if (isAdId(id) && !ads.some((x) => x.id === id) && okUrl(image) && okUrl(link) && ads.length < 20) ads.push({ id, image, link });
   }
   const known = new Set(HOME_SECTIONS.map((s) => s.id));
-  const hidden = (Array.isArray(r.hidden) ? (r.hidden as unknown[]) : []).filter((id, i, all): id is string => typeof id === 'string' && (known.has(id) || isAdId(id) || isCopyId(id)) && all.indexOf(id) === i);
+  let hidden = (Array.isArray(r.hidden) ? (r.hidden as unknown[]) : []).filter((id, i, all): id is string => typeof id === 'string' && (known.has(id) || isAdId(id) || isCopyId(id)) && all.indexOf(id) === i);
   const sections: Record<string, SectionSettings> = {};
   for (const [id, v] of Object.entries((r.sections && typeof r.sections === 'object' ? r.sections : {}) as Record<string, unknown>)) {
     if (!known.has(id) && !isCopyId(id)) continue;
@@ -171,5 +177,12 @@ export function normalizeHomeOptions(raw: unknown): HomeOptions {
     if (o.carousel === true) st.carousel = true;
     if (Object.keys(st).length) sections[id] = st;
   }
-  return { hidden, sections, heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', heroStyle: r.heroStyle === 'lista' ? 'lista' : r.heroStyle === 'carrossel' ? 'carrossel' : r.heroStyle === 'carrossel-conteudo' ? 'carrossel-conteudo' : 'cards', ads };
+  // Forma antiga (antes do destaque se dividir): a lista só aparecia com o estilo «lista», e então os cards ficavam de fora.
+  let heroStyle: HeroStyle = r.heroStyle === 'carrossel' ? 'carrossel' : r.heroStyle === 'carrossel-conteudo' ? 'carrossel-conteudo' : 'cards';
+  if (r.v !== 2) {
+    const wasList = r.heroStyle === 'lista';
+    hidden = [...hidden, ...(wasList ? ['destaque-cards'] : ['destaque-lista'])].filter((id, i, all) => all.indexOf(id) === i);
+    heroStyle = wasList ? 'cards' : heroStyle;
+  }
+  return { v: 2, hidden, sections, heroStyle, heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', ads };
 }

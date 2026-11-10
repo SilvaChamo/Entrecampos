@@ -16,6 +16,7 @@ import {
   baseId,
   isCopyId,
   sectionLabel,
+  slotKey,
   slotsFor,
   defaultHomeCategories,
   defaultHomeLayout,
@@ -125,11 +126,13 @@ export default function HomeSeccoesPage() {
       const copy = `${baseId(id)}~${newCode()}`;
       const list = [...cur.layout[zone]];
       list.splice(list.indexOf(id) + 1, 0, copy);
-      const slot = slotsFor(id)[0];
+      // Copia as categorias de todos os lugares da secção (os cards têm dois).
+      const categories = { ...cur.categories };
+      for (const slot of HOME_CATEGORY_SLOTS.filter((x) => x.section === baseId(id))) categories[slotKey(copy, slot.key)] = [...(cur.categories[slotKey(id, slot.key)] ?? slot.defaults)];
       return {
         ...cur,
         layout: { ...cur.layout, [zone]: list },
-        categories: slot ? { ...cur.categories, [copy]: [...(cur.categories[slot.key] ?? slot.defaults)] } : cur.categories,
+        categories,
         options: { ...cur.options, sections: cur.options.sections[id] ? { ...cur.options.sections, [copy]: { ...cur.options.sections[id] } } : cur.options.sections },
       };
     });
@@ -139,7 +142,9 @@ export default function HomeSeccoesPage() {
     if (!confirm('Apagar esta cópia da secção?')) return;
     setPicked((p) => p.filter((x) => x !== id));
     edit((cur) => {
-      const { [id]: _c, ...categories } = cur.categories;
+      const categories = { ...cur.categories };
+      for (const slot of slotsFor(id)) delete categories[slot.key];
+      delete categories[id];
       const { [id]: _s, ...sections } = cur.options.sections;
       return {
         layout: Object.fromEntries(HOME_ZONES.map((z) => [z.id, cur.layout[z.id].filter((x) => x !== id)])) as HomeLayout,
@@ -218,7 +223,7 @@ export default function HomeSeccoesPage() {
   // O título de uma secção com uma só categoria acompanha a categoria escolhida (como no site); «Publicações recentes» mantém o nome de origem enquanto tem a categoria de origem.
   const rowLabel = (id: string) => {
     const slots = slotsFor(id);
-    if (!draft || slots.length !== 1 || slots[0].multi || id === 'destaque') return sectionLabel(id);
+    if (!draft || slots.length !== 1 || slots[0].multi || baseId(id).startsWith('destaque')) return sectionLabel(id);
     const slug = (draft.categories[slots[0].key] ?? slots[0].defaults)[0];
     if (slug === 'todas' || (id === 'recentes' && slug === slots[0].defaults[0])) return sectionLabel(id);
     const name = options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
@@ -231,9 +236,9 @@ export default function HomeSeccoesPage() {
 
   // Linhas compactas: as categorias e as opções de cada secção ficam escondidas e abrem a deslizar com a seta da linha.
   const toggleRow = (id: string) => setOpenRows((r) => (r.includes(id) ? r.filter((x) => x !== id) : [...r, id]));
-  const hasDetail = (id: string) => isAdId(id) || id === 'destaque' || slotsFor(id).length > 0 || ['ultimas', 'oportunidades'].includes(baseId(id));
+  const hasDetail = (id: string) => isAdId(id) || baseId(id) === 'destaque' || slotsFor(id).length > 0 || ['ultimas', 'oportunidades'].includes(baseId(id));
   // Só tem detalhe no computador quando a categoria não está já na própria linha.
-  const detailOnlyMobile = (zone: HomeZone, id: string) => inlineSlot(zone, id) && !isAdId(id) && id !== 'destaque' && !['ultimas', 'oportunidades'].includes(baseId(id));
+  const detailOnlyMobile = (zone: HomeZone, id: string) => inlineSlot(zone, id) && !isAdId(id) && baseId(id) !== 'destaque' && !['ultimas', 'oportunidades'].includes(baseId(id));
 
   // Chamada como função (e não como componente) para os campos não perderem o foco a cada letra escrita.
   function zoneBox(zone: HomeZone) {
@@ -261,7 +266,7 @@ export default function HomeSeccoesPage() {
                   </span>
                   {inlineSlot(zone, id) && (
                     <div className="w-[170px] shrink-0 max-lg:hidden">
-                      <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare heroStyle={draft.options.heroStyle} />
+                      <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} bare />
                     </div>
                   )}
                   {/* Botões: no computador ao lado do título; no telemóvel numa só linha por baixo do título */}
@@ -352,31 +357,31 @@ export default function HomeSeccoesPage() {
                 {isAdId(id) ? (
                   <AdFields zone={zone} ad={draft.options.ads.find((a) => a.id === id) ?? { id, image: '', link: '' }} onChange={(patch) => setAd(id, patch)} />
                 ) : (
-                  <div className={id === 'destaque' ? 'mt-3 grid gap-x-8 gap-y-2 lg:grid-cols-2' : 'mt-2 flex flex-wrap items-end gap-3'}>
-                    {id === 'destaque' && (
-                      <div className="min-w-0 space-y-2">
-                      <div className="flex items-center gap-3">
-                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Estilo</span>
-                        <AdminSelect aria-label="Estilo do destaque" value={draft.options.heroStyle} onChange={(e) => setHeroStyle(e.target.value as HeroStyle)} className={fieldSide}>
-                          <option value="cards">Banner e dois cards</option>
-                          <option value="lista">Banner e lista com slide para cima</option>
-                          <option value="carrossel">Carrossel na largura da página</option>
-                          <option value="carrossel-conteudo">Carrossel na largura do conteúdo</option>
-                        </AdminSelect>
-                      </div>
-                    {!draft.options.heroStyle.startsWith('carrossel') && (
-                      <div className="flex items-center gap-3">
-                        <span className="w-[100px] shrink-0 text-[13px] text-gray-500">Disposição</span>
-                        <AdminSelect aria-label="Disposição do destaque" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldSide}>
-                          <option value="banner-esquerda">{draft.options.heroStyle === 'lista' ? 'Banner à esquerda e lista à direita' : 'Banner à esquerda e cards à direita'}</option>
-                          <option value="cards-esquerda">{draft.options.heroStyle === 'lista' ? 'Lista à esquerda e banner à direita' : 'Cards à esquerda e banner à direita'}</option>
-                        </AdminSelect>
-                      </div>
+                  <div className="mt-2 flex flex-wrap items-end gap-3">
+                    {baseId(id) === 'destaque' && (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <span className={fieldLabel}>Estilo</span>
+                          <AdminSelect aria-label="Estilo do slide" value={draft.options.heroStyle} onChange={(e) => setHeroStyle(e.target.value as HeroStyle)} className={fieldWide}>
+                            <option value="cards">Slide normal</option>
+                            <option value="carrossel">Carrossel na largura da página</option>
+                            <option value="carrossel-conteudo">Carrossel na largura do conteúdo</option>
+                          </AdminSelect>
+                        </div>
+                        {!draft.options.heroStyle.startsWith('carrossel') && (
+                          <div className="flex items-center gap-2">
+                            <span className={fieldLabel}>Disposição</span>
+                            <AdminSelect aria-label="Disposição do slide" value={draft.options.heroSide} onChange={(e) => setHeroSide(e.target.value as HeroSide)} className={fieldWide}>
+                              <option value="banner-esquerda">Slide à esquerda</option>
+                              <option value="cards-esquerda">Slide à direita</option>
+                            </AdminSelect>
+                          </div>
+                        )}
+                        <p className="basis-full text-[12px] text-gray-500">O estilo e a disposição valem para todos os slides. A disposição só se nota quando o slide está logo antes de uns cards ou de uma lista.</p>
+                      </>
                     )}
-                      </div>
-                    )}
-                    <div className={`${id === 'destaque' ? 'min-w-0 space-y-2' : 'flex flex-wrap items-end gap-3'}${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
-                      <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} heroStyle={draft.options.heroStyle} />
+                    <div className={`${baseId(id).startsWith('destaque-') ? 'w-full space-y-2' : 'flex flex-wrap items-end gap-3'}${inlineSlot(zone, id) ? ' lg:hidden' : ''}`}>
+                      <CategoryControl section={id} categories={draft.categories} options={options} onChange={setCategory} />
                     </div>
                     <SectionOptions id={id} settings={draft.options.sections[id] ?? {}} onChange={(patch) => setSetting(id, patch)} />
                   </div>
@@ -531,11 +536,11 @@ function SectionOptions({ id, settings, onChange }: { id: string; settings: Sect
 }
 
 /** Selector(es) de categoria de uma secção. Secções com várias categorias mostram-nas em etiquetas que se podem retirar, e o selector junta outra. */
-function CategoryControl({ section, categories, options, onChange, bare = false, heroStyle }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean; heroStyle?: HeroStyle }) {
+function CategoryControl({ section, categories, options, onChange, bare = false }: { section: string; categories: HomeCategories; options: CategoryOption[]; onChange: (key: string, list: string[]) => void; bare?: boolean }) {
     // O destaque mostra os selectores do estilo escolhido: dois cards ou a lista.
-  const side = section === 'destaque'; // no destaque o título fica ao lado do selector, como estava
-  const activeSlots = HOME_CATEGORY_SLOTS.filter((s) => s.section !== 'destaque' || (heroStyle?.startsWith('carrossel') ? false : (heroStyle === 'lista') === (s.key === 'herolista')));
-  const slots = section === 'destaque' ? activeSlots.filter((s) => s.section === section) : slotsFor(section);
+  const activeSlots = HOME_CATEGORY_SLOTS.filter((s) => !s.key.startsWith('hero')); // as do destaque podem repetir categorias
+  const slots = slotsFor(section);
+  const stack = baseId(section).startsWith('destaque-'); // cards e lista: uma linha por selector, na largura toda
   if (slots.length === 0) return null;
   const labelOf = (slug: string) => slug === 'todas' ? 'Todas as categorias' : options.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
   return (
@@ -544,13 +549,13 @@ function CategoryControl({ section, categories, options, onChange, bare = false,
         const list = categories[slot.key] ?? slot.defaults;
         // Uma categoria só pode estar num selector: as que já estão noutro não se oferecem (a que este já tem fica).
         // As «Últimas notícias» e as cópias escolhem à vontade: podem repetir categorias de outras secções.
-        const free_ = slot.key === 'ultimas' || slot.key.includes('~');
+        const free_ = slot.key === 'ultimas' || slot.key.includes('~') || slot.key.startsWith('hero');
         const usedElsewhere = free_ ? new Set<string>() : new Set(activeSlots.filter((x) => x.key !== slot.key && x.key !== 'ultimas').flatMap((x) => categories[x.key] ?? []));
         const free = [...(slot.key === 'ultimas' ? [{ slug: 'todas', label: 'Todas as categorias' }] : []), ...options.filter((o) => o.slug === list[0] || !usedElsewhere.has(o.slug))];
         const all = free.some((o) => o.slug === list[0]) || options.length === 0 ? free : [{ slug: list[0], label: labelOf(list[0]) }, ...free];
         return (
-          <div key={slot.key} className={side ? 'flex items-center gap-3' : slot.multi ? 'flex w-full flex-col gap-1' : 'flex items-center gap-2'}>
-            {!bare && <span className={side ? 'w-[100px] shrink-0 text-[13px] text-gray-500' : slot.multi ? 'text-[12px] text-gray-500' : fieldLabel}>{slot.label}</span>}
+          <div key={slot.key} className={stack ? 'flex w-full items-center gap-3' : slot.multi ? 'flex w-full flex-col gap-1' : 'flex items-center gap-2'}>
+            {!bare && <span className={stack ? 'w-[100px] shrink-0 text-[13px] text-gray-500' : slot.multi ? 'text-[12px] text-gray-500' : fieldLabel}>{slot.label}</span>}
             {slot.multi ? (
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
                 {list.map((slug) => (
@@ -569,7 +574,7 @@ function CategoryControl({ section, categories, options, onChange, bare = false,
                 </AdminSelect>
               </div>
             ) : (
-              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={bare ? fieldRow : side ? fieldSide : fieldWide}>
+              <AdminSelect aria-label={slot.label} value={list[0]} onChange={(e) => onChange(slot.key, [e.target.value])} className={bare ? fieldRow : stack ? fieldSide : fieldWide}>
                 {all.map((o) => (
                   <option key={o.slug} value={o.slug}>{o.label}</option>
                 ))}
