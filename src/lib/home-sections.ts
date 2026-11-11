@@ -1,8 +1,10 @@
 /**
  * Secções da página inicial e as zonas onde podem estar (código partilhado pelo painel e pela home: sem nada de servidor).
  */
-export type HomeZone = 'top' | 'main' | 'side' | 'main2' | 'side2' | 'bottom';
-export const HOME_ZONES: { id: HomeZone; label: string; hint: string }[] = [
+/** Zonas de origem da página. As secções novas (faixas) trazem as suas: «código:main» e «código:side». */
+export type BaseZone = 'top' | 'main' | 'side' | 'main2' | 'side2' | 'bottom';
+export type HomeZone = string;
+export const HOME_ZONES: { id: BaseZone; label: string; hint: string }[] = [
   { id: 'top', label: 'Topo', hint: 'largura total, por cima das colunas' },
   { id: 'main', label: 'Coluna principal', hint: 'coluna larga, à esquerda' },
   { id: 'side', label: 'Barra lateral', hint: 'coluna estreita, à direita' },
@@ -12,7 +14,7 @@ export const HOME_ZONES: { id: HomeZone; label: string; hint: string }[] = [
 ];
 
 /** Todas as secções da home. `zone` é a zona de origem (a ordem em que estão aqui é a ordem de origem). */
-export const HOME_SECTIONS: { id: string; label: string; zone: HomeZone }[] = [
+export const HOME_SECTIONS: { id: string; label: string; zone: BaseZone }[] = [
   { id: 'destaque', label: 'Slide principal', zone: 'top' },
   { id: 'destaque-card1', label: 'Card de cima ao lado do slide', zone: 'top' },
   { id: 'destaque-card2', label: 'Card de baixo ao lado do slide', zone: 'top' },
@@ -46,7 +48,7 @@ export const sectionLabel = (id: string) => {
 export const isAdId = (id: string) => /^pub-[a-z0-9]{4,12}$/.test(id);
 
 /** Medida exacta (e peso de referência) do anúncio em cada zona: a mesma tabela da página dos espaços de publicidade do site. */
-export const HOME_AD_SIZES: Record<HomeZone, { name: string; w: number; h: number; kb: number }> = {
+export const HOME_AD_SIZES: Record<BaseZone, { name: string; w: number; h: number; kb: number }> = {
   top: { name: 'Topo do site', w: 728, h: 90, kb: 100 },
   main: { name: 'Entre as notícias', w: 680, h: 150, kb: 100 },
   side: { name: 'Barra lateral', w: 120, h: 200, kb: 120 },
@@ -56,10 +58,37 @@ export const HOME_AD_SIZES: Record<HomeZone, { name: string; w: number; h: numbe
 };
 
 export type HomeLayout = Record<HomeZone, string[]>;
+/** Onde ficam as secções de origem que se apagaram da página (não se perdem: voltam a pôr-se pelo «Acrescentar à zona…»). Não é uma zona da página. */
+export const TRASH_ZONE = 'removidas';
+
+/**
+ * Secção nova (faixa): um par «coluna principal + barra lateral» posto no meio da página, à parte dos dois pares de origem.
+ * `after` = o bloco (ou a faixa) a seguir ao qual fica. Sem nada na barra lateral, a coluna principal ocupa a largura toda e não parte os blocos que já existem.
+ */
+export type HomeBand = { id: string; after: string };
+/** Blocos de origem da página, de cima para baixo. */
+export const PAGE_BLOCKS = ['top', 'cols1', 'cols2', 'bottom'] as const;
+export const isBandId = (id: string) => /^sec[a-z0-9]{3,6}$/.test(id);
+export const bandZone = (band: string, side: 'main' | 'side'): HomeZone => `${band}:${side}`;
+/** Zona larga (a principal de uma faixa) ou de origem larga: cabem cards lado a lado. */
+export const isBandZone = (zone: string) => /^sec[a-z0-9]{3,6}:(main|side)$/.test(zone);
+/** O bloco da página onde está uma zona: as de origem pertencem ao seu bloco; as de uma faixa, à faixa. */
+export const blockOfZone = (zone: string): string =>
+  zone === 'top' ? 'top' : zone === 'main' || zone === 'side' ? 'cols1' : zone === 'main2' || zone === 'side2' ? 'cols2' : zone === 'bottom' ? 'bottom' : zone.split(':')[0];
+/** Ordem dos blocos na página: os de origem e, a seguir a cada um, as faixas que lhe seguem (e as que seguem essas). */
+export function pageOrder(bands: HomeBand[]): string[] {
+  const out: string[] = [];
+  const after = (key: string, depth: number) => {
+    if (depth > bands.length) return;
+    for (const b of bands) if (b.after === key) { out.push(b.id); after(b.id, depth + 1); }
+  };
+  for (const k of PAGE_BLOCKS) { out.push(k); after(k, 0); }
+  return out;
+}
 
 /** A ordem de origem da página (a de antes de haver esta configuração). */
 export function defaultHomeLayout(): HomeLayout {
-  const out: HomeLayout = { top: [], main: [], side: [], main2: [], side2: [], bottom: [] };
+  const out: HomeLayout = { top: [], main: [], side: [], main2: [], side2: [], bottom: [], [TRASH_ZONE]: [] };
   for (const s of HOME_SECTIONS) out[s.zone].push(s.id);
   return out;
 }
@@ -72,11 +101,13 @@ export function normalizeHomeLayout(raw: unknown): HomeLayout {
   const known = new Set(HOME_SECTIONS.map((s) => s.id));
   const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
   const seen = new Set<string>();
-  const out: HomeLayout = { top: [], main: [], side: [], main2: [], side2: [], bottom: [] };
-  for (const zone of HOME_ZONES.map((z) => z.id)) {
+  const out: HomeLayout = { top: [], main: [], side: [], main2: [], side2: [], bottom: [], [TRASH_ZONE]: [] };
+  // Zonas das secções novas («código:main» / «código:side»): as que não estiverem nas opções ficam sem efeito (o painel limpa-as).
+  for (const key of Object.keys(r)) if (isBandZone(key)) out[key] = [];
+  for (const zone of Object.keys(out)) {
     const list = (Array.isArray(r[zone]) ? (r[zone] as unknown[]) : []).flatMap((x) => (x === 'destaque-cards' ? ['destaque-card1', 'destaque-card2'] : [x]));
     for (const id of list) {
-      if (typeof id === 'string' && (known.has(id) || isAdId(id) || isCopyId(id)) && !seen.has(id)) {
+      if (typeof id === 'string' && (zone === TRASH_ZONE ? known.has(id) : known.has(id) || isAdId(id) || isCopyId(id)) && !seen.has(id)) {
         seen.add(id);
         out[zone].push(id);
       }
@@ -92,6 +123,8 @@ export function normalizeHomeLayout(raw: unknown): HomeLayout {
  * `multi` = a secção junta várias categorias (selector, ou preferência por ordem); `defaults` = as de origem.
  */
 export const HOME_CATEGORY_SLOTS: { key: string; section: string; label: string; multi: boolean; defaults: string[] }[] = [
+  // «todas» = os slides em destaque do site (origem); uma categoria = as notícias mais recentes dessa categoria.
+  { key: 'slide', section: 'destaque', label: 'Categoria', multi: false, defaults: ['todas'] },
   { key: 'hero1', section: 'destaque-card1', label: 'Categoria', multi: false, defaults: ['comunidade'] },
   { key: 'hero2', section: 'destaque-card2', label: 'Categoria', multi: false, defaults: ['oportunidades'] },
   { key: 'herolista', section: 'destaque-lista', label: 'Categoria', multi: false, defaults: ['comunidade'] },
@@ -144,30 +177,38 @@ export function normalizeHomeCategories(raw: unknown): HomeCategories {
 export type HeroSide = 'banner-esquerda' | 'cards-esquerda';
 export type HomeAd = { id: string; image: string; link: string };
 /** Estilo do destaque: banner e dois cards (de origem), ou banner e uma lista que desliza para cima. */
-export type HeroStyle = 'cards' | 'lista' | 'carrossel' | 'carrossel-conteudo';
+export type HeroStyle = 'cards' | 'lista' | 'slide' | 'carrossel' | 'carrossel-conteudo';
 /** `hidden`: secções desligadas (olho no painel): continuam na lista mas não aparecem no site. */
+/** `heroStyle` e `heroSide`: estilo e disposição de uma cópia do slide (cada slide tem os seus; o original usa os de `HomeOptions`). */
+/** `listScroll`: no layout em lista, mostra só 3 notícias e as outras ficam numa barra de rolagem (em vez de todas visíveis). */
 /** Opções de cada secção: `rows` = linhas de cards (Últimas notícias), `count` = quantas notícias mostra (Oportunidades), `carousel` = passa em carrossel. */
-export type SectionSettings = { rows?: number; count?: number; carousel?: boolean; layout?: SectionLayout };
+/** `listCarousel`: no layout em lista, carrossel vertical com todas as notícias da categoria, em ciclo. `visible`: quantas notícias da lista ficam à vista (rolagem ou carrossel). */
+export type SectionSettings = { rows?: number; count?: number; carousel?: boolean; layout?: SectionLayout; listScroll?: boolean; listCarousel?: boolean; visible?: number; heroStyle?: HeroStyle; heroSide?: HeroSide };
 
-/** Layout de uma secção de cards: lista numa coluna, card principal com a lista por baixo / à direita / à esquerda, ou grelha de notícias. */
-export type SectionLayout = 'lista' | 'principal-baixo' | 'principal-direita' | 'principal-esquerda' | 'grelha';
+/** Layout de uma secção de cards: lista numa coluna; um card com a lista à direita / à esquerda / em baixo; dois cards com duas notícias em baixo de cada um; ou grelha de cards iguais. */
+export type SectionLayout = 'lista' | 'principal-baixo' | 'principal-direita' | 'principal-esquerda' | 'dois-cards' | 'grelha';
 export const SECTION_LAYOUTS: { id: SectionLayout; label: string }[] = [
+  { id: 'principal-direita', label: 'Um card e lista vertical à direita (2 colunas)' },
+  { id: 'principal-esquerda', label: 'Um card e lista vertical à esquerda (2 colunas)' },
+  { id: 'principal-baixo', label: 'Um card e lista em baixo' },
+  { id: 'dois-cards', label: 'Dois cards e lista em baixo (2 colunas)' },
   { id: 'lista', label: 'Lista vertical numa coluna' },
-  { id: 'principal-baixo', label: 'Card principal com lista em baixo' },
-  { id: 'principal-direita', label: 'Card principal com lista à direita' },
-  { id: 'principal-esquerda', label: 'Card principal com lista à esquerda' },
-  { id: 'grelha', label: 'Grelha de notícias' },
+  { id: 'grelha', label: 'Grelha de notícias (3 por linha)' },
 ];
 const ALL_LAYOUTS = SECTION_LAYOUTS.map((l) => l.id);
-/** Secções onde se escolhe o layout e os que cada uma aceita (as cópias herdam da secção de origem). */
-export const LAYOUT_SUPPORT: Record<string, SectionLayout[]> = { comunidade: ALL_LAYOUTS, agro: ALL_LAYOUTS, 'agro-negocio': ALL_LAYOUTS, ultimas: ['grelha', 'lista'] };
+/** Todas as secções de notícias aceitam qualquer layout (as cópias herdam da secção de origem). */
+export const LAYOUT_SUPPORT: Record<string, SectionLayout[]> = { comunidade: ALL_LAYOUTS, agro: ALL_LAYOUTS, 'agro-negocio': ALL_LAYOUTS, ultimas: ALL_LAYOUTS, oportunidades: ALL_LAYOUTS };
 export const layoutsOf = (id: string): SectionLayout[] => LAYOUT_SUPPORT[baseId(id)] ?? [];
 /** O layout de origem de cada secção (o que tinha antes de haver escolha). */
-export const defaultLayoutOf = (id: string): SectionLayout => (['agro', 'ultimas'].includes(baseId(id)) ? 'grelha' : 'principal-direita');
+export const defaultLayoutOf = (id: string): SectionLayout => (['agro', 'ultimas'].includes(baseId(id)) ? 'grelha' : baseId(id) === 'oportunidades' ? 'lista' : 'principal-direita');
 /** `v`: versão da forma guardada (2 = o destaque dividido em slide, cards e lista). */
-export type HomeOptions = { v: number; heroSide: HeroSide; heroStyle: HeroStyle; ads: HomeAd[]; hidden: string[]; sections: Record<string, SectionSettings> };
+export type HomeOptions = { v: number; heroSide: HeroSide; heroStyle: HeroStyle; ads: HomeAd[]; hidden: string[]; sections: Record<string, SectionSettings>; bands: HomeBand[] };
 
-export const defaultHomeOptions = (): HomeOptions => ({ v: 2, heroSide: 'banner-esquerda', heroStyle: 'cards', ads: [], hidden: ['destaque-lista'], sections: {} });
+/** Estilo e disposição de um slide: o original usa os das opções gerais; cada cópia tem os seus (as cópias antigas, sem escolha própria, seguem as gerais até se mexer nelas). */
+export const heroStyleOf = (o: HomeOptions, id: string): HeroStyle => (id === 'destaque' ? o.heroStyle : o.sections[id]?.heroStyle ?? o.heroStyle);
+export const heroSideOf = (o: HomeOptions, id: string): HeroSide => (id === 'destaque' ? o.heroSide : o.sections[id]?.heroSide ?? o.heroSide);
+
+export const defaultHomeOptions = (): HomeOptions => ({ v: 2, heroSide: 'banner-esquerda', heroStyle: 'cards', ads: [], hidden: ['destaque-lista'], sections: {}, bands: [] });
 
 const okUrl = (u: string) => u === '' || (u.length <= 500 && (/^https?:\/\/\S+$/i.test(u) || /^\/[^\s/]\S*$/.test(u)));
 
@@ -192,15 +233,31 @@ export function normalizeHomeOptions(raw: unknown): HomeOptions {
     if (int(o.rows, 6)) st.rows = int(o.rows, 6);
     if (int(o.count, 60)) st.count = int(o.count, 60);
     if (o.carousel === true) st.carousel = true;
+    if (o.listScroll === true) st.listScroll = true;
+    if (o.listCarousel === true) st.listCarousel = true;
+    if (int(o.visible, 6)) st.visible = int(o.visible, 6);
+    if (baseId(id) === 'destaque' && id !== 'destaque') {
+      if (['cards', 'lista', 'slide', 'carrossel', 'carrossel-conteudo'].includes(o.heroStyle as string)) st.heroStyle = o.heroStyle as HeroStyle;
+      if (o.heroSide === 'banner-esquerda' || o.heroSide === 'cards-esquerda') st.heroSide = o.heroSide;
+    }
     if (typeof o.layout === 'string' && layoutsOf(id).includes(o.layout as SectionLayout)) st.layout = o.layout as SectionLayout;
     if (Object.keys(st).length) sections[id] = st;
   }
   // Forma antiga (antes do destaque se dividir): a lista só aparecia com o estilo «lista», e então os cards ficavam de fora.
-  let heroStyle: HeroStyle = r.heroStyle === 'carrossel' ? 'carrossel' : r.heroStyle === 'carrossel-conteudo' ? 'carrossel-conteudo' : 'cards';
+  let heroStyle: HeroStyle = r.heroStyle === 'slide' ? 'slide' : r.heroStyle === 'carrossel' ? 'carrossel' : r.heroStyle === 'carrossel-conteudo' ? 'carrossel-conteudo' : 'cards';
   if (r.v !== 2) {
     const wasList = r.heroStyle === 'lista';
     hidden = [...hidden, ...(wasList ? ['destaque-card1', 'destaque-card2'] : ['destaque-lista'])].filter((id, i, all) => all.indexOf(id) === i);
     heroStyle = wasList ? 'cards' : heroStyle;
   }
-  return { v: 2, hidden, sections, heroStyle, heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', ads };
+  // Secções novas (faixas): cada uma fica a seguir a um bloco de origem ou a outra faixa; o que não chega à página (ciclos) vai para o fim.
+  const rawBands = (Array.isArray(r.bands) ? r.bands : []).filter((b): b is HomeBand => !!b && typeof (b as HomeBand).id === 'string' && isBandId((b as HomeBand).id) && typeof (b as HomeBand).after === 'string');
+  const ids = new Set<string>();
+  const bands: HomeBand[] = rawBands.filter((b) => !ids.has(b.id) && ids.add(b.id)).map((b) => ({ id: b.id, after: b.after }));
+  for (const b of bands) {
+    let at = b.after;
+    for (let i = 0; i <= bands.length && !(PAGE_BLOCKS as readonly string[]).includes(at); i++) at = bands.find((x) => x.id === at)?.after ?? '';
+    if (!(PAGE_BLOCKS as readonly string[]).includes(at)) b.after = 'bottom';
+  }
+  return { v: 2, hidden, sections, heroStyle, heroSide: r.heroSide === 'cards-esquerda' ? 'cards-esquerda' : 'banner-esquerda', ads, bands };
 }

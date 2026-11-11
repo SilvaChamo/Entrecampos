@@ -1,19 +1,20 @@
 'use client';
 
-import Link from 'next/link';
-import { useRef, useState } from 'react';
-import { Meta, Tag, Thumb } from '@/components/Expnews/blocks';
+import React, { useRef, useState } from 'react';
+import { WideItem } from '@/components/Expnews/blocks';
 import type { SlimPost } from '@/components/Expnews/CategorySection';
-import type { Post } from '@/lib/news-data';
 
 const PAGE_SIZE = 6;
+/** Com rolagem, cada página traz mais notícias e só 3 ficam à vista (as outras numa barra de rolagem). */
+const SCROLL_PAGE_SIZE = 30;
 
 /** Lista de Oportunidades: 6 cards por página, com paginação (mesmo estilo da paginação das categorias). */
-export default function OpportunityList({ posts }: { posts: SlimPost[] }) {
+export default function OpportunityList({ posts, scroll = false, inView = 3 }: { posts: SlimPost[]; scroll?: boolean; inView?: number }) {
   const [page, setPage] = useState(1);
   const top = useRef<HTMLUListElement>(null);
-  const pages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
-  const visible = posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const size = scroll ? SCROLL_PAGE_SIZE : PAGE_SIZE;
+  const pages = Math.max(1, Math.ceil(posts.length / size));
+  const visible = posts.slice((page - 1) * size, page * size);
 
   const go = (n: number) => {
     setPage(n);
@@ -24,23 +25,9 @@ export default function OpportunityList({ posts }: { posts: SlimPost[] }) {
 
   return (
     <>
-      <ul ref={top} className="scroll-mt-20 space-y-3">
+      <ul ref={top} className={`scroll-mt-20 space-y-3${scroll ? ' max-h-[640px] overflow-y-auto pr-1 sm:max-h-[calc(var(--n)*180px+(var(--n)-1)*12px)]' : ''}`} style={scroll ? ({ '--n': inView } as React.CSSProperties) : undefined}>
         {visible.map((p) => (
-          <li key={p.slug} className="grid gap-4 bg-white p-4 shadow-sm sm:grid-cols-[210px_1fr]">
-            <Link href={`/noticias/${p.slug}`} className="relative block h-[150px] overflow-hidden bg-gray-200 sm:h-auto sm:min-h-[140px]">
-              <Thumb src={p.image} />
-            </Link>
-            <div>
-              <Tag label={p.category} slug={p.categorySlug} />
-              <Link href={`/noticias/${p.slug}`}>
-                <h4 className="mt-2 text-[19px] font-bold leading-snug hover:text-[#d6101c]">{p.title}</h4>
-              </Link>
-              <div className="mt-2">
-                <Meta post={p as Post} />
-              </div>
-              {p.excerpt && <p className="mt-2 line-clamp-2 text-[11px] leading-relaxed text-gray-500">{p.excerpt}</p>}
-            </div>
-          </li>
+          <WideItem key={p.slug} post={p} fixed={scroll} />
         ))}
       </ul>
 

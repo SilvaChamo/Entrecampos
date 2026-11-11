@@ -132,3 +132,24 @@ export function ListItem({
   );
 }
 
+
+/** Notícia em linha larga (imagem grande à esquerda, etiqueta, título maior, data e resumo): a das Oportunidades e das listas de uma coluna. */
+export function WideItem({ post, reveal = false, fixed = false, className = '' }: { className?: string; post: Pick<Post, 'slug' | 'title' | 'excerpt' | 'category' | 'categorySlug' | 'image' | 'date'>; reveal?: boolean; /** Altura fixa (no computador), para a vista de 3 notícias com rolagem contar certo. */ fixed?: boolean }) {
+  return (
+    <li className={`${reveal ? 'ec-reveal ' : ''}grid gap-4 bg-white p-4 shadow-sm sm:grid-cols-[210px_1fr]${fixed ? ' sm:h-[180px] sm:overflow-hidden' : ''}${className ? ' ' + className : ''}`}>
+      <Link href={`/noticias/${post.slug}`} className="relative block h-[150px] overflow-hidden bg-gray-200 sm:h-auto sm:min-h-[140px]">
+        <Thumb src={post.image} />
+      </Link>
+      <div>
+        <Tag label={post.category} slug={post.categorySlug} />
+        <Link href={`/noticias/${post.slug}`}>
+          <h4 className="mt-2 text-[19px] font-bold leading-snug hover:text-[#d6101c]">{post.title}</h4>
+        </Link>
+        <div className="mt-2">
+          <Meta post={post as Post} />
+        </div>
+        {post.excerpt && <p className="mt-2 line-clamp-2 text-[11px] leading-relaxed text-gray-500">{post.excerpt}</p>}
+      </div>
+    </li>
+  );
+}

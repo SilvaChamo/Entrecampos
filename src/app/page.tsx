@@ -4,7 +4,7 @@ import { Play } from 'lucide-react';
 import ExpShell from '@/components/Expnews/Shell';
 import ExpSlider from '@/components/Expnews/ExpSlider';
 import ShareLink from '@/components/Expnews/ShareLink';
-import { CardTitle, ListItem, Meta, NewsCard, Tag, Thumb, longDate } from '@/components/Expnews/blocks';
+import { CardTitle, ListItem, Meta, NewsCard, Tag, Thumb, WideItem, longDate } from '@/components/Expnews/blocks';
 import CategorySection, { type CategoryGroup } from '@/components/Expnews/CategorySection';
 import SideSlides from '@/components/Expnews/SideSlides';
 import ReadingSuggestions from '@/components/Expnews/ReadingSuggestions';
@@ -17,12 +17,14 @@ import { getSuggestionSlugs } from '@/lib/suggestions';
 import { getHomeLayout, type HomeZone } from '@/lib/home-layout';
 import { getHomeCategories } from '@/lib/home-categories';
 import { getHomeOptions } from '@/lib/home-options';
-import { HOME_CATEGORY_SLOTS, baseId, defaultLayoutOf, isAdId, slotKey, slotsFor } from '@/lib/home-sections';
+import { HOME_CATEGORY_SLOTS, bandZone, baseId, pageOrder, defaultLayoutOf, heroSideOf, heroStyleOf, isAdId, slotKey, slotsFor, TRASH_ZONE } from '@/lib/home-sections';
 import CardsCarousel from '@/components/Expnews/CardsCarousel';
+import LoopCarousel from '@/components/Expnews/LoopCarousel';
+import VerticalLoop from '@/components/Expnews/VerticalLoop';
 import HomeAd from '@/components/Expnews/HomeAd';
 import HeroList from '@/components/Expnews/HeroList';
 import HeroCarousel from '@/components/Expnews/HeroCarousel';
-import { categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
+import { FEATURED_SLIDES, categoryLabel, getFeatured, getHomePosts, type Post } from '@/lib/news-data';
 
 export const metadata = {
   title: 'EntreCAMPOS — Jornal',
@@ -115,6 +117,13 @@ export default async function HomePrincipal() {
   const notOpinion = (p: Post) => p.categorySlug !== 'opiniao' && !p.extraCategories.some((c) => c.slug === 'opiniao');
   const slides = featured.filter(notOpinion);
   const posts = homePosts.filter(notOpinion);
+  // Cada slide (e cada cópia) mostra os destaques do site ou, se no painel se escolheu uma categoria, as notícias mais recentes dela com imagem.
+  const slidesOf = (id: string) => {
+    const slug = cats[slotKey(id, 'slide')]?.[0] ?? 'todas';
+    if (slug === 'todas') return slides;
+    const own = posts.filter((p) => p.image && (p.categorySlug === slug || p.extraCategories.some((c) => c.slug === slug))).slice(0, FEATURED_SLIDES);
+    return own.length > 0 ? own : slides;
+  };
   if (posts.length === 0) {
     return (
       <main className="flex min-h-screen items-center justify-center text-gray-500">
@@ -124,7 +133,7 @@ export default async function HomePrincipal() {
   }
 
   // As notícias do slide não se repetem nas secções abaixo.
-  const inSlides = new Set(slides.map((p) => p.slug));
+  const inSlides = new Set(slidesOf('destaque').map((p) => p.slug));
   const pool = makePool(posts.filter((p) => !inSlides.has(p.slug)));
   // "Mais quente" já está no slide principal: este card da barra lateral mostra outra categoria.
   const hot = pool.take(4, cats.internacional);
@@ -285,9 +294,10 @@ export default async function HomePrincipal() {
   // Secções com categoria e opções próprias (as originais e as cópias feitas no painel): `id` é o da secção ou o da cópia.
   // O destaque são três peças independentes (slide, cards, lista): cada uma pode ser copiada e posta onde se quiser.
   // Se o slide vem logo a seguir aos cards (ou à lista), numa zona larga, ficam lado a lado como sempre foram.
-  const WIDE: HomeZone[] = ['top', 'main', 'main2', 'bottom'];
-  const carousel = options.heroStyle === 'carrossel' || options.heroStyle === 'carrossel-conteudo';
-  const heroSideLeft = options.heroSide === 'cards-esquerda';
+  const isWide = (zone: HomeZone) => ['top', 'main', 'main2', 'bottom'].includes(zone) || zone.endsWith(':main');
+  // Cada slide (o original e cada cópia) tem o seu estilo e a sua disposição.
+  const isCarousel = (id: string) => heroStyleOf(options, id).startsWith('carrossel');
+  const pairsWithPieces = (id: string) => ['cards', 'lista'].includes(heroStyleOf(options, id));
   const catAt = (id: string, key: string) => cats[slotKey(id, key)]?.[0] ?? HOME_CATEGORY_SLOTS.find((x) => x.key === key)?.defaults[0] ?? 'todas';
   // Cada card ao lado do slide é uma peça própria (cada um copia-se à parte): o de cima usa o lugar «hero1», o de baixo «hero2».
   const isCard = (id: string) => baseId(id).startsWith('destaque-card');
@@ -296,46 +306,70 @@ export default async function HomePrincipal() {
     return { posts: heroLatest(catAt(id, key)), label: categoryLabel(catAt(id, key)) };
   };
   const listNode = (id: string, className: string) => <HeroList posts={heroList(catAt(id, 'herolista'))} label={categoryLabel(catAt(id, 'herolista'))} className={className} />;
-  const slideNode = (className: string) =>
-    carousel ? <HeroCarousel posts={slides} fullWidth={options.heroStyle === 'carrossel'} /> : <ExpSlider posts={slides} className={className} />;
+  const slideNode = (id: string, className: string) =>
+    isCarousel(id) ? <HeroCarousel posts={slidesOf(id)} fullWidth={heroStyleOf(options, id) === 'carrossel'} /> : <ExpSlider posts={slidesOf(id)} className={className} />;
   const factories: Record<string, (id: string, zone?: HomeZone) => React.ReactNode> = {
-    destaque: () => slideNode('h-[340px] md:h-[442px]'),
-    'destaque-card1': (id) => <SideSlides items={[cardItem(id)]} className="h-[215px]" />,
-    'destaque-card2': (id) => <SideSlides items={[cardItem(id)]} className="h-[215px]" />,
-    'destaque-lista': (id) => listNode(id, 'h-[420px]'),
-    comunidade: (id) => <CategorySection groups={family(catsOf(id))} layout={layoutOf(id)} arrowsOnTop />,
-    agro: (id) => <CategorySection groups={family(catsOf(id))} layout={layoutOf(id)} arrowsOnTop reveal />,
+    destaque: (id) => slideNode(id, 'h-[360px] md:h-[462px]'),
+    'destaque-card1': (id) => <SideSlides items={[cardItem(id)]} className="h-[225px]" />,
+    'destaque-card2': (id) => <SideSlides items={[cardItem(id)]} className="h-[225px]" />,
+    'destaque-lista': (id) => listNode(id, 'h-[462px]'),
+    comunidade: (id) => <CategorySection groups={family(catsOf(id))} layout={layoutOf(id)} listScroll={settingsOf(id).listScroll} rows={settingsOf(id).rows} carousel={settingsOf(id).carousel} listCarousel={settingsOf(id).listCarousel} listVisible={settingsOf(id).visible} arrowsOnTop />,
+    agro: (id) => <CategorySection groups={family(catsOf(id))} layout={layoutOf(id)} listScroll={settingsOf(id).listScroll} rows={settingsOf(id).rows} carousel={settingsOf(id).carousel} listCarousel={settingsOf(id).listCarousel} listVisible={settingsOf(id).visible} arrowsOnTop reveal />,
     'agro-negocio': (id) => {
       const slug = catsOf(id)[0];
-      return <CategorySection groups={[{ slug, label: categoryLabel(slug), posts: posts.filter((p) => inCategory(p, slug)).map(slim) }]} layout={layoutOf(id)} arrowsOnTop />;
+      return <CategorySection groups={[{ slug, label: categoryLabel(slug), posts: posts.filter((p) => inCategory(p, slug)).map(slim) }]} layout={layoutOf(id)} listScroll={settingsOf(id).listScroll} rows={settingsOf(id).rows} carousel={settingsOf(id).carousel} listCarousel={settingsOf(id).listCarousel} listVisible={settingsOf(id).visible} arrowsOnTop />;
     },
     oportunidades: (id) => {
       const slug = catsOf(id)[0];
-      // Todas as notícias da categoria (fora do slide principal), até ao número escolhido no painel, 6 por página.
-      const list = posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).slice(0, settingsOf(id).count ?? 60).map(slim);
-      return (
-        <Card title={categoryLabel(slug)} plain>
-          <OpportunityList posts={list} />
-        </Card>
-      );
+      const st = settingsOf(id);
+      // Todas as notícias da categoria (fora do slide principal).
+      const every = posts.filter((p) => p.categorySlug === slug && !inSlides.has(p.slug)).map(slim);
+      // Lista vertical numa coluna (a de origem): até ao número escolhido no painel, 6 por página; ou em carrossel vertical com todas.
+      if (layoutOf(id) === 'lista') {
+        return (
+          <Card title={categoryLabel(slug)} plain>
+            {st.listCarousel ? <VerticalLoop posts={every} visible={st.visible} /> : <OpportunityList posts={every.slice(0, st.count ?? 60)} scroll={st.listScroll} inView={st.visible} />}
+          </Card>
+        );
+      }
+      // Qualquer outro layout usa o mesmo desenho das outras secções.
+      return <CategorySection groups={[{ slug, label: categoryLabel(slug), posts: every.slice(0, 60) }]} layout={layoutOf(id)} rows={st.rows} carousel={st.carousel} arrowsOnTop />;
     },
     ultimas: (id) => {
       const slug = catsOf(id)[0];
-      const { rows = 2, carousel = false } = settingsOf(id);
-      // Últimas notícias (de todas as categorias ou da escolhida), sem as do slide principal: 3 cards por linha, no número de linhas escolhido.
-      const list = posts.filter((p) => !inSlides.has(p.slug) && (slug === 'todas' || inCategory(p, slug))).slice(0, rows * 3);
+      const st = settingsOf(id);
+      const { rows = 2, carousel = false } = st;
+      const title = slug === 'todas' ? 'Últimas notícias' : categoryLabel(slug);
+      // Últimas notícias (de todas as categorias ou da escolhida), sem as do slide principal.
+      const all = posts.filter((p) => !inSlides.has(p.slug) && (slug === 'todas' || inCategory(p, slug)));
+      const layout = layoutOf(id);
+      // Os layouts de um card (com lista, dois cards…) usam o mesmo desenho das outras secções.
+      if (!['grelha', 'lista'].includes(layout)) return <CategorySection groups={[{ slug, label: title, posts: all.slice(0, 60).map(slim) }]} layout={layout} arrowsOnTop />;
+      if (layout === 'lista') {
+        const list = all.slice(0, 6);
+        return (
+          <Card title={title} plain>
+            {st.listCarousel ? (
+              <VerticalLoop posts={all.slice(0, 60).map(slim)} visible={st.visible} />
+            ) : (
+              <ul className={`space-y-3${st.listScroll ? ' max-h-[640px] overflow-y-auto pr-1 sm:max-h-[calc(var(--n)*180px+(var(--n)-1)*12px)]' : ''}`} style={st.listScroll ? ({ '--n': st.visible ?? 3 } as React.CSSProperties) : undefined}>
+                {(st.listScroll ? all.slice(0, 30) : list).map((p) => (
+                  <WideItem key={p.slug} post={p} fixed={st.listScroll} />
+                ))}
+              </ul>
+            )}
+          </Card>
+        );
+      }
+      // Grelha: 3 cards por linha, no número de linhas escolhido. Com o carrossel ligado: 1 linha = todas as notícias da categoria
+      // numa só linha, a passar um card de cada vez em ciclo sem fim; com mais linhas, as notícias da grelha passam por vistas.
+      const list = all.slice(0, rows * 3);
       return (
-        <Card title={slug === 'todas' ? 'Últimas notícias' : categoryLabel(slug)} plain>
-          {carousel ? (
+        <Card title={title} plain>
+          {carousel && rows === 1 ? (
+            <LoopCarousel posts={all.slice(0, 60).map(slim)} />
+          ) : carousel ? (
             <CardsCarousel posts={list.map(slim)} />
-          ) : layoutOf(id) === 'lista' ? (
-            <div className="grid gap-3">
-              {list.map((p) => (
-                <div key={p.slug} className="h-[94px]">
-                  <ListItem as="div" post={p} bleed />
-                </div>
-              ))}
-            </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {list.map((p) => (
@@ -350,7 +384,7 @@ export default async function HomePrincipal() {
   const nodeOf = (id: string, zone?: HomeZone) => (baseId(id) in factories ? factories[baseId(id)](id, zone) : sections[id]);
   const adOf = (id: string) => options.ads.find((a) => a.id === id);
   // Secções desligadas no painel (olho) não aparecem.
-  const visible = (zone: HomeZone) => layout[zone].filter((id) => !options.hidden.includes(id));
+  const visible = (zone: HomeZone) => (layout[zone] ?? []).filter((id) => !options.hidden.includes(id));
   const render = (zone: HomeZone) => {
     const list = visible(zone);
     const out: React.ReactNode[] = [];
@@ -358,28 +392,30 @@ export default async function HomePrincipal() {
       const id = list[i];
       const next = list[i + 1];
       // Slide seguido de um ou dois cards, ou de uma lista, numa zona larga: lado a lado (a disposição vem do painel).
-      if (!carousel && baseId(id) === 'destaque' && next && WIDE.includes(zone) && (isCard(next) || baseId(next) === 'destaque-lista')) {
-        const cols = heroSideLeft ? 'md:grid-cols-[1fr_2fr]' : 'md:grid-cols-[2fr_1fr]';
+      if (baseId(id) === 'destaque' && pairsWithPieces(id) && next && isWide(zone) && (isCard(next) || baseId(next) === 'destaque-lista')) {
+        const heroSideLeft = heroSideOf(options, id) === 'cards-esquerda';
+        // Slide na largura da coluna principal e cards/lista na da barra lateral (340px), como as colunas de baixo.
+        const cols = heroSideLeft ? 'md:grid-cols-[340px_1fr]' : 'md:grid-cols-[1fr_340px]';
         const place = heroSideLeft ? ' md:col-start-2 md:row-start-1' : '';
         if (isCard(next)) {
           const cardIds = [next, ...(list[i + 2] && isCard(list[i + 2]) ? [list[i + 2]] : [])];
           out.push(
-            <div key={`${id}+${cardIds.join('+')}`} className={`grid gap-3 md:auto-rows-[215px] ${cols}`}>
-              <ExpSlider posts={slides} className={`h-[340px] md:row-span-2 md:h-full${place}`} />
+            <div key={`${id}+${cardIds.join('+')}`} className={`grid gap-3 md:auto-rows-[225px] ${cols}`}>
+              <ExpSlider posts={slidesOf(id)} className={`h-[360px] md:row-span-2 md:h-full${place}`} />
               {cardIds.length === 1 ? (
-                <div className="h-[215px] md:row-span-2 md:h-full">
+                <div className="h-[225px] md:row-span-2 md:h-full">
                   <SideSlides items={[cardItem(cardIds[0])]} className="h-full" />
                 </div>
               ) : (
-                <SideSlides items={cardIds.map(cardItem)} className="h-[215px]" />
+                <SideSlides items={cardIds.map(cardItem)} className="h-[225px]" />
               )}
             </div>,
           );
           i += cardIds.length;
         } else {
           out.push(
-            <div key={`${id}+${next}`} className={`grid gap-3 md:grid-rows-[420px] ${cols}`}>
-              <ExpSlider posts={slides} className={`h-[340px] md:h-full${place}`} />
+            <div key={`${id}+${next}`} className={`grid gap-3 md:grid-rows-[462px] ${cols}`}>
+              <ExpSlider posts={slidesOf(id)} className={`h-[360px] md:h-full${place}`} />
               {listNode(next, 'md:h-full')}
             </div>,
           );
@@ -388,10 +424,10 @@ export default async function HomePrincipal() {
         continue;
       }
       // Dois cards seguidos que não vêm depois do slide: lado a lado numa zona larga.
-      if (isCard(id) && next && isCard(next) && WIDE.includes(zone)) {
+      if (isCard(id) && next && isCard(next) && isWide(zone)) {
         out.push(
           <div key={`${id}+${next}`} className="grid gap-3 md:grid-cols-2">
-            <SideSlides items={[cardItem(id), cardItem(next)]} className="h-[215px]" />
+            <SideSlides items={[cardItem(id), cardItem(next)]} className="h-[225px]" />
           </div>,
         );
         i++;
@@ -422,15 +458,14 @@ export default async function HomePrincipal() {
             <NewsTicker posts={tickerPosts} />
           </div>
           {/* Com o carrossel na largura da página, esta caixa serve de referência (100cqw) para o carrossel sair do conteúdo até aos lados do ecrã. */}
-          <div className={`mx-3${options.heroStyle === 'carrossel' ? ' [container-type:inline-size]' : ''}`}>
+          <div className={`mx-3${Object.entries(layout).filter(([z]) => z !== TRASH_ZONE).flatMap(([, l]) => l).some((id) => baseId(id) === 'destaque' && !options.hidden.includes(id) && heroStyleOf(options, id) === 'carrossel') ? ' [container-type:inline-size]' : ''}`}>
           <div className="mx-auto max-w-[1280px] space-y-3">
-            {render('top')}
-
-            {columns('main', 'side')}
-
-            {columns('main2', 'side2')}
-
-            {render('bottom')}
+            {/* Os blocos da página pela ordem escolhida: os de origem e, onde se pôs, as secções novas (coluna principal + barra lateral) */}
+            {pageOrder(options.bands).map((key) => (
+              <React.Fragment key={key}>
+                {key === 'top' ? render('top') : key === 'cols1' ? columns('main', 'side') : key === 'cols2' ? columns('main2', 'side2') : key === 'bottom' ? render('bottom') : columns(bandZone(key, 'main'), bandZone(key, 'side'))}
+              </React.Fragment>
+            ))}
           </div>
           </div>
         </main>

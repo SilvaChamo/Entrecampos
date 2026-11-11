@@ -401,7 +401,17 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             { label: 'Notícias exclusivas', href: '/admin/subscricoes/exclusivas' },
           ]
         },
-        { href: '/admin/home', icon: LayoutTemplate, label: 'Página inicial' },
+        {
+          href: '/admin/home',
+          icon: LayoutTemplate,
+          label: 'Layout',
+          submenu: [
+            { label: 'Página inicial', href: '/admin/home' },
+            { label: 'Páginas interiores', href: '/admin/layout/interiores' },
+            { label: 'Categorias', href: '/admin/layout/categorias' },
+            { label: 'Leitura de notícias', href: '/admin/layout/leitura' },
+          ]
+        },
         { href: '/admin/newsletter', icon: Mail, label: 'Newsletter' },
         { href: '/admin/redes-sociais', icon: Share2, label: 'Redes sociais' },
         { href: '/admin/trafego', icon: BarChart3, label: 'Estatísticas' },

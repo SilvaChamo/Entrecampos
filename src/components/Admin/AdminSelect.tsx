@@ -80,7 +80,7 @@ export default function AdminSelect({ value, onChange, className = '', disabled,
         className={`flex w-full items-center justify-between gap-2 border border-[#ccd0d4] bg-white text-left outline-none focus:border-[#00a651] disabled:opacity-60 ${HAS_SIZE.test(btnClass) ? '' : 'text-[13px]'} ${btnClass}`}
       >
         <span className="truncate">{current?.label ?? ''}</span>
-        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-[#646970] transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 shrink-0 text-[#1d2327] transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <ul

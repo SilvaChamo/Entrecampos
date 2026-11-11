@@ -59,14 +59,18 @@ export function Pagination({ page, pages, hrefFor }: { page: number; pages: numb
 }
 
 /** Barra lateral do site: Receitas, Facebook, Publicidade. */
-export async function SiteSidebar({ facebook = true }: { facebook?: boolean } = {}) {
+export async function SiteSidebar({ facebook = true, blocks }: { facebook?: boolean; blocks?: ('destaque' | 'facebook' | 'publicidade')[] } = {}) {
+  // Sem `blocks`: os três, pela ordem de origem (o Facebook só com `facebook`). Com `blocks`: só estes, por esta ordem.
+  const show = blocks ?? (['destaque', ...(facebook ? ['facebook'] : []), 'publicidade'] as ('destaque' | 'facebook' | 'publicidade')[]);
+  if (show.length === 0) return null;
   const { posts } = await getAllPosts();
   const recipe = posts.find((p) => p.categorySlug === 'receitas' && p.image) ?? posts.find((p) => p.image);
 
   return (
     <aside className="ec-reveal space-y-6 bg-white p-5">
-      {recipe && (
-        <section>
+      {show.map((block) => {
+        if (block === 'destaque') return recipe ? (
+        <section key={block}>
           <SectionHeading>{recipe.categorySlug === 'receitas' ? 'Receitas' : 'Em destaque'}</SectionHeading>
           <div className="group relative mt-5 h-[250px] overflow-hidden bg-gray-800">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -89,10 +93,9 @@ export async function SiteSidebar({ facebook = true }: { facebook?: boolean } = 
             </div>
           </div>
         </section>
-      )}
-
-      {facebook && (
-      <section>
+        ) : null;
+        if (block === 'facebook') return (
+      <section key={block}>
         <SectionHeading>Facebook</SectionHeading>
         <a
           href={FACEBOOK_URL}
@@ -109,13 +112,15 @@ export async function SiteSidebar({ facebook = true }: { facebook?: boolean } = 
           </span>
         </a>
       </section>
-      )}
-
-      <section>
+        );
+        return (
+      <section key={block}>
         <SectionHeading>Publicidade</SectionHeading>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={AD_IMAGE} alt="Publicidade" loading="lazy" className="mt-5 w-full" />
       </section>
+        );
+      })}
     </aside>
   );
 }

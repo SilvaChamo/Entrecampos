@@ -1,10 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { CardTitle, ListItem, Meta, Tag, Thumb } from '@/components/Expnews/blocks';
+import { CardTitle, ListItem, Meta, NewsCard, Tag, Thumb, WideItem } from '@/components/Expnews/blocks';
 import SlideStage from '@/components/Expnews/SlideStage';
+import CardsCarousel from '@/components/Expnews/CardsCarousel';
+import LoopCarousel from '@/components/Expnews/LoopCarousel';
+import VerticalLoop from '@/components/Expnews/VerticalLoop';
 import type { Post } from '@/lib/news-data';
 import type { SectionLayout } from '@/lib/home-sections';
 
@@ -12,8 +15,9 @@ import type { SectionLayout } from '@/lib/home-sections';
 export type SlimPost = Pick<Post, 'slug' | 'title' | 'excerpt' | 'category' | 'categorySlug' | 'image' | 'date'>;
 export type CategoryGroup = { slug: string; label: string; posts: SlimPost[] };
 
-// Quantas notícias por vista: destaque = 1 grande + 4 ao lado; grelha = 2 grandes + 4 pequenas.
-const pageSizeFor = (layout: SectionLayout) => (layout === 'grelha' || layout === 'lista' ? 6 : 5);
+// Quantas notícias por vista: destaque = 1 grande + 4 ao lado; dois-cards = 2 grandes com 2 pequenas por baixo de cada; grelha = 6 cards iguais (3 por linha).
+const pageSizeFor = (layout: SectionLayout, scroll: boolean, rows: number) =>
+  layout === 'lista' && scroll ? 30 : layout === 'grelha' ? rows * 3 : layout === 'lista' || layout === 'dois-cards' ? 6 : 5;
 
 function BigCard({ post, imageHeight, reveal = false, fill = false }: { post: SlimPost; imageHeight: string; reveal?: boolean; fill?: boolean }) {
   return (
@@ -40,16 +44,31 @@ function BigCard({ post, imageHeight, reveal = false, fill = false }: { post: Sl
  * Secção de uma família de categorias na home. O selector (canto superior direito) escolhe a categoria;
  * as setas (canto inferior esquerdo) mudam, à mão, o conjunto de 6 notícias para o seguinte.
  *
- * Layouts: lista numa coluna; card principal com a lista em baixo, à direita ou à esquerda; grelha (2 grandes + 4 pequenas).
+ * Layouts: lista numa coluna; card principal com a lista em baixo, à direita ou à esquerda; grelha de cards iguais, 3 por linha.
  */
 export default function CategorySection({
   groups,
   layout = 'principal-direita',
+  listScroll = false,
+  listCarousel = false,
+  listVisible = 3,
+  rows = 2,
+  carousel = false,
   arrowsOnTop = false,
   reveal = false,
 }: {
   groups: CategoryGroup[];
   layout?: SectionLayout;
+  /** Grelha: linhas de 3 cards (2 por omissão). */
+  rows?: number;
+  /** Grelha: com 1 linha, todas as notícias da categoria numa só linha em carrossel sem fim, um card de cada vez; com mais linhas, as notícias da grelha passam por vistas. */
+  carousel?: boolean;
+  /** Lista de uma coluna em carrossel vertical: todas as notícias da categoria, em ciclo sem fim. */
+  listCarousel?: boolean;
+  /** Lista com rolagem ou em carrossel: quantas notícias ficam à vista. */
+  listVisible?: number;
+  /** Lista de uma coluna com só 3 notícias à vista e as outras numa barra de rolagem (sem setas). */
+  listScroll?: boolean;
   /** Setas do slide no canto superior direito, depois do selector (em vez de por baixo da secção). */
   arrowsOnTop?: boolean;
   /** Entra com o mesmo efeito de subida dos outros cards quando chega ao ecrã. */
@@ -80,8 +99,12 @@ export default function CategorySection({
   const group = groups.find((g) => g.slug === selected) ?? groups[0];
   if (!group) return null;
 
-  const PAGE = pageSizeFor(layout);
-  const pages = Math.max(1, Math.ceil(group.posts.length / PAGE));
+  const PAGE = pageSizeFor(layout, listScroll, rows);
+  // Os carrosséis levam todas as notícias da categoria e não têm páginas.
+  const loopGrid = layout === 'grelha' && carousel && rows === 1;
+  const loopList = layout === 'lista' && listCarousel;
+  const rollGrid = layout === 'grelha' && carousel && rows > 1;
+  const pages = loopGrid || loopList || rollGrid ? 1 : Math.max(1, Math.ceil(group.posts.length / PAGE));
   const go = (direction: 1 | -1) => {
     setDir(direction);
     setRevealing(false);
@@ -96,34 +119,40 @@ export default function CategorySection({
       return <p className="bg-white py-14 text-center text-[12px] text-gray-500 shadow-sm">Ainda não há notícias em {g?.label}.</p>;
     }
     if (layout === 'grelha') {
+      // Igual à grelha das «Últimas notícias»: cards todos iguais, 3 por linha (2 em ecrãs médios, 1 no telemóvel).
       return (
-        <div className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {visible.slice(0, 2).map((p) => (
-              <BigCard key={p.slug} post={p} imageHeight="h-[195px]" reveal={revealing} />
-            ))}
-          </div>
-          {visible.length > 2 && (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {visible.slice(2).map((p) => (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((p) => (
+            <NewsCard key={p.slug} post={p as Post} />
+          ))}
+        </div>
+      );
+    }
+    if (layout === 'dois-cards') {
+      // Duas colunas: cada uma com um card e, por baixo dele, duas notícias em lista vertical.
+      const columns = [visible.filter((_, i) => i % 2 === 0), visible.filter((_, i) => i % 2 === 1)].filter((c) => c.length > 0);
+      return (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {columns.map((col) => (
+            <div key={col[0].slug} className="space-y-3">
+              <BigCard post={col[0]} imageHeight="h-[195px]" reveal={revealing} />
+              {col.slice(1).map((p) => (
                 <div key={p.slug} className={`${revealing ? 'ec-reveal ' : ''}h-[96px]`}>
                   <ListItem as="div" post={p as Post} bleed />
                 </div>
               ))}
             </div>
-          )}
+          ))}
         </div>
       );
     }
     if (layout === 'lista') {
       return (
-        <div className="grid gap-3">
+        <ul className={`space-y-3${listScroll ? ' max-h-[640px] overflow-y-auto pr-1 sm:max-h-[calc(var(--n)*180px+(var(--n)-1)*12px)]' : ''}`} style={listScroll ? ({ '--n': listVisible } as React.CSSProperties) : undefined}>
           {visible.map((p) => (
-            <div key={p.slug} className={`${revealing ? 'ec-reveal ' : ''}h-[94px]`}>
-              <ListItem as="div" post={p as Post} bleed />
-            </div>
+            <WideItem key={p.slug} post={p} reveal={revealing} fixed={listScroll} />
           ))}
-        </div>
+        </ul>
       );
     }
     if (layout === 'principal-baixo') {
@@ -230,7 +259,15 @@ export default function CategorySection({
       </div>
 
       {/* O conjunto de notícias desliza para a esquerda (ou direita) ao mudar */}
-      <SlideStage id={`${group.slug}:${page}`} dir={dir} render={renderSet} />
+      {loopGrid ? (
+        <LoopCarousel posts={group.posts} />
+      ) : rollGrid ? (
+        <CardsCarousel posts={group.posts.slice(0, rows * 3)} />
+      ) : loopList ? (
+        <VerticalLoop posts={group.posts} visible={listVisible} />
+      ) : (
+        <SlideStage id={`${group.slug}:${page}`} dir={dir} render={renderSet} />
+      )}
 
       {/* Setas de controlo (manuais): mudam todo o conjunto */}
       {!arrowsOnTop && pages > 1 && (

@@ -1,7 +1,9 @@
+import { Fragment } from 'react';
 import { ARCHIVE_PAGE_SIZE, getAllPosts, searchSlugs } from '@/lib/news-data';
 import { Pagination } from '@/components/Site/parts';
-import InnerPage, { InnerSidebar } from '@/components/Expnews/InnerPage';
+import InnerPage, { InnerExtra, InnerSidebar } from '@/components/Expnews/InnerPage';
 import { NewsCard } from '@/components/Expnews/blocks';
+import { getInnerLayout } from '@/lib/inner-layout-store';
 
 /**
  * Arquivo de todas as notícias, com pesquisa e paginação. Não lê os parâmetros do pedido: recebe-os, para o arquivo
@@ -22,6 +24,10 @@ export default async function ArchiveView({ q = '', page: pageParam = 1 }: { q?:
   const pages = Math.max(1, Math.ceil(found.length / ARCHIVE_PAGE_SIZE));
   const page = Math.min(Math.max(pageParam || 1, 1), pages);
   const visible = found.slice((page - 1) * ARCHIVE_PAGE_SIZE, page * ARCHIVE_PAGE_SIZE);
+  // Secção extra do modelo «Categorias» (painel, Layout), só no arquivo sem pesquisa.
+  const extraCfg = (await getInnerLayout()).categoria.extra;
+  const extraAt = extraCfg.enabled && !query ? Math.min(Math.max(extraCfg.after, 0), visible.length) : -1;
+  const extra = extraAt >= 0 ? <InnerExtra page="categoria" /> : null;
   const qs = (n: number) => `/noticias?${new URLSearchParams({ ...(q ? { q } : {}), ...(n > 1 ? { pagina: String(n) } : {}) })}`;
 
   return (
@@ -35,14 +41,18 @@ export default async function ArchiveView({ q = '', page: pageParam = 1 }: { q?:
             <p className="bg-white py-16 text-center text-gray-500 shadow-sm">Nenhuma notícia encontrada.</p>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {visible.map((p) => (
-                <NewsCard key={p.slug} post={p} />
+              {visible.map((p, i) => (
+                <Fragment key={p.slug}>
+                  {i === extraAt && extra && <div className="sm:col-span-2 xl:col-span-3">{extra}</div>}
+                  <NewsCard post={p} />
+                </Fragment>
               ))}
+              {extraAt === visible.length && extra && <div className="sm:col-span-2 xl:col-span-3">{extra}</div>}
             </div>
           )}
           <Pagination page={page} pages={pages} hrefFor={qs} />
         </section>
-        <InnerSidebar />
+        <InnerSidebar page="categoria" />
       </div>
     </InnerPage>
   );

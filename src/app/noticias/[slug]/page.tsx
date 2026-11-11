@@ -9,7 +9,9 @@ import ExpShell from '@/components/Expnews/Shell';
 import PageHeaderCard from '@/components/Expnews/PageHeaderCard';
 import PrintButton from '@/components/Site/PrintButton';
 import CommentsSection from '@/components/Comments/CommentsSection';
-import { InnerSidebar } from '@/components/Expnews/InnerPage';
+import { InnerExtra, InnerSidebar } from '@/components/Expnews/InnerPage';
+import { getInnerLayout } from '@/lib/inner-layout-store';
+import { splitAfterParagraph } from '@/lib/inner-layout';
 import ExclusivaGate from '@/components/Site/ExclusivaGate';
 import { loadExclusivas } from '@/lib/assinaturas';
 import { inicioDoTexto } from '@/lib/assinaturas-types';
@@ -47,6 +49,11 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
   const text = encodeURIComponent(post.title);
 
   const shares = shareNetworks(url, text);
+
+  // Secção extra do modelo «Leitura de notícias» (painel, Layout): entra a seguir ao parágrafo N do texto (0 = no fim).
+  const extraCfg = (await getInnerLayout()).leitura.extra;
+  const [bodyStart, bodyEnd] = extraCfg.enabled && !exclusiva ? splitAfterParagraph(post.content, extraCfg.after) : [post.content, ''];
+  const extra = extraCfg.enabled ? <div className="my-6"><InnerExtra page="leitura" skip={post.slug} /></div> : null;
 
   return (
     <ExpShell backdrop={post.image}>
@@ -88,11 +95,21 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
             {exclusiva ? (
               <ExclusivaGate slug={post.slug} inicio={inicioDoTexto(post.content)} />
             ) : (
-              <div
-                className="blog-details mt-6 text-[15px] leading-7 text-gray-500 max-sm:text-[18px] max-sm:leading-8 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-2"
-                dangerouslySetInnerHTML={{ __html: post.content }}
-              />
+              <>
+                <div
+                  className="blog-details mt-6 text-[15px] leading-7 text-gray-500 max-sm:text-[18px] max-sm:leading-8 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-2"
+                  dangerouslySetInnerHTML={{ __html: bodyStart }}
+                />
+                {bodyEnd && extra}
+                {bodyEnd && (
+                  <div
+                    className="blog-details text-[15px] leading-7 text-gray-500 max-sm:text-[18px] max-sm:leading-8 [&_a]:text-[#008000] [&_a]:underline [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_p]:mb-2"
+                    dangerouslySetInnerHTML={{ __html: bodyEnd }}
+                  />
+                )}
+              </>
             )}
+            {(exclusiva || !bodyEnd) && extra}
 
             <div className="mt-8">
               <h3 className="flex items-center gap-2 border-b border-gray-200 pb-3 text-[18px] font-bold uppercase text-[#1a3d0c]">
@@ -129,7 +146,7 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
           </div>
         </article>
 
-        <InnerSidebar exchange />
+        <InnerSidebar page="leitura" />
       </div>
 
       {related.length > 0 && (
