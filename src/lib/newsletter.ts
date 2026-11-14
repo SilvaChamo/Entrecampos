@@ -96,6 +96,8 @@ export async function getQueue(state?: NewsletterState): Promise<Post[]> {
   const { posts } = await getAllPosts();
   // As notícias já enviadas à mão ou por agendamento depois do último envio não voltam a seguir na newsletter do dia.
   const already = new Set(st.history.filter((h) => h.slugs && new Date(h.at).getTime() > since).flatMap((h) => h.slugs!));
+  // As notícias escolhidas para um envio agendado que ainda não saiu também ficam de fora: vão só na hora marcada, nunca nas 20h.
+  (await loadSchedules()).filter((s) => s.status === 'pending' || s.status === 'sending').forEach((s) => s.slugs.forEach((slug) => already.add(slug)));
   return posts
     .filter((p) => !already.has(p.slug) && new Date(p.date).getTime() > since && new Date(p.date).getTime() <= Date.now())
     .sort((a, b) => b.date.localeCompare(a.date))
