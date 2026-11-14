@@ -3,7 +3,7 @@ import type { User } from '@supabase/supabase-js';
 import { cookieOptions, SESSION_COOKIE, signSession } from '@/lib/local-session';
 import { mapRole } from '@/lib/auth';
 import { serverDb } from '@/lib/antispam';
-import { siteAccess, withSiteAccess, effectiveRole } from '@/lib/site-accounts';
+import { siteAccess, withSiteAccess, effectiveRole, findUserByEmail } from '@/lib/site-accounts';
 import { googleRedirectUri } from '@/lib/google-oauth';
 
 const fail = (req: NextRequest, code: string) => {
@@ -41,13 +41,7 @@ export async function GET(req: NextRequest) {
     const email = info.email.toLowerCase();
 
     const db = serverDb();
-    let user: User | null = null;
-    for (let page = 1; page <= 10 && !user; page++) {
-      const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
-      if (error || !data) break;
-      user = data.users.find((u) => (u.email || '').toLowerCase() === email) ?? null;
-      if (data.users.length < 1000) break;
-    }
+    let user: User | null = await findUserByEmail(db, email);
 
     if (!user) {
       const { data, error } = await db.auth.admin.createUser({

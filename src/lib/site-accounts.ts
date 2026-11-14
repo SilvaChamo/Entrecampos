@@ -45,15 +45,31 @@ export async function getSiteUser(db: SupabaseClient, id: string): Promise<User 
   return data.user;
 }
 
-/** Utilizador do EntreCAMPOS pelo e-mail (null se não existir ou se for de outro site). */
-export async function findSiteUserByEmail(db: SupabaseClient, email: string): Promise<User | null> {
+/**
+ * Conta (de qualquer site) pelo e-mail. Usa a função SQL `user_id_by_email` (sql/procurar-utilizador-por-email.sql);
+ * sem ela, percorre a lista de utilizadores, o que só chega até às primeiras 10 000 contas.
+ */
+export async function findUserByEmail(db: SupabaseClient, email: string): Promise<User | null> {
   const wanted = email.trim().toLowerCase();
+  const { data: id, error: rpcError } = await db.rpc('user_id_by_email', { p_email: wanted });
+  if (!rpcError) {
+    if (!id) return null;
+    const { data } = await db.auth.admin.getUserById(String(id));
+    return data?.user ?? null;
+  }
   for (let page = 1; page <= 10; page++) {
     const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
     if (error || !data) return null;
     const hit = data.users.find((u) => (u.email || '').toLowerCase() === wanted);
-    if (hit) return isSiteAccount(hit) ? hit : null;
+    if (hit) return hit;
     if (data.users.length < 1000) return null;
   }
   return null;
 }
+
+/** Utilizador do EntreCAMPOS pelo e-mail (null se não existir ou se for de outro site). */
+export async function findSiteUserByEmail(db: SupabaseClient, email: string): Promise<User | null> {
+  const user = await findUserByEmail(db, email);
+  return user && isSiteAccount(user) ? user : null;
+}
+
