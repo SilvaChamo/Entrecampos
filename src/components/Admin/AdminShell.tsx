@@ -220,7 +220,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       if (document.visibilityState === 'visible') fetch('/api/admin/presence', { method: 'POST', credentials: 'include' }).catch(() => {});
     };
     ping();
-    const timer = setInterval(ping, 60_000);
+    // De 2 em 2 minutos (cada sinal é uma função na Vercel + uma escrita no armazenamento); a janela de "logado agora" é de 5.
+    const timer = setInterval(ping, 120_000);
     document.addEventListener('visibilitychange', ping);
     return () => {
       clearInterval(timer);

@@ -4,8 +4,8 @@ import { requireAuth } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
-/** O painel envia um sinal de vida por minuto (/api/admin/presence): "logado agora" = sinal nos últimos 3 minutos. */
-const WINDOW_MS = 3 * 60 * 1000;
+/** O painel envia um sinal de vida de 2 em 2 minutos (/api/admin/presence): "logado agora" = sinal nos últimos 5 minutos. */
+const WINDOW_MS = 5 * 60 * 1000;
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

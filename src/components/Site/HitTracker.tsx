@@ -3,15 +3,17 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
-/** Último pedido de verificação dos envios agendados da newsletter (no máximo um por minuto neste separador). */
+/** Último pedido de verificação dos envios agendados da newsletter (no máximo um a cada 5 minutos neste separador). */
 let lastPulse = 0;
 
 /** Regista cada página vista (só no site público). A notícia é identificada pelo endereço /noticias/<slug>. */
 export default function HitTracker() {
   const pathname = usePathname();
-  // Disparo de reserva da newsletter agendada: vale também no painel, onde as visitas não são contadas.
+  // Disparo de reserva da newsletter agendada: só a partir do painel. Os envios já saem do GitHub (de 5 em 5 minutos) e do
+  // cron diário da Vercel; se também saísse de cada visita ao site, cada visitante acordava uma função na Vercel (CPU) só para isto.
   useEffect(() => {
-    if (Date.now() - lastPulse < 60_000) return;
+    if (!pathname?.startsWith('/admin')) return;
+    if (Date.now() - lastPulse < 5 * 60_000) return;
     lastPulse = Date.now();
     fetch('/api/newsletter/pulso', { method: 'POST', keepalive: true }).catch(() => {});
   }, [pathname]);

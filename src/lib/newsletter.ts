@@ -463,7 +463,7 @@ async function takeLock(): Promise<boolean> {
   }
 }
 
-/** Envia os agendamentos cuja hora já chegou. Chamado pelo GitHub (5 em 5 minutos), pelo cron diário e pelas visitas ao site/painel. */
+/** Envia os agendamentos cuja hora já chegou. Chamado pelo GitHub (5 em 5 minutos), pelo cron diário e, de reserva, pelo painel. */
 export async function runDueSchedules(): Promise<{ due: number; results: { id: string; result: string }[] }> {
   // Vê primeiro, sem trinco, se há algo a enviar: é o caso comum e fica barato.
   const pending = await loadSchedules();
