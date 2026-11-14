@@ -8,7 +8,7 @@ import { mailConfigured, recoveryEmail, sendMail } from '@/lib/mailer';
  * forjado para enviar o token da vítima a um site falso): só com um destes. Configurável em SITE_ORIGINS
  * (lista separada por vírgulas; o primeiro é o principal).
  */
-const SITE_ORIGINS = (process.env.SITE_ORIGINS || 'https://entrecamposblog.com,https://www.entrecamposblog.com,http://localhost:3004,http://localhost:3005')
+const SITE_ORIGINS = (process.env.SITE_ORIGINS || [process.env.NEXT_PUBLIC_SITE_URL, 'https://entrecamposblog.com,https://www.entrecamposblog.com,http://localhost:3004,http://localhost:3005'].filter(Boolean).join(','))
   .split(',')
   .map((o) => o.trim().replace(/\/$/, ''))
   .filter(Boolean);
