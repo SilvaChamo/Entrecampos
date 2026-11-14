@@ -97,6 +97,7 @@ export async function getQueue(state?: NewsletterState): Promise<Post[]> {
   // As notícias já enviadas à mão ou por agendamento depois do último envio não voltam a seguir na newsletter do dia.
   const already = new Set(st.history.filter((h) => h.slugs && new Date(h.at).getTime() > since).flatMap((h) => h.slugs!));
   // As notícias escolhidas para um envio agendado que ainda não saiu também ficam de fora: vão só na hora marcada, nunca nas 20h.
+  // As notícias escolhidas para um envio agendado que ainda não saiu também ficam de fora: vão só na hora marcada, nunca nas 20h.
   (await loadSchedules()).filter((s) => s.status === 'pending' || s.status === 'sending').forEach((s) => s.slugs.forEach((slug) => already.add(slug)));
   return posts
     .filter((p) => !already.has(p.slug) && new Date(p.date).getTime() > since && new Date(p.date).getTime() <= Date.now())
@@ -300,14 +301,14 @@ export type Schedule = {
 };
 
 export async function loadSchedules(): Promise<Schedule[]> {
-  try {
-    const { data } = await db().storage.from(BUCKET()).download(AGENDA_FILE);
-    if (!data) return [];
-    const raw = JSON.parse(await data.text());
-    return Array.isArray(raw) ? (raw as Schedule[]) : [];
-  } catch {
-    return [];
+  const { data, error } = await db().storage.from(BUCKET()).download(AGENDA_FILE);
+  // Sem ficheiro ainda = sem agendamentos. Qualquer outro erro sobe: ler «vazio» às cegas enviava notícias reservadas e apagava a agenda ao guardar.
+  if (error) {
+    if (String((error as { statusCode?: string }).statusCode) === '404') return [];
+    throw new Error(`Não foi possível ler a agenda da newsletter: ${error.message}`);
   }
+  const raw = JSON.parse(await data.text());
+  return Array.isArray(raw) ? (raw as Schedule[]) : [];
 }
 
 async function saveSchedules(list: Schedule[]) {
@@ -444,7 +445,7 @@ export async function runSchedule(id: string): Promise<string> {
 }
 
 /**
- * Trinco para um só envio de cada vez, seja qual for quem chama (GitHub, cron diário ou visitas ao site/painel).
+ * Trinco para um só envio de cada vez, seja qual for quem chama (cron do servidor ou visitas ao site/painel).
  * Cria um ficheiro que não pode já existir; um trinco com mais de 10 minutos é tido como abandonado.
  */
 const LOCK_FILE = 'partilhado/_config/newsletter-agenda.lock';
@@ -463,7 +464,7 @@ async function takeLock(): Promise<boolean> {
   }
 }
 
-/** Envia os agendamentos cuja hora já chegou. Chamado pelo GitHub (5 em 5 minutos), pelo cron diário e, de reserva, pelo painel. */
+/** Envia os agendamentos cuja hora já chegou. Chamado pelo cron do servidor, pelo cron diário e, de reserva, pelo painel. */
 export async function runDueSchedules(): Promise<{ due: number; results: { id: string; result: string }[] }> {
   // Vê primeiro, sem trinco, se há algo a enviar: é o caso comum e fica barato.
   const pending = await loadSchedules();
