@@ -9,6 +9,7 @@
     "painel:build": "NEXT_DIST_DIR=.next-prod next build",
     "painel": "NEXT_DIST_DIR=.next-prod next start -p 3005",
     "lint": "eslint",
+    "test": "node --test tests/*.test.mjs",
     "ensure-admin": "node scripts/ensure-admin.js",
     "setup:selfhosted": "node scripts/setup-selfhosted.js",
     "setup:selfhosted:sql": "node scripts/setup-selfhosted.js --sql"
