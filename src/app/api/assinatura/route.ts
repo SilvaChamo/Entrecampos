@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, leitorActual, loadExclusivas, loadPedidos, loadPlanos, savePedidos, subscricaoDe } from '@/lib/assinaturas';
+import { alterarPedidos, Conflito, db, leitorActual, loadExclusivas, loadPedidos, loadPlanos, subscricaoDe } from '@/lib/assinaturas';
 import { getAllPosts } from '@/lib/news-data';
 import { subscricaoActiva, type Exclusiva, type Pedido } from '@/lib/assinaturas-types';
 import { tooManyAttempts } from '@/lib/rate-limit';
@@ -44,9 +44,6 @@ export async function POST(req: NextRequest) {
     if (!plano) return NextResponse.json({ error: 'Plano inexistente.' }, { status: 400 });
     if (plano.price == null) return NextResponse.json({ error: 'Este plano ainda não está disponível.' }, { status: 400 });
 
-    const pedidos = await loadPedidos();
-    if (pedidos.some((p) => p.userId === session.id && p.status === 'pendente')) return NextResponse.json({ error: 'Já tem um pedido a aguardar confirmação.' }, { status: 409 });
-
     const novo: Pedido = {
       id: Math.random().toString(36).slice(2, 10) + Date.now().toString(36),
       userId: session.id,
@@ -60,9 +57,12 @@ export async function POST(req: NextRequest) {
       status: 'pendente',
       createdAt: new Date().toISOString(),
     };
-    await savePedidos([novo, ...pedidos].slice(0, 2000));
+    await alterarPedidos((lista) => {
+      if (lista.some((p) => p.userId === session.id && p.status === 'pendente')) throw new Conflito('Já tem um pedido a aguardar confirmação.', 409);
+      return [novo, ...lista].slice(0, 2000);
+    });
     return NextResponse.json({ ok: true, pedido: novo });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : 'Não foi possível enviar o pedido.' }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Não foi possível enviar o pedido.' }, { status: err instanceof Conflito ? err.status : 500 });
   }
 }

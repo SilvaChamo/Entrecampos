@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-guard';
-import { comSubscricao, db, loadPedidos, savePedidos, subscricaoDe } from '@/lib/assinaturas';
+import { alterarPedidos, comSubscricao, Conflito, db, loadPedidos, subscricaoDe } from '@/lib/assinaturas';
 import { isSiteAccount } from '@/lib/site-accounts';
-import { somarMeses, subscricaoActiva, type Subscricao } from '@/lib/assinaturas-types';
+import { somarMeses, subscricaoActiva, type Pedido, type Subscricao } from '@/lib/assinaturas-types';
 
 const PERMISSIONS = ['editar_definicoes'];
 
@@ -48,28 +48,36 @@ export async function POST(req: NextRequest) {
     }
 
     if (action !== 'aprovar' && action !== 'rejeitar') return NextResponse.json({ error: 'Acção inválida.' }, { status: 400 });
-    const pedidos = await loadPedidos();
-    const pedido = pedidos.find((p) => p.id === id);
-    if (!pedido) return NextResponse.json({ error: 'Pedido inexistente.' }, { status: 404 });
-    if (pedido.status !== 'pendente') return NextResponse.json({ error: 'Este pedido já foi tratado.' }, { status: 409 });
+    // Primeiro reserva a decisão (só um pedido de aprovação passa); depois dá a subscrição. Se isso falhar, devolve o pedido a «pendente».
+    let pedido!: Pedido;
+    await alterarPedidos((lista) => {
+      const p = lista.find((x) => x.id === id);
+      if (!p) throw new Conflito('Pedido inexistente.', 404);
+      if (p.status !== 'pendente') throw new Conflito('Este pedido já foi tratado.', 409);
+      p.status = action === 'aprovar' ? 'aprovado' : 'rejeitado';
+      p.decidedAt = new Date().toISOString();
+      if (action === 'rejeitar' && note) p.note = String(note).replace(/<[^>]*>/g, '').trim().slice(0, 200);
+      pedido = { ...p };
+      return lista;
+    });
 
     if (action === 'aprovar') {
-      const { data } = await client.auth.admin.getUserById(pedido.userId);
-      if (!data?.user || !isSiteAccount(data.user)) return NextResponse.json({ error: 'A conta deste leitor já não existe.' }, { status: 404 });
-      const actual = subscricaoDe(data.user);
-      // renovar antes de acabar soma ao tempo que ainda resta
-      const base = actual && subscricaoActiva(actual) ? new Date(actual.until) : new Date();
-      const sub: Subscricao = { planId: pedido.planId, planName: pedido.planName, since: actual && subscricaoActiva(actual) ? actual.since : new Date().toISOString(), until: somarMeses(base, pedido.months).toISOString() };
-      const { error } = await client.auth.admin.updateUserById(data.user.id, { app_metadata: comSubscricao(data.user, sub) });
-      if (error) throw error;
+      try {
+        const { data } = await client.auth.admin.getUserById(pedido.userId);
+        if (!data?.user || !isSiteAccount(data.user)) throw new Conflito('A conta deste leitor já não existe.', 404);
+        const actual = subscricaoDe(data.user);
+        // renovar antes de acabar soma ao tempo que ainda resta
+        const base = actual && subscricaoActiva(actual) ? new Date(actual.until) : new Date();
+        const sub: Subscricao = { planId: pedido.planId, planName: pedido.planName, since: actual && subscricaoActiva(actual) ? actual.since : new Date().toISOString(), until: somarMeses(base, pedido.months).toISOString() };
+        const { error } = await client.auth.admin.updateUserById(data.user.id, { app_metadata: comSubscricao(data.user, sub) });
+        if (error) throw error;
+      } catch (e) {
+        await alterarPedidos((lista) => lista.map((x) => (x.id === id ? (({ decidedAt: _d, ...resto }) => ({ ...resto, status: 'pendente' as const }))(x) : x)));
+        throw e;
+      }
     }
-
-    pedido.status = action === 'aprovar' ? 'aprovado' : 'rejeitado';
-    pedido.decidedAt = new Date().toISOString();
-    if (action === 'rejeitar' && note) pedido.note = String(note).replace(/<[^>]*>/g, '').trim().slice(0, 200);
-    await savePedidos(pedidos);
     return NextResponse.json({ ok: true, pedido });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : 'Erro ao tratar o pedido.' }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Erro ao tratar o pedido.' }, { status: err instanceof Conflito ? err.status : 500 });
   }
 }

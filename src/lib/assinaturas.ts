@@ -54,7 +54,36 @@ export async function loadPedidos(): Promise<Pedido[]> {
   const row = await lerLinha<{ items?: Pedido[] }>(SLUG_PEDIDOS);
   return Array.isArray(row?.items) ? row.items : [];
 }
-export const savePedidos = (items: Pedido[]) => gravarLinha(SLUG_PEDIDOS, { items });
+/** Recusa com o código HTTP que a rota deve devolver (por exemplo, pedido já tratado = 409). */
+export class Conflito extends Error {
+  constructor(message: string, public status = 409) {
+    super(message);
+  }
+}
+
+/** Lê a linha, aplica `fn` e grava só se mais ninguém a mudou entretanto (compara `updated_at`); se mudou, repete. Dois pedidos em simultâneo já não se apagam um ao outro. */
+async function alterarLinha<T>(slug: string, fn: (actual: T | null) => T): Promise<T> {
+  for (let i = 0; i < 6; i++) {
+    const { data, error } = await db().from('site_content').select('news, updated_at').eq('site_slug', slug).maybeSingle();
+    if (error) throw error;
+    const novo = fn((data?.news as T) ?? null);
+    const quando = new Date().toISOString();
+    if (!data) {
+      const { error: e } = await db().from('site_content').insert({ site_slug: slug, news: novo, categories: [], documents: [], updated_at: quando });
+      if (!e) return novo;
+      if (e.code !== '23505') throw e; // 23505 = outro criou a linha primeiro: repete
+    } else {
+      const { data: rows, error: e } = await db().from('site_content').update({ news: novo, updated_at: quando }).eq('site_slug', slug).eq('updated_at', data.updated_at).select('site_slug');
+      if (e) throw e;
+      if (rows?.length) return novo;
+    }
+  }
+  throw new Conflito('A lista foi alterada ao mesmo tempo por outra pessoa. Tente de novo.', 503);
+}
+
+/** Muda a lista de pedidos de forma segura contra pedidos em simultâneo; `fn` pode ser chamada mais de uma vez. */
+export const alterarPedidos = (fn: (pedidos: Pedido[]) => Pedido[]) =>
+  alterarLinha<{ items?: Pedido[] }>(SLUG_PEDIDOS, (c) => ({ items: fn(Array.isArray(c?.items) ? c.items : []) }));
 
 /* ---------- Subscrição na conta do leitor ---------- */
 export function subscricaoDe(user: Pick<User, 'app_metadata'> | null | undefined): Subscricao | null {
