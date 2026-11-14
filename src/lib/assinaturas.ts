@@ -42,13 +42,10 @@ export async function loadPlanos(): Promise<PlanosConfig> {
 export const savePlanos = (c: PlanosConfig) => gravarLinha(SLUG_PLANOS, c);
 
 /* ---------- Notícias exclusivas (lista de slugs) ---------- */
+// Sem `catch` de propósito: se a base falhar, uma lista «vazia» abria o texto das exclusivas a todos (e o painel apagava a lista ao guardar).
 export const loadExclusivas = cache(async (): Promise<string[]> => {
-  try {
-    const row = await lerLinha<{ slugs?: string[] }>(SLUG_EXCLUSIVAS);
-    return Array.isArray(row?.slugs) ? row.slugs : [];
-  } catch {
-    return [];
-  }
+  const row = await lerLinha<{ slugs?: string[] }>(SLUG_EXCLUSIVAS);
+  return Array.isArray(row?.slugs) ? row.slugs : [];
 });
 export const saveExclusivas = (slugs: string[]) => gravarLinha(SLUG_EXCLUSIVAS, { slugs });
 
