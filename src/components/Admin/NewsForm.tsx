@@ -4,7 +4,9 @@ import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, SITE_ID } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import ImageChooser, { type ChosenImage } from '@/components/Admin/ImageChooser';
+import ImageChooser, { uploadToLibrary, type ChosenImage } from '@/components/Admin/ImageChooser';
+import CropDialog from '@/components/Admin/CropDialog';
+import { cropImage, type CropRect } from '@/lib/client-image';
 import dynamic from 'next/dynamic';
 import Spinner from '@/components/Common/Spinner';
 import {
@@ -89,6 +91,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
   const { user: authUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
   // Foto vinda do computador: aparece logo e segue para a biblioteca em segundo plano.
   const pendingImage = useRef<Promise<string> | null>(null);
   const [imageStatus, setImageStatus] = useState<'' | 'uploading' | 'failed'>('');
@@ -107,6 +110,15 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
         setFormData((prev) => (prev.image_url === img.url ? { ...prev, image_url: finalUrl } : prev));
       })
       .catch(() => { if (pendingImage.current === job) setImageStatus('failed'); });
+  };
+  const cropFeatured = async (rect: CropRect) => {
+    setCropOpen(false);
+    try {
+      const file = await cropImage(formData.image_url, rect, 'destaque-recorte');
+      chooseImage({ url: URL.createObjectURL(file), uploading: uploadToLibrary(file, formData.title) });
+    } catch (err) {
+      alert((err as Error).message || 'Não foi possível recortar a foto.');
+    }
   };
   const [lockModifiedDate, setLockModifiedDate] = useState(false);
   // Cards da barra lateral recolhidos (a chave é o nome do card).
@@ -567,6 +579,14 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
                   <br />
                   <button
                     type="button"
+                    onClick={() => setCropOpen(true)}
+                    className="text-[#2271b1] text-[13px] hover:underline underline-offset-2"
+                  >
+                    Recortar imagem
+                  </button>
+                  <br />
+                  <button
+                    type="button"
                     onClick={() => { pendingImage.current = null; setImageStatus(''); setFormData({ ...formData, image_url: '' }); }}
                     className="text-[#d63638] text-[13px] hover:underline underline-offset-2"
                   >
@@ -601,6 +621,8 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
           <span className="ml-auto min-w-0 truncate text-[13px] text-[#50575e]">{isEdit ? 'Publicado' : 'Rascunho'}</span>
         </div>
       </form>
+
+      {cropOpen && formData.image_url && <CropDialog src={formData.image_url} onConfirm={cropFeatured} onClose={() => setCropOpen(false)} />}
 
       {/* Escolher a foto: Galeria ou Computador */}
       {isImageSelectorOpen && (

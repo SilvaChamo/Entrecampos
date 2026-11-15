@@ -19,7 +19,9 @@ import {
   Strikethrough,
   Underline as UnderlineIcon,
 } from 'lucide-react';
-import ImageChooser from '@/components/Admin/ImageChooser';
+import ImageChooser, { uploadToLibrary } from '@/components/Admin/ImageChooser';
+import CropDialog from '@/components/Admin/CropDialog';
+import { cropImage, type CropRect } from '@/lib/client-image';
 import AdminSelect from '@/components/Admin/AdminSelect';
 
 type Align = 'center' | 'left' | 'right';
@@ -140,6 +142,7 @@ const Figure = Node.create({
         button('◧ Esquerda', 'Foto à esquerda, com o texto a contornar', () => setAttrs({ align: 'left' }), 'left'),
         button('▣ Centro', 'Foto sozinha, centrada', () => setAttrs({ align: 'center' }), 'center'),
         button('Direita ◨', 'Foto à direita, com o texto a contornar', () => setAttrs({ align: 'right' }), 'right'),
+        button('✂ Recortar', 'Recortar a foto', () => editor.view.dom.dispatchEvent(new CustomEvent('ec-fig-crop', { detail: { pos: pos(), src: current.attrs.src } }))),
         button('↑', 'Subir um bloco', () => move(-1)),
         button('↓', 'Descer um bloco', () => move(1)),
         button('✕', 'Apagar a foto', remove),
@@ -326,6 +329,7 @@ const Divider = () => <span className="mx-1 h-5 w-px bg-gray-300" />;
 /** Editor de texto da notícia, por blocos: texto, títulos, imagens com legenda e caixas de destaque. */
 export default function RichEditor({ value, onChange, newsTitle = '' }: { value: string; onChange: (html: string) => void; newsTitle?: string }) {
   const [picking, setPicking] = useState(false);
+  const [cropping, setCropping] = useState<{ pos: number; src: string } | null>(null);
   // "+ bloco": aparece depois do fim do texto do bloco onde está o rato (ou o toque). `end` é o fim do bloco onde se insere.
   type Hover = { top: number; left: number; end: number; wrapW: number };
   const [hover, setHover] = useState<Hover | null>(null);
@@ -435,6 +439,30 @@ export default function RichEditor({ value, onChange, newsTitle = '' }: { value:
     }, 600);
     return () => clearTimeout(t);
   }, [editor, value]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const dom = editor.view.dom;
+    const onCrop = (e: Event) => setCropping((e as CustomEvent<{ pos: number; src: string }>).detail);
+    dom.addEventListener('ec-fig-crop', onCrop);
+    return () => dom.removeEventListener('ec-fig-crop', onCrop);
+  }, [editor]);
+
+  // A foto recortada é um ficheiro novo na biblioteca (a original fica como estava, pode estar noutras notícias); a figura passa a usá-lo.
+  const applyCrop = async (rect: CropRect) => {
+    const target = cropping;
+    setCropping(null);
+    if (!editor || !target) return;
+    try {
+      const file = await cropImage(target.src, rect, decodeURIComponent(target.src.split(/[?#]/)[0].split('/').pop() || 'foto').replace(/\.[^.]+$/, '') + '-recorte');
+      const url = await uploadToLibrary(file, newsTitle);
+      const node = editor.state.doc.nodeAt(target.pos);
+      if (node?.type.name !== 'figure' || node.attrs.src !== target.src) return; // entretanto a foto mudou de sítio ou foi apagada
+      editor.view.dispatch(editor.state.tr.setNodeMarkup(target.pos, undefined, { ...node.attrs, src: url }));
+    } catch (err) {
+      alert((err as Error).message || 'Não foi possível recortar a foto.');
+    }
+  };
 
   if (!editor) return <div className="min-h-[400px] bg-white" />;
 
@@ -577,6 +605,8 @@ export default function RichEditor({ value, onChange, newsTitle = '' }: { value:
           </div>
         )}
       </div>
+
+      {cropping && <CropDialog src={cropping.src} onConfirm={applyCrop} onClose={() => setCropping(null)} />}
 
       {picking && (
         <ImageChooser

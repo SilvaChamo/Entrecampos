@@ -24,7 +24,8 @@ import {
   FileArchive
 } from 'lucide-react';
 import { SkeletonMediaGrid } from '@/components/Admin/Skeleton';
-import { prepareImage, prepareWebp100 } from '@/lib/client-image';
+import { prepareImage, prepareWebp100, cropImage, type CropRect } from '@/lib/client-image';
+import CropDialog from '@/components/Admin/CropDialog';
 import ArquivoFolders, { type FolderInfo } from '@/components/Admin/ArquivoFolders';
 import AdminSelect from '@/components/Admin/AdminSelect';
 
@@ -138,6 +139,26 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   const [editHeight, setEditHeight] = useState(0);
   const [editFormat, setEditFormat] = useState<'original' | 'webp' | 'jpeg'>('original');
   const [processingImage, setProcessingImage] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropRect, setCropRect] = useState<CropRect | null>(null);
+  const [cropPreview, setCropPreview] = useState<string | null>(null);
+  const clearCrop = () => {
+    setCropRect(null);
+    setCropPreview((old) => { if (old) URL.revokeObjectURL(old); return null; });
+  };
+  const applyCropChoice = async (rect: CropRect) => {
+    setCropOpen(false);
+    if (!selectedFile) return;
+    try {
+      const file = await cropImage(getPublicUrl(selectedFile.name), rect);
+      setCropRect(rect);
+      setEditWidth(Math.round(rect.width));
+      setEditHeight(Math.round(rect.height));
+      setCropPreview((old) => { if (old) URL.revokeObjectURL(old); return URL.createObjectURL(file); });
+    } catch (err: any) {
+      alert(err.message || 'Não foi possível recortar a foto.');
+    }
+  };
   const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
   
   // Metadados
@@ -372,6 +393,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
   const openDetails = async (file: StorageFile) => {
     setSelectedFile(file);
     setIsEditingImage(false); // Reset edit mode
+    clearCrop();
     // Carregar metadados do DB
     const { data } = await supabase.from('media_details').select('*').eq('file_name', file.name).single();
     if (data) {
@@ -405,7 +427,10 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
         canvas.width = editWidth || img.width;
         canvas.height = editHeight || img.height;
         const ctx = canvas.getContext('2d');
-        if (ctx) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        if (ctx) {
+          if (cropRect) ctx.drawImage(img, cropRect.x, cropRect.y, cropRect.width, cropRect.height, 0, 0, canvas.width, canvas.height);
+          else ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }
 
         const mimeType = editFormat === 'webp' ? 'image/webp' : editFormat === 'jpeg' ? 'image/jpeg' : selectedFile.metadata?.mimetype;
         canvas.toBlob((blob) => {
@@ -414,7 +439,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [editWidth, editHeight, editFormat, isEditingImage]);
+  }, [editWidth, editHeight, editFormat, isEditingImage, cropRect]);
 
   // Função para processar e guardar imagem editada
   const applyImageEdits = async () => {
@@ -435,14 +460,15 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
-      const finalWidth = editWidth || img.width;
-      const finalHeight = editHeight || img.height;
+      const finalWidth = editWidth || cropRect?.width || img.width;
+      const finalHeight = editHeight || cropRect?.height || img.height;
 
       canvas.width = finalWidth;
       canvas.height = finalHeight;
 
       if (ctx) {
-        ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
+        if (cropRect) ctx.drawImage(img, cropRect.x, cropRect.y, cropRect.width, cropRect.height, 0, 0, finalWidth, finalHeight);
+        else ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
       }
 
       const original = selectedFile.metadata?.mimetype || (/\.png$/i.test(selectedFile.name) ? 'image/png' : /\.webp$/i.test(selectedFile.name) ? 'image/webp' : 'image/jpeg');
@@ -465,6 +491,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
 
       alert('Imagem processada e guardada com sucesso!');
       setIsEditingImage(false);
+      clearCrop();
       loadImages();
     } catch (err: any) {
       alert('Erro ao editar imagem: ' + err.message);
@@ -943,6 +970,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                           const img = new Image();
                           img.src = getPublicUrl(selectedFile.name);
                           img.onload = () => {
+                            clearCrop();
                             setEditWidth(img.width);
                             setEditHeight(img.height);
                             setIsEditingImage(true);
@@ -962,19 +990,35 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   <div className="w-full max-w-4xl bg-white border border-[#ccd0d4] shadow-lg p-6">
                     <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                       <h3 className="text-xl font-bold">Ferramentas de Edição</h3>
-                      <button onClick={() => setIsEditingImage(false)} className="text-sm text-[#2271b1] hover:underline">Voltar aos detalhes</button>
+                      <button onClick={() => { setIsEditingImage(false); clearCrop(); }} className="text-sm text-[#2271b1] hover:underline">Voltar aos detalhes</button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="flex flex-col items-center justify-center bg-[#f0f0f1] border p-4">
                         <img 
-                          src={getPublicUrl(selectedFile.name)} 
+                          src={cropPreview || getPublicUrl(selectedFile.name)} 
                           className="max-w-full max-h-[40vh] object-contain"
                           alt="Preview" 
                         />
                       </div>
 
                       <div className="space-y-6">
+                        {/* Recortar */}
+                        <div className="space-y-3">
+                          <h4 className="font-bold text-sm border-b pb-1">Recortar</h4>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <button onClick={() => setCropOpen(true)} className="px-4 py-1.5 border border-[#00a651] text-[#008f45] bg-white text-sm rounded-[3px] hover:bg-[#f6f7f7]">
+                              {cropRect ? 'Alterar recorte' : 'Recortar foto'}
+                            </button>
+                            {cropRect && (
+                              <>
+                                <span className="text-[11px] text-gray-600">Recorte: <strong>{Math.round(cropRect.width)} × {Math.round(cropRect.height)}</strong> px</span>
+                                <button onClick={() => { clearCrop(); const img = new Image(); img.src = getPublicUrl(selectedFile.name); img.onload = () => { setEditWidth(img.width); setEditHeight(img.height); }; }} className="text-[11px] text-[#2271b1] hover:underline">Remover recorte</button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
                         {/* Redimensionar */}
                         <div className="space-y-3">
                           <h4 className="font-bold text-sm border-b pb-1">Redimensionar</h4>
@@ -1038,7 +1082,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                             {processingImage ? 'A processar...' : 'Guardar Alterações'}
                           </button>
                           <button 
-                            onClick={() => setIsEditingImage(false)}
+                            onClick={() => { setIsEditingImage(false); clearCrop(); }}
                             className="px-6 py-2 border border-[#ccd0d4] text-sm rounded-[3px] hover:bg-[#f6f7f7]"
                           >
                             Cancelar
@@ -1049,6 +1093,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                   </div>
                 )}
               </div>
+
+              {cropOpen && <CropDialog src={getPublicUrl(selectedFile.name)} onConfirm={applyCropChoice} onClose={() => setCropOpen(false)} />}
 
               {/* Detail Sidebar */}
               <div className="w-full md:w-[300px] bg-[#f6f7f7] border-l border-[#ccd0d4] overflow-y-auto p-4 space-y-4">

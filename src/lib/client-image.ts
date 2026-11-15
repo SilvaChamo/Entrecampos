@@ -58,3 +58,33 @@ export async function prepareWebp100(file: File, maxBytes = 100 * 1024): Promise
     return file;
   }
 }
+
+export type CropRect = { x: number; y: number; width: number; height: number };
+
+/**
+ * Recorta uma foto no navegador (área em píxeis da foto original) e devolve o ficheiro novo, no mesmo formato (PNG, WebP ou JPEG).
+ * Fotos de outro endereço só se recortam se esse servidor o permitir (CORS); senão lança erro.
+ */
+export async function cropImage(src: string, rect: CropRect, fileName = 'foto'): Promise<File> {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('A foto demorou demasiado a carregar.')), 20000);
+    img.onload = () => { clearTimeout(timer); resolve(); };
+    img.onerror = () => { clearTimeout(timer); reject(new Error('Não foi possível carregar a foto para recortar.')); };
+    // Sem o parâmetro o navegador reutiliza a cópia já carregada (sem CORS) e o recorte falha.
+    img.src = /^(blob|data):/.test(src) ? src : `${src}${src.includes('?') ? '&' : '?'}crop=${Date.now()}`;
+  });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(rect.width));
+  canvas.height = Math.max(1, Math.round(rect.height));
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Não foi possível recortar a foto.');
+  ctx.drawImage(img, rect.x, rect.y, rect.width, rect.height, 0, 0, canvas.width, canvas.height);
+  const path = src.split(/[?#]/)[0].toLowerCase();
+  const type = /\.png$/.test(path) ? 'image/png' : /\.webp$/.test(path) ? 'image/webp' : 'image/jpeg';
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.9));
+  if (!blob) throw new Error('Não foi possível recortar a foto (a origem não permite).');
+  const ext = type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
+  return new File([blob], `${fileName.replace(/\.[^.]+$/, '')}.${ext}`, { type });
+}
