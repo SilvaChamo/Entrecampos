@@ -69,7 +69,7 @@ export default async function PaginaDeLeitura({ params }: { params: Promise<{ sl
           {post.image && (
             <div className="border-b-[6px] border-red-600">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={post.image} alt={post.title} className="max-h-[420px] w-full object-cover" />
+              <img src={post.image} alt={post.title} className="h-[240px] w-full object-cover sm:h-[420px]" />
             </div>
           )}
           <div className="px-5 pb-8 pt-6 sm:px-7">
