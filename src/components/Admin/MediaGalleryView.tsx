@@ -479,7 +479,8 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
         canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Não foi possível processar a imagem.'))), mimeType, 0.85); // 0.85 qualidade optimizada
       });
 
-      const newFileName = selectedFile.name.replace(/\.[^/.]+$/, "") + (editFormat !== 'original' ? `_edited${extension}` : extension);
+      // Com recorte grava-se uma foto nova (-recorte): a original fica e a foto pode ser reposta.
+      const newFileName = selectedFile.name.replace(/\.[^/.]+$/, "") + (cropRect ? '-recorte' : '') + (editFormat !== 'original' ? `_edited${extension}` : extension);
 
       // Grava pelo servidor (a gravação a partir do navegador falha sem aviso).
       const form = new FormData();
@@ -1017,6 +1018,7 @@ export default function MediaGalleryView({ source = 'galeria', pasta = '', title
                               </>
                             )}
                           </div>
+                          {cropRect && <p className="text-[11px] text-gray-600">Ao guardar, o recorte fica numa foto nova (…-recorte) e a original mantém-se.</p>}
                         </div>
 
                         {/* Redimensionar */}

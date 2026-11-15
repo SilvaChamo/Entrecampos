@@ -92,6 +92,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
   const [loading, setLoading] = useState(false);
   const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
+  const [originalImage, setOriginalImage] = useState<string | null>(null); // foto antes do recorte, para a repor
   // Foto vinda do computador: aparece logo e segue para a biblioteca em segundo plano.
   const pendingImage = useRef<Promise<string> | null>(null);
   const [imageStatus, setImageStatus] = useState<'' | 'uploading' | 'failed'>('');
@@ -114,8 +115,10 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
   const cropFeatured = async (rect: CropRect) => {
     setCropOpen(false);
     try {
-      const file = await cropImage(formData.image_url, rect, 'destaque-recorte');
+      const source = originalImage || formData.image_url; // recorta sempre a partir da foto original
+      const file = await cropImage(source, rect, 'destaque-recorte');
       chooseImage({ url: URL.createObjectURL(file), uploading: uploadToLibrary(file, formData.title) });
+      setOriginalImage(source);
     } catch (err) {
       alert((err as Error).message || 'Não foi possível recortar a foto.');
     }
@@ -585,9 +588,21 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
                     Recortar imagem
                   </button>
                   <br />
+                  {originalImage && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => { chooseImage({ url: originalImage }); setOriginalImage(null); }}
+                        className="text-[#2271b1] text-[13px] hover:underline underline-offset-2"
+                      >
+                        Repor foto original
+                      </button>
+                      <br />
+                    </>
+                  )}
                   <button
                     type="button"
-                    onClick={() => { pendingImage.current = null; setImageStatus(''); setFormData({ ...formData, image_url: '' }); }}
+                    onClick={() => { pendingImage.current = null; setImageStatus(''); setOriginalImage(null); setFormData({ ...formData, image_url: '' }); }}
                     className="text-[#d63638] text-[13px] hover:underline underline-offset-2"
                   >
                     Remover imagem
@@ -622,7 +637,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
         </div>
       </form>
 
-      {cropOpen && formData.image_url && <CropDialog src={formData.image_url} onConfirm={cropFeatured} onClose={() => setCropOpen(false)} />}
+      {cropOpen && formData.image_url && <CropDialog src={originalImage || formData.image_url} onConfirm={cropFeatured} onClose={() => setCropOpen(false)} />}
 
       {/* Escolher a foto: Galeria ou Computador */}
       {isImageSelectorOpen && (
@@ -632,7 +647,7 @@ export default function NewsForm({ initialData, isEdit = false }: NewsFormProps)
           target="featured"
           onBeforeLeave={saveDraft}
           onClose={() => setIsImageSelectorOpen(false)}
-          onChoose={chooseImage}
+          onChoose={(img) => { setOriginalImage(null); chooseImage(img); }}
         />
       )}
     </div>
