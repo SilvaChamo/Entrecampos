@@ -221,14 +221,14 @@ body {
   text-align: left;
 }
 
+/* Telemóvel: a foto continua à esquerda/direita como se escolheu no editor, só que nunca passa de metade da largura (senão o texto ficava espremido). */
 @media (max-width: 520px) {
   .blog-details figure.ec-fig-left,
   .blog-details figure.ec-fig-right {
-    float: none;
-    width: 100% !important;
-    margin-left: 0;
-    margin-right: 0;
+    max-width: 50%;
   }
+  .blog-details figure.ec-fig-left { margin-right: 0.75rem; }
+  .blog-details figure.ec-fig-right { margin-left: 0.75rem; }
 }
 
 /* Editor: botões sobre a foto (aparecem ao passar o rato ou com a foto selecionada) e canto para mudar o tamanho. */
