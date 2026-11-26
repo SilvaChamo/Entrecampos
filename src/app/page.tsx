@@ -400,7 +400,7 @@ export default async function HomePrincipal() {
         if (isCard(next)) {
           const cardIds = [next, ...(list[i + 2] && isCard(list[i + 2]) ? [list[i + 2]] : [])];
           out.push(
-            <div key={`${id}+${cardIds.join('+')}`} className={`grid gap-3 md:auto-rows-[225px] ${cols}`}>
+            <div key={`${id}+${cardIds.join('+')}`} className={`grid gap-3 md:auto-rows-[210px] ${cols}`}>
               <ExpSlider posts={slidesOf(id)} className={`h-[360px] md:row-span-2 md:h-full${place}`} />
               {cardIds.length === 1 ? (
                 <div className="h-[225px] md:row-span-2 md:h-full">
@@ -414,7 +414,7 @@ export default async function HomePrincipal() {
           i += cardIds.length;
         } else {
           out.push(
-            <div key={`${id}+${next}`} className={`grid gap-3 md:grid-rows-[462px] ${cols}`}>
+            <div key={`${id}+${next}`} className={`grid gap-3 md:grid-rows-[432px] ${cols}`}>
               <ExpSlider posts={slidesOf(id)} className={`h-[360px] md:h-full${place}`} />
               {listNode(next, 'md:h-full')}
             </div>,

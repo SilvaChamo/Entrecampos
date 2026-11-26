@@ -469,7 +469,7 @@ export default function HomeSeccoesPage() {
             {list.map((id, i) => (
               <li key={id} className="px-4 py-2">
                 <div className="flex flex-wrap items-center gap-1.5 md:flex-nowrap">
-                  <input type="checkbox" aria-label="Marcar para mover com outras" checked={picked.includes(id)} onChange={() => togglePick(id)} className="h-[18px] w-[18px] shrink-0 accent-[#00a651]" />
+                  <button type="button" aria-label="Marcar para mover com outras" title="Marcar para mover com outras" aria-pressed={picked.includes(id)} onClick={() => togglePick(id)} className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center ${picked.includes(id) ? 'text-[#00a651]' : 'text-[#2c3338] hover:text-[#00a651]'}`}><ChevronDown className={`h-5 w-5 transition-transform duration-300 ${picked.includes(id) ? 'rotate-180' : ''}`} /></button>
                   <span className="w-5 shrink-0 text-[13px] text-gray-400">{i + 1}</span>
                   <span className={`flex min-w-0 flex-1 basis-[140px] items-center md:basis-0 gap-1.5 text-[13px] text-[#1d2327]${draft.options.hidden.includes(id) ? ' opacity-50' : ''}`}>
                     {isAdId(id) && <Megaphone className="h-4 w-4 shrink-0 text-[#d6101c]" />}

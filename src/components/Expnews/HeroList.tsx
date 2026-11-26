@@ -5,7 +5,7 @@ import { ListItem } from '@/components/Expnews/blocks';
 import type { Post } from '@/lib/news-data';
 import type { SlimPost } from '@/components/Expnews/CategorySection';
 
-const VISIBLE = 4; // notícias visíveis ao mesmo tempo
+const VISIBLE = 5; // notícias visíveis ao mesmo tempo
 const STEP_MS = 4000; // tempo entre passos
 
 /**
@@ -50,7 +50,7 @@ export default function HeroList({ posts, label, className = '' }: { posts: Slim
       >
         {items.map((p, i) => (
           <li key={`${p.slug}-${i}`} className="pb-2 last:pb-0" style={roll && itemH ? { height: itemH } : { height: 104 }} aria-hidden={i >= posts.length ? true : undefined}>
-            <ListItem post={p as Post} bleed as="div" />
+            <ListItem post={p as Post} bleed showCategory as="div" />
           </li>
         ))}
       </ul>

@@ -47,16 +47,25 @@ export default function CategoryBadge({
   slug,
   className = '',
   tabIndex,
+  plain = false,
 }: {
   label: string;
   slug?: string;
   className?: string;
   tabIndex?: number;
+  plain?: boolean;
 }) {
   const key = slug || toSlug(label);
   const Icon = ICONS[key] ?? Tag;
   // A cor escolhida no painel chega por variável CSS (--cat-<slug>), posta pelo layout; sem ela vale a cor de origem.
   const color = `var(--cat-${key}, ${defaultCategoryColor(key)})`;
+  if (plain) {
+    return (
+      <Link href={`/categoria/${key}`} tabIndex={tabIndex} className={`inline-block font-bold uppercase leading-none tracking-wide text-[#d6101c] hover:underline ${className}`}>
+        {label}
+      </Link>
+    );
+  }
   return (
     // Clicável: abre a categoria. Não colocar dentro de outro <a>.
     <Link

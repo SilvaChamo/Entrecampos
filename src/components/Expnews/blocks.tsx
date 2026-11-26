@@ -88,6 +88,7 @@ export function ListItem({
   thumb = 'h-[62px] w-[90px]',
   card = false,
   bleed = false,
+  showCategory = false,
   as: Tag2 = 'li',
 }: {
   post: Post;
@@ -96,6 +97,8 @@ export function ListItem({
   /** Card com a imagem encostada aos bordos (sem padding à volta da imagem). */
   bleed?: boolean;
   as?: 'li' | 'div';
+  /** Mostra a categoria em texto vermelho por cima do título (só no carrossel ao lado do slide). */
+  showCategory?: boolean;
 }) {
   const href = `/noticias/${post.slug}`;
   if (bleed) {
@@ -104,8 +107,9 @@ export function ListItem({
         <Link href={href} className="relative w-[110px] shrink-0 self-stretch overflow-hidden bg-gray-200">
           <Thumb src={post.image} />
         </Link>
-        <div className="flex min-w-0 flex-col justify-center p-3">
-          <Link href={href} className="line-clamp-2 text-[13px] font-bold leading-snug hover:text-[#d6101c]">
+        <div className={`flex min-w-0 flex-col justify-center ${showCategory ? 'px-3 py-1.5' : 'p-3'}`}>
+          {showCategory && <CategoryBadge plain label={post.category} slug={post.categorySlug} className="mb-1 max-w-full truncate text-[10px]" />}
+          <Link href={href} className={`line-clamp-2 ${showCategory ? 'text-[12px]' : 'text-[13px]'} font-bold leading-snug hover:text-[#d6101c]`}>
             {post.title}
           </Link>
           <div className="mt-1">

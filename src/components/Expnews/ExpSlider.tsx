@@ -58,10 +58,10 @@ export default function ExpSlider({ posts, className = 'h-[320px] sm:h-[420px] l
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
-          <div className="absolute inset-0 flex flex-col justify-end p-3 text-white sm:p-[30px]">
+          <div className="absolute inset-y-0 left-0 flex w-full flex-col justify-end p-3 text-white sm:p-[30px] md:w-3/4">
             <CategoryBadge label={p.category} slug={p.categorySlug} tabIndex={i === active ? 0 : -1} className="self-start text-[11px]" />
             <Link href={`/noticias/${p.slug}`} tabIndex={i === active ? 0 : -1} className="block max-w-4xl">
-              <h2 className="mt-3 line-clamp-3 text-[22px] font-bold leading-tight hover:underline sm:text-[24px] lg:text-[30px]">
+              <h2 className="mt-3 text-[22px] font-bold leading-tight hover:underline sm:text-[24px] lg:text-[30px]">
                 {p.title}
               </h2>
             </Link>
