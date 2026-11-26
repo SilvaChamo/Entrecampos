@@ -10,7 +10,7 @@ import { removeReads } from '@/lib/newsletter-reads';
 /**
  * Newsletter do EntreCAMPOS. Subscritores: tabela `entrecampos_newsletter`. Fila: as notícias publicadas desde o último
  * envio. Estado do último envio num ficheiro pequeno no armazenamento (como as cores das categorias). O envio automático
- * é às 20h de Maputo (cron em vercel.json: 18:00 UTC).
+ * é às 20h de Maputo (agendada às 18:00 UTC).
  */
 const SITE_URL = () => (process.env.NEXT_PUBLIC_SITE_URL || 'https://entrecamposblog.com').replace(/\/$/, '');
 const BUCKET = () => process.env.NEXT_PUBLIC_STORAGE_BUCKET || process.env.STORAGE_BUCKET || 'entrecampos-media';

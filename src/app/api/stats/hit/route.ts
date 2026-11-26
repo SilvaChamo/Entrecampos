@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
   const day = new Date().toISOString().slice(0, 10);
   const visitor = createHash('sha256').update(`${ip}|${ua}|${day}|${process.env.AUTH_SECRET || ''}`).digest('hex').slice(0, 32);
-  const country = (req.headers.get('x-vercel-ip-country') || req.headers.get('cf-ipcountry') || '').toUpperCase().slice(0, 2) || null;
+  const country = (req.headers.get('cf-ipcountry') || '').toUpperCase().slice(0, 2) || null;
 
   try {
     const supabase = db();

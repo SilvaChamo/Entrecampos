@@ -3,7 +3,7 @@ import CategoryView from '@/app/categoria/CategoryView';
 
 export const revalidate = 604800; // 7 dias; gravar no painel limpa já o cache (lib/refresh-site.ts)
 
-/** Sem páginas geradas no deploy: cada uma gera-se no primeiro acesso e fica em cache (sem isto a Vercel renderiza-a a cada pedido). */
+/** Sem páginas geradas no deploy: cada uma gera-se no primeiro acesso e fica em cache (sem isto renderiza-se a cada pedido). */
 export async function generateStaticParams() {
   return [];
 }

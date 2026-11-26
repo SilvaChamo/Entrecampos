@@ -6,7 +6,7 @@ export const maxDuration = 300;
 
 /**
  * Disparo de reserva dos envios agendados da newsletter: o painel chama esta rota ao abrir uma página (o site público não,
- * para não gastar CPU na Vercel a cada visita), e os horários cuja hora já chegou são enviados. Não leva dados nem
+ * para não gastar CPU a cada visita), e os horários cuja hora já chegou são enviados. Não leva dados nem
  * credenciais (só envia o que o painel já agendou) e responde sempre o mesmo. Há um limite de uma verificação por minuto
  * em cada instância.
  */

@@ -10,7 +10,7 @@ let lastPulse = 0;
 export default function HitTracker() {
   const pathname = usePathname();
   // Disparo de reserva da newsletter agendada: só a partir do painel. Os envios já saem do GitHub (de 5 em 5 minutos) e do
-  // cron diário da Vercel; se também saísse de cada visita ao site, cada visitante acordava uma função na Vercel (CPU) só para isto.
+  // cron diário do servidor; se também saísse de cada visita ao site, cada visitante gastava CPU só para isto.
   useEffect(() => {
     if (!pathname?.startsWith('/admin')) return;
     if (Date.now() - lastPulse < 5 * 60_000) return;

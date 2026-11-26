@@ -5,7 +5,7 @@ import ContactLayout from '@/components/Site/ContactLayout';
 
 export const revalidate = 604800;
 
-/** Sem páginas geradas no deploy: cada uma gera-se no primeiro acesso e fica em cache (sem isto a Vercel renderiza-a a cada pedido). */
+/** Sem páginas geradas no deploy: cada uma gera-se no primeiro acesso e fica em cache (sem isto renderiza-se a cada pedido). */
 export async function generateStaticParams() {
   return [];
 }

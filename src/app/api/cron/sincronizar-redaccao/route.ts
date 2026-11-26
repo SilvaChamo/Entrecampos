@@ -5,7 +5,7 @@ import { syncMailbox } from '@/lib/partilhado';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-/** Sincronização automática do e-mail da redacção (agendador do servidor/Vercel), com `Authorization: Bearer <CRON_SECRET>`. */
+/** Sincronização automática do e-mail da redacção (agendador do servidor), com `Authorization: Bearer <CRON_SECRET>`. */
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
   const sent = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');

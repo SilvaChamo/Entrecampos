@@ -12,7 +12,7 @@ const supabaseAdmin = createClient(
 );
 
 const TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/avif': 'avif' };
-const MAX_BYTES = 4 * 1024 * 1024; // o browser já reduz as fotos antes de enviar (limite do pedido na Vercel)
+const MAX_BYTES = 4 * 1024 * 1024; // o browser já reduz as fotos antes de enviar (limite do tamanho do pedido)
 
 const slug = (name: string) =>
   name.replace(/\.[^.]+$/, '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'foto';

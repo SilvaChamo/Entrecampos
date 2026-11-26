@@ -22,14 +22,14 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   compress: true,
   poweredByHeader: false,
-  // /webmail abre o Roundcube do servidor de e-mail (o site está na Vercel, não no servidor onde está o webmail)
+  // /webmail abre o Roundcube do servidor de e-mail (o webmail está num servidor de e-mail à parte)
   async redirects() {
     return [
       { source: '/webmail/:path*', destination: 'https://webmail.entrecamposblog.com/', permanent: false },
       { source: '/roundcube/:path*', destination: 'https://webmail.entrecamposblog.com/', permanent: false },
     ];
   },
-  // /noticias e /categoria/<slug> não leem ?pagina= nem ?q= (isso fazia a Vercel renderizá-las a cada pedido):
+  // /noticias e /categoria/<slug> não leem ?pagina= nem ?q= (isso fazia renderizá-las a cada pedido):
   // as variantes com parâmetros são reescritas para rotas próprias, e o endereço que o visitante vê não muda.
   async rewrites() {
     return {

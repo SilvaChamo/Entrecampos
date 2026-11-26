@@ -11,7 +11,7 @@ const supabaseAdmin = createClient(
 );
 const BUCKET = process.env.NEXT_PUBLIC_STORAGE_BUCKET || process.env.STORAGE_BUCKET || 'entrecampos-media';
 const TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
-const MAX_BYTES = 4 * 1024 * 1024; // limite do pedido na Vercel
+const MAX_BYTES = 4 * 1024 * 1024; // limite do tamanho do pedido
 const NAME = /^(?:(?:arquivo\/[a-z0-9-]+|partilhado\/imagens|news)\/)?[A-Za-z0-9][\w.\-]*\.(?:jpe?g|png|webp|gif)$/i;
 
 /**

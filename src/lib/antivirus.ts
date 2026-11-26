@@ -2,7 +2,7 @@ import net from 'net';
 
 /**
  * Análise com ClamAV (clamd) pelo protocolo INSTREAM.
- * Configurar CLAMD_URL (+ CLAMD_TOKEN): ponte HTTPS protegida no servidor, o caminho para a Vercel;
+ * Configurar CLAMD_URL (+ CLAMD_TOKEN): ponte HTTPS protegida no servidor, para quando a aplicação corre noutra máquina;
  * ou CLAMD_HOST (+ CLAMD_PORT, por defeito 3310); ou CLAMD_SOCKET (ex.: /var/run/clamav/clamd.ctl,
  * quando a aplicação corre no próprio servidor).
  */

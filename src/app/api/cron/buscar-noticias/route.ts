@@ -22,7 +22,7 @@ const norm = (v: string) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 /**
  * Busca diária (à 1h da manhã, hora de Maputo) das notícias do dia sobre agricultura, clima e ambiente. Ficam na fila de
  * pendentes (estado `pending`), à espera de revisão no painel: nunca vão directas ao site. Mesmo sistema da Base de Dados Agro.
- * Chamada pelo agendador da Vercel com `Authorization: Bearer <CRON_SECRET>`. Com `?dry=1` só mostra o que encontraria, sem gravar.
+ * Chamada pelo agendador do servidor com `Authorization: Bearer <CRON_SECRET>`. Com `?dry=1` só mostra o que encontraria, sem gravar.
  */
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
