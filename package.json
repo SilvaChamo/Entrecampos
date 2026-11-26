@@ -27,6 +27,8 @@
     "axios": "^1.15.2",
     "date-fns": "^3.6.0",
     "dotenv": "^17.4.2",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
     "fflate": "^0.8.3",
     "gray-matter": "^4.0.3",
     "imapflow": "^2.10.0",
