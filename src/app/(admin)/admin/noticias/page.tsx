@@ -219,6 +219,8 @@ export default function NewsAdminPage() {
 
   const filteredNews = news.filter(item => {
     if (item.status === 'Archived' || item.status === 'Trash') return false;
+    // Pendentes têm página própria: não aparecem na lista das aprovadas.
+    if (String(item.status).toLowerCase() === 'pending') return false;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || !!searchIds?.has(String(item.id));
     const matchesCategory = filterCategory === 'Todas as categorias' || itemCategories(item).includes(slugOf(filterCategory));
     const matchesDate = filterDate === 'Todas as datas' || new Date(item.date).getFullYear().toString() === filterDate;
